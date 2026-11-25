@@ -2008,6 +2008,10 @@ zv::Val pt_variable_handler_compose_result(zval *handler, zval *nodeScopeResolve
 extern zend_class_entry *pt_ce_impure_point;
 /* new ImpurePoint($scope, $node, $identifier, $description, $certain) */
 zv::Val pt_impure_point_new(zval *scope, zval *node, zend_string *identifier, zend_string *description, bool certain);
+/* the same with the sixth argument, $sideEffects NULL for null */
+zv::Val pt_impure_point_new_with_side_effects(zval *scope, zval *node, zend_string *identifier, zend_string *description, bool certain, zval *sideEffects);
+/* $impurePoint->getSideEffects()'s slot; NULL with the uninitialized-read Error pending */
+zval *pt_impure_point_side_effects(zend_object *impurePoint);
 
 extern zend_class_entry *pt_ce_throw_point;
 /* ThrowPoint::createExplicit($scope, $type, $node, $canContainAnyThrowable) /
@@ -2320,6 +2324,8 @@ zv::Val pt_default_narrowing_helper_create_subject_types(zval *helper, zval *s, 
 zv::Val pt_default_narrowing_helper_create_subject_types_from_result_state(zval *helper, zval *s, zval *subject, zval *subjectResult, zval *type, zval *context);
 zv::Val pt_default_narrowing_helper_specify_default_types_with_nullsafe_fan(zval *helper, zval *expr, zval *context, zval *beforeScope, bool nativeTypesPromoted);
 zv::Val pt_default_narrowing_helper_create_nullsafe_receiver_only_types(zval *helper, zval *s, zval *subject, zval *subjectResult, zval *type, zval *context);
+/* $helper->isSubjectValueRemembered($subjectResult, $subject); false = pending exception */
+[[nodiscard]] bool pt_default_narrowing_helper_is_subject_value_remembered(zval *helper, zval *subjectResult, zval *subject, bool &out);
 /* $helper->callMayHaveBeenSkipped($receiverResult, $receiverType, $context);
  * $receiverResult NULL (or a null zval) for null; false = pending exception */
 [[nodiscard]] bool pt_default_narrowing_helper_call_may_have_been_skipped(zval *helper, zval *receiverResult, zval *receiverType, zval *context, bool &out);
@@ -2508,6 +2514,7 @@ enum pt_method_reflection_member
 	PT_MR_IS_PURE,
 	PT_MR_GET_PURE_UNLESS_CALLABLE_IS_IMPURE_PARAMETERS,
 	PT_MR_GET_PURE_UNLESS_PARAMETER_PASSED_PARAMETERS,
+	PT_MR_GET_SIDE_EFFECTS,
 	PT_MR_GET_ASSERTS,
 	PT_MR_ACCEPTS_NAMED_ARGUMENTS,
 	PT_MR_GET_SELF_OUT_TYPE,
@@ -2537,15 +2544,58 @@ zv::Val pt_class_reflection_get_display_name(zend_object *classReflection, bool 
 
 /* }}} */
 
+/* {{{ SideEffects.cpp */
+
+extern zend_class_entry *pt_ce_side_effects;
+/* $sideEffects->hasAny() / ->writesParameter($parameterName) of a
+ * SideEffects (final, so always the native class), the PT_TRI_* value;
+ * -1 = pending exception */
+/* $sideEffects->getEffectNames() !== [] ? Yes : $sideEffects->hasOnly([SideEffects::WRITES_ARGS])->negate() as PT_TRI_*; -1 = pending exception */
+zend_long pt_side_effects_own(zend_object *sideEffects);
+/* $sideEffects->getCalledParameters() !== [] as 1 / 0; -1 = pending exception */
+int pt_side_effects_has_called_parameters(zend_object *sideEffects);
+zend_long pt_side_effects_has_any(zend_object *sideEffects);
+zend_long pt_side_effects_writes_parameter(zend_object *sideEffects, zend_string *parameterName);
+/* $reflection->getSideEffects()->isDeterministic()->negate() as PT_TRI_*; -1 = pending exception */
+zend_long pt_function_reflection_result_varies(zval *functionReflection);
+zend_long pt_side_effects_is_deterministic(zend_object *sideEffects);
+/* $sideEffects->has('writes-this')->or($sideEffects->has('writes-global')) of
+ * $methodReflection->getSideEffects() as PT_TRI_*; -1 = pending exception */
+zend_long pt_method_reflection_writes_receiver(zval *methodReflection);
+zend_long pt_method_reflection_result_varies(zval *methodReflection);
+/* the same two questions asked of a call's own SideEffects, such as one a
+ * dynamic side effects extension returned; -1 = pending exception */
+zend_long pt_side_effects_writes_receiver(zval *sideEffects);
+zend_long pt_side_effects_result_varies(zval *sideEffects);
+/* $functionReflection->getSideEffects()->has('reads-global') as PT_TRI_*;
+ * -1 = pending exception */
+zend_long pt_function_reflection_reads_global(zval *functionReflection);
+/* $reflection->getSideEffects() of a FunctionReflection / an
+ * ExtendedMethodReflection; UNDEF = pending exception */
+zv::Val pt_function_reflection_side_effects(zval *functionReflection);
+zv::Val pt_method_reflection_side_effects(zval *methodReflection);
+/* $sideEffects->getListedSubEffects($effect): null or the array; UNDEF =
+ * pending exception */
+zv::Val pt_side_effects_listed_sub_effects(zval *sideEffects, const char *effect, size_t len);
+/* whether an impure point counts for an unused expression statement: !($impurePoint->getSideEffects()?->hasOnly(['reads-global', 'nondeterministic'])->yes() ?? false)
+ * of an ImpurePoint, as 1 / 0; -1 = pending exception */
+int pt_impure_point_is_observable(zend_object *impurePoint);
+/* $sideEffects->hasOnly([SideEffects::WRITES_ARGS])->no() && !SimpleImpurePoint::onlyLeavesErrors($sideEffects)
+ * of a SideEffects as 1 / 0; -1 = pending exception */
+int pt_side_effects_has_other_than_args_and_error_writes(zval *sideEffects);
+
+/* }}} */
+
 /* {{{ SimpleImpurePoint.cpp */
 
 extern zend_class_entry *pt_ce_simple_impure_point;
 /* new SimpleImpurePoint($identifier, $description, $certain); UNDEF =
  * pending exception */
-zv::Val pt_simple_impure_point_new(zend_string *identifier, zend_string *description, bool certain);
+zv::Val pt_simple_impure_point_new(zend_string *identifier, zend_string *description, bool certain, zval *sideEffects = NULL);
 /* SimpleImpurePoint::createFromVariant($function, $variant, $scope, $args)
  * without the object: exists false for the twin's null, the three
  * constructor arguments otherwise (identifier a permanent interned string,
+ * sideEffects UNDEF for null,
  * description owned by the caller, who releases it); $variant / $scope NULL
  * or IS_NULL for null, $args an array; false = pending exception */
 struct pt_simple_impure_point_data
@@ -2554,8 +2604,16 @@ struct pt_simple_impure_point_data
 	zend_string *identifier = nullptr;
 	zend_string *description = nullptr;
 	bool certain = false;
+	/* the twin's $sideEffects, owned: UNDEF for null */
+	zval sideEffects = {};
+
+	pt_simple_impure_point_data() = default;
+	pt_simple_impure_point_data(const pt_simple_impure_point_data &) = delete;
+	pt_simple_impure_point_data &operator=(const pt_simple_impure_point_data &) = delete;
+	~pt_simple_impure_point_data() { zval_ptr_dtor(&sideEffects); }
 };
-[[nodiscard]] bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out);
+/* $callSideEffects: what a dynamic side effects extension described for the call, NULL for none */
+[[nodiscard]] bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out, zval *callSideEffects = NULL);
 
 /* }}} */
 
@@ -2582,7 +2640,7 @@ struct pt_primed_storage
  * is declared there): the native body for exactly a MutatingScope, the
  * method through the class entry otherwise; UNDEF = pending exception */
 zv::Val pt_mutating_scope_get_naked_method(zend_object *scope, zval *typeWithMethod, zend_string *methodName);
-zv::Val pt_mutating_scope_invalidate_volatile_expressions(zend_object *scope);
+zv::Val pt_mutating_scope_invalidate_volatile_expressions(zend_object *scope, bool globalStateReads);
 zv::Val pt_mutating_scope_enter_closure_call(zend_object *scope, zval *thisType, zval *nativeThisType);
 zv::Val pt_mutating_scope_restore_original_scope_after_closure_bind(zend_object *scope, zval *originalScope);
 zv::Val pt_mutating_scope_merge_initialized_properties(zend_object *scope, zval *calledMethodScope);
@@ -2944,11 +3002,9 @@ zval *pt_parameters_acceptor_parameters(zval *acceptor, zv::Val &hold);
 zval *pt_assertions_all(zval *assertions, zv::Val &hold);
 
 /* MutatingScope.cpp — $scope->afterExtractCall() /
- * afterClearstatcacheCall() / afterOpenSslCall($name); UNDEF = pending
- * exception */
+ * invalidateGlobalStateWrittenBy($sideEffects); UNDEF = pending exception */
 zv::Val pt_mutating_scope_after_extract_call(zend_object *scope);
-zv::Val pt_mutating_scope_after_clearstatcache_call(zend_object *scope);
-zv::Val pt_mutating_scope_after_open_ssl_call(zend_object *scope, zend_string *openSslFunctionName);
+zv::Val pt_mutating_scope_invalidate_global_state_written_by(zend_object *scope, zval *sideEffects);
 
 /* OutputBufferHelper.cpp — the shadowing class and its public methods for
  * native callers (the native body for the native class, the method by name
@@ -2961,7 +3017,7 @@ zv::Val pt_output_buffer_helper_apply_level_delta(zval *helper, zval *nodeScopeR
  * $parametersAcceptor NULL (or IS_NULL) for null */
 extern zend_class_entry *pt_ce_func_call_scope_effects_helper;
 zv::Val pt_func_call_scope_effects_helper_apply_array_walk_result(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *arrayWalkArrayArg, zval *arrayWalkValueTypes, zval *argsResult, zval *scope, zval *storage, zval *nodeCallback);
-zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *argsResult, zval *scope, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback);
+zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *callSideEffects, zval *argsResult, zval *scope, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback);
 
 /* FuncCallHandler.cpp — the shadowing class (processExpr() is its handler
  * entry) */
@@ -3988,6 +4044,8 @@ zv::Val pt_assertions_get_asserts(zval *assertions, int which);
 bool pt_volatile_expression_helper_invalidate_volatile_function_calls(zval *expressionTypes, zval *nativeExpressionTypes);
 bool pt_volatile_expression_helper_invalidate_superglobals(zval *expressionTypes, zval *nativeExpressionTypes);
 zv::Val pt_volatile_expression_helper_invalidate_negative_existence_checks(zval *scope, zval *expressionTypes, zval *nativeExpressionTypes, HashTable *functionNames, zend_string *declaredSymbolName);
+/* invalidateGlobalStateReads(); $writtenStates NULL for null; UNDEF = pending exception */
+zv::Val pt_volatile_expression_helper_invalidate_global_state_reads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes, zval *writtenStates = NULL);
 
 /* PhpClassReflectionExtension.cpp — $extension->hasProperty($classReflection,
  * $name) / ->getNativeProperty() / ->hasMethod() / ->getMethod() /

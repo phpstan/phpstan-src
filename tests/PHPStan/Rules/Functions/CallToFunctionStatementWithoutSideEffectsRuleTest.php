@@ -180,4 +180,96 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testCallsReadingState(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-reading-state.php'], [
+			[
+				'Call to function time() on a separate line has no effect.',
+				7,
+			],
+			[
+				'Call to function getenv() on a separate line has no effect.',
+				8,
+			],
+			[
+				'Call to function date() on a separate line has no effect.',
+				9,
+			],
+			[
+				'Call to function call_user_func() on a separate line has no effect.',
+				27,
+			],
+		]);
+	}
+
+	public function testCallbackAfterArrays(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-callback-after-arrays.php'], [
+			[
+				'Call to function array_udiff() on a separate line has no effect.',
+				13,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.3.0')]
+	public function testMbstring(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-mbstring.php'], [
+			[
+				'Call to function mb_strlen() on a separate line has no effect.',
+				10,
+			],
+			[
+				'Call to function mb_str_pad() on a separate line has no effect.',
+				11,
+			],
+			[
+				'Call to function mb_str_pad() on a separate line has no effect.',
+				12,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15355(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15355.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testWarns(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-warns.php'], [
+			[
+				'Call to function preg_match() on a separate line has no effect.',
+				15,
+			],
+			[
+				'Call to function print_r() on a separate line has no effect.',
+				22,
+			],
+			[
+				'Call to function var_export() on a separate line has no effect.',
+				23,
+			],
+			[
+				'Call to function var_export() on a separate line has no effect.',
+				24,
+			],
+			[
+				'Call to function highlight_string() on a separate line has no effect.',
+				25,
+			],
+			[
+				'Call to function preg_replace() on a separate line has no effect.',
+				29,
+			],
+			[
+				'Call to function preg_filter() on a separate line has no effect.',
+				30,
+			],
+		]);
+	}
+
 }

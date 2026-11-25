@@ -2,7 +2,7 @@
  * PHPStanTurbo\VolatileExpressionHelper — native implementation of
  * PHPStan\Analyser\VolatileExpressionHelper.
  *
- * The three static methods forget tracked entries of the two by-reference
+ * The static methods forget tracked entries of the two by-reference
  * expression tables a MutatingScope hands in as copies of its own; like the
  * twin's `unset($table[$key])` the tables are separated only when an entry
  * is actually removed — the common call finds nothing tracked and must not
@@ -26,7 +26,6 @@ namespace {
 /* the twin's private VOLATILE_FUNCTION_NAMES */
 const pt_superglobal_name pt_veh_volatile_function_names[] = {
 	{ PT_LC("ob_get_level") },
-	{ PT_LC("openssl_error_string") },
 };
 
 /* the twin's private EXISTENCE_CHECK_FUNCTION_NAMES */
@@ -239,6 +238,166 @@ public:
 		return zv::Val::boolean(changed);
 	}
 
+	/*
+	 * Mirrors invalidateGlobalStateReads(); UNDEF = pending exception.
+	 */
+	static zv::Val invalidateGlobalStateReads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes, zval *writtenStates)
+	{
+		if (writtenStates != NULL && Z_TYPE_P(writtenStates) == IS_NULL) writtenStates = NULL;
+
+		bool changed = false;
+		/* foreach by value walks the table as it was before any removal */
+		for (auto entry : zv::TableRef(Z_ARRVAL_P(expressionTypes))) {
+			zv::Ref exprTypeHolder = entry.value().deref();
+			if (UNEXPECTED(!pt_check_holder(exprTypeHolder.raw()))) return zv::Val();
+			zend_object *expr = zv::ObjRef(exprTypeHolder.asObject()).propAt(PT_ETH_PROP_EXPR).asObject();
+
+			/* self::findCallSideEffects($scope, $reflectionProvider, $exprTypeHolder->getExpr()),
+			 * read through the reflection it comes from */
+			zv::Val reflection;
+			if (UNEXPECTED(!findCallReflection(scope, reflectionProvider, expr, reflection))) return zv::Val();
+			if (reflection.isUndef() || Z_TYPE_P(reflection.raw()) == IS_NULL) continue;
+			/* !$sideEffects->has(SideEffects::READS_GLOBAL)->yes() */
+			zend_long readsGlobal = pt_function_reflection_reads_global(reflection.raw());
+			if (UNEXPECTED(readsGlobal < 0)) return zv::Val();
+			if (readsGlobal != PT_TRI_YES) continue;
+			if (writtenStates != NULL) {
+				/* self::readsAnyOf($sideEffects->getListedSubEffects('reads-global'), $writtenStates) */
+				zv::Val sideEffects = pt_function_reflection_side_effects(reflection.raw());
+				if (UNEXPECTED(sideEffects.isUndef())) return zv::Val();
+				zv::Val readStates = pt_side_effects_listed_sub_effects(sideEffects.raw(), PT_LC("reads-global"));
+				if (UNEXPECTED(readStates.isUndef())) return zv::Val();
+				bool reads;
+				if (UNEXPECTED(!readsAnyOf(readStates.raw(), Z_ARRVAL_P(writtenStates), reads))) return zv::Val();
+				if (!reads) continue;
+			}
+
+			pt_veh_unset_both(expressionTypes, nativeExpressionTypes, entry.stringKeyOrNull(), entry.indexKey());
+			changed = true;
+		}
+
+		return zv::Val::boolean(changed);
+	}
+
+	/*
+	 * findCallSideEffects() without its last ->getSideEffects(): the function
+	 * or method reflection a call expression calls; out stays UNDEF (or is
+	 * null) when it is not known or is an existence check. false = pending
+	 * exception.
+	 */
+	[[nodiscard]] static bool findCallReflection(zval *scope, zval *reflectionProvider, zend_object *expr, zv::Val &out)
+	{
+		zend_class_entry *funcCallCe = pt_class(PT_CLASS_FUNC_CALL);
+		zend_class_entry *methodCallCe = pt_class(PT_CLASS_METHOD_CALL);
+		zend_class_entry *nullsafeMethodCallCe = pt_class(PT_CLASS_NULLSAFE_METHOD_CALL);
+		zend_class_entry *staticCallCe = pt_class(PT_CLASS_STATIC_CALL);
+		zend_class_entry *nameCe = pt_class(PT_CLASS_NAME);
+		zend_class_entry *identifierCe = pt_class(PT_CLASS_IDENTIFIER);
+		if (UNEXPECTED(funcCallCe == NULL || methodCallCe == NULL || nullsafeMethodCallCe == NULL || staticCallCe == NULL || nameCe == NULL || identifierCe == NULL)) return false;
+
+		bool isFuncCall = instanceof_function(expr->ce, funcCallCe);
+		bool isMethodCall = !isFuncCall && (instanceof_function(expr->ce, methodCallCe) || instanceof_function(expr->ce, nullsafeMethodCallCe));
+		bool isStaticCall = !isFuncCall && !isMethodCall && instanceof_function(expr->ce, staticCallCe);
+		if (!isFuncCall && !isMethodCall && !isStaticCall) return true;
+
+		bool isPartial;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(expr, isPartial))) return false;
+		if (isPartial) return true;
+
+		zv::Ref name = zv::ObjRef(expr).prop(PT_LC("name"));
+		if (UNEXPECTED(name.raw() == NULL)) return true;
+		name = name.deref();
+
+		if (isFuncCall) {
+			if (!name.instanceOf(nameCe)) return true;
+			bool hasFunction;
+			if (UNEXPECTED(!pt_reflection_provider_has_function(reflectionProvider, name.raw(), scope, hasFunction))) return false;
+			if (!hasFunction) return true;
+
+			zv::Val function = pt_reflection_provider_get_function(reflectionProvider, name.raw(), scope);
+			if (UNEXPECTED(function.isUndef())) return false;
+			if (UNEXPECTED(Z_TYPE_P(function.raw()) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getName() on %s", zend_zval_value_name(function.raw()));
+				return false;
+			}
+			/* in_array(strtolower($function->getName()), self::EXISTENCE_CHECK_FUNCTION_NAMES, true) */
+			zv::Val functionName = pt_type_call(Z_OBJ_P(function.raw()), PT_LC("getname"), 0, NULL);
+			if (UNEXPECTED(functionName.isUndef())) return false;
+			if (UNEXPECTED(Z_TYPE_P(functionName.raw()) != IS_STRING)) {
+				zend_type_error("strtolower(): Argument #1 ($string) must be of type string, %s given", zend_zval_value_name(functionName.raw()));
+				return false;
+			}
+			zv::Str lowerName = zv::Str::adopt(zend_string_tolower(Z_STR_P(functionName.raw())));
+			if (inFunctionNames(lowerName.get(), NULL)) return true;
+
+			out = std::move(function);
+			return true;
+		}
+
+		/* $expr->name instanceof Identifier, then $expr->name->toString() */
+		if (!name.instanceOf(identifierCe)) return true;
+		zv::Ref methodName = zv::ObjRef(name.asObject()).prop(PT_LC("name"));
+		if (UNEXPECTED(methodName.raw() == NULL)) return true;
+		methodName = methodName.deref();
+		if (UNEXPECTED(!methodName.isString())) return true;
+
+		zv::Val type;
+		if (isMethodCall) {
+			/* $expr->var instanceof Variable, then $scope->getType($expr->var) */
+			zv::Ref var = zv::ObjRef(expr).prop(PT_LC("var"));
+			if (UNEXPECTED(var.raw() == NULL)) return true;
+			var = var.deref();
+			zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
+			if (UNEXPECTED(variableCe == NULL)) return false;
+			if (!var.instanceOf(variableCe)) return true;
+			type = pt_mutating_scope_get_type(Z_OBJ_P(scope), var.raw());
+		} else {
+			/* $expr->class instanceof Name, then $scope->resolveTypeByName($expr->class) */
+			zv::Ref className = zv::ObjRef(expr).prop(PT_LC("class"));
+			if (UNEXPECTED(className.raw() == NULL)) return true;
+			className = className.deref();
+			if (!className.instanceOf(nameCe)) return true;
+			type = pt_mutating_scope_resolve_type_by_name(Z_OBJ_P(scope), className.asObject());
+		}
+		if (UNEXPECTED(type.isUndef())) return false;
+
+		/* $scope->getMethodReflection($type, $methodName)?->getSideEffects() */
+		zv::Val method = pt_mutating_scope_get_method_reflection(Z_OBJ_P(scope), type.raw(), methodName.asString());
+		if (UNEXPECTED(method.isUndef())) return false;
+		out = std::move(method);
+		return true;
+	}
+
+	/* readsAnyOf($readStates, $writtenStates): $readStates NULL or IS_NULL
+	 * for null; false = pending exception */
+	[[nodiscard]] static bool readsAnyOf(zval *readStates, HashTable *writtenStates, bool &out)
+	{
+		out = false;
+		if (readStates == NULL || Z_TYPE_P(readStates) == IS_NULL) return true;
+		for (auto readEntry : zv::TableRef(Z_ARRVAL_P(readStates))) {
+			zv::Ref readState = readEntry.value().deref();
+			for (auto writtenEntry : zv::TableRef(writtenStates)) {
+				zv::Ref writtenState = writtenEntry.value().deref();
+				if (UNEXPECTED(!readState.isString() || !writtenState.isString())) {
+					zend_type_error("str_starts_with(): Argument #1 ($haystack) must be of type string, %s given", zend_zval_value_name(!readState.isString() ? readState.raw() : writtenState.raw()));
+					return false;
+				}
+				zend_string *r = readState.asString();
+				zend_string *w = writtenState.asString();
+				/* $readState === $writtenState || str_starts_with($readState, $writtenState . '.') || str_starts_with($writtenState, $readState . '.') */
+				size_t shorter = ZSTR_LEN(r) < ZSTR_LEN(w) ? ZSTR_LEN(r) : ZSTR_LEN(w);
+				if (memcmp(ZSTR_VAL(r), ZSTR_VAL(w), shorter) != 0) continue;
+				if (ZSTR_LEN(r) == ZSTR_LEN(w)
+					|| (ZSTR_LEN(r) > shorter && ZSTR_VAL(r)[shorter] == '.')
+					|| (ZSTR_LEN(w) > shorter && ZSTR_VAL(w)[shorter] == '.')) {
+					out = true;
+					return true;
+				}
+			}
+		}
+		return true;
+	}
+
 private:
 	/* $exprString === '$' . $name || str_starts_with($exprString, '$' . $name . '[') */
 	static bool isSuperglobalExprString(zend_string *exprString, const pt_superglobal_name *superglobals, size_t superglobalCount)
@@ -333,6 +492,11 @@ zv::Val pt_volatile_expression_helper_invalidate_negative_existence_checks(zval 
 	return VolatileExpressionHelper::invalidateNegativeExistenceChecks(scope, expressionTypes, nativeExpressionTypes, functionNames, declaredSymbolName);
 }
 
+zv::Val pt_volatile_expression_helper_invalidate_global_state_reads(zval *scope, zval *reflectionProvider, zval *expressionTypes, zval *nativeExpressionTypes, zval *writtenStates)
+{
+	return VolatileExpressionHelper::invalidateGlobalStateReads(scope, reflectionProvider, expressionTypes, nativeExpressionTypes, writtenStates);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -382,6 +546,38 @@ PT_MINIT_REGISTRATION(pt_register_volatile_expression_helper)
 		zv::Val result = VolatileExpressionHelper::invalidateNegativeExistenceChecks(scope, expressionTypes, nativeExpressionTypes, functionNames, declaredSymbolName);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
+	});
+
+	cls.method(sigs::invalidateGlobalStateReads, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *reflectionProvider, *expressionTypes, *nativeExpressionTypes, *writtenStates = NULL;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Zval, zp::Zval, zp::Opt<zp::ArrOrNull>>(execute_data, scope, reflectionProvider, expressionTypes, nativeExpressionTypes, writtenStates)) RETURN_THROWS();
+		expressionTypes = pt_veh_array_ref(expressionTypes, 3);
+		if (UNEXPECTED(expressionTypes == NULL)) RETURN_THROWS();
+		nativeExpressionTypes = pt_veh_array_ref(nativeExpressionTypes, 4);
+		if (UNEXPECTED(nativeExpressionTypes == NULL)) RETURN_THROWS();
+		zv::Val result = VolatileExpressionHelper::invalidateGlobalStateReads(scope, reflectionProvider, expressionTypes, nativeExpressionTypes, writtenStates);
+		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
+		result.intoReturnValue(return_value);
+	});
+
+	cls.method(sigs::findCallSideEffects, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scope, *reflectionProvider, *expr;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, scope, reflectionProvider, expr)) RETURN_THROWS();
+		zv::Val reflection;
+		if (UNEXPECTED(!VolatileExpressionHelper::findCallReflection(scope, reflectionProvider, Z_OBJ_P(expr), reflection))) RETURN_THROWS();
+		if (reflection.isUndef() || Z_TYPE_P(reflection.raw()) == IS_NULL) RETURN_NULL();
+		zv::Val sideEffects = pt_function_reflection_side_effects(reflection.raw());
+		if (UNEXPECTED(sideEffects.isUndef())) RETURN_THROWS();
+		sideEffects.intoReturnValue(return_value);
+	});
+
+	cls.method(sigs::readsAnyOf, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *readStates;
+		HashTable *writtenStates;
+		if (!zp::parse<zp::ArrOrNull, zp::Ht>(execute_data, readStates, writtenStates)) RETURN_THROWS();
+		bool reads;
+		if (UNEXPECTED(!VolatileExpressionHelper::readsAnyOf(readStates, writtenStates, reads))) RETURN_THROWS();
+		RETURN_BOOL(reads);
 	});
 
 	cls.shadow(&pt_ce_volatile_expression_helper);

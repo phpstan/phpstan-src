@@ -27,6 +27,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\Constant\ConstantBooleanType;
+use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -1382,6 +1383,32 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$string' => '\'bar\'|\'foo\'',
 				],
 			],
+		];
+	}
+
+	/**
+	 * @param array<string, string> $expectedResult
+	 */
+	#[DataProvider('dataCreateForCall')]
+	public function testCreateForCall(Expr $expr, array $expectedResult): void
+	{
+		$specifiedTypes = $this->typeSpecifier->create($expr, new ConstantIntegerType(3), TypeSpecifierContext::createTrue(), $this->scope);
+		$this->assertSame($expectedResult, $this->toReadableResult($specifiedTypes));
+	}
+
+	/**
+	 * @return iterable<array{Expr, array<string, string>}>
+	 */
+	public static function dataCreateForCall(): iterable
+	{
+		// printf() prints, but the same arguments give the same result
+		yield [
+			new FuncCall(new Name('printf'), [new Arg(new String_('abc'))]),
+			['printf(\'abc\')' => '3'],
+		];
+		yield [
+			new FuncCall(new Name('time')),
+			[],
 		];
 	}
 

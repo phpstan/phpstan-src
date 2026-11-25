@@ -77,16 +77,16 @@ inline constexpr char strings[] =
 	"call\0" /* 635 */
 	"PhpParser\\Node\\Expr\\CallLike\0" /* 640 */
 	"callIsNotPure\0" /* 669 */
-	"hasSideEffects\0" /* 683 */
-	"PHPStan\\TrinaryLogic\0" /* 698 */
-	"isNotPure\0" /* 719 */
-	"createNullsafeTypes\0" /* 729 */
-	"getFunctionTypeSpecifyingExtensions\0" /* 749 */
-	"className\0" /* 785 */
-	"getMethodTypeSpecifyingExtensionsForClass\0" /* 795 */
-	"getStaticMethodTypeSpecifyingExtensionsForClass\0" /* 837 */
-	"extensions\0" /* 885 */
-	"getTypeSpecifyingExtensionsForType"; /* 896 */
+	"resultVaries\0" /* 683 */
+	"PHPStan\\TrinaryLogic\0" /* 696 */
+	"isNotPure\0" /* 717 */
+	"createNullsafeTypes\0" /* 727 */
+	"getFunctionTypeSpecifyingExtensions\0" /* 747 */
+	"className\0" /* 783 */
+	"getMethodTypeSpecifyingExtensionsForClass\0" /* 793 */
+	"getStaticMethodTypeSpecifyingExtensionsForClass\0" /* 835 */
+	"extensions\0" /* 883 */
+	"getTypeSpecifyingExtensionsForType"; /* 894 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 12), /* __construct $exprPrinter */
 	reg::packed(45, 0, 64), /* __construct $reflectionProvider */
@@ -127,7 +127,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(635, 0, 640), /* callIsNotPure $call */
 	reg::packed(300, 0, 306), /* callIsNotPure $scope */
 	reg::packed(400, MAY_BE_BOOL), /* callIsNotPure return */
-	reg::packed(683, 0, 698), /* isNotPure $hasSideEffects */
+	reg::packed(683, 0, 696), /* isNotPure $resultVaries */
 	reg::packed(400, MAY_BE_BOOL), /* isNotPure return */
 	reg::packed(329, 0, 334), /* createNullsafeTypes $expr */
 	reg::packed(300, 0, 306), /* createNullsafeTypes $scope */
@@ -135,12 +135,12 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(512, MAY_BE_NULL, 517), /* createNullsafeTypes $type */
 	reg::packed(400, 0, 401), /* createNullsafeTypes return */
 	reg::packed(400, MAY_BE_ARRAY), /* getFunctionTypeSpecifyingExtensions return */
-	reg::packed(785, MAY_BE_STRING), /* getMethodTypeSpecifyingExtensionsForClass $className */
+	reg::packed(783, MAY_BE_STRING), /* getMethodTypeSpecifyingExtensionsForClass $className */
 	reg::packed(400, MAY_BE_ARRAY), /* getMethodTypeSpecifyingExtensionsForClass return */
-	reg::packed(785, MAY_BE_STRING), /* getStaticMethodTypeSpecifyingExtensionsForClass $className */
+	reg::packed(783, MAY_BE_STRING), /* getStaticMethodTypeSpecifyingExtensionsForClass $className */
 	reg::packed(400, MAY_BE_ARRAY), /* getStaticMethodTypeSpecifyingExtensionsForClass return */
-	reg::packed(885, MAY_BE_ARRAY), /* getTypeSpecifyingExtensionsForType $extensions */
-	reg::packed(785, MAY_BE_STRING), /* getTypeSpecifyingExtensionsForType $className */
+	reg::packed(883, MAY_BE_ARRAY), /* getTypeSpecifyingExtensionsForType $extensions */
+	reg::packed(783, MAY_BE_STRING), /* getTypeSpecifyingExtensionsForType $className */
 	reg::packed(400, MAY_BE_ARRAY), /* getTypeSpecifyingExtensionsForType return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -157,12 +157,12 @@ inline constexpr sigtab::Sig createForExpr = { { 542 /* createForExpr */, 4, 24,
 inline constexpr sigtab::Sig expressionContainsNonPureCall = { { 556 /* expressionContainsNonPureCall */, 2, 29, 2, 31, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig findNonPureCall = { { 619 /* findNonPureCall */, 3, 32, 3, 35, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig callIsNotPure = { { 669 /* callIsNotPure */, 2, 36, 2, 38, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isNotPure = { { 719 /* isNotPure */, 1, 39, 1, 40, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createNullsafeTypes = { { 729 /* createNullsafeTypes */, 4, 41, 4, 45, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getFunctionTypeSpecifyingExtensions = { { 749 /* getFunctionTypeSpecifyingExtensions */, 0, 46, 0, 46, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getMethodTypeSpecifyingExtensionsForClass = { { 795 /* getMethodTypeSpecifyingExtensionsForClass */, 1, 47, 1, 48, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getStaticMethodTypeSpecifyingExtensionsForClass = { { 837 /* getStaticMethodTypeSpecifyingExtensionsForClass */, 1, 49, 1, 50, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getTypeSpecifyingExtensionsForType = { { 896 /* getTypeSpecifyingExtensionsForType */, 2, 51, 2, 53, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isNotPure = { { 717 /* isNotPure */, 1, 39, 1, 40, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createNullsafeTypes = { { 727 /* createNullsafeTypes */, 4, 41, 4, 45, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getFunctionTypeSpecifyingExtensions = { { 747 /* getFunctionTypeSpecifyingExtensions */, 0, 46, 0, 46, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getMethodTypeSpecifyingExtensionsForClass = { { 793 /* getMethodTypeSpecifyingExtensionsForClass */, 1, 47, 1, 48, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStaticMethodTypeSpecifyingExtensionsForClass = { { 835 /* getStaticMethodTypeSpecifyingExtensionsForClass */, 1, 49, 1, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTypeSpecifyingExtensionsForType = { { 894 /* getTypeSpecifyingExtensionsForType */, 2, 51, 2, 53, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::TypeSpecifier

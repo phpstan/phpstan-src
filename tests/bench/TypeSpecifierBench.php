@@ -121,7 +121,7 @@ final class TypeSpecifierBench
 	/**
 	 * An int remembered by match() compared with a string is always false.
 	 */
-	#[Expected(instructions: '38.39M', cycles: '52.40M', memory: '284.4KiB')]
+	#[Expected(instructions: '38.77M', cycles: '52.84M', memory: '220.4KiB')]
 	public function benchSpecifyAlwaysFalseIdentical(): int
 	{
 		$exprs = $this->meter->exclude(static function (): array {
@@ -161,8 +161,8 @@ final class TypeSpecifierBench
 	 * Creating the narrowing of an expression: only the true and false contexts need its key.
 	 */
 	#[DataProvider(method: 'contexts')]
-	#[ExpectedFor(dataSet: 'true', instructions: '4.120M', cycles: '5.675M', memory: '79.96KiB')]
-	#[ExpectedFor(dataSet: 'truthy', instructions: '4.120M', cycles: '5.681M', memory: '79.96KiB')]
+	#[ExpectedFor(dataSet: 'true', instructions: '4.280M', cycles: '5.913M', memory: '79.96KiB')]
+	#[ExpectedFor(dataSet: 'truthy', instructions: '4.280M', cycles: '5.916M', memory: '79.96KiB')]
 	public function benchCreate(string $context): int
 	{
 		[$exprs, $type] = $this->meter->exclude(function (): array {

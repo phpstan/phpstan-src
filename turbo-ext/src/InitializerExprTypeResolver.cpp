@@ -2492,7 +2492,7 @@ public:
 					ZVAL_EMPTY_ARRAY(&noArgs);
 					if (UNEXPECTED(!pt_simple_impure_point_resolve(function, variant, NULL, &noArgs, impurePointData))) return zv::Val();
 					if (impurePointData.exists) {
-						zv::Val impurePoint = pt_simple_impure_point_new(impurePointData.identifier, impurePointData.description, impurePointData.certain);
+						zv::Val impurePoint = pt_simple_impure_point_new(impurePointData.identifier, impurePointData.description, impurePointData.certain, Z_ISUNDEF(impurePointData.sideEffects) ? NULL : &impurePointData.sideEffects);
 						zend_string_release(impurePointData.description);
 						if (UNEXPECTED(impurePoint.isUndef())) return zv::Val();
 						impurePointList.push(std::move(impurePoint));

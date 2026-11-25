@@ -461,7 +461,7 @@ public:
 	}
 
 	/* Mirrors isSubjectValueRemembered(): a value computed by a (possibly)
-	 * impure call - the subject itself or any call nested in it - is not
+	 * impure call, an include or an eval - the subject itself or any call nested in it - is not
 	 * remembered; the result carries the impure points of its whole subtree.
 	 * false = pending exception */
 	[[nodiscard]] bool isSubjectValueRemembered(zval *subjectResult, zval *subject, bool &out) const
@@ -488,6 +488,8 @@ public:
 					&& !isA(node, PT_CLASS_METHOD_CALL)
 					&& !isA(node, PT_CLASS_STATIC_CALL)
 					&& !isA(node, PT_CLASS_NULLSAFE_METHOD_CALL)
+					&& !isA(node, PT_CLASS_INCLUDE_EXPR)
+					&& !isA(node, PT_CLASS_EVAL_EXPR)
 				) {
 					if (UNEXPECTED(EG(exception))) return false;
 					continue;
@@ -496,6 +498,16 @@ public:
 				bool certain = false;
 				if (UNEXPECTED(!impurePointIsCertain(impurePoint, certain))) return false;
 				if (!certain && rememberPossiblyImpureFunctionValues()) continue;
+
+				/* a call with effects whose result does not vary, like printf():
+				 * $impurePoint->getSideEffects()?->isDeterministic()->yes() */
+				zval *sideEffects = pt_impure_point_side_effects(Z_OBJ_P(impurePoint));
+				if (UNEXPECTED(sideEffects == NULL)) return false;
+				if (Z_TYPE_P(sideEffects) == IS_OBJECT) {
+					zend_long deterministic = pt_side_effects_is_deterministic(Z_OBJ_P(sideEffects));
+					if (UNEXPECTED(deterministic < 0)) return false;
+					if (deterministic == PT_TRI_YES) continue;
+				}
 
 				out = false;
 				return true;
@@ -590,7 +602,7 @@ public:
 			// off the stored result, whose impure points cover the whole subtree;
 			// a nullsafe call is left to its handler, which narrows through its
 			// plain twin and so reaches this gate as a MethodCall
-			bool isCall = isA(subject, PT_CLASS_FUNC_CALL) || isA(subject, PT_CLASS_METHOD_CALL) || isA(subject, PT_CLASS_STATIC_CALL);
+			bool isCall = isA(subject, PT_CLASS_FUNC_CALL) || isA(subject, PT_CLASS_METHOD_CALL) || isA(subject, PT_CLASS_STATIC_CALL) || isA(subject, PT_CLASS_INCLUDE_EXPR) || isA(subject, PT_CLASS_EVAL_EXPR);
 			if (UNEXPECTED(EG(exception))) return zv::Val();
 			if (isCall) {
 				bool remembered;
@@ -2162,6 +2174,16 @@ zv::Val pt_default_narrowing_helper_create_nullsafe_receiver_only_types(zval *he
 	return pt_type_call(Z_OBJ_P(helper), PT_LC("createnullsafereceiveronlytypes"), 5, argv);
 }
 
+bool pt_default_narrowing_helper_is_subject_value_remembered(zval *helper, zval *subjectResult, zval *subject, bool &out)
+{
+	if (isNativeHelper(helper)) return DefaultNarrowingHelper(Z_OBJ_P(helper)).isSubjectValueRemembered(subjectResult, subject, out);
+	zv::Args argv{subjectResult, subject};
+	zv::Val result = pt_type_call(Z_OBJ_P(helper), PT_LC("issubjectvalueremembered"), 2, argv);
+	if (UNEXPECTED(result.isUndef())) return false;
+	out = zend_is_true(result.raw());
+	return true;
+}
+
 bool pt_default_narrowing_helper_call_may_have_been_skipped(zval *helper, zval *receiverResult, zval *receiverType, zval *context, bool &out)
 {
 	if (receiverResult != NULL && Z_TYPE_P(receiverResult) == IS_NULL) receiverResult = NULL;
@@ -2300,6 +2322,14 @@ PT_MINIT_REGISTRATION(pt_register_default_narrowing_helper)
 		zval *s, *subject, *subjectResult, *type, *context;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::ObjOrNull, zp::Obj, zp::Obj>(execute_data, s, subject, subjectResult, type, context)) RETURN_THROWS();
 		PT_RETURN_VAL(PT_DNH_THIS.createNullsafeReceiverOnlyTypes(s, subject, subjectResult, type, context));
+	});
+
+	cls.method(sigs::isSubjectValueRemembered, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *subjectResult, *subject;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, subjectResult, subject)) RETURN_THROWS();
+		bool out;
+		if (UNEXPECTED(!PT_DNH_THIS.isSubjectValueRemembered(subjectResult, subject, out))) RETURN_THROWS();
+		RETURN_BOOL(out);
 	});
 
 	cls.method(sigs::callMayHaveBeenSkipped, [](INTERNAL_FUNCTION_PARAMETERS) {

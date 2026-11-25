@@ -60,6 +60,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\Rules\Comparison\ImpossibleCheckTypeHelper;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -71,6 +72,7 @@ use PHPStan\Type\ClosureType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
+use PHPStan\Type\DynamicSideEffectsExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -125,6 +127,7 @@ final class FuncCallHandler implements ExprHandler
 		private ClosureProcessor $closureProcessor,
 		private AssignHandler $assignHandler,
 		private ClosureSignatureInference $closureSignatureInference,
+		private DynamicSideEffectsExtensionRegistry $dynamicSideEffectsExtensionRegistry,
 	)
 	{
 	}
@@ -389,13 +392,17 @@ final class FuncCallHandler implements ExprHandler
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
+		// the side effects of this call when an extension describes them,
+		// instead of the ones of the function reflection
+		$callSideEffects = null;
 		if ($functionReflection !== null) {
 			// created after the args were processed - the side-effect flip
 			// parameters (print_r's $return, ...) read an argument's type, which
 			// is only available once its result is stored
-			$impurePoint = SimpleImpurePoint::createFromVariant($functionReflection, $parametersAcceptor, $scope, $expr->getArgs());
+			$callSideEffects = $this->dynamicSideEffectsExtensionRegistry->getFunctionCallSideEffects($functionReflection, $normalizedExpr, $scope);
+			$impurePoint = SimpleImpurePoint::createFromVariant($functionReflection, $parametersAcceptor, $scope, $expr->getArgs(), $callSideEffects);
 			if ($impurePoint !== null) {
-				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
+				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain(), $impurePoint->getSideEffects());
 			}
 		}
 
@@ -451,6 +458,7 @@ final class FuncCallHandler implements ExprHandler
 			$nameResult,
 			$resolvedParametersAcceptor,
 			$specifyContext,
+			$callSideEffects,
 			$argsResult,
 		);
 
@@ -458,9 +466,9 @@ final class FuncCallHandler implements ExprHandler
 		// function call narrows the call itself - the inside-out equivalent of
 		// createForExpr's FuncCall purity gate + tail entry. An impure call narrows to
 		// nothing.
-		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($expr, $normalizedExpr, $nameResult, $beforeScope, $argsResult): SpecifiedTypes {
+		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($expr, $normalizedExpr, $nameResult, $beforeScope, $argsResult, $callSideEffects): SpecifiedTypes {
 			$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
-			if (!$this->isFuncCallNarrowable($s, $expr, $nameResult)) {
+			if (!$this->isFuncCallNarrowable($s, $expr, $nameResult, $callSideEffects)) {
 				return new SpecifiedTypes([], []);
 			}
 
@@ -579,7 +587,7 @@ final class FuncCallHandler implements ExprHandler
 			$throwPoints = array_merge($throwPoints, $byRefThrowPoints);
 		}
 
-		$scope = $this->scopeEffectsHelper->applyCallScopeEffects($nodeScopeResolver, $stmt, $normalizedExpr, $functionReflection, $parametersAcceptor, $argsResult, $scope, $scopeBeforeArgs, $storage, $nodeCallback);
+		$scope = $this->scopeEffectsHelper->applyCallScopeEffects($nodeScopeResolver, $stmt, $normalizedExpr, $functionReflection, $parametersAcceptor, $callSideEffects, $argsResult, $scope, $scopeBeforeArgs, $storage, $nodeCallback);
 
 		// the invoked closure reads and writes its by-ref variables here
 		$byRefFlows = [];
@@ -1058,7 +1066,7 @@ final class FuncCallHandler implements ExprHandler
 	 *
 	 * @param FuncCall $expr
 	 */
-	private function specifyTypes(MutatingScope $scope, Expr $expr, FuncCall $normalizedExpr, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
+	private function specifyTypes(MutatingScope $scope, Expr $expr, FuncCall $normalizedExpr, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, TypeSpecifierContext $context, ?SideEffects $callSideEffects, ?ArgsResult $argsResult = null): SpecifiedTypes
 	{
 		if ($expr->name instanceof Name) {
 			if ($this->reflectionProvider->hasFunction($expr->name, $scope)) {
@@ -1103,7 +1111,7 @@ final class FuncCallHandler implements ExprHandler
 						// evaluated a second time must not read the first call's
 						// truthiness (mirrors the create() gate the old
 						// specifyTypesInCondition() reached for the self key)
-						return ($this->isFuncCallNarrowable($scope, $expr, $nameResult)
+						return ($this->isFuncCallNarrowable($scope, $expr, $nameResult, $callSideEffects)
 							? $specifiedTypes->unionWith($this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context))
 							: $specifiedTypes)
 							->setRootExpr($specifiedTypes->getRootExpr());
@@ -1111,7 +1119,7 @@ final class FuncCallHandler implements ExprHandler
 				}
 			}
 
-			return $this->defaultFuncCallNarrowing($scope, $expr, $nameResult, $context);
+			return $this->defaultFuncCallNarrowing($scope, $expr, $nameResult, $context, $callSideEffects);
 		}
 
 		$specifiedTypes = $this->specifyTypesFromCallableCall($context, $expr, $nameResult, $resolvedParametersAcceptor, $scope);
@@ -1119,7 +1127,7 @@ final class FuncCallHandler implements ExprHandler
 			return $specifiedTypes;
 		}
 
-		return $this->defaultFuncCallNarrowing($scope, $expr, $nameResult, $context);
+		return $this->defaultFuncCallNarrowing($scope, $expr, $nameResult, $context, $callSideEffects);
 	}
 
 	private function specifyTypesFromCallableCall(TypeSpecifierContext $context, FuncCall $call, ?ExpressionResult $nameResult, ?ParametersAcceptor $resolvedParametersAcceptor, MutatingScope $scope): ?SpecifiedTypes
@@ -1173,16 +1181,16 @@ final class FuncCallHandler implements ExprHandler
 	 * this expression through create().
 	 *
 	 */
-	private function defaultFuncCallNarrowing(MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult, TypeSpecifierContext $context): SpecifiedTypes
+	private function defaultFuncCallNarrowing(MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult, TypeSpecifierContext $context, ?SideEffects $callSideEffects): SpecifiedTypes
 	{
-		if (!$this->isFuncCallNarrowable($scope, $expr, $nameResult)) {
+		if (!$this->isFuncCallNarrowable($scope, $expr, $nameResult, $callSideEffects)) {
 			return (new SpecifiedTypes([], []))->setRootExpr($expr);
 		}
 
 		return $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
 	}
 
-	private function isFuncCallNarrowable(MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult): bool
+	private function isFuncCallNarrowable(MutatingScope $scope, FuncCall $expr, ?ExpressionResult $nameResult, ?SideEffects $callSideEffects): bool
 	{
 		if ($expr->name instanceof Name) {
 			if (!$this->reflectionProvider->hasFunction($expr->name, $scope)) {
@@ -1190,12 +1198,12 @@ final class FuncCallHandler implements ExprHandler
 				return false;
 			}
 
-			$hasSideEffects = $this->reflectionProvider->getFunction($expr->name, $scope)->hasSideEffects();
-			if ($hasSideEffects->yes()) {
+			$resultVaries = ($callSideEffects ?? $this->reflectionProvider->getFunction($expr->name, $scope)->getSideEffects())->isDeterministic()->negate();
+			if ($resultVaries->yes()) {
 				return false;
 			}
 
-			return $this->rememberPossiblyImpureFunctionValues || $hasSideEffects->no();
+			return $this->rememberPossiblyImpureFunctionValues || $resultVaries->no();
 		}
 
 		if ($nameResult === null) {

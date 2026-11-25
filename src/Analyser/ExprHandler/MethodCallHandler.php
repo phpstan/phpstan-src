@@ -43,8 +43,10 @@ use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\DynamicSideEffectsExtensionRegistry;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -80,6 +82,7 @@ final class MethodCallHandler implements ExprHandler
 		private EarlyTerminatingCallHelper $earlyTerminatingHelper,
 		private ArgumentsHandler $argumentsHandler,
 		private PreservedPropertiesResolver $preservedPropertiesResolver,
+		private DynamicSideEffectsExtensionRegistry $dynamicSideEffectsExtensionRegistry,
 	)
 	{
 	}
@@ -192,13 +195,17 @@ final class MethodCallHandler implements ExprHandler
 		$scope = $argsResult->getScope();
 		$this->argumentsHandler->processDroppedArgs($nodeScopeResolver, $stmt, $expr, $normalizedExpr, $scope, $storage, $context);
 
+		// the side effects of this call when an extension describes them,
+		// instead of the ones of the method reflection
+		$callSideEffects = null;
 		if ($methodReflection !== null) {
 			// created after the args were processed - the pure-unless-callable-
 			// is-impure parameters read an argument's type, which is only
 			// available once its result is stored
-			$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor, $scope, $expr->getArgs());
+			$callSideEffects = $this->dynamicSideEffectsExtensionRegistry->getMethodCallSideEffects($methodReflection, $normalizedExpr, $scope);
+			$impurePoint = SimpleImpurePoint::createFromVariant($methodReflection, $parametersAcceptor, $scope, $expr->getArgs(), $callSideEffects);
 			if ($impurePoint !== null) {
-				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain());
+				$impurePoints[] = new ImpurePoint($scopeBeforeArgs, $expr, $impurePoint->getIdentifier(), $impurePoint->getDescription(), $impurePoint->isCertain(), $impurePoint->getSideEffects());
 			}
 		} else {
 			$impurePoints[] = new ImpurePoint(
@@ -235,15 +242,16 @@ final class MethodCallHandler implements ExprHandler
 			$resolvedParametersAcceptor,
 			$walkMethodReflection,
 			$specifyContext,
+			$callSideEffects,
 			$argsResult,
 		);
 
 		// A type constraint on a (narrowable, i.e. non-side-effecting) method call
 		// narrows the call itself - the inside-out equivalent of createForExpr's
 		// MethodCall purity gate + tail entry. An impure call narrows to nothing.
-		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($expr, $varResult, $beforeScope): SpecifiedTypes {
+		$createTypesCallback = function (Type $type, TypeSpecifierContext $createContext, bool $nativeTypesPromoted) use ($expr, $varResult, $beforeScope, $callSideEffects): SpecifiedTypes {
 			$s = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
-			if (!$this->isMethodCallNarrowable($s, $expr, $varResult)) {
+			if (!$this->isMethodCallNarrowable($s, $expr, $varResult, $callSideEffects)) {
 				// the call's value is not remembered, but a nullsafe receiver
 				// chain still narrows not-null
 				$resultStorage = $s->getCurrentExpressionResultStorage();
@@ -320,11 +328,13 @@ final class MethodCallHandler implements ExprHandler
 				$throwPoints[] = $methodThrowPoint;
 			}
 
-			$hasSideEffects = $methodReflection->hasSideEffects();
+			// the receiver's state: the object itself, or the static properties of its class
+			$sideEffects = $callSideEffects ?? $methodReflection->getSideEffects();
+			$writesReceiver = $sideEffects->has(SideEffects::WRITES_THIS)->or($sideEffects->has(SideEffects::WRITES_GLOBAL));
 			if (
 				$methodReflection->getName() === '__construct'
-				|| $hasSideEffects->yes()
-				|| (!$this->rememberPossiblyImpureFunctionValues && $hasSideEffects->maybe())
+				|| $writesReceiver->yes()
+				|| (!$this->rememberPossiblyImpureFunctionValues && $writesReceiver->maybe())
 			) {
 				$nodeScopeResolver->callNodeCallback($nodeCallback, new InvalidateExprNode($normalizedExpr->var), $scope, $storage);
 				$scope = $scope->invalidateExpression(
@@ -334,13 +344,14 @@ final class MethodCallHandler implements ExprHandler
 					$methodReflection->isStatic(),
 					$this->preservedPropertiesResolver->resolve($expr),
 				);
-			} elseif (!$hasSideEffects->no()) {
+			} elseif (!$writesReceiver->no()) {
 				$scope = $this->preservedPropertiesResolver->forgetWrittenProperties($scope, $expr, $methodReflection);
 			}
 			$scope = $this->preservedPropertiesResolver->applyCalledMethodExitScope($scope, $expr, $methodReflection);
 			if (!$methodReflection->isStatic()) {
 				$selfOutType = $methodReflection->getSelfOutType();
-				if ($selfOutType !== null) {
+				// an impure call returns another object next time, which keeps its type
+				if ($selfOutType !== null && $this->defaultNarrowingHelper->isSubjectValueRemembered($varResult, $normalizedExpr->var)) {
 					$acceptorForGenerics = $resolvedParametersAcceptor ?? $parametersAcceptor;
 					$scope = $scope->assignExpression(
 						$normalizedExpr->var,
@@ -355,11 +366,16 @@ final class MethodCallHandler implements ExprHandler
 			$scope = $scope->invalidateExpression($normalizedExpr->var, true);
 			$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 		}
-		if (
+		if ($callSideEffects !== null) {
+			// a call an extension describes forgets the global state it lists, like a built-in
+			$scope = $scope->invalidateGlobalStateWrittenBy($callSideEffects);
+		} elseif (
 			$methodReflection === null
 			|| (!$methodReflection->getDeclaringClass()->isBuiltin() && !$methodReflection->hasSideEffects()->no())
 		) {
-			$scope = $scope->invalidateVolatileExpressions();
+			$scope = $scope->invalidateVolatileExpressions($methodReflection !== null && $methodReflection->hasSideEffects()->yes());
+		} elseif ($methodReflection->getDeclaringClass()->isBuiltin()) {
+			$scope = $scope->invalidateGlobalStateWrittenBy($methodReflection->getSideEffects());
 		}
 
 		$hasYield = $hasYield || $argsResult->hasYield();
@@ -486,10 +502,10 @@ final class MethodCallHandler implements ExprHandler
 	 * @param MethodCall $expr
 	 * @param MethodCall $normalizedExpr
 	 */
-	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ExpressionResult $varResult, ?ParametersAcceptor $resolvedParametersAcceptor, ?ExtendedMethodReflection $walkMethodReflection, TypeSpecifierContext $context, ?ArgsResult $argsResult = null): SpecifiedTypes
+	private function specifyTypes(MutatingScope $scope, Expr $expr, Expr $normalizedExpr, ExpressionResult $varResult, ?ParametersAcceptor $resolvedParametersAcceptor, ?ExtendedMethodReflection $walkMethodReflection, TypeSpecifierContext $context, ?SideEffects $callSideEffects, ?ArgsResult $argsResult = null): SpecifiedTypes
 	{
 		if (!$expr->name instanceof Identifier) {
-			return $this->defaultMethodCallNarrowing($scope, $expr, $varResult, $context);
+			return $this->defaultMethodCallNarrowing($scope, $expr, $varResult, $context, $callSideEffects);
 		}
 
 		// the var was processed during processExpr; read its already-computed
@@ -558,13 +574,13 @@ final class MethodCallHandler implements ExprHandler
 					// default narrowing - an impure method evaluated a second time
 					// must not read the first call's truthiness
 					return $specifiedTypes
-						->unionWith($this->defaultMethodCallNarrowing($scope, $expr, $varResult, $context))
+						->unionWith($this->defaultMethodCallNarrowing($scope, $expr, $varResult, $context, $callSideEffects))
 						->setRootExpr($specifiedTypes->getRootExpr());
 				}
 			}
 		}
 
-		return $this->defaultMethodCallNarrowing($scope, $expr, $varResult, $context);
+		return $this->defaultMethodCallNarrowing($scope, $expr, $varResult, $context, $callSideEffects);
 	}
 
 	/**
@@ -577,7 +593,7 @@ final class MethodCallHandler implements ExprHandler
 	 *
 	 * @param MethodCall $expr
 	 */
-	private function defaultMethodCallNarrowing(MutatingScope $scope, Expr $expr, ExpressionResult $varResult, TypeSpecifierContext $context): SpecifiedTypes
+	private function defaultMethodCallNarrowing(MutatingScope $scope, Expr $expr, ExpressionResult $varResult, TypeSpecifierContext $context, ?SideEffects $callSideEffects): SpecifiedTypes
 	{
 		// a truthy chain containing a nullsafe narrows its receivers not-null
 		// regardless of the call's own narrowability - the old-world truthy
@@ -591,7 +607,7 @@ final class MethodCallHandler implements ExprHandler
 			}
 		}
 
-		if (!$this->isMethodCallNarrowable($scope, $expr, $varResult)) {
+		if (!$this->isMethodCallNarrowable($scope, $expr, $varResult, $callSideEffects)) {
 			$base = (new SpecifiedTypes([], []))->setRootExpr($expr);
 
 			return $nullsafeFan !== null ? $base->unionWith($nullsafeFan)->setRootExpr($expr) : $base;
@@ -603,7 +619,7 @@ final class MethodCallHandler implements ExprHandler
 	}
 
 	/** @param MethodCall $expr */
-	private function isMethodCallNarrowable(MutatingScope $scope, Expr $expr, ExpressionResult $varResult): bool
+	private function isMethodCallNarrowable(MutatingScope $scope, Expr $expr, ExpressionResult $varResult, ?SideEffects $callSideEffects): bool
 	{
 		if (!$expr->name instanceof Identifier) {
 			return true;
@@ -615,12 +631,12 @@ final class MethodCallHandler implements ExprHandler
 			return false;
 		}
 
-		$hasSideEffects = $methodReflection->hasSideEffects();
-		if ($hasSideEffects->yes()) {
+		$resultVaries = ($callSideEffects ?? $methodReflection->getSideEffects())->isDeterministic()->negate();
+		if ($resultVaries->yes()) {
 			return false;
 		}
 
-		return $this->rememberPossiblyImpureFunctionValues || $hasSideEffects->no();
+		return $this->rememberPossiblyImpureFunctionValues || $resultVaries->no();
 	}
 
 }

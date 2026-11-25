@@ -223,7 +223,6 @@ template <size_t N>
 	return true;
 }
 
-const char *const pt_fcse_json[2] = { "json_encode", "json_decode" };
 const char *const pt_fcse_file_put_contents[1] = { "file_put_contents" };
 const char *const pt_fcse_pop_shift[2] = { "array_pop", "array_shift" };
 const char *const pt_fcse_push_unshift[2] = { "array_push", "array_unshift" };
@@ -233,7 +232,6 @@ const char *const pt_fcse_array_splice[1] = { "array_splice" };
 const char *const pt_fcse_sort[3] = { "sort", "rsort", "usort" };
 const char *const pt_fcse_key_sort[8] = { "natcasesort", "natsort", "arsort", "asort", "ksort", "krsort", "uasort", "uksort" };
 const char *const pt_fcse_extract[1] = { "extract" };
-const char *const pt_fcse_clearstatcache[2] = { "clearstatcache", "unlink" };
 
 /* static fn (Type $type): Type => $captured — captures: the type */
 void constantTypeCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
@@ -293,8 +291,8 @@ public:
 	}
 
 	/* Mirrors applyCallScopeEffects(); $functionReflection /
-	 * $parametersAcceptor NULL for null. */
-	zv::Val applyCallScopeEffects(zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *argsResult, zval *scopeIn, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback) const
+	 * $parametersAcceptor / $callSideEffects NULL for null. */
+	zv::Val applyCallScopeEffects(zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *callSideEffects, zval *argsResult, zval *scopeIn, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback) const
 	{
 		zv::Val scope = zv::Val::copyOf(zv::Ref(scopeIn));
 
@@ -335,16 +333,6 @@ public:
 		}
 
 		bool matches;
-		if (UNEXPECTED(!nameIsOneOf<2>(functionReflection, pt_fcse_json, matches))) return zv::Val();
-		if (matches) {
-			zval empty;
-			ZVAL_EMPTY_ARRAY(&empty);
-			if (UNEXPECTED(!invalidateFuncCall(scope, PT_CLASS_NAME, PT_LC("json_last_error"), &empty))) return zv::Val();
-			if (UNEXPECTED(!invalidateFuncCall(scope, PT_CLASS_FULLY_QUALIFIED, PT_LC("json_last_error"), &empty))) return zv::Val();
-			if (UNEXPECTED(!invalidateFuncCall(scope, PT_CLASS_NAME, PT_LC("json_last_error_msg"), &empty))) return zv::Val();
-			if (UNEXPECTED(!invalidateFuncCall(scope, PT_CLASS_FULLY_QUALIFIED, PT_LC("json_last_error_msg"), &empty))) return zv::Val();
-		}
-
 		if (UNEXPECTED(!nameIsOneOf<1>(functionReflection, pt_fcse_file_put_contents, matches))) return zv::Val();
 		if (matches) {
 			zv::Val args = callArgs(normalizedExpr);
@@ -481,27 +469,6 @@ public:
 		if (UNEXPECTED(!nameIsOneOf<1>(functionReflection, pt_fcse_extract, matches))) return zv::Val();
 		if (matches && UNEXPECTED(!applyExtract(scope, normalizedExpr, argsResult))) return zv::Val();
 
-		if (UNEXPECTED(!nameIsOneOf<2>(functionReflection, pt_fcse_clearstatcache, matches))) return zv::Val();
-		if (matches) {
-			zv::Val next = pt_mutating_scope_after_clearstatcache_call(Z_OBJ_P(scope.raw()));
-			if (UNEXPECTED(next.isUndef())) return zv::Val();
-			scope = std::move(next);
-		}
-
-		if (functionReflection != NULL) {
-			zv::Val nameHold;
-			zend_string *name = functionName(functionReflection, nameHold);
-			if (UNEXPECTED(name == NULL)) return zv::Val();
-			if (ZSTR_LEN(name) >= sizeof("openssl") - 1 && memcmp(ZSTR_VAL(name), "openssl", sizeof("openssl") - 1) == 0) {
-				zv::Val sslNameHold;
-				zend_string *sslName = functionName(functionReflection, sslNameHold);
-				if (UNEXPECTED(sslName == NULL)) return zv::Val();
-				zv::Val next = pt_mutating_scope_after_open_ssl_call(Z_OBJ_P(scope.raw()), sslName);
-				if (UNEXPECTED(next.isUndef())) return zv::Val();
-				scope = std::move(next);
-			}
-		}
-
 		zend_long outputBufferDelta = 0;
 		if (functionReflection != NULL) {
 			zval *outputBufferHelper = OBJ_PROP_NUM(self, slots::outputBufferHelper);
@@ -529,9 +496,17 @@ public:
 				pureCallable = countOf(impurePoints.raw()) == 0;
 			}
 		}
+		if (callSideEffects != NULL) {
+			/* a call an extension describes forgets the global state it lists, like a built-in */
+			zv::Val next = pt_mutating_scope_invalidate_global_state_written_by(Z_OBJ_P(scope.raw()), callSideEffects);
+			if (UNEXPECTED(next.isUndef())) return zv::Val();
+			return next;
+		}
 		bool invalidateVolatile;
+		/* a call that only may have side effects keeps the results of global state getters */
+		bool globalStateReads = false;
+		bool isBuiltin = false;
 		if (functionReflection != NULL) {
-			bool isBuiltin;
 			if (UNEXPECTED(!pt_function_reflection_is_builtin(functionReflection, isBuiltin))) return zv::Val();
 			invalidateVolatile = false;
 			if (!isBuiltin) {
@@ -541,12 +516,20 @@ public:
 				zend_long sideEffectsValue = trinaryOf(sideEffects, "no");
 				if (UNEXPECTED(sideEffectsValue < 0)) return zv::Val();
 				invalidateVolatile = sideEffectsValue != PT_TRI_NO;
+				globalStateReads = sideEffectsValue == PT_TRI_YES;
 			}
 		} else {
 			invalidateVolatile = !pureCallable;
 		}
 		if (invalidateVolatile) {
-			zv::Val next = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(scope.raw()));
+			zv::Val next = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(scope.raw()), globalStateReads);
+			if (UNEXPECTED(next.isUndef())) return zv::Val();
+			scope = std::move(next);
+		} else if (functionReflection != NULL && isBuiltin) {
+			/* a built-in forgets global state only when it lists writes-global, not when it is unclassified */
+			zv::Val sideEffects = pt_function_reflection_side_effects(functionReflection);
+			if (UNEXPECTED(sideEffects.isUndef())) return zv::Val();
+			zv::Val next = pt_mutating_scope_invalidate_global_state_written_by(Z_OBJ_P(scope.raw()), sideEffects.raw());
 			if (UNEXPECTED(next.isUndef())) return zv::Val();
 			scope = std::move(next);
 		}
@@ -1372,15 +1355,16 @@ zv::Val pt_func_call_scope_effects_helper_apply_array_walk_result(zval *helper, 
 	return pt_type_call(Z_OBJ_P(helper), PT_LC("applyarraywalkresult"), 8, argv);
 }
 
-zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *argsResult, zval *scope, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback)
+zv::Val pt_func_call_scope_effects_helper_apply_call_scope_effects(zval *helper, zval *nodeScopeResolver, zval *stmt, zval *normalizedExpr, zval *functionReflection, zval *parametersAcceptor, zval *callSideEffects, zval *argsResult, zval *scope, zval *scopeBeforeArgs, zval *storage, zval *nodeCallback)
 {
 	if (functionReflection != NULL && Z_TYPE_P(functionReflection) == IS_NULL) functionReflection = NULL;
 	if (parametersAcceptor != NULL && Z_TYPE_P(parametersAcceptor) == IS_NULL) parametersAcceptor = NULL;
-	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_func_call_scope_effects_helper)) return FuncCallScopeEffectsHelper(Z_OBJ_P(helper)).applyCallScopeEffects(nodeScopeResolver, stmt, normalizedExpr, functionReflection, parametersAcceptor, argsResult, scope, scopeBeforeArgs, storage, nodeCallback);
+	if (callSideEffects != NULL && Z_TYPE_P(callSideEffects) == IS_NULL) callSideEffects = NULL;
+	if (EXPECTED(Z_OBJCE_P(helper) == pt_ce_func_call_scope_effects_helper)) return FuncCallScopeEffectsHelper(Z_OBJ_P(helper)).applyCallScopeEffects(nodeScopeResolver, stmt, normalizedExpr, functionReflection, parametersAcceptor, callSideEffects, argsResult, scope, scopeBeforeArgs, storage, nodeCallback);
 	zval null;
 	ZVAL_NULL(&null);
-	zv::Args argv{nodeScopeResolver, stmt, normalizedExpr, functionReflection != NULL ? functionReflection : &null, parametersAcceptor != NULL ? parametersAcceptor : &null, argsResult, scope, scopeBeforeArgs, storage, nodeCallback};
-	return pt_type_call(Z_OBJ_P(helper), PT_LC("applycallscopeeffects"), 10, argv);
+	zv::Args argv{nodeScopeResolver, stmt, normalizedExpr, functionReflection != NULL ? functionReflection : &null, parametersAcceptor != NULL ? parametersAcceptor : &null, callSideEffects != NULL ? callSideEffects : &null, argsResult, scope, scopeBeforeArgs, storage, nodeCallback};
+	return pt_type_call(Z_OBJ_P(helper), PT_LC("applycallscopeeffects"), 11, argv);
 }
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -1417,20 +1401,21 @@ PT_MINIT_REGISTRATION(pt_register_func_call_scope_effects_helper)
 	});
 
 	cls.method(sigs::applyCallScopeEffects, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *nodeScopeResolver, *stmt, *normalizedExpr, *functionReflection, *parametersAcceptor, *argsResult, *scope, *scopeBeforeArgs, *storage, *nodeCallback;
-		ZEND_PARSE_PARAMETERS_START(10, 10)
+		zval *nodeScopeResolver, *stmt, *normalizedExpr, *functionReflection, *parametersAcceptor, *callSideEffects, *argsResult, *scope, *scopeBeforeArgs, *storage, *nodeCallback;
+		ZEND_PARSE_PARAMETERS_START(11, 11)
 			Z_PARAM_OBJECT(nodeScopeResolver)
 			Z_PARAM_OBJECT(stmt)
 			Z_PARAM_OBJECT(normalizedExpr)
 			Z_PARAM_OBJECT_OR_NULL(functionReflection)
 			Z_PARAM_OBJECT_OR_NULL(parametersAcceptor)
+			Z_PARAM_OBJECT_OR_NULL(callSideEffects)
 			Z_PARAM_OBJECT(argsResult)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(scopeBeforeArgs)
 			Z_PARAM_OBJECT(storage)
 			Z_PARAM_ZVAL(nodeCallback)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(FuncCallScopeEffectsHelper(Z_OBJ_P(ZEND_THIS)).applyCallScopeEffects(nodeScopeResolver, stmt, normalizedExpr, functionReflection, parametersAcceptor, argsResult, scope, scopeBeforeArgs, storage, nodeCallback));
+		PT_RETURN_VAL(FuncCallScopeEffectsHelper(Z_OBJ_P(ZEND_THIS)).applyCallScopeEffects(nodeScopeResolver, stmt, normalizedExpr, functionReflection, parametersAcceptor, callSideEffects, argsResult, scope, scopeBeforeArgs, storage, nodeCallback));
 	});
 
 	cls.shadow(&pt_ce_func_call_scope_effects_helper);

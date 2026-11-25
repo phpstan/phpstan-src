@@ -103,56 +103,6 @@ zend_long trinaryOf(zv::Val value)
 	return pt_type_trinary_value(value.raw());
 }
 
-/* private const SIDE_EFFECT_FLIP_PARAMETERS = [functionName => [name, pos, testName]] */
-struct FlipParameter
-{
-	const char *function;
-	const char *name;
-	zend_long position;
-	const char *testName;
-};
-
-const FlipParameter flipParameters[] = {
-	{"print_r", "return", 1, "isTruthy"},
-	{"var_export", "return", 1, "isTruthy"},
-	{"highlight_string", "return", 1, "isTruthy"},
-};
-
-const FlipParameter *flipParameterOf(zend_string *functionName)
-{
-	for (const FlipParameter &flip : flipParameters) {
-		if (zend_string_equals_cstr(functionName, flip.function, strlen(flip.function))) return &flip;
-	}
-	return NULL;
-}
-
-void flipParametersConstant(zval *out)
-{
-	HashTable *table = (HashTable *) pemalloc(sizeof(HashTable), 1);
-	zend_hash_init(table, 3, NULL, NULL, 1);
-	for (const FlipParameter &flip : flipParameters) {
-		HashTable *entry = (HashTable *) pemalloc(sizeof(HashTable), 1);
-		zend_hash_init(entry, 3, NULL, NULL, 1);
-		zend_hash_real_init_packed(entry);
-		zval value;
-		ZVAL_INTERNED_STR(&value, zend_string_init_interned(flip.name, strlen(flip.name), 1));
-		zend_hash_next_index_insert(entry, &value);
-		ZVAL_LONG(&value, flip.position);
-		zend_hash_next_index_insert(entry, &value);
-		ZVAL_INTERNED_STR(&value, zend_string_init_interned(flip.testName, strlen(flip.testName), 1));
-		zend_hash_next_index_insert(entry, &value);
-		GC_ADD_FLAGS(entry, IS_ARRAY_IMMUTABLE);
-		GC_SET_REFCOUNT(entry, 2);
-		ZVAL_ARR(&value, entry);
-		Z_TYPE_INFO(value) = IS_ARRAY;
-		zend_hash_str_add_new(table, flip.function, strlen(flip.function), &value);
-	}
-	GC_ADD_FLAGS(table, IS_ARRAY_IMMUTABLE);
-	GC_SET_REFCOUNT(table, 2);
-	ZVAL_ARR(out, table);
-	Z_TYPE_INFO_P(out) = IS_ARRAY;
-}
-
 } // namespace
 
 namespace phpstanturbo {
@@ -165,8 +115,9 @@ public:
 	explicit SimpleImpurePoint(zend_object *self) : self(self) {}
 
 	/* __construct(private string $identifier, private string $description,
-	 * private bool $certain) */
-	void construct(zend_string *identifier, zend_string *description, bool certain) const
+	 * private bool $certain, private ?SideEffects $sideEffects = null);
+	 * $sideEffects NULL for null */
+	void construct(zend_string *identifier, zend_string *description, bool certain, zval *sideEffects) const
 	{
 		zval value;
 		ZVAL_STR(&value, identifier);
@@ -175,29 +126,59 @@ public:
 		pt_write_slot(self, slots::description, &value);
 		ZVAL_BOOL(&value, certain);
 		pt_write_slot(self, slots::certain, &value);
+		if (sideEffects != NULL) {
+			pt_write_slot(self, slots::sideEffects, sideEffects);
+		} else {
+			ZVAL_NULL(&value);
+			pt_write_slot(self, slots::sideEffects, &value);
+		}
 	}
 
 	/* new self(...); UNDEF = pending exception */
-	static zv::Val create(zend_string *identifier, zend_string *description, bool certain)
+	static zv::Val create(zend_string *identifier, zend_string *description, bool certain, zval *sideEffects)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_simple_impure_point) != SUCCESS)) return zv::Val();
-		SimpleImpurePoint(Z_OBJ(object)).construct(identifier, description, certain);
+		SimpleImpurePoint(Z_OBJ(object)).construct(identifier, description, certain, sideEffects);
 		return zv::Val::adopt(object);
 	}
 
 	zv::Val getIdentifier() const { return read(slots::identifier, "identifier"); }
 	zv::Val getDescription() const { return read(slots::description, "description"); }
 	zv::Val isCertain() const { return read(slots::certain, "certain"); }
+	zv::Val getSideEffects() const { return read(slots::sideEffects, "sideEffects"); }
 
 	/* Mirrors createFromVariant() up to the constructor call: out.exists
 	 * false for the twin's null; false = pending exception. $variant /
-	 * $scope NULL or IS_NULL for null. */
-	[[nodiscard]] static bool resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out)
+	 * $scope NULL or IS_NULL for null, $callSideEffects NULL or IS_NULL for
+	 * no side effects an extension described. */
+	[[nodiscard]] static bool resolve(zval *function, zval *variant, zval *scope, zval *args, zval *callSideEffects, pt_simple_impure_point_data &out)
 	{
 		out.exists = false;
+		zval_ptr_dtor(&out.sideEffects);
+		ZVAL_UNDEF(&out.sideEffects);
 		if (variant != NULL && Z_TYPE_P(variant) == IS_NULL) variant = NULL;
 		if (scope != NULL && Z_TYPE_P(scope) == IS_NULL) scope = NULL;
+		if (callSideEffects != NULL && Z_TYPE_P(callSideEffects) == IS_NULL) callSideEffects = NULL;
+
+		if (callSideEffects != NULL) {
+			/* $verdict = $scope !== null && $variant !== null ? self::resolveConditionalPurityVerdict(...) : null */
+			bool hasVerdict = false;
+			zend_long verdict = PT_TRI_YES;
+			if (scope != NULL && variant != NULL && UNEXPECTED(!resolveConditionalVerdict(variant, scope, args, hasVerdict, verdict))) return false;
+			if (UNEXPECTED(Z_TYPE_P(callSideEffects) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getEffectNames() on %s", zend_zval_value_name(callSideEffects));
+				return false;
+			}
+			/* the effects of the call itself, without what the flagged parameters bring in */
+			zend_long own = pt_side_effects_own(Z_OBJ_P(callSideEffects));
+			if (UNEXPECTED(own < 0)) return false;
+			bool pureByVerdict = !hasVerdict || verdict == PT_TRI_YES;
+			if (own == PT_TRI_NO && pureByVerdict) return true;
+			bool certain = own == PT_TRI_YES || (hasVerdict && verdict == PT_TRI_NO);
+			if (pureByVerdict) ZVAL_COPY(&out.sideEffects, callSideEffects);
+			return describe(function, certain, out);
+		}
 
 		zend_long hasSideEffects = trinaryOf(pt_extended_method_reflection_call(function, PT_MR_HAS_SIDE_EFFECTS));
 		if (UNEXPECTED(hasSideEffects < 0)) return false;
@@ -206,17 +187,39 @@ public:
 		zend_long isPure = trinaryOf(pt_extended_method_reflection_call(function, PT_MR_IS_PURE));
 		if (UNEXPECTED(isPure < 0)) return false;
 		bool certain = isPure == PT_TRI_NO;
+		// a void function does something, unless all it does is call the callables it is given
+		bool hasCalledParameters = false;
 		if (variant != NULL && !certain) {
+			zv::Val functionSideEffects = pt_extended_method_reflection_call(function, PT_MR_GET_SIDE_EFFECTS);
+			if (UNEXPECTED(functionSideEffects.isUndef())) return false;
+			if (UNEXPECTED(Z_TYPE_P(functionSideEffects.raw()) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getCalledParameters() on %s", zend_zval_value_name(functionSideEffects.raw()));
+				return false;
+			}
+			int called = pt_side_effects_has_called_parameters(Z_OBJ_P(functionSideEffects.raw()));
+			if (UNEXPECTED(called < 0)) return false;
+			hasCalledParameters = called == 1;
+		}
+		if (variant != NULL && !certain && !hasCalledParameters) {
 			zv::Val returnType = variantReturnType(variant);
 			if (UNEXPECTED(returnType.isUndef())) return false;
 			zend_long isVoid = pt_type_op_trinary(Z_OBJ_P(returnType.raw()), PT_OP_IS_VOID, 0, NULL);
 			if (UNEXPECTED(isVoid < 0)) return false;
 			certain = isVoid == PT_TRI_YES;
 		}
+		/* !$certain && hasOnly([WRITES_ARGS])->no() && !self::onlyLeavesErrors($function->getSideEffects()) */
+		if (!certain) {
+			zv::Val ownSideEffects = pt_extended_method_reflection_call(function, PT_MR_GET_SIDE_EFFECTS);
+			if (UNEXPECTED(ownSideEffects.isUndef())) return false;
+			int other = pt_side_effects_has_other_than_args_and_error_writes(ownSideEffects.raw());
+			if (UNEXPECTED(other < 0)) return false;
+			if (other == 1) certain = true;
+		}
 
+		/* the twin's $verdict !== null */
+		bool hasVerdict = false;
 		if (!certain && scope != NULL && variant != NULL) {
 			zend_long verdict = PT_TRI_YES;
-			bool hasVerdict = false;
 			if (UNEXPECTED(!resolveConditionalVerdict(variant, scope, args, hasVerdict, verdict))) return false;
 			if (hasVerdict) {
 				if (verdict == PT_TRI_YES) return true;
@@ -224,22 +227,22 @@ public:
 			}
 		}
 
+		/* $verdict === null ? $function->getSideEffects() : null */
+		if (!hasVerdict) {
+			zv::Val sideEffects = pt_extended_method_reflection_call(function, PT_MR_GET_SIDE_EFFECTS);
+			if (UNEXPECTED(sideEffects.isUndef())) return false;
+			out.sideEffects = sideEffects.take();
+		}
+		return describe(function, certain, out);
+	}
+
+	/* Mirrors createForFunction() up to the constructor call, with
+	 * out.sideEffects already set; false = pending exception */
+	[[nodiscard]] static bool describe(zval *function, bool certain, pt_simple_impure_point_data &out)
+	{
 		zend_class_entry *functionReflectionCe = pt_class(PT_CLASS_FUNCTION_REFLECTION);
 		if (UNEXPECTED(functionReflectionCe == NULL)) return false;
 		if (instanceof_function(Z_OBJCE_P(function), functionReflectionCe)) {
-			/* isset(self::SIDE_EFFECT_FLIP_PARAMETERS[$function->getName()]) && $scope !== null */
-			zv::Val flipName = pt_extended_method_reflection_call(function, PT_MR_GET_NAME);
-			if (UNEXPECTED(flipName.isUndef())) return false;
-			const FlipParameter *flip = Z_TYPE_P(flipName.raw()) == IS_STRING ? flipParameterOf(Z_STR_P(flipName.raw())) : NULL;
-			if (flip != NULL && scope != NULL) {
-				/* [$flipParameterName, ...] = self::SIDE_EFFECT_FLIP_PARAMETERS[$function->getName()] */
-				zv::Val again = pt_extended_method_reflection_call(function, PT_MR_GET_NAME);
-				if (UNEXPECTED(again.isUndef())) return false;
-				bool sideEffectFlipped = false;
-				if (UNEXPECTED(!isSideEffectFlipped(flip, scope, args, sideEffectFlipped))) return false;
-				if (sideEffectFlipped) return true;
-			}
-
 			zv::Val name = pt_extended_method_reflection_call(function, PT_MR_GET_NAME);
 			if (UNEXPECTED(name.isUndef())) return false;
 			smart_str description = {NULL, 0};
@@ -315,7 +318,7 @@ public:
 				if (UNEXPECTED(identifier.isUndef())) return zv::Val();
 				zv::Val description = point.getDescription();
 				if (UNEXPECTED(description.isUndef())) return zv::Val();
-				mapped = create(Z_STR_P(identifier.raw()), Z_STR_P(description.raw()), true);
+				mapped = create(Z_STR_P(identifier.raw()), Z_STR_P(description.raw()), true, NULL);
 				if (UNEXPECTED(mapped.isUndef())) return zv::Val();
 			}
 			zend_string *key = entry.stringKeyOrNull();
@@ -360,59 +363,85 @@ public:
 				verdict = PT_TRI_YES;
 			}
 
-			zval *matchedArg = NULL;
+			bool matchedAny = false;
 			bool hasUnpackedArg = false;
-			if (UNEXPECTED(!matchArg(args, parameter, parameterEntry, declaredParameterNames.table(), matchedArg, hasUnpackedArg))) return false;
+			bool matched = matchArgs(args, parameter, parameterEntry, declaredParameterNames.table(), matchedAny, hasUnpackedArg, [&](zval *matchedArg) -> bool {
+				return matchedArgVerdict(matchedArg, parameter, scope, verdict);
+			});
+			if (UNEXPECTED(!matched)) return false;
 
-			if (matchedArg == NULL) {
-				if (hasUnpackedArg) {
+			/* $hasUnpackedArg && ($matchedArgs === [] || $parameter->isVariadic()) */
+			if (hasUnpackedArg) {
+				bool isVariadic = false;
+				if (matchedAny && UNEXPECTED(!pt_parameter_reflection_bool(parameter, PT_PR_IS_VARIADIC, isVariadic))) return false;
+				if (!matchedAny || isVariadic) {
 					verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
 				}
-				continue;
-			}
-
-			zval *argValue = nodeProperty(pt_sip_arg_value_site, matchedArg, PT_LC("value"));
-			if (UNEXPECTED(EG(exception))) return false;
-			if (UNEXPECTED(Z_TYPE_P(scope) != IS_OBJECT)) {
-				zend_throw_error(NULL, "Call to a member function getType() on %s", zend_zval_value_name(scope));
-				return false;
-			}
-			zv::Val argType = pt_mutating_scope_get_type(Z_OBJ_P(scope), argValue);
-			if (UNEXPECTED(argType.isUndef())) return false;
-			zend_long isNull = pt_type_op_trinary(Z_OBJ_P(argType.raw()), PT_OP_IS_NULL, 0, NULL);
-			if (UNEXPECTED(isNull < 0)) return false;
-			if (isNull == PT_TRI_YES) continue;
-
-			zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(argType.raw()), PT_OP_IS_CALLABLE, 0, NULL);
-			if (UNEXPECTED(isCallable < 0)) return false;
-			if (isCallable != PT_TRI_YES) {
-				verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
-				continue;
-			}
-
-			zv::Val acceptors = pt_type_call(Z_OBJ_P(argType.raw()), PT_LC("getcallableparametersacceptors"), 1, scope);
-			if (UNEXPECTED(acceptors.isUndef())) return false;
-			if (UNEXPECTED(Z_TYPE_P(acceptors.raw()) != IS_ARRAY)) {
-				zend_type_error("count(): Argument #1 ($value) must be of type Countable|array, %s given", zend_zval_value_name(acceptors.raw()));
-				return false;
-			}
-			if (zend_hash_num_elements(Z_ARRVAL_P(acceptors.raw())) == 0) {
-				verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
-				continue;
-			}
-
-			for (auto acceptorEntry : zv::TableRef(Z_ARRVAL_P(acceptors.raw()))) {
-				zval *acceptor = acceptorEntry.value().deref().raw();
-				if (UNEXPECTED(Z_TYPE_P(acceptor) != IS_OBJECT)) {
-					zend_throw_error(NULL, "Call to a member function isPure() on %s", zend_zval_value_name(acceptor));
-					return false;
-				}
-				zend_long pure = trinaryOf(pt_parameters_acceptor_call(acceptor, PT_PA_IS_PURE));
-				if (UNEXPECTED(pure < 0)) return false;
-				verdict = pt_trinary_and(verdict, pure);
 			}
 		}
 
+		return true;
+	}
+
+	/* The body of the loop over $matchedArgs in
+	 * resolvePureUnlessCallableIsImpureVerdict(); false = pending exception */
+	[[nodiscard]] static bool matchedArgVerdict(zval *matchedArg, zval *parameter, zval *scope, zend_long &verdict)
+	{
+		zval *argValue = nodeProperty(pt_sip_arg_value_site, matchedArg, PT_LC("value"));
+		if (UNEXPECTED(EG(exception))) return false;
+		if (UNEXPECTED(Z_TYPE_P(scope) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getType() on %s", zend_zval_value_name(scope));
+			return false;
+		}
+		zv::Val argType = pt_mutating_scope_get_type(Z_OBJ_P(scope), argValue);
+		if (UNEXPECTED(argType.isUndef())) return false;
+		zend_long isNull = pt_type_op_trinary(Z_OBJ_P(argType.raw()), PT_OP_IS_NULL, 0, NULL);
+		if (UNEXPECTED(isNull < 0)) return false;
+		if (isNull == PT_TRI_YES) return true;
+
+		zend_long isCallable = pt_type_op_trinary(Z_OBJ_P(argType.raw()), PT_OP_IS_CALLABLE, 0, NULL);
+		if (UNEXPECTED(isCallable < 0)) return false;
+		/* $isCallable->no() && $parameter->getType()->isSuperTypeOf($argType)->yes():
+		 * data passed to a parameter that also takes data */
+		if (isCallable == PT_TRI_NO) {
+			zv::Val parameterType = pt_parameter_reflection_call(parameter, PT_PR_GET_TYPE);
+			if (UNEXPECTED(parameterType.isUndef())) return false;
+			if (UNEXPECTED(Z_TYPE_P(parameterType.raw()) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function isSuperTypeOf() on %s", zend_zval_value_name(parameterType.raw()));
+				return false;
+			}
+			zv::Val takesData = pt_type_op(Z_OBJ_P(parameterType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, argType.raw());
+			if (UNEXPECTED(takesData.isUndef())) return false;
+			zend_long takesDataValue = pt_type_result_trinary(takesData.raw());
+			if (UNEXPECTED(takesDataValue < 0)) return false;
+			if (takesDataValue == PT_TRI_YES) return true;
+		}
+		if (isCallable != PT_TRI_YES) {
+			verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
+			return true;
+		}
+
+		zv::Val acceptors = pt_type_call(Z_OBJ_P(argType.raw()), PT_LC("getcallableparametersacceptors"), 1, scope);
+		if (UNEXPECTED(acceptors.isUndef())) return false;
+		if (UNEXPECTED(Z_TYPE_P(acceptors.raw()) != IS_ARRAY)) {
+			zend_type_error("count(): Argument #1 ($value) must be of type Countable|array, %s given", zend_zval_value_name(acceptors.raw()));
+			return false;
+		}
+		if (zend_hash_num_elements(Z_ARRVAL_P(acceptors.raw())) == 0) {
+			verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
+			return true;
+		}
+
+		for (auto acceptorEntry : zv::TableRef(Z_ARRVAL_P(acceptors.raw()))) {
+			zval *acceptor = acceptorEntry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(acceptor) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function isPure() on %s", zend_zval_value_name(acceptor));
+				return false;
+			}
+			zend_long pure = trinaryOf(pt_parameters_acceptor_call(acceptor, PT_PA_IS_PURE));
+			if (UNEXPECTED(pure < 0)) return false;
+			verdict = pt_trinary_and(verdict, pure);
+		}
 		return true;
 	}
 
@@ -446,11 +475,11 @@ public:
 				verdict = PT_TRI_YES;
 			}
 
-			zval *matchedArg = NULL;
+			bool matchedAny = false;
 			bool hasUnpackedArg = false;
-			if (UNEXPECTED(!matchArg(args, parameter, parameterEntry, declaredParameterNames.table(), matchedArg, hasUnpackedArg))) return false;
+			if (UNEXPECTED(!matchArgs(args, parameter, parameterEntry, declaredParameterNames.table(), matchedAny, hasUnpackedArg, [](zval *) -> bool { return true; }))) return false;
 
-			if (matchedArg == NULL) {
+			if (!matchedAny) {
 				if (hasUnpackedArg) {
 					verdict = pt_trinary_and(verdict, PT_TRI_MAYBE);
 				}
@@ -482,17 +511,20 @@ private:
 		return true;
 	}
 
-	/* Mirrors matchArgForParameter(): the argument the parameter receives
-	 * (NULL for none) and whether an unpacked argument list might have
-	 * supplied it. A trailing variadic collects the positional arguments
-	 * from its own position onwards and the named arguments bound to no
-	 * declared parameter. false = pending exception. */
-	[[nodiscard]] static bool matchArg(zval *args, zval *parameter, const zv::ArrayEntry &parameterEntry, HashTable *declaredParameterNames, zval *&matched, bool &hasUnpackedArg)
+	/* Mirrors matchArgsForParameter(): onMatch(arg) for each argument the
+	 * parameter receives, in order (matchedAny whether there was one), and
+	 * whether an unpacked argument list was seen before the only argument
+	 * of a non-variadic parameter, or anywhere for a variadic one. A
+	 * trailing variadic collects the positional arguments from its own
+	 * position onwards and the named arguments bound to its own name or to
+	 * no declared parameter. false = pending exception, also from onMatch. */
+	template<typename OnMatch>
+	[[nodiscard]] static bool matchArgs(zval *args, zval *parameter, const zv::ArrayEntry &parameterEntry, HashTable *declaredParameterNames, bool &matchedAny, bool &hasUnpackedArg, OnMatch &&onMatch)
 	{
-		matched = NULL;
+		matchedAny = false;
 		hasUnpackedArg = false;
 		if (UNEXPECTED(parameterEntry.stringKeyOrNull() != NULL)) {
-			zend_type_error("PHPStan\\Reflection\\Callables\\SimpleImpurePoint::matchArgForParameter(): Argument #3 ($parameterIndex) must be of type int, string given");
+			zend_type_error("PHPStan\\Reflection\\Callables\\SimpleImpurePoint::matchArgsForParameter(): Argument #3 ($parameterIndex) must be of type int, string given");
 			return false;
 		}
 		zend_long parameterIndex = (zend_long) parameterEntry.indexKey();
@@ -519,20 +551,25 @@ private:
 				if (UNEXPECTED(EG(exception))) return false;
 				zv::Val parameterNameValue = parameterName(parameter);
 				if (UNEXPECTED(parameterNameValue.isUndef())) return false;
-				if (zend_is_identical(identifierName, parameterNameValue.raw())) {
-					matched = arg;
-					return true;
+				bool isOwnName = zend_is_identical(identifierName, parameterNameValue.raw());
+				if (isOwnName && !isVariadic) {
+					matchedAny = true;
+					return onMatch(arg);
 				}
 				if (isVariadic) {
-					/* !array_key_exists($arg->name->name, $declaredParameterNames) */
-					if (UNEXPECTED(Z_TYPE_P(identifierName) != IS_STRING)) {
-						/* Identifier::$name is a string; anything else is the builtin's TypeError */
-						zend_type_error("array_key_exists(): Argument #1 ($key) must be a valid array offset type");
-						return false;
+					/* $arg->name->name === $parameter->getName() || !array_key_exists($arg->name->name, $declaredParameterNames) */
+					bool collected = isOwnName;
+					if (!collected) {
+						if (UNEXPECTED(Z_TYPE_P(identifierName) != IS_STRING)) {
+							/* Identifier::$name is a string; anything else is the builtin's TypeError */
+							zend_type_error("array_key_exists(): Argument #1 ($key) must be a valid array offset type");
+							return false;
+						}
+						collected = !zend_symtable_exists(declaredParameterNames, Z_STR_P(identifierName));
 					}
-					if (!zend_symtable_exists(declaredParameterNames, Z_STR_P(identifierName))) {
-						matched = arg;
-						return true;
+					if (collected) {
+						matchedAny = true;
+						if (UNEXPECTED(!onMatch(arg))) return false;
 					}
 				}
 				continue;
@@ -541,8 +578,10 @@ private:
 			/* $i === $parameterIndex || ($isVariadic && $i > $parameterIndex) */
 			zend_string *argKey = argEntry.stringKeyOrNull();
 			if (argKey == NULL && (zend_long) argEntry.indexKey() == parameterIndex) {
-				matched = arg;
-				return true;
+				matchedAny = true;
+				if (!isVariadic) return onMatch(arg);
+				if (UNEXPECTED(!onMatch(arg))) return false;
+				continue;
 			}
 			if (isVariadic) {
 				zval iZv, parameterIndexZv;
@@ -553,8 +592,8 @@ private:
 				}
 				ZVAL_LONG(&parameterIndexZv, parameterIndex);
 				if (zend_compare(&iZv, &parameterIndexZv) > 0) {
-					matched = arg;
-					return true;
+					matchedAny = true;
+					if (UNEXPECTED(!onMatch(arg))) return false;
 				}
 			}
 		}
@@ -568,48 +607,6 @@ private:
 	{
 		zval *value = pt_typed_slot(self, index, self->ce, name);
 		return value != NULL ? zv::Val::copyOf(zv::Ref(value)) : zv::Val();
-	}
-
-	/* the flip loop over the call's arguments ($checker being 'isTruthy':
-	 * $type->toBoolean()->isTrue()->yes()); false = pending exception */
-	[[nodiscard]] static bool isSideEffectFlipped(const FlipParameter *flip, zval *scope, zval *args, bool &flipped)
-	{
-		flipped = false;
-		if (UNEXPECTED(Z_TYPE_P(args) != IS_ARRAY)) {
-			zend_error(E_WARNING, "foreach() argument must be of type array|object, %s given", zend_zval_value_name(args));
-			return !EG(exception);
-		}
-		bool hasNamedParameter = false;
-		for (auto argEntry : zv::TableRef(Z_ARRVAL_P(args))) {
-			zval *arg = argEntry.value().deref().raw();
-			bool isFlipParameter = false;
-			zval *argName = nodeProperty(pt_sip_arg_name_site, arg, PT_LC("name"));
-			if (UNEXPECTED(EG(exception))) return false;
-			if (Z_TYPE_P(argName) != IS_NULL) {
-				hasNamedParameter = true;
-				zval *identifierName = nodeProperty(pt_sip_identifier_name_site, argName, PT_LC("name"));
-				if (UNEXPECTED(EG(exception))) return false;
-				if (Z_TYPE_P(identifierName) == IS_STRING && zend_string_equals_cstr(Z_STR_P(identifierName), flip->name, strlen(flip->name))) {
-					isFlipParameter = true;
-				}
-			}
-			if (!hasNamedParameter && argEntry.stringKeyOrNull() == NULL && (zend_long) argEntry.indexKey() == flip->position) {
-				isFlipParameter = true;
-			}
-			if (isFlipParameter) {
-				zval *argValue = nodeProperty(pt_sip_arg_value_site, arg, PT_LC("value"));
-				if (UNEXPECTED(EG(exception))) return false;
-				zv::Val type = pt_mutating_scope_get_type(Z_OBJ_P(scope), argValue);
-				if (UNEXPECTED(type.isUndef())) return false;
-				zv::Val boolean = pt_type_call(Z_OBJ_P(type.raw()), PT_LC("toboolean"), 0, NULL);
-				if (UNEXPECTED(boolean.isUndef())) return false;
-				zend_long isTrue = trinaryOf(pt_type_call(Z_OBJ_P(boolean.raw()), PT_LC("istrue"), 0, NULL));
-				if (UNEXPECTED(isTrue < 0)) return false;
-				flipped = isTrue == PT_TRI_YES;
-				break;
-			}
-		}
-		return true;
 	}
 
 	static void appendString(smart_str &out, zval *value)
@@ -631,14 +628,14 @@ using phpstanturbo::SimpleImpurePoint;
 
 /* {{{ exported helpers: the shadowing class for native callers */
 
-zv::Val pt_simple_impure_point_new(zend_string *identifier, zend_string *description, bool certain)
+zv::Val pt_simple_impure_point_new(zend_string *identifier, zend_string *description, bool certain, zval *sideEffects)
 {
-	return SimpleImpurePoint::create(identifier, description, certain);
+	return SimpleImpurePoint::create(identifier, description, certain, sideEffects);
 }
 
-bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out)
+bool pt_simple_impure_point_resolve(zval *function, zval *variant, zval *scope, zval *args, pt_simple_impure_point_data &out, zval *callSideEffects)
 {
-	return SimpleImpurePoint::resolve(function, variant, scope, args, out);
+	return SimpleImpurePoint::resolve(function, variant, scope, args, callSideEffects, out);
 }
 
 bool pt_simple_impure_point_resolve_verdict(zval *variant, zval *scope, zval *args, bool &hasVerdict, zend_long &verdict)
@@ -670,23 +667,32 @@ PT_MINIT_REGISTRATION(pt_register_simple_impure_point)
 	reg::Class cls("PHPStan\\Reflection\\Callables\\SimpleImpurePoint");
 	ptdecl::SimpleImpurePoint::declareClass(cls);
 	ptdecl::SimpleImpurePoint::declareProperties(cls);
-	cls.privateClassConstantValue("SIDE_EFFECT_FLIP_PARAMETERS", flipParametersConstant);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *identifier, *description;
 		bool certain;
-		if (!zp::parse<zp::Str, zp::Str, zp::Bool>(execute_data, identifier, description, certain)) RETURN_THROWS();
-		SimpleImpurePoint(Z_OBJ_P(ZEND_THIS)).construct(identifier, description, certain);
+		zval *sideEffects = NULL;
+		ZEND_PARSE_PARAMETERS_START(3, 4)
+			Z_PARAM_STR(identifier)
+			Z_PARAM_STR(description)
+			Z_PARAM_BOOL(certain)
+			Z_PARAM_OPTIONAL
+			Z_PARAM_OBJECT_OR_NULL(sideEffects)
+		ZEND_PARSE_PARAMETERS_END();
+		SimpleImpurePoint(Z_OBJ_P(ZEND_THIS)).construct(identifier, description, certain, sideEffects);
 	});
 
+	cls.method<&SimpleImpurePoint::getSideEffects>(sigs::getSideEffects);
+
 	cls.method(sigs::createFromVariant, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *function, *variant, *scope = NULL, *args = NULL;
-		ZEND_PARSE_PARAMETERS_START(2, 4)
+		zval *function, *variant, *scope = NULL, *args = NULL, *callSideEffects = NULL;
+		ZEND_PARSE_PARAMETERS_START(2, 5)
 			Z_PARAM_OBJECT(function)
 			Z_PARAM_OBJECT_OR_NULL(variant)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(scope)
 			Z_PARAM_ARRAY(args)
+			Z_PARAM_OBJECT_OR_NULL(callSideEffects)
 		ZEND_PARSE_PARAMETERS_END();
 		zval emptyArgs;
 		if (args == NULL) {
@@ -694,9 +700,9 @@ PT_MINIT_REGISTRATION(pt_register_simple_impure_point)
 			args = &emptyArgs;
 		}
 		pt_simple_impure_point_data data;
-		if (UNEXPECTED(!SimpleImpurePoint::resolve(function, variant, scope, args, data))) RETURN_THROWS();
+		if (UNEXPECTED(!SimpleImpurePoint::resolve(function, variant, scope, args, callSideEffects, data))) RETURN_THROWS();
 		if (!data.exists) RETURN_NULL();
-		zv::Val point = SimpleImpurePoint::create(data.identifier, data.description, data.certain);
+		zv::Val point = SimpleImpurePoint::create(data.identifier, data.description, data.certain, Z_ISUNDEF(data.sideEffects) ? NULL : &data.sideEffects);
 		zend_string_release(data.description);
 		PT_RETURN_VAL(std::move(point));
 	});

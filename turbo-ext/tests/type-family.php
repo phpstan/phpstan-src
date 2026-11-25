@@ -7008,7 +7008,7 @@ foreach ([\PHPStan\Reflection\ResolvedMethodReflection::class, \PHPStan\Reflecti
 			'onlyVariant' => $catching(static fn () => $viewVariant($m->getOnlyVariant())),
 			'prototype' => $catching(static fn () => [get_class($m->getPrototype()), $m->getPrototype()->getDeclaringClass()->getName()]),
 			'flags' => $catching(static fn () => [$m->isStatic(), $m->isPrivate(), $m->isPublic(), $m->getDocComment(), $view($m->isDeprecated()), $m->getDeprecatedDescription(), $view($m->isFinal()), $view($m->isFinalByKeyword()), $view($m->isInternal()), $view($m->isBuiltin())]),
-			'purity' => $catching(static fn () => [$view($m->hasSideEffects()), $view($m->isPure()), $m->getPureUnlessCallableIsImpureParameters(), $m->getPureUnlessParameterPassedParameters(), $view($m->acceptsNamedArguments()), $view($m->returnsByReference()), $view($m->isAbstract()), $view($m->mustUseReturnValue())]),
+			'purity' => $catching(static fn () => [$view($m->hasSideEffects()), $view($m->isPure()), $m->getPureUnlessCallableIsImpureParameters(), $m->getPureUnlessParameterPassedParameters(), $view($m->getSideEffects()->hasAny()), $view($m->acceptsNamedArguments()), $view($m->returnsByReference()), $view($m->isAbstract()), $view($m->mustUseReturnValue())]),
 			'attributes' => $catching(static fn () => $viewAttributes($m->getAttributes())),
 			'phpDoc' => $catching(static fn () => $view($m->getResolvedPhpDoc())),
 			'memo' => $catching(static fn () => [$m->getVariants() === $m->getVariants(), $m->getNamedArgumentsVariants() === $m->getNamedArgumentsVariants(), $m->getAsserts() === $m->getAsserts(), $m->getSelfOutType() === $m->getSelfOutType(), $m->hasSideEffects() === $m->hasSideEffects(), $m->getDeclaringClass() === $m->getDeclaringClass()]),
@@ -7066,6 +7066,7 @@ foreach ([\PHPStan\Reflection\ResolvedMethodReflection::class, \PHPStan\Reflecti
 		public function isPure(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createMaybe(); }
 		public function getPureUnlessCallableIsImpureParameters(): array { return $this->answer ? ['callback' => true] : []; }
 		public function getPureUnlessParameterPassedParameters(): array { return $this->answer ? ['count' => \PHPStan\TrinaryLogic::createYes()] : []; }
+		public function getSideEffects(): \PHPStan\Reflection\SideEffects { return $this->answer ? \PHPStan\Reflection\SideEffects::all() : \PHPStan\Reflection\SideEffects::unknown(); }
 		public function getAsserts(): \PHPStan\Reflection\Assertions { return $this->inner->getAsserts(); }
 		public function acceptsNamedArguments(): \PHPStan\TrinaryLogic { return \PHPStan\TrinaryLogic::createFromBoolean($this->answer); }
 		public function getSelfOutType(): ?\PHPStan\Type\Type { return $this->answer ? new \PHPStan\Type\Generic\GenericObjectType(\PHPStanTurboTests\PrototypeFixture::class, [(new \PHPStan\Type\Generic\TemplateTypeReference(\PHPStan\Type\Generic\TemplateTypeFactory::create(\PHPStan\Type\Generic\TemplateTypeScope::createWithClass(\PHPStanTurboTests\PrototypeFixture::class), 'T', null, \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()))->getType()]) : null; }
@@ -7237,7 +7238,7 @@ foreach ([\PHPStan\Reflection\Php\PhpPropertyReflection::class, \PHPStan\Reflect
 $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class] = (new ReflectionMethod(\PHPStan\Reflection\Callables\SimpleImpurePoint::class, 'createFromVariant'))->isInternal();
 {
 	$r = [];
-	$viewImpurePoint = static fn (?\PHPStan\Reflection\Callables\SimpleImpurePoint $point): ?array => $point === null ? null : [$point->getIdentifier(), $point->getDescription(), $point->isCertain()];
+	$viewImpurePoint = static fn (?\PHPStan\Reflection\Callables\SimpleImpurePoint $point): ?array => $point === null ? null : [$point->getIdentifier(), $point->getDescription(), $point->isCertain(), $point->getSideEffects() === null ? null : [$point->getSideEffects()->hasAny()->describe(), $point->getSideEffects()->isDeterministic()->describe(), $point->getSideEffects()->getEffectNames()]];
 	$bool = new \PHPStan\Type\BooleanType();
 	$pureClosure = new \PHPStan\Type\ClosureType([], $int, false, impurePoints: []);
 	$impureClosure = new \PHPStan\Type\ClosureType([], $int, false, impurePoints: [new \PHPStan\Reflection\Callables\SimpleImpurePoint('functionCall', 'certain', true)]);
@@ -7290,12 +7291,34 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 			$r["function $functionName $argListName narrowed"] = $catching(static fn () => array_map($viewImpurePoint, \PHPStan\Reflection\Callables\SimpleImpurePoint::narrowByConditionalPurity(['certain' => new \PHPStan\Reflection\Callables\SimpleImpurePoint('functionCall', 'certain call', true), 3 => new \PHPStan\Reflection\Callables\SimpleImpurePoint('methodCall', 'possible call', false)], $variant, $sipScope, $args)));
 		}
 	}
+	$multiVariantArgLists = [
+		'arrays pure' => [$arg('array'), $arg('array'), $arg('array'), $arg('pure')],
+		'arrays impure' => [$arg('array'), $arg('array'), $arg('array'), $arg('impure')],
+		'five arrays pure' => [$arg('array'), $arg('array'), $arg('array'), $arg('array'), $arg('array'), $arg('pure')],
+		'five arrays impure' => [$arg('array'), $arg('array'), $arg('array'), $arg('array'), $arg('array'), $arg('impure')],
+		'arrays string' => [$arg('array'), $arg('array'), $arg('array'), $arg('string')],
+		'arrays pure unpacked' => [$arg('array'), $arg('array'), $arg('array'), $arg('pure'), new \PhpParser\Node\Arg(new \PhpParser\Node\Expr\Variable('array'), unpack: true)],
+		'named rest' => [$arg('array', 'array'), $arg('array', 'rest'), $arg('impure', 'other')],
+	] + $argLists;
+	foreach (['array_udiff', 'array_diff_uassoc', 'array_uintersect_uassoc'] as $functionName) {
+		$function = $stringReflectionProvider->getFunction(new \PhpParser\Node\Name($functionName), null);
+		foreach (array_merge($function->getVariants(), $function->getNamedArgumentsVariants() ?? []) as $variantIndex => $variant) {
+			foreach ($multiVariantArgLists as $argListName => $args) {
+				$r["function $functionName variant $variantIndex $argListName verdict"] = $catching(static fn () => $view(\PHPStan\Reflection\Callables\SimpleImpurePoint::resolvePureUnlessCallableIsImpureVerdict($variant, $sipScope, $args)));
+				$r["function $functionName variant $variantIndex $argListName"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($function, $variant, $sipScope, $args)));
+			}
+		}
+	}
 	foreach (['returnsStatic', 'withValue', 'each', 'fails'] as $methodName) {
 		$prototype = new \PHPStan\Reflection\Type\CalledOnTypeUnresolvedMethodPrototypeReflection($fixture->getNativeMethod($methodName), $fixture, true, $calledOnTypes['object']);
 		foreach (['transformed' => $prototype->getTransformedMethod(), 'plain' => $fixture->getNativeMethod($methodName), 'builtin' => $stringReflectionProvider->getClass(\ArrayObject::class)->getNativeMethod('append')] as $methodKind => $method) {
 			$variant = $method->getVariants()[0];
 			$r["method $methodName $methodKind"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($method, $variant, $sipScope, $argLists['array impure'])));
 			$r["method $methodName $methodKind no variant"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($method, null)));
+			foreach (['none' => \PHPStan\Reflection\SideEffects::none(), 'warns' => \PHPStan\Reflection\SideEffects::create(['warns'], \PHPStan\TrinaryLogic::createNo()), 'unknown' => \PHPStan\Reflection\SideEffects::unknown()] as $callKind => $callSideEffects) {
+				$r["method $methodName $methodKind call $callKind"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($method, $variant, $sipScope, $argLists['array impure'], $callSideEffects)));
+				$r["method $methodName $methodKind call $callKind no scope"] = $catching(static fn () => $viewImpurePoint(\PHPStan\Reflection\Callables\SimpleImpurePoint::createFromVariant($method, $variant, null, [], $callSideEffects)));
+			}
 		}
 	}
 	$r['constructed'] = $viewImpurePoint(new \PHPStan\Reflection\Callables\SimpleImpurePoint('methodCall', 'a description', true));
@@ -7304,7 +7327,6 @@ $observations['native ' . \PHPStan\Reflection\Callables\SimpleImpurePoint::class
 	foreach (['getIdentifier', 'getDescription', 'isCertain'] as $rawMethod) {
 		$r["unconstructed $rawMethod"] = $catching(static fn () => $raw->$rawMethod());
 	}
-	$r['constant'] = (new \ReflectionClassConstant(\PHPStan\Reflection\Callables\SimpleImpurePoint::class, 'SIDE_EFFECT_FLIP_PARAMETERS'))->getValue();
 	foreach ($r as $key => $value) {
 		$observations["simple impure point $key"] = $value;
 	}
@@ -9120,6 +9142,69 @@ foreach ([\PHPStan\Analyser\RicherScopeGetTypeHelper::class => 'getIdenticalResu
 			$observations["toNativePhpTypeNode $name $positionName"] = $nodeView($subject->toNativePhpTypeNode($position));
 		}
 	}
+}
+
+// ---- SideEffects ----
+// The value class from its factories and from real reflections: void and
+// listed-effects built-ins, conditional purity parameters, pure functions and
+// an unannotated user method; every query, including written parameters that
+// are listed, unlisted and numeric-looking
+$observations['native ' . \PHPStan\Reflection\SideEffects::class] = (new ReflectionMethod(\PHPStan\Reflection\SideEffects::class, 'writesParameter'))->isInternal();
+{
+	$yes = \PHPStan\TrinaryLogic::createYes();
+	$maybe = \PHPStan\TrinaryLogic::createMaybe();
+	$no = \PHPStan\TrinaryLogic::createNo();
+	$viewSideEffects = static fn (\PHPStan\Reflection\SideEffects $sideEffects): array => [
+		$view($sideEffects->hasAny()),
+		$view($sideEffects->isDeterministic()),
+		array_map(static fn (string $effect) => $view($sideEffects->has($effect)), ['io', 'io.files', 'io.files.local', 'nondeterministic', 'writes-this', 'sleep', 'i', '']),
+		$sideEffects->getEffectNames(),
+		array_map($view, $sideEffects->getCalledParameters()),
+		array_map($view, $sideEffects->getWrittenParameters()),
+		$view($sideEffects->writesParameter('count')),
+		$view($sideEffects->writesParameter('other')),
+		$view($sideEffects->writesParameter('0')),
+		array_map(static fn (array $effects) => $view($sideEffects->hasOnly($effects)), [[], ['writes-args'], ['nondeterministic', 'reads-global'], ['io.files', 'nondeterministic'], ['io'], ['io.files.local'], ['warns', 'writes-global.error']]),
+		array_map(static fn (string $effect) => $sideEffects->getListedSubEffects($effect), ['writes-global', 'reads-global', 'writes-global.error', 'writes-args', 'io', 'writes']),
+	];
+	$sideEffectsSubjects = [
+		'none' => static fn () => \PHPStan\Reflection\SideEffects::none(),
+		'all' => static fn () => \PHPStan\Reflection\SideEffects::all(),
+		'unknown' => static fn () => \PHPStan\Reflection\SideEffects::unknown(),
+		'create listed' => static fn () => \PHPStan\Reflection\SideEffects::create(['io.output'], $no),
+		'create empty no' => static fn () => \PHPStan\Reflection\SideEffects::create([], $no),
+		'create no called' => static fn () => \PHPStan\Reflection\SideEffects::create([], $no, ['callback' => $yes]),
+		'create no written' => static fn () => \PHPStan\Reflection\SideEffects::create([], $no, [], ['count' => $maybe]),
+		'create maybe parameters' => static fn () => \PHPStan\Reflection\SideEffects::create([], $maybe, ['callback' => $yes], ['count' => $yes, 'other' => $maybe, 0 => $yes]),
+		'create named' => static fn () => \PHPStan\Reflection\SideEffects::create(others: $yes, effects: ['sleep', 'io.files'], writtenParameters: ['count' => $maybe]),
+		'create nondeterministic' => static fn () => \PHPStan\Reflection\SideEffects::create(['nondeterministic'], $no),
+		'create nondeterministic sub' => static fn () => \PHPStan\Reflection\SideEffects::create(['io.files', 'nondeterministic.time'], $no),
+		'create nondeterministic prefix only' => static fn () => \PHPStan\Reflection\SideEffects::create(['nondeterministicish'], $no),
+		'create parent effect' => static fn () => \PHPStan\Reflection\SideEffects::create(['io', 'writes-this'], $no),
+		'create parent effect yes' => static fn () => \PHPStan\Reflection\SideEffects::create(['io'], $yes),
+		'create writes-args' => static fn () => \PHPStan\Reflection\SideEffects::create(['writes-args'], $no, [], ['other' => $no]),
+		'create writes-args parameters' => static fn () => \PHPStan\Reflection\SideEffects::create(['writes-args($count)', 'io.files'], $no, [], ['count' => $yes]),
+		'create writes-args parameters maybe' => static fn () => \PHPStan\Reflection\SideEffects::create(['writes-args($count)'], $maybe, [], ['count' => $yes]),
+		'create reads written arguments' => static fn () => \PHPStan\Reflection\SideEffects::create(['writes-args($count)'], $no, [], ['count' => $yes], true),
+		'create reads only' => static fn () => \PHPStan\Reflection\SideEffects::create(['reads-global', 'nondeterministic.time'], $no),
+		'create named states' => static fn () => \PHPStan\Reflection\SideEffects::create(['writes-global.stat-cache', 'writes-global.error.preg', 'reads-global.error.preg', 'writes-globalish', 'io'], $no),
+		'create named and plain state' => static fn () => \PHPStan\Reflection\SideEffects::create(['writes-global.error.json', 'writes-global'], $maybe),
+	];
+	foreach (['var_dump', 'str_replace', 'array_map', 'array_udiff', 'strlen', 'usleep', 'print_r', 'sort', 'settype', 'array_pop', 'preg_match', 'clearstatcache', 'json_encode', 'openssl_sign'] as $functionName) {
+		$sideEffectsSubjects["function $functionName"] = static fn () => $stringReflectionProvider->getFunction(new \PhpParser\Node\Name($functionName), null)->getSideEffects();
+	}
+	foreach (['returnsStatic', 'withValue', 'each', 'fails'] as $methodName) {
+		$sideEffectsSubjects["method $methodName"] = static fn () => $fixture->getNativeMethod($methodName)->getSideEffects();
+	}
+	foreach ($sideEffectsSubjects as $name => $subject) {
+		$observations["SideEffects $name"] = $catching(static fn () => $viewSideEffects($subject()));
+	}
+	$observations['SideEffects create wrong others'] = $catching(static fn () => \PHPStan\Reflection\SideEffects::create([], new \stdClass()));
+	$observations['SideEffects wrong written parameter'] = $catching(static fn () => \PHPStan\Reflection\SideEffects::create([], $no, [], ['count' => 'yes'])->writesParameter('count'));
+	$observations['SideEffects hasOnly wrong effect'] = $catching(static fn () => \PHPStan\Reflection\SideEffects::create(['io'], $no)->hasOnly([1]));
+	$observations['SideEffects getListedSubEffects wrong effect'] = $catching(static fn () => \PHPStan\Reflection\SideEffects::create([1], $no)->getListedSubEffects('io'));
+	$observations['SideEffects constants'] = (new ReflectionClass(\PHPStan\Reflection\SideEffects::class))->getConstants();
+	$observations['SideEffects new'] = $catching(static fn () => (new ReflectionClass(\PHPStan\Reflection\SideEffects::class))->newInstance());
 }
 
 // observations holding bytes that are not UTF-8 (the invalid-UTF-8 subject's

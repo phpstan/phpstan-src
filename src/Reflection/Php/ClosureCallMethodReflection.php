@@ -13,6 +13,7 @@ use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\MixedType;
@@ -212,6 +213,11 @@ final class ClosureCallMethodReflection implements ExtendedMethodReflection
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return $this->nativeMethodReflection->getPureUnlessParameterPassedParameters();
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return $this->nativeMethodReflection->getSideEffects();
 	}
 
 	public function getAttributes(): array

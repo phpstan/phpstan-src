@@ -159,6 +159,11 @@ final class WrappedExtendedMethodReflection implements ExtendedMethodReflection
 		return [];
 	}
 
+	public function getSideEffects(): SideEffects
+	{
+		return SideEffectsFactory::createFromReflection($this);
+	}
+
 	public function getAsserts(): Assertions
 	{
 		return Assertions::createEmpty();

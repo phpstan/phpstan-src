@@ -369,6 +369,7 @@ int pt_php_method_reflection_answer(zend_object *method, pt_method_reflection_me
 		case PT_MR_GET_RESOLVED_PHP_DOC:
 			return slotAnswer(method, PT_PMR_RESOLVED_PHP_DOC_BLOCK, out);
 		case PT_MR_GET_PROTOTYPE:
+		case PT_MR_GET_SIDE_EFFECTS:
 		case PT_MR_MUST_USE_RETURN_VALUE:
 		case PT_MR_MEMBER_COUNT:
 			break;

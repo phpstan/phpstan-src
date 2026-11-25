@@ -10,6 +10,7 @@ use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use PHPStan\File\FileReader;
 use PHPStan\File\FileWriter;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\ShouldNotHappenException;
 use Symfony\Component\Finder\Finder;
 
@@ -28,6 +29,9 @@ use Symfony\Component\Finder\Finder;
 		/** @var list<string> */
 		public array $impureFunctions = [];
 
+		/** @var list<string> */
+		public array $globalStateReaderFunctions = [];
+
 		/** @var string[] */
 		public array $methods = [];
 
@@ -43,40 +47,20 @@ use Symfony\Component\Finder\Finder;
 							continue;
 						}
 
-						// The following functions have side effects, but their state is managed within the PHPStan scope:
+						// The following functions read global state, but their result is the same until a call
+						// writes it, so they are remembered until then:
 						if (in_array($functionName, [
-							'stat',
-							'lstat',
-							'file_exists',
-							'is_writable',
-							'is_writeable',
-							'is_readable',
-							'is_executable',
-							'is_file',
-							'is_dir',
-							'is_link',
-							'filectime',
-							'fileatime',
-							'filemtime',
-							'fileinode',
-							'filegroup',
-							'fileowner',
-							'filesize',
-							'filetype',
-							'fileperms',
 							'ftell',
 							'ini_get',
 							'function_exists',
-							'json_last_error',
-							'json_last_error_msg',
 							'ob_get_level',
 						], true)) {
-							$this->functions[] = $functionName;
+							$this->globalStateReaderFunctions[] = $functionName;
 							break 2;
 						}
 
-						// PhpStorm stub's #[Pure(true)] means the function has side effects but its return value is important.
-						// In PHPStan's criteria, these functions are simply considered as ['hasSideEffect' => true].
+						// PhpStorm stub's #[Pure(true)] means the function writes nothing, but its result
+						// depends on global or external state, so it is not remembered either.
 						if (isset($attr->args[0]->value->name->name) && $attr->args[0]->value->name->name === 'true') {
 							$this->impureFunctions[] = $functionName;
 						} else {
@@ -124,30 +108,74 @@ use Symfony\Component\Finder\Finder;
 		);
 	}
 
-	/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
+	/** @var array<string, array{effects: list<string>, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> $metadata */
 	$metadata = require __DIR__ . '/functionMetadata_original.php';
+	// #[Pure] in the stubs, but they have side effects
+	$pureAttributeCorrections = [
+		// move the position of mb_ereg_search()
+		'mb_ereg_search',
+		'mb_ereg_search_pos',
+		'mb_ereg_search_regs',
+		'mb_ereg_search_setpos',
+		// use the global random number generator
+		'array_rand',
+		// read files or ask the network
+		'bzopen',
+		'checkdnsrr',
+		'finfo::file',
+		'gethostbyaddr',
+		'gethostbyname',
+		'gethostbynamel',
+		'getprotobyname',
+		'getprotobynumber',
+		'getservbyname',
+		'getservbyport',
+		'hash_file',
+		'hash_hmac_file',
+		'posix_getgrgid',
+		'posix_getgrnam',
+		'posix_getpwnam',
+		'posix_getpwuid',
+		// run the iterator's methods or a generator
+		'iterator_count',
+		// read changing state
+		'DateTime::createFromFormat',
+		'DateTime::getLastErrors',
+		'DateTimeImmutable::createFromFormat',
+		'DateTimeImmutable::getLastErrors',
+		'gethostname',
+		'posix_getlogin',
+		'posix_times',
+	];
+	$onlyReads = static fn (array $effects): bool => count(array_filter(
+		$effects,
+		static fn (string $effect): bool => $effect !== SideEffects::READS_GLOBAL && !str_starts_with($effect, SideEffects::READS_GLOBAL . '.'),
+	)) === 0;
+	$leavesError = static fn (array $effects): bool => count(array_filter(
+		$effects,
+		static fn (string $effect): bool => str_starts_with($effect, SideEffects::WRITES_GLOBAL_ERROR . '.'),
+	)) > 0;
 	foreach ($visitor->functions as $functionName) {
 		if (array_key_exists($functionName, $metadata)) {
-			if (isset($metadata[$functionName]['hasSideEffects']) && $metadata[$functionName]['hasSideEffects']) {
+			// #[Pure] functions that read global state, or leave an error for an error getter
+			if (
+				$metadata[$functionName]['effects'] !== []
+				&& !$onlyReads($metadata[$functionName]['effects'])
+				&& !$leavesError($metadata[$functionName]['effects'])
+				&& !in_array($functionName, $pureAttributeCorrections, true)
+			) {
 				throw new ShouldNotHappenException($functionName);
 			}
 
-			$conditions = [];
-			foreach (['pureUnlessCallableIsImpureParameters', 'pureUnlessParameterPassedParameters'] as $conditionKey) {
-				if (!isset($metadata[$functionName][$conditionKey])) {
-					continue;
-				}
-
-				$conditions[$conditionKey] = $metadata[$functionName][$conditionKey];
-			}
-
-			if ($conditions !== []) {
-				$metadata[$functionName] = $conditions;
-
-				continue;
-			}
+			continue;
 		}
-		$metadata[$functionName] = ['hasSideEffects' => false];
+		$metadata[$functionName] = ['effects' => []];
+	}
+	foreach ($visitor->globalStateReaderFunctions as $functionName) {
+		if (array_key_exists($functionName, $metadata)) {
+			throw new ShouldNotHappenException($functionName);
+		}
+		$metadata[$functionName] = ['effects' => ['reads-global']];
 	}
 	foreach ($visitor->impureFunctions as $functionName) {
 		if (in_array($functionName, [
@@ -161,29 +189,41 @@ use Symfony\Component\Finder\Finder;
 		if (array_key_exists($functionName, $metadata)) {
 			if (in_array($functionName, [
 				'ob_get_contents',
+				// #[Pure(true)] in the stubs, but the result depends only on the DateTime object
+				'date_format',
 			], true)) {
 				continue;
 			}
-			if (!$metadata[$functionName]['hasSideEffects']) {
+			if ($metadata[$functionName]['effects'] === []) {
 				throw new ShouldNotHappenException($functionName);
 			}
+
+			continue;
 		}
-		$metadata[$functionName] = ['hasSideEffects' => true];
+		$metadata[$functionName] = ['effects' => ['reads-global', 'nondeterministic']];
 	}
 
 	foreach ($visitor->methods as $methodName) {
 		if (array_key_exists($methodName, $metadata)) {
-			if ($metadata[$methodName]['hasSideEffects']) {
+			if ($leavesError($metadata[$methodName]['effects'])) {
+				continue;
+			}
+			if (in_array($methodName, $pureAttributeCorrections, true) || $onlyReads($metadata[$methodName]['effects'])) {
+				continue;
+			}
+			if ($metadata[$methodName]['effects'] !== []) {
 				throw new ShouldNotHappenException($methodName);
 			}
 		}
-		$metadata[$methodName] = ['hasSideEffects' => false];
+		$metadata[$methodName] = ['effects' => []];
 	}
 
 	ksort($metadata);
 
 	$template = <<<'php'
 <?php declare(strict_types = 1);
+
+use PHPStan\Reflection\SideEffects;
 
 /**
  * GENERATED FILE - DO NOT EDIT!
@@ -194,28 +234,35 @@ use Symfony\Component\Finder\Finder;
  *
  * If you want to add new entries here follow these steps:
  * 1) verify on https://phpstan.org/try whether the entry you are going to add does not already work as expected.
- * 2) Contribute the functions that have 'hasSideEffects' => true as a modification to bin/functionMetadata_original.php.
+ * 2) Contribute functions with side effects, and corrections of the attributes, to bin/functionMetadata_original.php.
  * 3) Contribute the #[Pure] functions without side effects to https://github.com/JetBrains/phpstorm-stubs
  * 4) Once the PR from 3) is merged, please update the package here and run ./bin/generate-function-metadata.php.
  *
- * The array is keyed by lowercase function name or "Class::method". Each entry is
- * exactly one of:
- *   - ['hasSideEffects' => bool] - false: pure, true: has side effects.
- *   - ['pureUnlessCallableIsImpureParameters' => array<string, true>] - pure unless
- *     one of the listed callable parameters (keyed by parameter name) receives an
- *     impure callable, e.g. array_map()'s 'callback'.
- *   - ['pureUnlessParameterPassedParameters' => array<string, true>] - pure unless
- *     one of the listed (by-ref out) parameters (keyed by parameter name) receives
- *     an argument, e.g. str_replace()'s 'count'.
+ * The array is keyed by lowercase function name or "Class::method". The format of
+ * the entries is described in bin/functionMetadata_original.php.
  */
 
-/** @var array<string, array{hasSideEffects?: bool, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
+/** @var array<string, array{effects: list<string>, pureUnlessCallableIsImpureParameters?: array<string, bool>, pureUnlessParameterPassedParameters?: array<string, bool>}> */
 return [
 %s
 ];
 php;
 	$content = '';
 	$escape = static fn (mixed $value): string => var_export($value, true);
+	$effectConstants = array_flip((new ReflectionClass(SideEffects::class))->getConstants());
+	$encodeEffect = static function (string $effect) use ($effectConstants, $escape): string {
+		if (isset($effectConstants[$effect])) {
+			return 'SideEffects::' . $effectConstants[$effect];
+		}
+		if (preg_match('~^' . preg_quote(SideEffects::WRITES_ARGS, '~') . '(\(.+\))$~', $effect, $matches) === 1) {
+			return 'SideEffects::' . $effectConstants[SideEffects::WRITES_ARGS] . ' . ' . $escape($matches[1]);
+		}
+		if ($effect !== '*') {
+			throw new ShouldNotHappenException(sprintf('Effect %s has no SideEffects constant.', $effect));
+		}
+
+		return $escape($effect);
+	};
 	$encodeParameterMap = static fn (array $parameters) => sprintf(
 		'[%s]',
 		implode(
@@ -229,20 +276,13 @@ php;
 	);
 
 	foreach ($metadata as $name => $meta) {
-		$entries = [];
-		if (isset($meta['hasSideEffects'])) {
-			$entries[] = sprintf('%s => %s', $escape('hasSideEffects'), $escape($meta['hasSideEffects']));
-		}
+		$entries = [sprintf('%s => [%s]', $escape('effects'), implode(', ', array_map($encodeEffect, $meta['effects'])))];
 		if (isset($meta['pureUnlessCallableIsImpureParameters'])) {
 			$entries[] = sprintf('%s => %s', $escape('pureUnlessCallableIsImpureParameters'), $encodeParameterMap($meta['pureUnlessCallableIsImpureParameters']));
 		}
 		if (isset($meta['pureUnlessParameterPassedParameters'])) {
 			$entries[] = sprintf('%s => %s', $escape('pureUnlessParameterPassedParameters'), $encodeParameterMap($meta['pureUnlessParameterPassedParameters']));
 		}
-		if ($entries === []) {
-			throw new ShouldNotHappenException($escape($meta));
-		}
-
 		$content .= sprintf(
 			"\t%s => [%s],\n",
 			var_export($name, true),

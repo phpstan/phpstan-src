@@ -656,10 +656,12 @@ final class PhpClassReflectionExtension
 			$phpDocComment = null;
 
 			$isPure = null;
+			$effects = null;
 			if ($this->signatureMapProvider->hasMethodMetadata($declaringClassName, $methodReflection->getName())) {
 				$methodMetadata = $this->signatureMapProvider->getMethodMetadata($declaringClassName, $methodReflection->getName());
 				$hasSideEffects = $methodMetadata['hasSideEffects'] ?? true;
 				$isPure = !$hasSideEffects;
+				$effects = $methodMetadata['effects'];
 			}
 
 			$methodSignaturesResult = $this->signatureMapProvider->getMethodSignatures($declaringClassName, $methodReflection->getName(), $methodReflection);
@@ -796,6 +798,7 @@ final class PhpClassReflectionExtension
 				$phpDocComment,
 				$this->attributeReflectionFactory->fromNativeReflection($methodReflection->getAttributes(), InitializerExprContext::fromClassMethod($declaringClassName, null, $methodReflection->getName(), null)),
 				$this->signatureMapProvider->isMethodDeprecated($declaringClassName, $methodReflection->getName()),
+				$effects,
 			);
 		}
 
@@ -915,6 +918,7 @@ final class PhpClassReflectionExtension
 		);
 
 		$isPure = null;
+		$effects = null;
 		$pureUnlessCallableIsImpureParameters = [];
 		$pureUnlessParameterPassedParameters = [];
 		if ($actualDeclaringClass->isBuiltin() || $actualDeclaringClass->isEnum()) {
@@ -923,6 +927,7 @@ final class PhpClassReflectionExtension
 					$methodMetadata = $this->signatureMapProvider->getMethodMetadata($className, $methodReflection->getName());
 					$hasSideEffects = $methodMetadata['hasSideEffects'] ?? true;
 					$isPure = !$hasSideEffects;
+					$effects = $methodMetadata['effects'];
 					$pureUnlessCallableIsImpureParameters += $methodMetadata['pureUnlessCallableIsImpureParameters'] ?? [];
 					$pureUnlessParameterPassedParameters += $methodMetadata['pureUnlessParameterPassedParameters'] ?? [];
 
@@ -1034,6 +1039,7 @@ final class PhpClassReflectionExtension
 			$this->attributeReflectionFactory->fromNativeReflection($methodReflection->getAttributes(), InitializerExprContext::fromClassMethod($actualDeclaringClass->getName(), $declaringTraitName, $methodReflection->getName(), $actualDeclaringClass->getFileName())),
 			$pureUnlessCallableIsImpureParameters,
 			$pureUnlessParameterPassedParameters,
+			$effects,
 		);
 	}
 

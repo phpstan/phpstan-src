@@ -58,10 +58,6 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 			],
 			[
 				'Call to CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
-				48,
-			],
-			[
-				'Call to CallToStaticMethodWithoutImpurePoints\y::myFunc() on a separate line has no effect.',
 				53,
 			],
 			[
@@ -92,6 +88,21 @@ class CallToStaticMethodStatementWithoutImpurePointsRuleTest extends RuleTestCas
 			[
 				'Call to CallToStaticMethodWithoutImpurePointsPipe\Foo::doFoo() on a separate line has no effect.',
 				17,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug12062(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12062.php'], [
+			[
+				'Call to Bug12062\\SelfCall::validateParam() on a separate line has no effect.',
+				98,
+			],
+			[
+				'Call to Bug12062\\FinalStaticCall::validateParam() on a separate line has no effect.',
+				111,
 			],
 		]);
 	}

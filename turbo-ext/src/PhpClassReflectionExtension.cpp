@@ -1612,12 +1612,19 @@ public:
 
 		/* the twin's ?bool $isPure */
 		int isPure = -1;
+		/* the twin's $effects: null without metadata */
+		zv::Val effects = zv::Val::null();
 		bool hasMetadata = signatureMapBool(PT_LC("hasmethodmetadata"), declaringClassNameArg, methodNameArg, ok);
 		if (UNEXPECTED(!ok)) return zv::Val();
 		if (hasMetadata) {
 			zv::Args metadataArgs{declaringClassNameArg, methodNameArg};
 			zv::Val metadata = call(slot(slots::signatureMapProvider), PT_LC("getmethodmetadata"), 2, metadataArgs);
 			if (UNEXPECTED(metadata.isUndef())) return zv::Val();
+			zval *storedEffects = Z_TYPE_P(metadata.raw()) == IS_ARRAY ? zend_hash_str_find(Z_ARRVAL_P(metadata.raw()), PT_LC("effects")) : NULL;
+			if (storedEffects != NULL) {
+				ZVAL_DEREF(storedEffects);
+				effects = zv::Val::copyOf(zv::Ref(storedEffects));
+			}
 			bool hasSideEffects = true;
 			zval *stored = Z_TYPE_P(metadata.raw()) == IS_ARRAY ? zend_hash_str_find(Z_ARRVAL_P(metadata.raw()), PT_LC("hasSideEffects")) : NULL;
 			if (stored != NULL) {
@@ -1878,7 +1885,7 @@ public:
 		bool isDeprecatedInSignatureMap = signatureMapBool(PT_LC("ismethoddeprecated"), declaringClassNameArg, methodNameArg, ok);
 		if (UNEXPECTED(!ok)) return zv::Val();
 
-		zval args[14];
+		zval args[15];
 		ZVAL_COPY_VALUE(&args[0], reflectionProvider.raw());
 		ZVAL_COPY_VALUE(&args[1], declaringClass);
 		ZVAL_COPY_VALUE(&args[2], methodReflection);
@@ -1893,7 +1900,8 @@ public:
 		ZVAL_COPY_VALUE(&args[11], phpDocComment.raw());
 		ZVAL_COPY_VALUE(&args[12], attributes.raw());
 		ZVAL_BOOL(&args[13], isDeprecatedInSignatureMap);
-		return pt_type_new(PT_CLASS_NATIVE_METHOD_REFLECTION, 14, args);
+		ZVAL_COPY_VALUE(&args[14], effects.raw());
+		return pt_type_new(PT_CLASS_NATIVE_METHOD_REFLECTION, 15, args);
 	}
 
 	/* array_map(static fn (bool $immediate) => TrinaryLogic::createFromBoolean($immediate), $map) */
@@ -2958,7 +2966,7 @@ PT_MINIT_REGISTRATION(pt_register_php_class_reflection_extension)
 
 	/* the DI service's constructor: the parameter class names are the
 	 * twin's exactly — Nette reflects them to autowire the service and
-	 * pairs the two #[AutowiredParameter]s by name (README rule 6) */
+	 * pairs the #[AutowiredParameter]s by name (README rule 6) */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ConstructorArgs a;
 		bool inferPrivatePropertyTypeFromConstructor;

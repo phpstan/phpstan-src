@@ -9,6 +9,8 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
+use PHPStan\Reflection\SideEffects;
+use PHPStan\Reflection\SideEffectsFactory;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
@@ -167,6 +169,11 @@ final class EnumCasesMethodReflection implements ExtendedMethodReflection
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return [];
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return SideEffectsFactory::createFromReflection($this);
 	}
 
 	public function getAttributes(): array

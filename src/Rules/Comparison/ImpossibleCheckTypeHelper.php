@@ -451,7 +451,7 @@ final class ImpossibleCheckTypeHelper
 					continue;
 				}
 
-				$argumentType = $scope->getType($assignedInCallVar->expr);
+				$argumentType = $this->treatPhpDocTypesAsCertain ? $scope->getType($assignedInCallVar->expr) : $scope->getNativeType($assignedInCallVar->expr);
 			}
 
 			$isSuperType = $resultType->isSuperTypeOf($argumentType);

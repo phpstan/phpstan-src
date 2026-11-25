@@ -9,6 +9,8 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
+use PHPStan\Reflection\SideEffects;
+use PHPStan\Reflection\SideEffectsFactory;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
@@ -33,6 +35,7 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 		private bool $isVariadic,
 		private ?Type $throwType,
 		private TemplateTypeMap $templateTypeMap,
+		private ?bool $isPure = null,
 	)
 	{
 	}
@@ -133,6 +136,10 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 			return TrinaryLogic::createYes();
 		}
 
+		if ($this->isPure !== null) {
+			return TrinaryLogic::createFromBoolean(!$this->isPure);
+		}
+
 		if ((new ThisType($this->declaringClass->withoutFinalByKeywordOverride()))->isSuperTypeOf($this->returnType)->yes()) {
 			return TrinaryLogic::createYes();
 		}
@@ -176,6 +183,10 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 			return TrinaryLogic::createNo();
 		}
 
+		if ($this->isPure !== null) {
+			return TrinaryLogic::createFromBoolean($this->isPure);
+		}
+
 		return TrinaryLogic::createMaybe();
 	}
 
@@ -187,6 +198,11 @@ final class AnnotationMethodReflection implements ExtendedMethodReflection
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return [];
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return SideEffectsFactory::createFromReflection($this);
 	}
 
 	public function getAttributes(): array

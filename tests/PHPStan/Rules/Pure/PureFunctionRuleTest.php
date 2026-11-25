@@ -14,7 +14,7 @@ class PureFunctionRuleTest extends RuleTestCase
 
 	public function getRule(): Rule
 	{
-		return new PureFunctionRule(new FunctionPurityCheck());
+		return new PureFunctionRule(new FunctionPurityCheck($this->createReflectionProvider()));
 	}
 
 	public function testRule(): void
@@ -103,18 +103,6 @@ class PureFunctionRuleTest extends RuleTestCase
 			[
 				'Impure output between PHP opening and closing tags in pure function PureFunction\justContainsInlineHtml().',
 				160,
-			],
-			[
-				'Impure call to function array_push() in pure function PureFunction\bug13288().',
-				171,
-			],
-			[
-				'Impure call to function array_push() in pure function PureFunction\bug13288().',
-				175,
-			],
-			[
-				'Impure call to function array_push() in pure function PureFunction\bug13288().',
-				182,
 			],
 			[
 				'Impure exit in pure function PureFunction\bug13288b().',
@@ -249,6 +237,20 @@ class PureFunctionRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-6574.php'], []);
 	}
 
+	public function testPureUnlessCallableIsImpureMultiVariant(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure-multi-variant.php'], [
+			[
+				'Impure call to function array_udiff() in pure function PureUnlessCallableIsImpureMultiVariant\\impureCallbackAfterFiveArrays().',
+				37,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureMultiVariant\\impureCallbackAfterFiveArrays().',
+				38,
+			],
+		]);
+	}
+
 	public function testPureUnlessCallableIsImpure(): void
 	{
 		$this->analyse([__DIR__ . '/data/pure-unless-callable-is-impure.php'], [
@@ -311,6 +313,14 @@ class PureFunctionRuleTest extends RuleTestCase
 			[
 				'Possibly impure call to method PureUnlessCallableIsImpureFunction\InheritedMapperRenamedChild::map() in pure function PureUnlessCallableIsImpureFunction\pureCallingRenamedInheritedMethodWithOpaqueCallback().',
 				399,
+			],
+			[
+				'Impure call to function call_user_func() in pure function PureUnlessCallableIsImpureFunction\pureCallUserFuncWithImpureCallback().',
+				423,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureFunction\pureCallUserFuncWithImpureCallback().',
+				424,
 			],
 		]);
 	}
@@ -547,20 +557,164 @@ class PureFunctionRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/pure-unless-parameter-passed-builtin.php'], [
 			[
-				'Impure call to function str_replace() in pure function PureUnlessParameterPassedBuiltin\pureStrReplaceWithCount().',
-				22,
+				'Impure property assignment in pure function PureUnlessParameterPassedBuiltin\pureStrReplaceWithCountProperty().',
+				86,
+			],
+		]);
+	}
+
+	public function testBug15075(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15075.php'], [
+			[
+				'Impure call to function Bug15075\\haveTwoFuns() in pure function Bug15075\\forwardsNextToImpure().',
+				37,
 			],
 			[
-				'Possibly impure call to function preg_match() in pure function PureUnlessParameterPassedBuiltin\purePregMatchWithoutMatches().',
-				32,
+				'Impure echo in pure function Bug15075\\forwardsNextToImpure().',
+				38,
 			],
 			[
-				'Impure call to function str_ireplace() in pure function PureUnlessParameterPassedBuiltin\pureStrIreplaceWithCount().',
+				'Impure call to function Bug15075\\impureHaveFun() in pure function Bug15075\\forwardsToImpure().',
+				63,
+			],
+			[
+				'Impure call to function Bug15075\\haveFun() in pure function Bug15075\\pureCaller().',
+				70,
+			],
+			[
+				'Impure echo in pure function Bug15075\\pureCaller().',
+				71,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug15224(): void
+	{
+		// a call without an encoding reads the default one from global state
+		$this->analyse([__DIR__ . '/data/bug-15224.php'], [
+			[
+				'Impure call to function mb_trim() in pure function Bug15224\\test1().',
+				12,
+			],
+			[
+				'Impure call to function mb_strcut() in pure function Bug15224\\test1().',
+				14,
+			],
+			[
+				'Impure call to function mb_ucfirst() in pure function Bug15224\\test1().',
+				16,
+			],
+			[
+				'Impure call to function mb_str_pad() in pure function Bug15224\\test1().',
+				18,
+			],
+			[
+				'Impure call to function mb_strpos() in pure function Bug15224\\test2a().',
+				28,
+			],
+			[
+				'Impure call to function mb_str_split() in pure function Bug15224\\test3a().',
+				45,
+			],
+			[
+				'Impure call to function mb_strlen() in pure function Bug15224\\nullableEncoding().',
+				62,
+			],
+			[
+				'Impure call to function iconv_strlen() in pure function Bug15224\\iconvEncoding().',
+				70,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15355(): void
+	{
+		$this->analyse([__DIR__ . '/../Functions/data/bug-15355.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testErrorState(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-function-error-state.php'], [
+			[
+				'Possibly impure call to function json_encode() in pure function PureFunctionErrorState\\encodes().',
+				21,
+			],
+			[
+				'Impure call to function var_dump() in pure function PureFunctionErrorState\\prints().',
+				27,
+			],
+			[
+				'Impure call to function headers_list() in pure function PureFunctionErrorState\\readsGlobalState().',
+				36,
+			],
+			[
+				'Impure call to function ini_get() in pure function PureFunctionErrorState\\readsGlobalState().',
+				36,
+			],
+			[
+				'Impure call to function is_file() in pure function PureFunctionErrorState\\readsGlobalState().',
+				36,
+			],
+			[
+				'Impure call to function json_last_error_msg() in pure function PureFunctionErrorState\\readsGlobalState().',
+				36,
+			],
+		]);
+	}
+
+	public function testWeakPurity(): void
+	{
+		$this->analyse([__DIR__ . '/data/weak-purity.php'], [
+			[
+				'Impure echo in pure function WeakPurity\\sortsWithImpureCallback().',
 				52,
 			],
 			[
-				'Impure call to function similar_text() in pure function PureUnlessParameterPassedBuiltin\pureSimilarTextWithPercent().',
-				70,
+				'Impure property assignment in pure function WeakPurity\\sortsProperty().',
+				64,
+			],
+			[
+				'Impure property assignment in pure function WeakPurity\\sortsStaticProperty().',
+				74,
+			],
+			[
+				'Impure static property access in pure function WeakPurity\\sortsStaticProperty().',
+				74,
+			],
+			[
+				'Impure access to superglobal variable in pure function WeakPurity\\sortsSuperglobal().',
+				84,
+			],
+			[
+				'Impure call to function shuffle() in pure function WeakPurity\shufflesLocalCopy().',
+				95,
+			],
+			[
+				'Impure call to function gethostbyname() in pure function WeakPurity\\asksTheOutsideWorld().',
+				119,
+			],
+			[
+				'Impure call to function hash_file() in pure function WeakPurity\\asksTheOutsideWorld().',
+				119,
+			],
+			[
+				'Impure call to function iterator_count() in pure function WeakPurity\\runsGenerator().',
+				128,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testWeakPurityObjects(): void
+	{
+		$this->analyse([__DIR__ . '/data/weak-purity-objects.php'], [
+			[
+				'Impure call to method ReflectionProperty::setRawValue() in pure function WeakPurityObjects\\writesObjectParameter().',
+				15,
 			],
 		]);
 	}

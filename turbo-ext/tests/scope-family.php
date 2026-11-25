@@ -598,8 +598,8 @@ $sfCustomScope = $sfScopeFactory->create(\PHPStan\Analyser\ScopeContext::create(
 	->assignExpression(new \PhpParser\Node\Expr\FuncCall(new \PhpParser\Node\Name('class_exists'), [new \PhpParser\Node\Arg(new \PhpParser\Node\Scalar\String_('X'))]), new \PHPStan\Type\Constant\ConstantBooleanType(true), new \PHPStan\Type\BooleanType())
 	->assignExpression(new \PhpParser\Node\Expr\ConstFetch(new \PhpParser\Node\Name('ANSWER')), new \PHPStan\Type\Constant\ConstantIntegerType(42), new \PHPStan\Type\IntegerType());
 $sfScopes[spl_object_id($sfCustomScope)] = [$sfCustomScope, [new \PhpParser\Node\Expr\Variable('this')], null];
-// tracked qualified and unqualified function calls, for the
-// afterClearstatcacheCall() / afterOpenSslCall() key matching
+// tracked qualified and unqualified function calls, for the named global
+// state invalidateGlobalStateWrittenBy() forgets
 $sfTrue = new \PHPStan\Type\Constant\ConstantBooleanType(true);
 $sfBool = new \PHPStan\Type\BooleanType();
 $sfCallsScope = $sfScopeFactory->create(\PHPStan\Analyser\ScopeContext::create($sfFile))
@@ -1559,9 +1559,11 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 				'enterDeclareStrictTypes' => static fn () => $scope->enterDeclareStrictTypes(),
 				'rememberConstructorScope' => static fn () => $scope->rememberConstructorScope(),
 				'afterExtractCall' => static fn () => $scope->afterExtractCall(),
-				'afterClearstatcacheCall' => static fn () => $scope->afterClearstatcacheCall(),
-				'afterOpenSslCall(openssl_encrypt)' => static fn () => $scope->afterOpenSslCall('openssl_encrypt'),
-				'afterOpenSslCall(openssl_nope)' => static fn () => $scope->afterOpenSslCall('openssl_nope'),
+				'invalidateGlobalStateWrittenBy(stat-cache)' => static fn () => $scope->invalidateGlobalStateWrittenBy(\PHPStan\Reflection\SideEffects::create(['writes-global.stat-cache'], \PHPStan\TrinaryLogic::createNo())),
+				'invalidateGlobalStateWrittenBy(error.openssl)' => static fn () => $scope->invalidateGlobalStateWrittenBy(\PHPStan\Reflection\SideEffects::create(['writes-global.error.openssl'], \PHPStan\TrinaryLogic::createMaybe())),
+				'invalidateGlobalStateWrittenBy(error)' => static fn () => $scope->invalidateGlobalStateWrittenBy(\PHPStan\Reflection\SideEffects::create(['writes-global.error'], \PHPStan\TrinaryLogic::createNo())),
+				'invalidateGlobalStateWrittenBy(writes-global)' => static fn () => $scope->invalidateGlobalStateWrittenBy(\PHPStan\Reflection\SideEffects::create(['writes-global.error.json', 'writes-global'], \PHPStan\TrinaryLogic::createNo())),
+				'invalidateGlobalStateWrittenBy(none)' => static fn () => $scope->invalidateGlobalStateWrittenBy(\PHPStan\Reflection\SideEffects::create(['io'], \PHPStan\TrinaryLogic::createYes())),
 				'invalidateVolatileExpressions' => static fn () => $scope->invalidateVolatileExpressions(),
 				'invalidateExistenceCheckExpressions(class_exists)' => static fn () => $scope->invalidateExistenceCheckExpressions(['class_exists'], null),
 				'invalidateExistenceCheckExpressions(function_exists,nope_missing)' => static fn () => $scope->invalidateExistenceCheckExpressions(['function_exists'], 'nope_missing'),

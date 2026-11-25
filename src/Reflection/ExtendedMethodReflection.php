@@ -81,6 +81,8 @@ interface ExtendedMethodReflection extends MethodReflection
 	 */
 	public function getPureUnlessParameterPassedParameters(): array;
 
+	public function getSideEffects(): SideEffects;
+
 	/** @return list<AttributeReflection> */
 	public function getAttributes(): array;
 

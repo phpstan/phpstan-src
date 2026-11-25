@@ -1,9 +1,9 @@
 <?php // lint >= 8.0
 
 /*
- * instructions: 27.14M
- * cycles: 39.40M
- * memory: 154.9KiB
+ * instructions: 27.39M
+ * cycles: 39.50M
+ * memory: 90.88KiB
  */
 
 namespace Bug4308;

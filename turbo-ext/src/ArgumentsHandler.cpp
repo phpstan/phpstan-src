@@ -226,6 +226,13 @@ pt_property_site pt_ah_closure_use_var_site;
 pt_property_site pt_ah_variable_name_site;
 pt_property_site pt_ah_array_dim_fetch_dim_site;
 pt_property_site pt_ah_new_class_site;
+pt_property_site pt_ah_method_call_var_site;
+pt_property_site pt_ah_method_call_name_site;
+pt_property_site pt_ah_array_items_site;
+pt_property_site pt_ah_array_item_key_site;
+pt_property_site pt_ah_array_item_unpack_site;
+pt_property_site pt_ah_array_item_value_site;
+pt_property_site pt_ah_string_value_site;
 pt_method_site pt_ah_identifier_to_string_site;
 
 /* $arg->value / ->name / ->unpack */
@@ -646,6 +653,35 @@ zend_long calleeHasSideEffects(zval *reflection)
 {
 	zv::Val result = calleeCall(reflection, PT_MR_HAS_SIDE_EFFECTS, "hasSideEffects");
 	return trinaryOf(result);
+}
+
+/* Mirrors writesArgument(): whether the callee writes to the argument passed
+ * to $parameter (NULL or IS_NULL for an argument no parameter receives), the
+ * PT_TRI_* value; -1 = pending exception */
+zend_long calleeWritesArgument(zval *reflection, zval *parameter)
+{
+	bool isFunction = false;
+	bool isExtendedMethod = false;
+	if (UNEXPECTED(!isA(reflection, PT_CLASS_FUNCTION_REFLECTION, isFunction))) return -1;
+	if (!isFunction && UNEXPECTED(!isA(reflection, PT_CLASS_EXTENDED_METHOD_REFLECTION, isExtendedMethod))) return -1;
+	if (!isFunction && !isExtendedMethod) return calleeHasSideEffects(reflection);
+
+	zv::Val sideEffects = calleeCall(reflection, PT_MR_GET_SIDE_EFFECTS, "getSideEffects");
+	if (UNEXPECTED(sideEffects.isUndef())) return -1;
+	/* getSideEffects(): SideEffects, a final class only the native one implements */
+	if (UNEXPECTED(Z_TYPE_P(sideEffects.raw()) != IS_OBJECT || Z_OBJCE_P(sideEffects.raw()) != pt_ce_side_effects)) {
+		zend_throw_error(NULL, "Call to a member function writesParameter() on %s", zend_zval_value_name(sideEffects.raw()));
+		return -1;
+	}
+	if (parameter == NULL || Z_TYPE_P(parameter) == IS_NULL) return pt_side_effects_has_any(Z_OBJ_P(sideEffects.raw()));
+
+	zv::Val name = parameterGetName(parameter);
+	if (UNEXPECTED(name.isUndef())) return -1;
+	if (UNEXPECTED(Z_TYPE_P(name.raw()) != IS_STRING)) {
+		zend_type_error("PHPStan\\Reflection\\SideEffects::writesParameter(): Argument #1 ($parameterName) must be of type string, %s given", zend_zval_value_name(name.raw()));
+		return -1;
+	}
+	return pt_side_effects_writes_parameter(Z_OBJ_P(sideEffects.raw()), Z_STR_P(name.raw()));
 }
 
 zend_long calleeIsPure(zval *reflection)
@@ -2736,9 +2772,9 @@ private:
 		}
 
 		if (Z_TYPE_P(w.calleeReflection) == IS_NULL) return true;
-		zend_long hasSideEffects = calleeHasSideEffects(w.calleeReflection);
-		if (UNEXPECTED(hasSideEffects < 0)) return false;
-		if (hasSideEffects != PT_TRI_YES) return true;
+		zend_long writesArgument = calleeWritesArgument(w.calleeReflection, currentParameter);
+		if (UNEXPECTED(writesArgument < 0)) return false;
+		if (writesArgument != PT_TRI_YES) return true;
 
 		zval *argResult = readArgResult(w.argResults.table(), argValueZv);
 		if (UNEXPECTED(argResult == NULL)) return false;
@@ -2803,6 +2839,130 @@ private:
 		if (UNEXPECTED(invalidateNode.isUndef())) return false;
 		if (UNEXPECTED(!nsrCallNodeCallback(w.nodeScopeResolver, w.nodeCallback, invalidateNode.raw(), w.scope.raw(), w.storage))) return false;
 		zv::Val invalidated = pt_mutating_scope_invalidate_expression(Z_OBJ_P(w.scope.raw()), argValueZv, true);
+		if (UNEXPECTED(invalidated.isUndef())) return false;
+		w.scope = std::move(invalidated);
+		return true;
+	}
+
+	/* Mirrors findObjectWrittenByCallable(): the object a callable argument
+	 * passed to a callable parameter is bound to, [$object, 'method'] or $object->method(...), when calling
+	 * the method writes it; NULL in out when there is none. false = pending
+	 * exception */
+	zend_never_inline bool findObjectWrittenByCallable(Walk &w, zval *value, zval *parameter, zv::Val &out) const
+	{
+		zval *object = NULL;
+		zv::Val methodName;
+		zv::Val objectHold;
+		bool isMethodCall = false;
+		if (UNEXPECTED(!isA(value, PT_CLASS_METHOD_CALL, isMethodCall))) return false;
+		if (isMethodCall) {
+			bool firstClass = false;
+			if (UNEXPECTED(!pt_call_like_is_first_class_callable(Z_OBJ_P(value), firstClass))) return false;
+			if (!firstClass) return true;
+			zv::Val nameHold;
+			zval *name = readProperty(pt_ah_method_call_name_site, value, PT_LC("name"), nameHold);
+			if (UNEXPECTED(name == NULL)) return false;
+			bool isIdentifier = false;
+			if (UNEXPECTED(!isA(name, PT_CLASS_IDENTIFIER, isIdentifier))) return false;
+			if (!isIdentifier) return true;
+			methodName = identifierToString(name);
+			if (UNEXPECTED(methodName.isUndef())) return false;
+			object = readProperty(pt_ah_method_call_var_site, value, PT_LC("var"), objectHold);
+			if (UNEXPECTED(object == NULL)) return false;
+		} else {
+			bool isArray = false;
+			if (UNEXPECTED(!isA(value, PT_CLASS_ARRAY_EXPR, isArray))) return false;
+			if (!isArray) return true;
+			zv::Val itemsHold;
+			zval *items = readProperty(pt_ah_array_items_site, value, PT_LC("items"), itemsHold);
+			if (UNEXPECTED(items == NULL)) return false;
+			if (Z_TYPE_P(items) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(items)) != 2) return true;
+			zval *first = zend_hash_index_find(Z_ARRVAL_P(items), 0);
+			zval *second = zend_hash_index_find(Z_ARRVAL_P(items), 1);
+			if (first == NULL || second == NULL) return true;
+			ZVAL_DEREF(first);
+			ZVAL_DEREF(second);
+			zv::Val keyHold, unpackHold, secondKeyHold, secondValueHold, stringHold;
+			zval *key = readProperty(pt_ah_array_item_key_site, first, PT_LC("key"), keyHold);
+			if (UNEXPECTED(key == NULL)) return false;
+			if (Z_TYPE_P(key) != IS_NULL) return true;
+			zval *unpack = readProperty(pt_ah_array_item_unpack_site, first, PT_LC("unpack"), unpackHold);
+			if (UNEXPECTED(unpack == NULL)) return false;
+			if (zend_is_true(unpack)) return true;
+			zval *secondKey = readProperty(pt_ah_array_item_key_site, second, PT_LC("key"), secondKeyHold);
+			if (UNEXPECTED(secondKey == NULL)) return false;
+			if (Z_TYPE_P(secondKey) != IS_NULL) return true;
+			zval *secondValue = readProperty(pt_ah_array_item_value_site, second, PT_LC("value"), secondValueHold);
+			if (UNEXPECTED(secondValue == NULL)) return false;
+			bool isString = false;
+			if (UNEXPECTED(!isA(secondValue, PT_CLASS_SCALAR_STRING, isString))) return false;
+			if (!isString) return true;
+			zval *string = readProperty(pt_ah_string_value_site, secondValue, PT_LC("value"), stringHold);
+			if (UNEXPECTED(string == NULL)) return false;
+			if (UNEXPECTED(Z_TYPE_P(string) != IS_STRING)) return true;
+			methodName = zv::Val::copyOf(zv::Ref(string));
+			object = readProperty(pt_ah_array_item_value_site, first, PT_LC("value"), objectHold);
+			if (UNEXPECTED(object == NULL)) return false;
+		}
+		if (UNEXPECTED(Z_TYPE_P(methodName.raw()) != IS_STRING)) return true;
+
+		// asking whether the parameter takes a callable can reflect the classes
+		// named by callable-like arrays, so it is asked only for such an argument
+		zv::Val parameterType = parameterGetType(parameter);
+		if (UNEXPECTED(parameterType.isUndef())) return false;
+		bool immediately = false;
+		if (UNEXPECTED(!callCallbackImmediately(parameter, parameterType.raw(), w.calleeReflection, immediately))) return false;
+		if (!immediately) return true;
+
+		zv::Val objectResult = pt_expression_result_storage_find(w.storage, object);
+		if (UNEXPECTED(objectResult.isUndef())) return false;
+		if (objectResult.isNull()) return true;
+		zv::Val objectType = pt_expression_result_get_type(objectResult.raw());
+		if (UNEXPECTED(objectType.isUndef())) return false;
+		zv::Val methodReflection = pt_mutating_scope_get_method_reflection(Z_OBJ_P(w.scope.raw()), objectType.raw(), Z_STR_P(methodName.raw()));
+		if (UNEXPECTED(methodReflection.isUndef())) return false;
+		if (methodReflection.isNull()) return true;
+		zv::Val isStatic = calleeCall(methodReflection.raw(), PT_MR_IS_STATIC, "isStatic");
+		if (UNEXPECTED(isStatic.isUndef())) return false;
+		if (zend_is_true(isStatic.raw())) return true;
+		zend_long writesReceiver = pt_method_reflection_writes_receiver(methodReflection.raw());
+		if (UNEXPECTED(writesReceiver < 0)) return false;
+		if (writesReceiver != PT_TRI_YES) return true;
+
+		out = zv::Val::copyOf(zv::Ref(object));
+		return true;
+	}
+
+	/* the callable-argument part of one iteration of the writeback loop: the
+	 * object a callable passed to a callable parameter writes is invalidated;
+	 * false = pending exception */
+	zend_never_inline bool invalidateObjectWrittenByCallable(Walk &w, ArgRecord &record, zval *writebackAcceptor, HashTable *writebackParameters) const
+	{
+		zval *currentParameter = issetIndex(writebackParameters, record.key);
+		if (currentParameter == NULL && zend_hash_num_elements(writebackParameters) > 0) {
+			bool isVariadic = false;
+			if (UNEXPECTED(!acceptorIsVariadic(writebackAcceptor, isVariadic))) return false;
+			if (isVariadic) {
+				currentParameter = arrayLast(writebackParameters);
+				ZVAL_DEREF(currentParameter);
+			}
+		}
+		if (currentParameter == NULL || Z_TYPE_P(currentParameter) == IS_NULL) return true;
+		bool invalidateCallback = false;
+		if (UNEXPECTED(!shouldInvalidateCallbackExpressions(currentParameter, invalidateCallback))) return false;
+		if (!invalidateCallback) return true;
+
+		zv::Val valueHold;
+		zval *value = argValue(record.arg, valueHold);
+		if (UNEXPECTED(value == NULL)) return false;
+		zv::Val writtenObject;
+		if (UNEXPECTED(!findObjectWrittenByCallable(w, value, currentParameter, writtenObject))) return false;
+		if (writtenObject.isUndef()) return true;
+
+		zv::Val invalidateNode = newInvalidateExprNode(writtenObject.raw());
+		if (UNEXPECTED(invalidateNode.isUndef())) return false;
+		if (UNEXPECTED(!nsrCallNodeCallback(w.nodeScopeResolver, w.nodeCallback, invalidateNode.raw(), w.scope.raw(), w.storage))) return false;
+		zv::Val invalidated = pt_mutating_scope_invalidate_expression(Z_OBJ_P(w.scope.raw()), writtenObject.raw(), true);
 		if (UNEXPECTED(invalidated.isUndef())) return false;
 		w.scope = std::move(invalidated);
 		return true;
@@ -2989,6 +3149,7 @@ private:
 			if (UNEXPECTED(writebackParameters.isUndef() || !requireArray(writebackParameters.raw(), "getParameters()"))) return zv::Val();
 			for (uint32_t k = 0; k < w.records.count; k++) {
 				if (UNEXPECTED(!writebackArg(w, w.records.records[k], writebackAcceptor, Z_ARRVAL_P(writebackParameters.raw())))) return zv::Val();
+				if (UNEXPECTED(!invalidateObjectWrittenByCallable(w, w.records.records[k], writebackAcceptor, Z_ARRVAL_P(writebackParameters.raw())))) return zv::Val();
 			}
 		}
 

@@ -17,6 +17,8 @@ use PHPStan\Reflection\FunctionReflectionFactory;
 use PHPStan\Reflection\InitializerExprContext;
 use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\ParameterAllowedConstantsMapProvider;
+use PHPStan\Reflection\SideEffects;
+use PHPStan\Reflection\SideEffectsFactory;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\MixedType;
@@ -24,6 +26,7 @@ use PHPStan\Type\Type;
 use PHPStan\Type\TypehintHelper;
 use function array_key_exists;
 use function array_map;
+use function in_array;
 use function is_file;
 use function strtolower;
 
@@ -34,6 +37,8 @@ final class PhpFunctionReflection implements FunctionReflection
 	/** @var list<ExtendedFunctionVariant>|null */
 	private ?array $variants = null;
 
+	private ?SideEffects $sideEffects = null;
+
 	/**
 	 * @param array<string, Type> $phpDocParameterTypes
 	 * @param array<string, Type> $phpDocParameterOutTypes
@@ -42,6 +47,7 @@ final class PhpFunctionReflection implements FunctionReflection
 	 * @param list<AttributeReflection> $attributes
 	 * @param array<string, bool> $phpDocParameterPureUnlessCallableIsImpure
 	 * @param array<string, bool> $phpDocParameterPureUnlessParameterPassed
+	 * @param list<string>|null $effects
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -66,6 +72,7 @@ final class PhpFunctionReflection implements FunctionReflection
 		private array $attributes,
 		private array $phpDocParameterPureUnlessCallableIsImpure,
 		private array $phpDocParameterPureUnlessParameterPassed,
+		private ?array $effects = null,
 	)
 	{
 	}
@@ -200,7 +207,8 @@ final class PhpFunctionReflection implements FunctionReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
-		if ($this->getReturnType()->isVoid()->yes()) {
+		// a void function that is pure unless its callable is impure has only the callable's effects
+		if ($this->getReturnType()->isVoid()->yes() && !in_array(true, $this->phpDocParameterPureUnlessCallableIsImpure, true)) {
 			return TrinaryLogic::createYes();
 		}
 		if ($this->isPure !== null) {
@@ -233,6 +241,11 @@ final class PhpFunctionReflection implements FunctionReflection
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->phpDocParameterPureUnlessParameterPassed);
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return $this->sideEffects ??= SideEffectsFactory::createFromReflection($this, $this->effects);
 	}
 
 	public function isBuiltin(): bool

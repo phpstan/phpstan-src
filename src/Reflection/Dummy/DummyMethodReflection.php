@@ -9,6 +9,8 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\ReflectionProviderStaticAccessor;
+use PHPStan\Reflection\SideEffects;
+use PHPStan\Reflection\SideEffectsFactory;
 use PHPStan\Reflection\TrivialParametersAcceptor;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
@@ -155,6 +157,11 @@ final class DummyMethodReflection implements ExtendedMethodReflection
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return [];
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return SideEffectsFactory::createFromReflection($this);
 	}
 
 	public function getAttributes(): array

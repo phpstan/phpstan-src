@@ -85,15 +85,27 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 			$isStatic = $methodTags[$methodName]->isStatic();
 			$nativeCallMethodName = $isStatic ? '__callStatic' : '__call';
 
+			$returnType = TemplateTypeHelper::resolveTemplateTypes(
+				$methodTags[$methodName]->getReturnType(),
+				$classReflection->getActiveTemplateTypeMap(),
+				$classReflection->getCallSiteVarianceMap(),
+				TemplateTypeVariance::createCovariant(),
+			);
+
+			$isPure = null;
+			$classResolvedPhpDoc = $classReflection->getResolvedPhpDoc();
+			if ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsPure()) {
+				if (!$returnType->isVoid()->yes()) {
+					$isPure = true;
+				}
+			} elseif ($classResolvedPhpDoc !== null && $classResolvedPhpDoc->areAllMethodsImpure()) {
+				$isPure = false;
+			}
+
 			return new AnnotationMethodReflection(
 				$methodName,
 				$declaringClass,
-				TemplateTypeHelper::resolveTemplateTypes(
-					$methodTags[$methodName]->getReturnType(),
-					$classReflection->getActiveTemplateTypeMap(),
-					$classReflection->getCallSiteVarianceMap(),
-					TemplateTypeVariance::createCovariant(),
-				),
+				$returnType,
 				$parameters,
 				$isStatic,
 				$this->detectMethodVariadic($parameters),
@@ -101,6 +113,7 @@ final class AnnotationsMethodsClassReflectionExtension implements MethodsClassRe
 					? $classReflection->getNativeMethod($nativeCallMethodName)->getThrowType()
 					: null,
 				$templateTypeMap,
+				$isPure,
 			);
 		}
 

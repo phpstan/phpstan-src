@@ -306,7 +306,7 @@ final class TypeSpecifier
 					return false;
 				}
 
-				return $this->isNotPure($this->reflectionProvider->getFunction($call->name, $scope)->hasSideEffects());
+				return $this->isNotPure($this->reflectionProvider->getFunction($call->name, $scope)->getSideEffects()->isDeterministic()->negate());
 			}
 
 			$nameType = $scope->getType($call->name);
@@ -334,7 +334,7 @@ final class TypeSpecifier
 				return true;
 			}
 
-			return $this->isNotPure($methodReflection->hasSideEffects());
+			return $this->isNotPure($methodReflection->getSideEffects()->isDeterministic()->negate());
 		}
 
 		if ($call instanceof StaticCall) {
@@ -353,19 +353,19 @@ final class TypeSpecifier
 				return true;
 			}
 
-			return $this->isNotPure($methodReflection->hasSideEffects());
+			return $this->isNotPure($methodReflection->getSideEffects()->isDeterministic()->negate());
 		}
 
 		return false;
 	}
 
-	private function isNotPure(TrinaryLogic $hasSideEffects): bool
+	private function isNotPure(TrinaryLogic $resultVaries): bool
 	{
-		if ($hasSideEffects->yes()) {
+		if ($resultVaries->yes()) {
 			return true;
 		}
 
-		return !$this->rememberPossiblyImpureFunctionValues && !$hasSideEffects->no();
+		return !$this->rememberPossiblyImpureFunctionValues && !$resultVaries->no();
 	}
 
 	private function createNullsafeTypes(Expr $expr, Scope $scope, TypeSpecifierContext $context, ?Type $type): SpecifiedTypes

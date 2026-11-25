@@ -17,7 +17,8 @@ Class Example
 
         if (false === \openssl_error_string()) {
             assertType('false', openssl_error_string());
-            assertNativeType('false', openssl_error_string());
+            // each call removes an error from the queue
+            assertNativeType('string|false', openssl_error_string());
             openssl_sign('1', $signature, '');
             assertType('string|false', openssl_error_string());
             assertNativeType('string|false', openssl_error_string());

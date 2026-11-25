@@ -10,9 +10,9 @@ use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
-use PHPStan\Type\Type;
 use function array_key_exists;
 use function array_map;
 use function count;
@@ -36,104 +36,109 @@ use function sprintf;
 final class SimpleImpurePoint
 {
 
-	private const SIDE_EFFECT_FLIP_PARAMETERS = [
-		// functionName => [name, pos, testName]
-		'print_r' => ['return', 1, 'isTruthy'],
-		'var_export' => ['return', 1, 'isTruthy'],
-		'highlight_string' => ['return', 1, 'isTruthy'],
-	];
-
 	/**
 	 * @param ImpurePointIdentifier $identifier
+	 * @param SideEffects|null $sideEffects the side effects of the called function, null when unknown
 	 */
 	public function __construct(
 		private string $identifier,
 		private string $description,
 		private bool $certain,
+		private ?SideEffects $sideEffects = null,
 	)
 	{
 	}
 
 	/**
 	 * Returns null if the function is known to be pure (no side effects).
+	 * $callSideEffects are the side effects of this call a dynamic side effects
+	 * extension described. They replace what the function reflection says;
+	 * the arguments passed to its flagged parameters still count.
 	 *
 	 * @param Arg[] $args
 	 */
-	public static function createFromVariant(FunctionReflection|ExtendedMethodReflection $function, ?ParametersAcceptor $variant, ?Scope $scope = null, array $args = []): ?self
+	public static function createFromVariant(FunctionReflection|ExtendedMethodReflection $function, ?ParametersAcceptor $variant, ?Scope $scope = null, array $args = [], ?SideEffects $callSideEffects = null): ?self
 	{
-		if (!$function->hasSideEffects()->no()) {
-			$certain = $function->isPure()->no();
-			if ($variant !== null) {
-				$certain = $certain || $variant->getReturnType()->isVoid()->yes();
+		if ($callSideEffects !== null) {
+			$verdict = $scope !== null && $variant !== null ? self::resolveConditionalPurityVerdict($variant, $scope, $args) : null;
+			// the effects of the call itself, without what the flagged parameters bring in
+			$own = $callSideEffects->getEffectNames() !== []
+				? TrinaryLogic::createYes()
+				: $callSideEffects->hasOnly([SideEffects::WRITES_ARGS])->negate();
+			if ($own->no() && ($verdict === null || $verdict->yes())) {
+				return null;
 			}
 
-			if (!$certain && $scope !== null && $variant !== null) {
-				$verdict = self::resolveConditionalPurityVerdict($variant, $scope, $args);
-				if ($verdict !== null) {
-					if ($verdict->yes()) {
-						return null;
-					}
-					if ($verdict->no()) {
-						$certain = true;
-					}
-				}
-			}
-
-			if ($function instanceof FunctionReflection) {
-				if (isset(self::SIDE_EFFECT_FLIP_PARAMETERS[$function->getName()]) && $scope !== null) {
-					[
-						$flipParameterName,
-						$flipParameterPosition,
-						$testName,
-					] = self::SIDE_EFFECT_FLIP_PARAMETERS[$function->getName()];
-
-					$sideEffectFlipped = false;
-					$hasNamedParameter = false;
-					$checker = [
-						'isNotNull' => static fn (Type $type) => $type->isNull()->no(),
-						'isTruthy' => static fn (Type $type) => $type->toBoolean()->isTrue()->yes(),
-					][$testName];
-
-					foreach ($args as $i => $arg) {
-						$isFlipParameter = false;
-
-						if ($arg->name !== null) {
-							$hasNamedParameter = true;
-							if ($arg->name->name === $flipParameterName) {
-								$isFlipParameter = true;
-							}
-						}
-
-						if (!$hasNamedParameter && $i === $flipParameterPosition) {
-							$isFlipParameter = true;
-						}
-
-						if ($isFlipParameter) {
-							$sideEffectFlipped = $checker($scope->getType($arg->value));
-							break;
-						}
-					}
-
-					if ($sideEffectFlipped) {
-						return null;
-					}
-				}
-
-				return new SimpleImpurePoint(
-					'functionCall',
-					sprintf('call to function %s()', $function->getName()),
-					$certain,
-				);
-			}
-
-			return new SimpleImpurePoint(
-				'methodCall',
-				sprintf('call to method %s::%s()', $function->getDeclaringClass()->getDisplayName(), $function->getName()),
-				$certain,
+			return self::createForFunction(
+				$function,
+				$own->yes() || ($verdict !== null && $verdict->no()),
+				$verdict === null || $verdict->yes() ? $callSideEffects : null,
 			);
 		}
 
-		return null;
+		if ($function->hasSideEffects()->no()) {
+			return null;
+		}
+
+		$certain = $function->isPure()->no();
+		$verdict = null;
+		// a void function does something, unless all it does is call the callables it is given
+		if ($variant !== null && $function->getSideEffects()->getCalledParameters() === []) {
+			$certain = $certain || $variant->getReturnType()->isVoid()->yes();
+		}
+		if (
+			!$certain
+			&& $function->getSideEffects()->hasOnly([SideEffects::WRITES_ARGS])->no()
+			&& !self::onlyLeavesErrors($function->getSideEffects())
+		) {
+			// the flagged parameters do not undo effects other than writing the arguments,
+			// and leaving the last error, which a call with the parameters unpassed also leaves
+			$certain = true;
+		}
+
+		if (!$certain && $scope !== null && $variant !== null) {
+			$verdict = self::resolveConditionalPurityVerdict($variant, $scope, $args);
+			if ($verdict !== null) {
+				if ($verdict->yes()) {
+					return null;
+				}
+				if ($verdict->no()) {
+					$certain = true;
+				}
+			}
+		}
+
+		return self::createForFunction($function, $certain, $verdict === null ? $function->getSideEffects() : null);
+	}
+
+	/**
+	 * Whether every listed effect is writing the arguments or leaving the last
+	 * error, and the unlisted ones are not certain. A listed writes-global is
+	 * more than the last error.
+	 */
+	private static function onlyLeavesErrors(SideEffects $sideEffects): bool
+	{
+		return SideEffects::create($sideEffects->getEffectNames(), TrinaryLogic::createNo())->hasOnly([SideEffects::WRITES_ARGS, SideEffects::WRITES_GLOBAL_ERROR])->yes()
+			&& !$sideEffects->hasOnly([SideEffects::WRITES_ARGS, SideEffects::WRITES_GLOBAL_ERROR])->no();
+	}
+
+	private static function createForFunction(FunctionReflection|ExtendedMethodReflection $function, bool $certain, ?SideEffects $sideEffects): self
+	{
+		if ($function instanceof FunctionReflection) {
+			return new SimpleImpurePoint(
+				'functionCall',
+				sprintf('call to function %s()', $function->getName()),
+				$certain,
+				$sideEffects,
+			);
+		}
+
+		return new SimpleImpurePoint(
+			'methodCall',
+			sprintf('call to method %s::%s()', $function->getDeclaringClass()->getDisplayName(), $function->getName()),
+			$certain,
+			$sideEffects,
+		);
 	}
 
 	/**
@@ -202,40 +207,43 @@ final class SimpleImpurePoint
 
 			$verdict ??= TrinaryLogic::createYes();
 
-			[$matchedArg, $hasUnpackedArg] = self::matchArgForParameter($args, $parameter, $parameterIndex, $declaredParameterNames);
+			[$matchedArgs, $hasUnpackedArg] = self::matchArgsForParameter($args, $parameter, $parameterIndex, $declaredParameterNames);
 
-			if ($matchedArg === null) {
-				if ($hasUnpackedArg) {
-					// An unpacked argument list (...$args) might supply the flagged
-					// callable, so we cannot be sure the call stays pure.
-					$verdict = $verdict->and(TrinaryLogic::createMaybe());
+			if ($hasUnpackedArg && ($matchedArgs === [] || $parameter->isVariadic())) {
+				// An unpacked argument list (...$args) might supply the flagged
+				// callable, so we cannot be sure the call stays pure.
+				$verdict = $verdict->and(TrinaryLogic::createMaybe());
+			}
 
+			// An omitted optional callback (e.g. array_filter($arr)) is pure.
+			foreach ($matchedArgs as $matchedArg) {
+				$argType = $scope->getType($matchedArg->value);
+				if ($argType->isNull()->yes()) {
+					// Explicit null callback (e.g. array_filter($arr, null)) - pure.
 					continue;
 				}
 
-				// Optional callback omitted (e.g. array_filter($arr)) - pure.
-				continue;
-			}
+				$isCallable = $argType->isCallable();
+				if ($isCallable->no() && $parameter->getType()->isSuperTypeOf($argType)->yes()) {
+					// A parameter that takes either data or the callable, such as
+					// the arrays before the callback of array_udiff(), got data.
+					continue;
+				}
 
-			$argType = $scope->getType($matchedArg->value);
-			if ($argType->isNull()->yes()) {
-				// Explicit null callback (e.g. array_filter($arr, null)) - pure.
-				continue;
-			}
+				if (!$isCallable->yes()) {
+					$verdict = $verdict->and(TrinaryLogic::createMaybe());
+					continue;
+				}
 
-			if (!$argType->isCallable()->yes()) {
-				$verdict = $verdict->and(TrinaryLogic::createMaybe());
-				continue;
-			}
+				$acceptors = $argType->getCallableParametersAcceptors($scope);
+				if (count($acceptors) === 0) {
+					$verdict = $verdict->and(TrinaryLogic::createMaybe());
+					continue;
+				}
 
-			$acceptors = $argType->getCallableParametersAcceptors($scope);
-			if (count($acceptors) === 0) {
-				$verdict = $verdict->and(TrinaryLogic::createMaybe());
-				continue;
-			}
-
-			foreach ($acceptors as $acceptor) {
-				$verdict = $verdict->and($acceptor->isPure());
+				foreach ($acceptors as $acceptor) {
+					$verdict = $verdict->and($acceptor->isPure());
+				}
 			}
 		}
 
@@ -263,9 +271,9 @@ final class SimpleImpurePoint
 
 			$verdict ??= TrinaryLogic::createYes();
 
-			[$matchedArg, $hasUnpackedArg] = self::matchArgForParameter($args, $parameter, $parameterIndex, $declaredParameterNames);
+			[$matchedArgs, $hasUnpackedArg] = self::matchArgsForParameter($args, $parameter, $parameterIndex, $declaredParameterNames);
 
-			if ($matchedArg === null) {
+			if ($matchedArgs === []) {
 				if ($hasUnpackedArg) {
 					// An unpacked argument list (...$args) might supply the flagged
 					// by-ref parameter, so we cannot be sure the call stays pure.
@@ -304,24 +312,25 @@ final class SimpleImpurePoint
 	}
 
 	/**
-	 * Finds the argument a flagged parameter receives at a call site.
+	 * Finds the arguments a flagged parameter receives at a call site.
 	 *
 	 * A trailing variadic parameter collects every positional argument from its own
 	 * position onwards, and - because a named argument that matches no declared
 	 * parameter is collected by the variadic as a string-keyed element - those named
-	 * arguments too.
+	 * arguments too. Any other parameter receives at most one argument.
 	 *
 	 * @param Arg[] $args
 	 * @param array<string, true> $declaredParameterNames
-	 * @return array{?Arg, bool} the matched argument (null when the parameter received
-	 *                           none) and whether an unpacked argument list might have
-	 *                           supplied it
+	 * @return array{list<Arg>, bool} the matched arguments and whether an unpacked
+	 *                                argument list was seen before the parameter's
+	 *                                only argument, or anywhere for a variadic one
 	 */
-	private static function matchArgForParameter(array $args, ExtendedParameterReflection $parameter, int $parameterIndex, array $declaredParameterNames): array
+	private static function matchArgsForParameter(array $args, ExtendedParameterReflection $parameter, int $parameterIndex, array $declaredParameterNames): array
 	{
 		$isVariadic = $parameter->isVariadic();
 		$hasUnpackedArg = false;
 		$hasNamedArg = false;
+		$matchedArgs = [];
 
 		foreach ($args as $i => $arg) {
 			if ($arg->unpack) {
@@ -331,12 +340,12 @@ final class SimpleImpurePoint
 
 			if ($arg->name !== null) {
 				$hasNamedArg = true;
-				if ($arg->name->name === $parameter->getName()) {
-					return [$arg, $hasUnpackedArg];
+				if ($arg->name->name === $parameter->getName() && !$isVariadic) {
+					return [[$arg], $hasUnpackedArg];
 				}
 
-				if ($isVariadic && !array_key_exists($arg->name->name, $declaredParameterNames)) {
-					return [$arg, $hasUnpackedArg];
+				if ($isVariadic && ($arg->name->name === $parameter->getName() || !array_key_exists($arg->name->name, $declaredParameterNames))) {
+					$matchedArgs[] = $arg;
 				}
 
 				continue;
@@ -346,12 +355,18 @@ final class SimpleImpurePoint
 				continue;
 			}
 
-			if ($i === $parameterIndex || ($isVariadic && $i > $parameterIndex)) {
-				return [$arg, $hasUnpackedArg];
+			if ($i !== $parameterIndex && (!$isVariadic || $i <= $parameterIndex)) {
+				continue;
 			}
+
+			if (!$isVariadic) {
+				return [[$arg], $hasUnpackedArg];
+			}
+
+			$matchedArgs[] = $arg;
 		}
 
-		return [null, $hasUnpackedArg];
+		return [$matchedArgs, $hasUnpackedArg];
 	}
 
 	/** @return ImpurePointIdentifier */
@@ -368,6 +383,11 @@ final class SimpleImpurePoint
 	public function isCertain(): bool
 	{
 		return $this->certain;
+	}
+
+	public function getSideEffects(): ?SideEffects
+	{
+		return $this->sideEffects;
 	}
 
 }

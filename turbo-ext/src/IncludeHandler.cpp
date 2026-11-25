@@ -4,12 +4,11 @@
  *
  * A DI service (#[AutowiredService]): the constructor keeps the twin's
  * arginfo so Nette autowires it. processExpr() is registered as the class's
- * handler entry (Engine.h). The twin's closures are native closures capturing
- * what the PHP closures capture: the typeCallback (nothing) and the
- * specifyTypesCallback ($this, $expr).
+ * handler entry (Engine.h). The typeCallback is a native closure capturing
+ * nothing, and the specifyTypesCallback is SpecifiedTypes::emptySpecifyCallback().
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext, MutatingScope,
- * InternalThrowPoint, ImpurePoint, VariableFlow, DefaultNarrowingHelper and
+ * InternalThrowPoint, ImpurePoint, VariableFlow, SpecifiedTypes and
  * the Type kernel are called through their direct entries;
  * IncludedFilePathResolver stays PHP (the cached method site below).
  */
@@ -82,15 +81,13 @@ class IncludeHandler
 {
 public:
 	static constexpr const char *closureName = "PHPStan\\Analyser\\ExprHandler\\IncludeHandler::{closure}";
-	static constexpr uint32_t defaultNarrowingHelperSlot = slots::defaultNarrowingHelper;
 
 	explicit IncludeHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *includedFilePathResolver) const
+	void construct(zval *expressionResultFactory, zval *includedFilePathResolver) const
 	{
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
-		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
 		pt_write_slot(self, slots::includedFilePathResolver, includedFilePathResolver);
 	}
 
@@ -121,7 +118,7 @@ public:
 		// the included file may read any variable
 		zv::Val extractedScope = pt_mutating_scope_after_extract_call(Z_OBJ_P(child.scope));
 		if (UNEXPECTED(extractedScope.isUndef())) return zv::Val();
-		zv::Val resultScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(extractedScope.raw()));
+		zv::Val resultScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(extractedScope.raw()), true);
 		if (UNEXPECTED(resultScope.isUndef())) return zv::Val();
 
 		zv::Val throwPoint = pt_internal_throw_point_create_implicit(resultScope.raw(), expr);
@@ -153,7 +150,7 @@ public:
 		if (UNEXPECTED(impurePoints.isUndef())) return zv::Val();
 
 		zv::Val typeCallback = pt_native_closure(&ptse::mixedTypeBody<IncludeHandler>);
-		zv::Val specifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<IncludeHandler>, self, expr);
+		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		zv::Val includeDependencies = pt_dependencies_create_in(beforeScope, NULL, NULL, NULL, includedFiles.raw());
 		if (UNEXPECTED(includeDependencies.isUndef())) return zv::Val();
 		zv::Val dependenciesHold;
@@ -224,9 +221,9 @@ PT_MINIT_REGISTRATION(pt_register_include_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expressionResultFactory, *defaultNarrowingHelper, *includedFilePathResolver;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper, includedFilePathResolver)) RETURN_THROWS();
-		IncludeHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper, includedFilePathResolver);
+		zval *expressionResultFactory, *includedFilePathResolver;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expressionResultFactory, includedFilePathResolver)) RETURN_THROWS();
+		IncludeHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, includedFilePathResolver);
 	});
 
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) {

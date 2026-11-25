@@ -12,6 +12,8 @@ use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SideEffects;
+use PHPStan\Reflection\SideEffectsFactory;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
@@ -25,10 +27,13 @@ use function strtolower;
 final class NativeMethodReflection implements ExtendedMethodReflection
 {
 
+	private ?SideEffects $sideEffects = null;
+
 	/**
 	 * @param list<ExtendedParametersAcceptor> $variants
 	 * @param list<ExtendedParametersAcceptor>|null $namedArgumentsVariants
 	 * @param list<AttributeReflection> $attributes
+	 * @param list<string>|null $effects the complete list of side effects, null when unknown
 	 */
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
@@ -45,6 +50,7 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 		private ?string $phpDocComment,
 		private array $attributes,
 		private bool $isDeprecatedInSignatureMap,
+		private ?array $effects = null,
 	)
 	{
 	}
@@ -198,6 +204,11 @@ final class NativeMethodReflection implements ExtendedMethodReflection
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return [];
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return $this->sideEffects ??= SideEffectsFactory::createFromReflection($this, $this->effects);
 	}
 
 	private function isVoid(): bool

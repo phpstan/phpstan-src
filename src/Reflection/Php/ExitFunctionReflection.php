@@ -7,6 +7,8 @@ use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\PassedByReference;
+use PHPStan\Reflection\SideEffects;
+use PHPStan\Reflection\SideEffectsFactory;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -149,6 +151,11 @@ final class ExitFunctionReflection implements FunctionReflection
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return [];
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return SideEffectsFactory::createFromReflection($this);
 	}
 
 	public function getAttributes(): array

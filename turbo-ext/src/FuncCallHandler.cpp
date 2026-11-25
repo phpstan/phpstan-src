@@ -142,6 +142,17 @@ zv::Val callNoArgs(pt_method_site &site, zval *object, const char *lcname, size_
 	return pt_call_method_cached(site, Z_OBJ_P(object), lcname, len, 0, NULL);
 }
 
+/* $this->dynamicSideEffectsExtensionRegistry->getFunctionCallSideEffects($reflection, $normalizedExpr, $scope); UNDEF = pending exception */
+static pt_method_site pt_fch_call_side_effects_site;
+static zv::Val getFunctionCallSideEffects(zval *registry, zval *reflection, zval *normalizedExpr, zval *scope)
+{
+	zval argv[3];
+	ZVAL_COPY_VALUE(&argv[0], reflection);
+	ZVAL_COPY_VALUE(&argv[1], normalizedExpr);
+	ZVAL_COPY_VALUE(&argv[2], scope);
+	return pt_call_method_cached(pt_fch_call_side_effects_site, Z_OBJ_P(registry), PT_LC("getfunctioncallsideeffects"), 3, argv);
+}
+
 /* $registry->getDynamicFunctionReturnTypeExtensions($functionReflection) */
 zv::Val getDynamicFunctionReturnTypeExtensions(zval *registry, zval *functionReflection)
 {
@@ -540,7 +551,7 @@ public:
 			slots::expressionResultFactory, slots::typeSpecifier, slots::defaultNarrowingHelper,
 			slots::earlyTerminatingHelper, slots::storagePrimer, slots::impossibleCheckTypeHelper,
 			slots::closureTypeResolver, slots::argumentsHandler, slots::closureProcessor, slots::assignHandler,
-			slots::closureSignatureInference,
+			slots::closureSignatureInference, slots::dynamicSideEffectsExtensionRegistry,
 		};
 		zv::ObjRef object(self);
 		for (uint32_t i = 0; i < sizeof(order) / sizeof(order[0]); i++) {
@@ -1070,16 +1081,21 @@ public:
 		if (UNEXPECTED(argsImpurePoints == NULL || !arrayMerge(impurePoints, argsImpurePoints))) return zv::Val();
 		if (!isAlwaysTerminating && UNEXPECTED(!argsResultBool(argsResult.raw(), false, isAlwaysTerminating))) return zv::Val();
 
+		// the side effects of this call when an extension describes them,
+		// instead of the ones of the function reflection
+		zv::Val callSideEffects = zv::Val::null();
 		if (!functionReflection.isNull()) {
 			// created after the args were processed - the side-effect flip
 			// parameters (print_r's $return, ...) read an argument's type, which
 			// is only available once its result is stored
 			zv::Val args = callArgs(expr);
 			if (UNEXPECTED(args.isUndef())) return zv::Val();
+			callSideEffects = getFunctionCallSideEffects(slot(slots::dynamicSideEffectsExtensionRegistry), functionReflection.raw(), normalizedExpr.raw(), scope.raw());
+			if (UNEXPECTED(callSideEffects.isUndef())) return zv::Val();
 			pt_simple_impure_point_data impurePoint;
-			if (UNEXPECTED(!pt_simple_impure_point_resolve(functionReflection.raw(), parametersAcceptor.raw(), scope.raw(), args.raw(), impurePoint))) return zv::Val();
+			if (UNEXPECTED(!pt_simple_impure_point_resolve(functionReflection.raw(), parametersAcceptor.raw(), scope.raw(), args.raw(), impurePoint, callSideEffects.raw()))) return zv::Val();
 			if (impurePoint.exists) {
-				zv::Val converted = pt_impure_point_new(scopeBeforeArgs, expr, impurePoint.identifier, impurePoint.description, impurePoint.certain);
+				zv::Val converted = pt_impure_point_new_with_side_effects(scopeBeforeArgs, expr, impurePoint.identifier, impurePoint.description, impurePoint.certain, Z_ISUNDEF(impurePoint.sideEffects) ? NULL : &impurePoint.sideEffects);
 				zend_string_release(impurePoint.description);
 				if (UNEXPECTED(converted.isUndef())) return zv::Val();
 				ptcall::appendTo(impurePoints, std::move(converted));
@@ -1109,13 +1125,13 @@ public:
 		zv::Val typeCallback = isEarlyTerminating
 			? pt_native_closure(&neverTypeCallbackBody)
 			: pt_native_closure(&typeCallbackBody, self, nodeScopeResolver, beforeScope, expr, nameResult.raw(), resolvedParametersAcceptor.raw(), argsResult.raw(), storageRef.raw());
-		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, beforeScope, expr, normalizedExpr.raw(), nameResult.raw(), resolvedParametersAcceptor.raw(), argsResult.raw());
+		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, beforeScope, expr, normalizedExpr.raw(), nameResult.raw(), resolvedParametersAcceptor.raw(), argsResult.raw(), callSideEffects.raw());
 
 		// A type constraint on a (narrowable, i.e. non-side-effecting, non-first-class)
 		// function call narrows the call itself - the inside-out equivalent of
 		// createForExpr's FuncCall purity gate + tail entry. An impure call narrows to
 		// nothing.
-		zv::Val createTypesCallback = pt_native_closure(&createTypesCallbackBody, self, expr, normalizedExpr.raw(), nameResult.raw(), beforeScope, argsResult.raw());
+		zv::Val createTypesCallback = pt_native_closure(&createTypesCallbackBody, self, expr, normalizedExpr.raw(), nameResult.raw(), beforeScope, argsResult.raw(), callSideEffects.raw());
 
 		// Store a preliminary result carrying the type/specify callbacks before the
 		// throw-point return type is computed: getFunctionThrowPoint() resolves the
@@ -1206,7 +1222,7 @@ public:
 			byRefWrittenNames = zv::Arr::copyOfTable(Z_ARRVAL_P(zend_hash_index_find(Z_ARRVAL_P(invoked.raw()), 2)));
 		}
 
-		zv::Val effects = pt_func_call_scope_effects_helper_apply_call_scope_effects(slot(slots::scopeEffectsHelper), nodeScopeResolver, stmt, normalizedExpr.raw(), functionReflection.raw(), parametersAcceptor.raw(), argsResult.raw(), scope.raw(), scopeBeforeArgs, storage, nodeCallback);
+		zv::Val effects = pt_func_call_scope_effects_helper_apply_call_scope_effects(slot(slots::scopeEffectsHelper), nodeScopeResolver, stmt, normalizedExpr.raw(), functionReflection.raw(), parametersAcceptor.raw(), callSideEffects.raw(), argsResult.raw(), scope.raw(), scopeBeforeArgs, storage, nodeCallback);
 		if (UNEXPECTED(effects.isUndef())) return zv::Val();
 		scope = std::move(effects);
 
@@ -2304,8 +2320,8 @@ private:
 		return pt_dependencies_create_in(scope, types.raw(), NULL, reflections.raw());
 	}
 
-	/* Mirrors specifyTypes(); $argsResult NULL for null. */
-	zv::Val specifyTypes(zval *scope, zval *expr, zval *normalizedExpr, zval *nameResult, zval *resolvedParametersAcceptor, zval *context, zval *argsResult) const
+	/* Mirrors specifyTypes(); $callSideEffects / $argsResult NULL for null. */
+	zv::Val specifyTypes(zval *scope, zval *expr, zval *normalizedExpr, zval *nameResult, zval *resolvedParametersAcceptor, zval *context, zval *callSideEffects, zval *argsResult) const
 	{
 		zval *name = nodeProp(pt_fch_name_site, expr, PT_LC("name"));
 		if (UNEXPECTED(name == NULL)) return zv::Val();
@@ -2374,7 +2390,7 @@ private:
 						// truthiness (mirrors the create() gate the old
 						// specifyTypesInCondition() reached for the self key)
 						bool narrowable;
-						if (UNEXPECTED(!isFuncCallNarrowable(scope, expr, nameResult, narrowable))) return zv::Val();
+						if (UNEXPECTED(!isFuncCallNarrowable(scope, expr, nameResult, callSideEffects, narrowable))) return zv::Val();
 						zv::Val combined;
 						if (narrowable) {
 							zv::Val defaultTypes = pt_default_narrowing_helper_specify_default_types(slot(slots::defaultNarrowingHelper), expr, context);
@@ -2396,14 +2412,14 @@ private:
 			}
 			if (UNEXPECTED(EG(exception))) return zv::Val();
 
-			return defaultFuncCallNarrowing(scope, expr, nameResult, context);
+			return defaultFuncCallNarrowing(scope, expr, nameResult, context, callSideEffects);
 		}
 
 		zv::Val specifiedTypes = specifyTypesFromCallableCall(context, expr, nameResult, resolvedParametersAcceptor, scope);
 		if (UNEXPECTED(specifiedTypes.isUndef())) return zv::Val();
 		if (!specifiedTypes.isNull()) return specifiedTypes;
 
-		return defaultFuncCallNarrowing(scope, expr, nameResult, context);
+		return defaultFuncCallNarrowing(scope, expr, nameResult, context, callSideEffects);
 	}
 
 	/* $a->unionWith($b) of SpecifiedTypes */
@@ -2486,10 +2502,10 @@ private:
 	}
 
 	/* Mirrors defaultFuncCallNarrowing(). */
-	zv::Val defaultFuncCallNarrowing(zval *scope, zval *expr, zval *nameResult, zval *context) const
+	zv::Val defaultFuncCallNarrowing(zval *scope, zval *expr, zval *nameResult, zval *context, zval *callSideEffects) const
 	{
 		bool narrowable;
-		if (UNEXPECTED(!isFuncCallNarrowable(scope, expr, nameResult, narrowable))) return zv::Val();
+		if (UNEXPECTED(!isFuncCallNarrowable(scope, expr, nameResult, callSideEffects, narrowable))) return zv::Val();
 		if (!narrowable) {
 			zv::Val empty = pt_specified_types_new();
 			if (UNEXPECTED(empty.isUndef())) return zv::Val();
@@ -2499,8 +2515,9 @@ private:
 		return pt_default_narrowing_helper_specify_default_types(slot(slots::defaultNarrowingHelper), expr, context);
 	}
 
-	/* Mirrors isFuncCallNarrowable(); false = pending exception */
-	[[nodiscard]] bool isFuncCallNarrowable(zval *scope, zval *expr, zval *nameResult, bool &out) const
+	/* Mirrors isFuncCallNarrowable(); $callSideEffects NULL for null; false =
+	 * pending exception */
+	[[nodiscard]] bool isFuncCallNarrowable(zval *scope, zval *expr, zval *nameResult, zval *callSideEffects, bool &out) const
 	{
 		zval *name = nodeProp(pt_fch_name_site, expr, PT_LC("name"));
 		if (UNEXPECTED(name == NULL)) return false;
@@ -2516,23 +2533,22 @@ private:
 				return true;
 			}
 
-			zv::Val functionReflection = getFunction(slot(slots::reflectionProvider), name, scope);
-			if (UNEXPECTED(functionReflection.isUndef())) return false;
-			zv::Val sideEffectsHold;
-			zval *hasSideEffects = pt_function_reflection_has_side_effects(functionReflection.raw(), sideEffectsHold);
-			if (UNEXPECTED(hasSideEffects == NULL)) return false;
-			if (UNEXPECTED(Z_TYPE_P(hasSideEffects) != IS_OBJECT)) {
-				zend_throw_error(NULL, "Call to a member function yes() on %s", zend_zval_value_name(hasSideEffects));
-				return false;
+			/* $resultVaries = ($callSideEffects ?? ...->getSideEffects())->isDeterministic()->negate() */
+			zend_long resultVaries;
+			if (callSideEffects != NULL) {
+				resultVaries = pt_side_effects_result_varies(callSideEffects);
+			} else {
+				zv::Val functionReflection = getFunction(slot(slots::reflectionProvider), name, scope);
+				if (UNEXPECTED(functionReflection.isUndef())) return false;
+				resultVaries = pt_function_reflection_result_varies(functionReflection.raw());
 			}
-			zend_long sideEffects = pt_type_trinary_value(hasSideEffects);
-			if (UNEXPECTED(sideEffects < 0)) return false;
-			if (sideEffects == PT_TRI_YES) {
+			if (UNEXPECTED(resultVaries < 0)) return false;
+			if (resultVaries == PT_TRI_YES) {
 				out = false;
 				return true;
 			}
 
-			out = remember || sideEffects == PT_TRI_NO;
+			out = remember || resultVaries == PT_TRI_NO;
 			return true;
 		}
 		if (UNEXPECTED(EG(exception))) return false;
@@ -2715,7 +2731,7 @@ private:
 	/* fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted):
 	 * SpecifiedTypes => $this->specifyTypes(...) — captures: $this,
 	 * $beforeScope, $expr, $normalizedExpr, $nameResult,
-	 * $resolvedParametersAcceptor, $argsResult */
+	 * $resolvedParametersAcceptor, $argsResult, $callSideEffects */
 	static void specifyTypesCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 2)) {
@@ -2732,14 +2748,16 @@ private:
 		}
 		zval *resolvedParametersAcceptor = &captures[5];
 		zval *argsResult = &captures[6];
-		zv::Val specifiedTypes = FuncCallHandler(Z_OBJ(captures[0])).specifyTypes(scope.raw(), &captures[2], &captures[3], &captures[4], Z_TYPE_P(resolvedParametersAcceptor) == IS_NULL ? NULL : resolvedParametersAcceptor, &argv[0], Z_TYPE_P(argsResult) == IS_NULL ? NULL : argsResult);
+		zval *callSideEffects = &captures[7];
+		zv::Val specifiedTypes = FuncCallHandler(Z_OBJ(captures[0])).specifyTypes(scope.raw(), &captures[2], &captures[3], &captures[4], Z_TYPE_P(resolvedParametersAcceptor) == IS_NULL ? NULL : resolvedParametersAcceptor, &argv[0], Z_TYPE_P(callSideEffects) == IS_NULL ? NULL : callSideEffects, Z_TYPE_P(argsResult) == IS_NULL ? NULL : argsResult);
 		if (UNEXPECTED(specifiedTypes.isUndef())) return;
 		specifiedTypes.intoReturnValue(return_value);
 	}
 
 	/* function (Type $type, TypeSpecifierContext $createContext, bool
 	 * $nativeTypesPromoted) use ($expr, $normalizedExpr, $nameResult,
-	 * $beforeScope, $argsResult): SpecifiedTypes — captures: $this, then those */
+	 * $beforeScope, $argsResult, $callSideEffects): SpecifiedTypes — captures:
+	 * $this, then those */
 	static void createTypesCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 3)) {
@@ -2758,6 +2776,7 @@ private:
 		zval *nameResult = &captures[3];
 		zval *beforeScope = &captures[4];
 		zval *argsResult = &captures[5];
+		zval *callSideEffects = Z_TYPE(captures[6]) == IS_NULL ? NULL : &captures[6];
 
 		zv::Val s;
 		if (nativeTypesPromoted) {
@@ -2767,7 +2786,7 @@ private:
 			s = zv::Val::copyOf(zv::Ref(beforeScope));
 		}
 		bool narrowable;
-		if (UNEXPECTED(!isFuncCallNarrowable(s.raw(), expr, nameResult, narrowable))) return zv::Val();
+		if (UNEXPECTED(!isFuncCallNarrowable(s.raw(), expr, nameResult, callSideEffects, narrowable))) return zv::Val();
 		if (!narrowable) {
 			return pt_specified_types_new();
 		}
@@ -2869,9 +2888,9 @@ PT_MINIT_REGISTRATION(pt_register_func_call_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *reflectionProvider = NULL, *dynamicFunctionThrowTypeExtensions = NULL, *dynamicReturnTypeExtensionRegistry = NULL, *scopeEffectsHelper = NULL, *expressionResultFactory = NULL, *typeSpecifier = NULL, *defaultNarrowingHelper = NULL, *earlyTerminatingHelper = NULL, *storagePrimer = NULL, *impossibleCheckTypeHelper = NULL, *closureTypeResolver = NULL, *argumentsHandler = NULL, *closureProcessor = NULL, *assignHandler = NULL, *closureSignatureInference = NULL;
+		zval *reflectionProvider = NULL, *dynamicFunctionThrowTypeExtensions = NULL, *dynamicReturnTypeExtensionRegistry = NULL, *scopeEffectsHelper = NULL, *expressionResultFactory = NULL, *typeSpecifier = NULL, *defaultNarrowingHelper = NULL, *earlyTerminatingHelper = NULL, *storagePrimer = NULL, *impossibleCheckTypeHelper = NULL, *closureTypeResolver = NULL, *argumentsHandler = NULL, *closureProcessor = NULL, *assignHandler = NULL, *closureSignatureInference = NULL, *dynamicSideEffectsExtensionRegistry = NULL;
 		bool implicitThrows, rememberPossiblyImpureFunctionValues;
-		ZEND_PARSE_PARAMETERS_START(17, 17)
+		ZEND_PARSE_PARAMETERS_START(18, 18)
 			Z_PARAM_OBJECT(reflectionProvider)
 			Z_PARAM_OBJECT(dynamicFunctionThrowTypeExtensions)
 			Z_PARAM_OBJECT(dynamicReturnTypeExtensionRegistry)
@@ -2889,11 +2908,12 @@ PT_MINIT_REGISTRATION(pt_register_func_call_handler)
 			Z_PARAM_OBJECT(closureProcessor)
 			Z_PARAM_OBJECT(assignHandler)
 			Z_PARAM_OBJECT(closureSignatureInference)
+			Z_PARAM_OBJECT(dynamicSideEffectsExtensionRegistry)
 		ZEND_PARSE_PARAMETERS_END();
 		zval implicitThrowsValue, rememberValue;
 		ZVAL_BOOL(&implicitThrowsValue, implicitThrows);
 		ZVAL_BOOL(&rememberValue, rememberPossiblyImpureFunctionValues);
-		zval *argv[] = { reflectionProvider, dynamicFunctionThrowTypeExtensions, dynamicReturnTypeExtensionRegistry, &implicitThrowsValue, &rememberValue, scopeEffectsHelper, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, earlyTerminatingHelper, storagePrimer, impossibleCheckTypeHelper, closureTypeResolver, argumentsHandler, closureProcessor, assignHandler, closureSignatureInference };
+		zval *argv[] = { reflectionProvider, dynamicFunctionThrowTypeExtensions, dynamicReturnTypeExtensionRegistry, &implicitThrowsValue, &rememberValue, scopeEffectsHelper, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, earlyTerminatingHelper, storagePrimer, impossibleCheckTypeHelper, closureTypeResolver, argumentsHandler, closureProcessor, assignHandler, closureSignatureInference, dynamicSideEffectsExtensionRegistry };
 		FuncCallHandler(Z_OBJ_P(ZEND_THIS)).construct(argv);
 	});
 

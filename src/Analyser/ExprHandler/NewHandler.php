@@ -51,10 +51,12 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\Rules\Properties\PropertyReflectionFinder;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\DynamicReturnTypeExtensionRegistry;
+use PHPStan\Type\DynamicSideEffectsExtensionRegistry;
 use PHPStan\Type\DynamicStaticMethodThrowTypeExtension;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\GenericObjectType;
@@ -104,6 +106,7 @@ final class NewHandler implements ExprHandler
 		private DynamicReturnTypeStoragePrimer $storagePrimer,
 		private Container $container,
 		private ArgumentsHandler $argumentsHandler,
+		private DynamicSideEffectsExtensionRegistry $dynamicSideEffectsExtensionRegistry,
 	)
 	{
 	}
@@ -251,11 +254,23 @@ final class NewHandler implements ExprHandler
 		$hasYield = $hasYield || $argsResult->hasYield();
 		$throwPoints = array_merge($throwPoints, $argsResult->getThrowPoints());
 		$impurePoints = array_merge($impurePoints, $argsResult->getImpurePoints());
+		// the side effects of this instantiation when an extension describes
+		// them, instead of the ones of the constructor reflection
+		$callSideEffects = null;
 		if ($deferredConstructorImpureIsDynamic !== null) {
 			// created after the args were processed - the pure-unless-callable-
 			// is-impure parameters read an argument's type, which is only
 			// available once its result is stored
-			$impurePoints = array_merge($impurePoints, $this->getConstructorImpurePoints($constructorReflection, $classReflection, $parametersAcceptor, $expr, $scope, $scopeBeforeArgs, $deferredConstructorImpureIsDynamic));
+			if ($constructorReflection !== null && $parametersAcceptor !== null) {
+				$constructorCall = ArgumentsNormalizer::reorderStaticCallArguments(
+					$parametersAcceptor,
+					new StaticCall(new Name\FullyQualified($className ?? $constructorReflection->getDeclaringClass()->getName()), $constructorReflection->getName(), $expr->getArgs()),
+				);
+				if ($constructorCall !== null) {
+					$callSideEffects = $this->dynamicSideEffectsExtensionRegistry->getStaticCallSideEffects($constructorReflection, $constructorCall, $scope);
+				}
+			}
+			$impurePoints = array_merge($impurePoints, $this->getConstructorImpurePoints($constructorReflection, $classReflection, $parametersAcceptor, $callSideEffects, $expr, $scope, $scopeBeforeArgs, $deferredConstructorImpureIsDynamic));
 		}
 		$isAlwaysTerminating = $isAlwaysTerminating || $argsResult->isAlwaysTerminating();
 
@@ -312,11 +327,14 @@ final class NewHandler implements ExprHandler
 		}
 
 		$calleeKnown = $classReflection !== null && !($isDynamic && !$classReflection->isFinal());
-		if (
+		if ($callSideEffects !== null) {
+			// an instantiation an extension describes forgets the global state it lists, like a built-in
+			$scope = $scope->invalidateGlobalStateWrittenBy($callSideEffects);
+		} elseif (
 			($constructorReflection !== null && !$constructorReflection->getDeclaringClass()->isBuiltin() && !$constructorReflection->hasSideEffects()->no())
 			|| ($constructorReflection === null && !$calleeKnown)
 		) {
-			$scope = $scope->invalidateVolatileExpressions();
+			$scope = $scope->invalidateVolatileExpressions($constructorReflection !== null && $constructorReflection->hasSideEffects()->yes());
 		}
 
 		$variableFlow = VariableFlow::sequence(
@@ -370,11 +388,28 @@ final class NewHandler implements ExprHandler
 	/**
 	 * @return ImpurePoint[]
 	 */
-	private function getConstructorImpurePoints(?ExtendedMethodReflection $constructorReflection, ?ClassReflection $classReflection, ?ParametersAcceptor $parametersAcceptor, New_ $expr, MutatingScope $scope, MutatingScope $scopeBeforeArgs, bool $isDynamic): array
+	private function getConstructorImpurePoints(?ExtendedMethodReflection $constructorReflection, ?ClassReflection $classReflection, ?ParametersAcceptor $parametersAcceptor, ?SideEffects $callSideEffects, New_ $expr, MutatingScope $scope, MutatingScope $scopeBeforeArgs, bool $isDynamic): array
 	{
 		if ($constructorReflection !== null) {
 			if ($parametersAcceptor === null) {
 				throw new ShouldNotHappenException();
+			}
+			if ($callSideEffects !== null) {
+				$impurePoint = SimpleImpurePoint::createFromVariant($constructorReflection, $parametersAcceptor, $scope, $expr->getArgs(), $callSideEffects);
+				if ($impurePoint === null) {
+					return [];
+				}
+
+				return [
+					new ImpurePoint(
+						$scopeBeforeArgs,
+						$expr,
+						'new',
+						sprintf('instantiation of class %s', $constructorReflection->getDeclaringClass()->getDisplayName()),
+						$impurePoint->isCertain(),
+						$impurePoint->getSideEffects(),
+					),
+				];
 			}
 			if ($constructorReflection->hasSideEffects()->no()) {
 				return [];

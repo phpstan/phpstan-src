@@ -20,6 +20,7 @@ inline constexpr uint32_t defaultNarrowingHelper = 6;
 inline constexpr uint32_t storagePrimer = 7;
 inline constexpr uint32_t container = 8;
 inline constexpr uint32_t argumentsHandler = 9;
+inline constexpr uint32_t dynamicSideEffectsExtensionRegistry = 10;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -41,6 +42,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("storagePrimer", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ExprHandler\\Helper\\DynamicReturnTypeStoragePrimer");
 	cls.property("container", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\DependencyInjection\\Container");
 	cls.property("argumentsHandler", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Analyser\\ArgumentsHandler");
+	cls.property("dynamicSideEffectsExtensionRegistry", ZEND_ACC_PRIVATE, reg::PropertyKind::Typed, 0, "PHPStan\\Type\\DynamicSideEffectsExtensionRegistry");
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
@@ -65,66 +67,70 @@ inline constexpr char strings[] =
 	"PHPStan\\DependencyInjection\\Container\0" /* 556 */
 	"argumentsHandler\0" /* 594 */
 	"PHPStan\\Analyser\\ArgumentsHandler\0" /* 611 */
-	"__construct\0" /* 645 */
-	"expr\0" /* 657 */
-	"PhpParser\\Node\\Expr\0" /* 662 */
-	"\0" /* 682 */
-	"supports\0" /* 683 */
-	"nodeScopeResolver\0" /* 692 */
-	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 710 */
-	"stmt\0" /* 745 */
-	"PhpParser\\Node\\Stmt\0" /* 750 */
-	"scope\0" /* 770 */
-	"PHPStan\\Analyser\\MutatingScope\0" /* 776 */
-	"storage\0" /* 807 */
-	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 815 */
-	"nodeCallback\0" /* 856 */
-	"context\0" /* 869 */
-	"PHPStan\\Analyser\\ExpressionContext\0" /* 877 */
-	"PHPStan\\Analyser\\ExpressionResult\0" /* 912 */
-	"processExpr\0" /* 946 */
-	"className\0" /* 958 */
-	"PhpParser\\Node\\Expr\\New_\0" /* 968 */
-	"processConstructorReflection\0" /* 993 */
-	"constructorReflection\0" /* 1022 */
-	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 1044 */
-	"classReflection\0" /* 1088 */
-	"PHPStan\\Reflection\\ClassReflection\0" /* 1104 */
-	"parametersAcceptor\0" /* 1139 */
-	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1158 */
-	"scopeBeforeArgs\0" /* 1196 */
-	"isDynamic\0" /* 1212 */
-	"getConstructorImpurePoints\0" /* 1222 */
-	"PHPStan\\Reflection\\MethodReflection\0" /* 1249 */
-	"new\0" /* 1285 */
-	"PhpParser\\Node\\Name\0" /* 1289 */
-	"args\0" /* 1309 */
-	"PHPStan\\Analyser\\InternalThrowPoint\0" /* 1314 */
-	"getConstructorThrowPoint\0" /* 1350 */
-	"preResolvedAcceptor\0" /* 1375 */
-	"classExprType\0" /* 1395 */
-	"PHPStan\\Type\\Type\0" /* 1409 */
-	"argsResult\0" /* 1427 */
-	"PHPStan\\Analyser\\ArgsResult\0" /* 1438 */
-	"null\0" /* 1466 */
-	"allowUnresolved\0" /* 1471 */
-	"true\0" /* 1487 */
-	"resolveReturnType\0" /* 1492 */
-	"node\0" /* 1510 */
-	"exactInstantiation\0" /* 1515 */
-	"site\0" /* 1534 */
-	"frame\0" /* 1539 */
-	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 1545 */
-	"unresolvedArgumentList\0" /* 1593 */
-	"type\0" /* 1616 */
-	"PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType\0" /* 1621 */
-	"template\0" /* 1673 */
-	"PHPStan\\Type\\Generic\\TemplateType\0" /* 1682 */
-	"rekeyParentTemplateArgument\0" /* 1716 */
-	"resolvedParametersAcceptor\0" /* 1744 */
-	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1771 */
-	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1809 */
-	"specifyTypes"; /* 1841 */
+	"dynamicSideEffectsExtensionRegistry\0" /* 645 */
+	"PHPStan\\Type\\DynamicSideEffectsExtensionRegistry\0" /* 681 */
+	"__construct\0" /* 730 */
+	"expr\0" /* 742 */
+	"PhpParser\\Node\\Expr\0" /* 747 */
+	"\0" /* 767 */
+	"supports\0" /* 768 */
+	"nodeScopeResolver\0" /* 777 */
+	"PHPStan\\Analyser\\NodeScopeResolver\0" /* 795 */
+	"stmt\0" /* 830 */
+	"PhpParser\\Node\\Stmt\0" /* 835 */
+	"scope\0" /* 855 */
+	"PHPStan\\Analyser\\MutatingScope\0" /* 861 */
+	"storage\0" /* 892 */
+	"PHPStan\\Analyser\\ExpressionResultStorage\0" /* 900 */
+	"nodeCallback\0" /* 941 */
+	"context\0" /* 954 */
+	"PHPStan\\Analyser\\ExpressionContext\0" /* 962 */
+	"PHPStan\\Analyser\\ExpressionResult\0" /* 997 */
+	"processExpr\0" /* 1031 */
+	"className\0" /* 1043 */
+	"PhpParser\\Node\\Expr\\New_\0" /* 1053 */
+	"processConstructorReflection\0" /* 1078 */
+	"constructorReflection\0" /* 1107 */
+	"PHPStan\\Reflection\\ExtendedMethodReflection\0" /* 1129 */
+	"classReflection\0" /* 1173 */
+	"PHPStan\\Reflection\\ClassReflection\0" /* 1189 */
+	"parametersAcceptor\0" /* 1224 */
+	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 1243 */
+	"callSideEffects\0" /* 1281 */
+	"PHPStan\\Reflection\\SideEffects\0" /* 1297 */
+	"scopeBeforeArgs\0" /* 1328 */
+	"isDynamic\0" /* 1344 */
+	"getConstructorImpurePoints\0" /* 1354 */
+	"PHPStan\\Reflection\\MethodReflection\0" /* 1381 */
+	"new\0" /* 1417 */
+	"PhpParser\\Node\\Name\0" /* 1421 */
+	"args\0" /* 1441 */
+	"PHPStan\\Analyser\\InternalThrowPoint\0" /* 1446 */
+	"getConstructorThrowPoint\0" /* 1482 */
+	"preResolvedAcceptor\0" /* 1507 */
+	"classExprType\0" /* 1527 */
+	"PHPStan\\Type\\Type\0" /* 1541 */
+	"argsResult\0" /* 1559 */
+	"PHPStan\\Analyser\\ArgsResult\0" /* 1570 */
+	"null\0" /* 1598 */
+	"allowUnresolved\0" /* 1603 */
+	"true\0" /* 1619 */
+	"resolveReturnType\0" /* 1624 */
+	"node\0" /* 1642 */
+	"exactInstantiation\0" /* 1647 */
+	"site\0" /* 1666 */
+	"frame\0" /* 1671 */
+	"PHPStan\\Analyser\\Generics\\TemplateArgumentFrame\0" /* 1677 */
+	"unresolvedArgumentList\0" /* 1725 */
+	"type\0" /* 1748 */
+	"PHPStan\\Type\\Generic\\UnresolvedTemplateArgumentType\0" /* 1753 */
+	"template\0" /* 1805 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 1814 */
+	"rekeyParentTemplateArgument\0" /* 1848 */
+	"resolvedParametersAcceptor\0" /* 1876 */
+	"PHPStan\\Analyser\\TypeSpecifierContext\0" /* 1903 */
+	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 1941 */
+	"specifyTypes"; /* 1973 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 19), /* __construct $reflectionProvider */
 	reg::packed(57, 0, 96), /* __construct $dynamicStaticMethodThrowTypeExtensions */
@@ -136,82 +142,84 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(465, 0, 479), /* __construct $storagePrimer */
 	reg::packed(546, 0, 556), /* __construct $container */
 	reg::packed(594, 0, 611), /* __construct $argumentsHandler */
-	reg::packed(657, 0, 662), /* supports $expr */
-	reg::packed(682, MAY_BE_BOOL), /* supports return */
-	reg::packed(692, 0, 710), /* processExpr $nodeScopeResolver */
-	reg::packed(745, 0, 750), /* processExpr $stmt */
-	reg::packed(657, 0, 662), /* processExpr $expr */
-	reg::packed(770, 0, 776), /* processExpr $scope */
-	reg::packed(807, 0, 815), /* processExpr $storage */
-	reg::packed(856, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
-	reg::packed(869, 0, 877), /* processExpr $context */
-	reg::packed(682, 0, 912), /* processExpr return */
-	reg::packed(958, MAY_BE_STRING), /* processConstructorReflection $className */
-	reg::packed(657, 0, 968), /* processConstructorReflection $expr */
-	reg::packed(682, MAY_BE_ARRAY), /* processConstructorReflection return */
-	reg::packed(1022, MAY_BE_NULL, 1044), /* getConstructorImpurePoints $constructorReflection */
-	reg::packed(1088, MAY_BE_NULL, 1104), /* getConstructorImpurePoints $classReflection */
-	reg::packed(1139, MAY_BE_NULL, 1158), /* getConstructorImpurePoints $parametersAcceptor */
-	reg::packed(657, 0, 968), /* getConstructorImpurePoints $expr */
-	reg::packed(770, 0, 776), /* getConstructorImpurePoints $scope */
-	reg::packed(1196, 0, 776), /* getConstructorImpurePoints $scopeBeforeArgs */
-	reg::packed(1212, MAY_BE_BOOL), /* getConstructorImpurePoints $isDynamic */
-	reg::packed(682, MAY_BE_ARRAY), /* getConstructorImpurePoints return */
-	reg::packed(1022, 0, 1249), /* getConstructorThrowPoint $constructorReflection */
-	reg::packed(1139, 0, 1158), /* getConstructorThrowPoint $parametersAcceptor */
-	reg::packed(1285, 0, 968), /* getConstructorThrowPoint $new */
-	reg::packed(958, 0, 1289), /* getConstructorThrowPoint $className */
-	reg::packed(1309, MAY_BE_ARRAY), /* getConstructorThrowPoint $args */
-	reg::packed(770, 0, 776), /* getConstructorThrowPoint $scope */
-	reg::packed(869, 0, 877), /* getConstructorThrowPoint $context */
-	reg::packed(682, MAY_BE_NULL, 1314), /* getConstructorThrowPoint return */
-	reg::packed(770, 0, 776), /* resolveReturnType $scope */
-	reg::packed(657, 0, 662), /* resolveReturnType $expr */
-	reg::packed(1375, MAY_BE_NULL, 1158), /* resolveReturnType $preResolvedAcceptor */
-	reg::packed(1395, MAY_BE_NULL, 1409), /* resolveReturnType $classExprType */
-	reg::packed(1427, MAY_BE_NULL, 1438, false, false, 1466), /* resolveReturnType $argsResult */
-	reg::packed(1471, MAY_BE_BOOL, reg::NoString, false, false, 1487), /* resolveReturnType $allowUnresolved */
-	reg::packed(682, 0, 1409), /* resolveReturnType return */
-	reg::packed(770, 0, 776), /* exactInstantiation $scope */
-	reg::packed(1510, 0, 968), /* exactInstantiation $node */
-	reg::packed(958, 0, 1289), /* exactInstantiation $className */
-	reg::packed(1375, MAY_BE_NULL, 1158), /* exactInstantiation $preResolvedAcceptor */
-	reg::packed(1427, MAY_BE_NULL, 1438, false, false, 1466), /* exactInstantiation $argsResult */
-	reg::packed(1471, MAY_BE_BOOL, reg::NoString, false, false, 1487), /* exactInstantiation $allowUnresolved */
-	reg::packed(682, 0, 1409), /* exactInstantiation return */
-	reg::packed(1088, 0, 1104), /* unresolvedArgumentList $classReflection */
-	reg::packed(1534, 0, 968), /* unresolvedArgumentList $site */
-	reg::packed(1539, MAY_BE_NULL, 1545), /* unresolvedArgumentList $frame */
-	reg::packed(1471, MAY_BE_BOOL), /* unresolvedArgumentList $allowUnresolved */
-	reg::packed(682, MAY_BE_ARRAY), /* unresolvedArgumentList return */
-	reg::packed(1616, 0, 1621), /* rekeyParentTemplateArgument $type */
-	reg::packed(1534, 0, 968), /* rekeyParentTemplateArgument $site */
-	reg::packed(1673, 0, 1682), /* rekeyParentTemplateArgument $template */
-	reg::packed(1539, MAY_BE_NULL, 1545), /* rekeyParentTemplateArgument $frame */
-	reg::packed(1471, MAY_BE_BOOL), /* rekeyParentTemplateArgument $allowUnresolved */
-	reg::packed(682, 0, 1409), /* rekeyParentTemplateArgument return */
-	reg::packed(770, 0, 776), /* specifyTypes $scope */
-	reg::packed(657, 0, 662), /* specifyTypes $expr */
-	reg::packed(1744, MAY_BE_NULL, 1158), /* specifyTypes $resolvedParametersAcceptor */
-	reg::packed(869, 0, 1771), /* specifyTypes $context */
-	reg::packed(682, 0, 1809), /* specifyTypes return */
+	reg::packed(645, 0, 681), /* __construct $dynamicSideEffectsExtensionRegistry */
+	reg::packed(742, 0, 747), /* supports $expr */
+	reg::packed(767, MAY_BE_BOOL), /* supports return */
+	reg::packed(777, 0, 795), /* processExpr $nodeScopeResolver */
+	reg::packed(830, 0, 835), /* processExpr $stmt */
+	reg::packed(742, 0, 747), /* processExpr $expr */
+	reg::packed(855, 0, 861), /* processExpr $scope */
+	reg::packed(892, 0, 900), /* processExpr $storage */
+	reg::packed(941, MAY_BE_CALLABLE), /* processExpr $nodeCallback */
+	reg::packed(954, 0, 962), /* processExpr $context */
+	reg::packed(767, 0, 997), /* processExpr return */
+	reg::packed(1043, MAY_BE_STRING), /* processConstructorReflection $className */
+	reg::packed(742, 0, 1053), /* processConstructorReflection $expr */
+	reg::packed(767, MAY_BE_ARRAY), /* processConstructorReflection return */
+	reg::packed(1107, MAY_BE_NULL, 1129), /* getConstructorImpurePoints $constructorReflection */
+	reg::packed(1173, MAY_BE_NULL, 1189), /* getConstructorImpurePoints $classReflection */
+	reg::packed(1224, MAY_BE_NULL, 1243), /* getConstructorImpurePoints $parametersAcceptor */
+	reg::packed(1281, MAY_BE_NULL, 1297), /* getConstructorImpurePoints $callSideEffects */
+	reg::packed(742, 0, 1053), /* getConstructorImpurePoints $expr */
+	reg::packed(855, 0, 861), /* getConstructorImpurePoints $scope */
+	reg::packed(1328, 0, 861), /* getConstructorImpurePoints $scopeBeforeArgs */
+	reg::packed(1344, MAY_BE_BOOL), /* getConstructorImpurePoints $isDynamic */
+	reg::packed(767, MAY_BE_ARRAY), /* getConstructorImpurePoints return */
+	reg::packed(1107, 0, 1381), /* getConstructorThrowPoint $constructorReflection */
+	reg::packed(1224, 0, 1243), /* getConstructorThrowPoint $parametersAcceptor */
+	reg::packed(1417, 0, 1053), /* getConstructorThrowPoint $new */
+	reg::packed(1043, 0, 1421), /* getConstructorThrowPoint $className */
+	reg::packed(1441, MAY_BE_ARRAY), /* getConstructorThrowPoint $args */
+	reg::packed(855, 0, 861), /* getConstructorThrowPoint $scope */
+	reg::packed(954, 0, 962), /* getConstructorThrowPoint $context */
+	reg::packed(767, MAY_BE_NULL, 1446), /* getConstructorThrowPoint return */
+	reg::packed(855, 0, 861), /* resolveReturnType $scope */
+	reg::packed(742, 0, 747), /* resolveReturnType $expr */
+	reg::packed(1507, MAY_BE_NULL, 1243), /* resolveReturnType $preResolvedAcceptor */
+	reg::packed(1527, MAY_BE_NULL, 1541), /* resolveReturnType $classExprType */
+	reg::packed(1559, MAY_BE_NULL, 1570, false, false, 1598), /* resolveReturnType $argsResult */
+	reg::packed(1603, MAY_BE_BOOL, reg::NoString, false, false, 1619), /* resolveReturnType $allowUnresolved */
+	reg::packed(767, 0, 1541), /* resolveReturnType return */
+	reg::packed(855, 0, 861), /* exactInstantiation $scope */
+	reg::packed(1642, 0, 1053), /* exactInstantiation $node */
+	reg::packed(1043, 0, 1421), /* exactInstantiation $className */
+	reg::packed(1507, MAY_BE_NULL, 1243), /* exactInstantiation $preResolvedAcceptor */
+	reg::packed(1559, MAY_BE_NULL, 1570, false, false, 1598), /* exactInstantiation $argsResult */
+	reg::packed(1603, MAY_BE_BOOL, reg::NoString, false, false, 1619), /* exactInstantiation $allowUnresolved */
+	reg::packed(767, 0, 1541), /* exactInstantiation return */
+	reg::packed(1173, 0, 1189), /* unresolvedArgumentList $classReflection */
+	reg::packed(1666, 0, 1053), /* unresolvedArgumentList $site */
+	reg::packed(1671, MAY_BE_NULL, 1677), /* unresolvedArgumentList $frame */
+	reg::packed(1603, MAY_BE_BOOL), /* unresolvedArgumentList $allowUnresolved */
+	reg::packed(767, MAY_BE_ARRAY), /* unresolvedArgumentList return */
+	reg::packed(1748, 0, 1753), /* rekeyParentTemplateArgument $type */
+	reg::packed(1666, 0, 1053), /* rekeyParentTemplateArgument $site */
+	reg::packed(1805, 0, 1814), /* rekeyParentTemplateArgument $template */
+	reg::packed(1671, MAY_BE_NULL, 1677), /* rekeyParentTemplateArgument $frame */
+	reg::packed(1603, MAY_BE_BOOL), /* rekeyParentTemplateArgument $allowUnresolved */
+	reg::packed(767, 0, 1541), /* rekeyParentTemplateArgument return */
+	reg::packed(855, 0, 861), /* specifyTypes $scope */
+	reg::packed(742, 0, 747), /* specifyTypes $expr */
+	reg::packed(1876, MAY_BE_NULL, 1243), /* specifyTypes $resolvedParametersAcceptor */
+	reg::packed(954, 0, 1903), /* specifyTypes $context */
+	reg::packed(767, 0, 1941), /* specifyTypes return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
-inline constexpr sigtab::Sig __construct = { { 645 /* __construct */, 10, 0, 10, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig supports = { { 683 /* supports */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processExpr = { { 946 /* processExpr */, 7, 12, 7, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig processConstructorReflection = { { 993 /* processConstructorReflection */, 2, 20, 2, 22, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getConstructorImpurePoints = { { 1222 /* getConstructorImpurePoints */, 7, 23, 7, 30, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getConstructorThrowPoint = { { 1350 /* getConstructorThrowPoint */, 7, 31, 7, 38, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveReturnType = { { 1492 /* resolveReturnType */, 4, 39, 6, 45, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig exactInstantiation = { { 1515 /* exactInstantiation */, 4, 46, 6, 52, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig unresolvedArgumentList = { { 1593 /* unresolvedArgumentList */, 4, 53, 4, 57, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig rekeyParentTemplateArgument = { { 1716 /* rekeyParentTemplateArgument */, 5, 58, 5, 63, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig specifyTypes = { { 1841 /* specifyTypes */, 4, 64, 4, 68, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig __construct = { { 730 /* __construct */, 11, 0, 11, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig supports = { { 768 /* supports */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processExpr = { { 1031 /* processExpr */, 7, 13, 7, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig processConstructorReflection = { { 1078 /* processConstructorReflection */, 2, 21, 2, 23, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getConstructorImpurePoints = { { 1354 /* getConstructorImpurePoints */, 8, 24, 8, 32, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getConstructorThrowPoint = { { 1482 /* getConstructorThrowPoint */, 7, 33, 7, 40, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveReturnType = { { 1624 /* resolveReturnType */, 4, 41, 6, 47, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig exactInstantiation = { { 1647 /* exactInstantiation */, 4, 48, 6, 54, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig unresolvedArgumentList = { { 1725 /* unresolvedArgumentList */, 4, 55, 4, 59, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig rekeyParentTemplateArgument = { { 1848 /* rekeyParentTemplateArgument */, 5, 60, 5, 65, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig specifyTypes = { { 1973 /* specifyTypes */, 4, 66, 4, 70, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::NewHandler

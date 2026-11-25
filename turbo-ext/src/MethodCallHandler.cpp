@@ -126,6 +126,17 @@ zv::Val methodDeclaringClassName(zval *methodReflection)
 
 } // namespace
 
+/* $this->dynamicSideEffectsExtensionRegistry->getMethodCallSideEffects($reflection, $normalizedExpr, $scope); UNDEF = pending exception */
+static pt_method_site pt_mch_call_side_effects_site;
+static zv::Val getMethodCallSideEffects(zval *registry, zval *reflection, zval *normalizedExpr, zval *scope)
+{
+	zval argv[3];
+	ZVAL_COPY_VALUE(&argv[0], reflection);
+	ZVAL_COPY_VALUE(&argv[1], normalizedExpr);
+	ZVAL_COPY_VALUE(&argv[2], scope);
+	return pt_call_method_cached(pt_mch_call_side_effects_site, Z_OBJ_P(registry), PT_LC("getmethodcallsideeffects"), 3, argv);
+}
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Analyser\ExprHandler\MethodCallHandler; UNDEF = pending
@@ -138,10 +149,10 @@ public:
 	/* the constructor body: the promoted properties */
 	void construct(zval **services, bool rememberPossiblyImpureFunctionValues) const
 	{
-		static const uint32_t serviceSlots[10] = {
+		static const uint32_t serviceSlots[11] = {
 			slots::methodCallReturnTypeHelper, slots::methodThrowPointHelper, slots::reflectionProvider,
 			slots::expressionResultFactory, slots::typeSpecifier, slots::defaultNarrowingHelper, slots::storagePrimer,
-			slots::earlyTerminatingHelper, slots::argumentsHandler, slots::preservedPropertiesResolver,
+			slots::earlyTerminatingHelper, slots::argumentsHandler, slots::preservedPropertiesResolver, slots::dynamicSideEffectsExtensionRegistry,
 		};
 		for (uint32_t i = 0; i < 3; i++) {
 			pt_write_slot(self, serviceSlots[i], services[i]);
@@ -149,7 +160,7 @@ public:
 		zval remember = {};
 		ZVAL_BOOL(&remember, rememberPossiblyImpureFunctionValues);
 		pt_write_slot(self, slots::rememberPossiblyImpureFunctionValues, &remember);
-		for (uint32_t i = 3; i < 10; i++) {
+		for (uint32_t i = 3; i < 11; i++) {
 			pt_write_slot(self, serviceSlots[i], services[i]);
 		}
 	}
@@ -369,16 +380,21 @@ public:
 			if (UNEXPECTED(!processDroppedArgs(OBJ_PROP_NUM(self, slots::argumentsHandler), argv))) return zv::Val();
 		}
 
+		// the side effects of this call when an extension describes them,
+		// instead of the ones of the method reflection
+		zv::Val callSideEffects = zv::Val::null();
 		if (!methodReflection.isNull()) {
 			// created after the args were processed - the pure-unless-callable-
 			// is-impure parameters read an argument's type, which is only
 			// available once its result is stored
 			zval *args = exprArgs(expr);
 			if (UNEXPECTED(args == NULL)) return zv::Val();
+			callSideEffects = getMethodCallSideEffects(OBJ_PROP_NUM(self, slots::dynamicSideEffectsExtensionRegistry), methodReflection.raw(), normalizedExpr.raw(), currentScope.raw());
+			if (UNEXPECTED(callSideEffects.isUndef())) return zv::Val();
 			pt_simple_impure_point_data impurePoint;
-			if (UNEXPECTED(!pt_simple_impure_point_resolve(methodReflection.raw(), parametersAcceptor.raw(), currentScope.raw(), args, impurePoint))) return zv::Val();
+			if (UNEXPECTED(!pt_simple_impure_point_resolve(methodReflection.raw(), parametersAcceptor.raw(), currentScope.raw(), args, impurePoint, callSideEffects.raw()))) return zv::Val();
 			if (impurePoint.exists) {
-				zv::Val point = pt_impure_point_new(scopeBeforeArgs.raw(), expr, impurePoint.identifier, impurePoint.description, impurePoint.certain);
+				zv::Val point = pt_impure_point_new_with_side_effects(scopeBeforeArgs.raw(), expr, impurePoint.identifier, impurePoint.description, impurePoint.certain, Z_ISUNDEF(impurePoint.sideEffects) ? NULL : &impurePoint.sideEffects);
 				zend_string_release(impurePoint.description);
 				if (UNEXPECTED(point.isUndef())) return zv::Val();
 				appendTo(impurePoints, std::move(point));
@@ -397,11 +413,11 @@ public:
 		zv::Val typeCallback = isEarlyTerminating
 			? pt_native_closure(&earlyTerminatingTypeCallbackBody)
 			: pt_native_closure(&typeCallbackBody, self, beforeScope, expr, varResult.raw(), nameResult.raw(), resolvedParametersAcceptor.raw(), argsResult.raw());
-		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, beforeScope, expr, normalizedExpr.raw(), varResult.raw(), resolvedParametersAcceptor.raw(), methodReflection.raw(), argsResult.raw());
+		zv::Val specifyTypesCallback = pt_native_closure(&specifyTypesCallbackBody, self, beforeScope, expr, normalizedExpr.raw(), varResult.raw(), resolvedParametersAcceptor.raw(), methodReflection.raw(), argsResult.raw(), callSideEffects.raw());
 		// A type constraint on a (narrowable, i.e. non-side-effecting) method call
 		// narrows the call itself - the inside-out equivalent of createForExpr's
 		// MethodCall purity gate + tail entry. An impure call narrows to nothing.
-		zv::Val createTypesCallback = pt_native_closure(&createTypesCallbackBody, self, expr, varResult.raw(), beforeScope);
+		zv::Val createTypesCallback = pt_native_closure(&createTypesCallbackBody, self, expr, varResult.raw(), beforeScope, callSideEffects.raw());
 
 		// Store a preliminary result carrying the type/specify callbacks before the
 		// throw point is computed: the method throw point resolves the return type
@@ -443,11 +459,14 @@ public:
 			zv::Val methodName = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_NAME);
 			if (UNEXPECTED(methodName.isUndef())) return zv::Val();
 			bool invalidate = Z_TYPE_P(methodName.raw()) == IS_STRING && zend_string_equals_literal(Z_STR_P(methodName.raw()), "__construct");
-			zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
-			if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
+			/* the receiver's state: writes-this or writes-global */
+			zend_long writesReceiver = callSideEffects.isNull()
+				? pt_method_reflection_writes_receiver(methodReflection.raw())
+				: pt_side_effects_writes_receiver(callSideEffects.raw());
+			if (UNEXPECTED(writesReceiver < 0)) return zv::Val();
 			if (!invalidate) {
-				invalidate = hasSideEffects == PT_TRI_YES
-					|| (!zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) && hasSideEffects == PT_TRI_MAYBE);
+				invalidate = writesReceiver == PT_TRI_YES
+					|| (!zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) && writesReceiver == PT_TRI_MAYBE);
 			}
 			if (invalidate) {
 				zval *normalizedVar = exprVar(normalizedExpr.raw());
@@ -465,7 +484,7 @@ public:
 				if (UNEXPECTED(preservedPropertyNames.isUndef())) return zv::Val();
 				currentScope = pt_mutating_scope_invalidate_expression(Z_OBJ_P(currentScope.raw()), normalizedVar, true, declaringClass.raw(), zend_is_true(isStatic.raw()), preservedPropertyNames.isNull() ? NULL : preservedPropertyNames.raw());
 				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
-			} else if (hasSideEffects != PT_TRI_NO) {
+			} else if (writesReceiver != PT_TRI_NO) {
 				currentScope = forgetWrittenProperties(OBJ_PROP_NUM(self, slots::preservedPropertiesResolver), currentScope.raw(), expr, methodReflection.raw());
 				if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 			}
@@ -476,7 +495,14 @@ public:
 			if (!zend_is_true(isStatic.raw())) {
 				zv::Val selfOutType = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_SELF_OUT_TYPE);
 				if (UNEXPECTED(selfOutType.isUndef())) return zv::Val();
+				// an impure call returns another object next time, which keeps its type
+				bool receiverRemembered = true;
 				if (!selfOutType.isNull()) {
+					zval *receiver = exprVar(normalizedExpr.raw());
+					if (UNEXPECTED(receiver == NULL)) return zv::Val();
+					if (UNEXPECTED(!pt_default_narrowing_helper_is_subject_value_remembered(OBJ_PROP_NUM(self, slots::defaultNarrowingHelper), varResult.raw(), receiver, receiverRemembered))) return zv::Val();
+				}
+				if (!selfOutType.isNull() && receiverRemembered) {
 					zval *acceptorForGenerics = resolvedParametersAcceptor.isNull() ? parametersAcceptor.raw() : resolvedParametersAcceptor.raw();
 					zval *normalizedVar = exprVar(normalizedExpr.raw());
 					if (UNEXPECTED(normalizedVar == NULL)) return zv::Val();
@@ -506,19 +532,33 @@ public:
 			appendTo(throwPoints, std::move(throwPoint));
 		}
 		bool invalidateVolatile = methodReflection.isNull();
-		if (!invalidateVolatile) {
+		/* a call that only may have side effects keeps the results of global state getters */
+		bool globalStateReads = false;
+		bool builtin = false;
+		if (!callSideEffects.isNull()) {
+			/* a call an extension describes forgets the global state it lists, like a built-in */
+			currentScope = pt_mutating_scope_invalidate_global_state_written_by(Z_OBJ_P(currentScope.raw()), callSideEffects.raw());
+			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
+		} else if (!invalidateVolatile) {
 			zv::Val declaringClass = pt_extended_method_reflection_call(methodReflection.raw(), PT_MR_GET_DECLARING_CLASS);
 			if (UNEXPECTED(declaringClass.isUndef())) return zv::Val();
-			bool builtin;
 			if (UNEXPECTED(!pt_class_reflection_is_builtin(Z_OBJ_P(declaringClass.raw()), builtin))) return zv::Val();
 			if (!builtin) {
 				zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
 				if (UNEXPECTED(hasSideEffects < 0)) return zv::Val();
 				invalidateVolatile = hasSideEffects != PT_TRI_NO;
+				globalStateReads = hasSideEffects == PT_TRI_YES;
 			}
 		}
-		if (invalidateVolatile) {
-			currentScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(currentScope.raw()));
+		if (!callSideEffects.isNull()) {
+			/* forgotten above */
+		} else if (invalidateVolatile) {
+			currentScope = pt_mutating_scope_invalidate_volatile_expressions(Z_OBJ_P(currentScope.raw()), globalStateReads);
+			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
+		} else if (builtin) {
+			zv::Val sideEffects = pt_method_reflection_side_effects(methodReflection.raw());
+			if (UNEXPECTED(sideEffects.isUndef())) return zv::Val();
+			currentScope = pt_mutating_scope_invalidate_global_state_written_by(Z_OBJ_P(currentScope.raw()), sideEffects.raw());
 			if (UNEXPECTED(currentScope.isUndef())) return zv::Val();
 		}
 
@@ -709,7 +749,7 @@ public:
 
 	/* Mirrors specifyTypes(); $resolvedParametersAcceptor / $argsResult NULL
 	 * or IS_NULL for null */
-	zv::Val specifyTypes(zval *scope, zval *expr, zval *normalizedExpr, zval *varResult, zval *resolvedParametersAcceptor, zval *walkMethodReflection, zval *context, zval *argsResult) const
+	zv::Val specifyTypes(zval *scope, zval *expr, zval *normalizedExpr, zval *varResult, zval *resolvedParametersAcceptor, zval *walkMethodReflection, zval *context, zval *callSideEffects, zval *argsResult) const
 	{
 		if (resolvedParametersAcceptor != NULL && Z_TYPE_P(resolvedParametersAcceptor) == IS_NULL) resolvedParametersAcceptor = NULL;
 		if (argsResult != NULL && Z_TYPE_P(argsResult) == IS_NULL) argsResult = NULL;
@@ -720,7 +760,7 @@ public:
 		if (UNEXPECTED(name == NULL)) return zv::Val();
 		int nameIsIdentifier = isIdentifier(name);
 		if (UNEXPECTED(nameIsIdentifier < 0)) return zv::Val();
-		if (!nameIsIdentifier) return defaultMethodCallNarrowing(scope, expr, varResult, context);
+		if (!nameIsIdentifier) return defaultMethodCallNarrowing(scope, expr, varResult, context, callSideEffects);
 
 		// the var was processed during processExpr; read its already-computed
 		// result instead of re-walking via Scope::getType().
@@ -803,7 +843,7 @@ public:
 					// key goes through the same purity gate as the assert-less
 					// default narrowing - an impure method evaluated a second time
 					// must not read the first call's truthiness
-					zv::Val defaultNarrowing = defaultMethodCallNarrowing(scope, expr, varResult, context);
+					zv::Val defaultNarrowing = defaultMethodCallNarrowing(scope, expr, varResult, context, callSideEffects);
 					if (UNEXPECTED(defaultNarrowing.isUndef())) return zv::Val();
 					zv::Val united = pt_specified_types_union_with(Z_OBJ_P(specifiedTypes.raw()), defaultNarrowing.raw());
 					if (UNEXPECTED(united.isUndef())) return zv::Val();
@@ -814,11 +854,11 @@ public:
 			}
 		}
 
-		return defaultMethodCallNarrowing(scope, expr, varResult, context);
+		return defaultMethodCallNarrowing(scope, expr, varResult, context, callSideEffects);
 	}
 
 	/* Mirrors defaultMethodCallNarrowing(). */
-	zv::Val defaultMethodCallNarrowing(zval *scope, zval *expr, zval *varResult, zval *context) const
+	zv::Val defaultMethodCallNarrowing(zval *scope, zval *expr, zval *varResult, zval *context, zval *callSideEffects) const
 	{
 		// a truthy chain containing a nullsafe narrows its receivers not-null
 		// regardless of the call's own narrowability - the old-world truthy
@@ -849,7 +889,7 @@ public:
 		}
 
 		bool narrowable;
-		if (UNEXPECTED(!isMethodCallNarrowable(scope, expr, varResult, narrowable))) return zv::Val();
+		if (UNEXPECTED(!isMethodCallNarrowable(scope, expr, varResult, callSideEffects, narrowable))) return zv::Val();
 		if (!narrowable) {
 			zv::Val empty = pt_specified_types_new();
 			if (UNEXPECTED(empty.isUndef())) return zv::Val();
@@ -869,8 +909,9 @@ public:
 		return pt_specified_types_set_root_expr(Z_OBJ_P(united.raw()), expr);
 	}
 
-	/* Mirrors isMethodCallNarrowable(); false = pending exception */
-	[[nodiscard]] bool isMethodCallNarrowable(zval *scope, zval *expr, zval *varResult, bool &out) const
+	/* Mirrors isMethodCallNarrowable(); $callSideEffects NULL or IS_NULL for
+	 * null; false = pending exception */
+	[[nodiscard]] bool isMethodCallNarrowable(zval *scope, zval *expr, zval *varResult, zval *callSideEffects, bool &out) const
 	{
 		zval *name = exprName(expr);
 		if (UNEXPECTED(name == NULL)) return false;
@@ -895,14 +936,17 @@ public:
 			return true;
 		}
 
-		zend_long hasSideEffects = reflectionTrinary(methodReflection.raw(), PT_MR_HAS_SIDE_EFFECTS);
-		if (UNEXPECTED(hasSideEffects < 0)) return false;
-		if (hasSideEffects == PT_TRI_YES) {
+		/* $resultVaries = ($callSideEffects ?? $methodReflection->getSideEffects())->isDeterministic()->negate() */
+		zend_long resultVaries = callSideEffects != NULL && Z_TYPE_P(callSideEffects) != IS_NULL
+			? pt_side_effects_result_varies(callSideEffects)
+			: pt_method_reflection_result_varies(methodReflection.raw());
+		if (UNEXPECTED(resultVaries < 0)) return false;
+		if (resultVaries == PT_TRI_YES) {
 			out = false;
 			return true;
 		}
 
-		out = zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) || hasSideEffects == PT_TRI_NO;
+		out = zend_is_true(OBJ_PROP_NUM(self, slots::rememberPossiblyImpureFunctionValues)) || resultVaries == PT_TRI_NO;
 		return true;
 	}
 
@@ -992,9 +1036,10 @@ private:
 	/* fn (TypeSpecifierContext $specifyContext, bool $nativeTypesPromoted): SpecifiedTypes
 	 * => $this->specifyTypes($nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain()
 	 * : $beforeScope, $expr, $normalizedExpr, $varResult, $resolvedParametersAcceptor,
-	 * $walkMethodReflection, $specifyContext, $argsResult) — captures: $this,
-	 * $beforeScope, $expr, $normalizedExpr, $varResult, $resolvedParametersAcceptor,
-	 * $walkMethodReflection, $argsResult */
+	 * $walkMethodReflection, $specifyContext, $callSideEffects, $argsResult) —
+	 * captures: $this, $beforeScope, $expr, $normalizedExpr, $varResult,
+	 * $resolvedParametersAcceptor, $walkMethodReflection, $argsResult,
+	 * $callSideEffects */
 	static void specifyTypesCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 2)) {
@@ -1008,14 +1053,15 @@ private:
 			if (UNEXPECTED(promotedScope.isUndef())) return;
 			scope = promotedScope.raw();
 		}
-		zv::Val specifiedTypes = MethodCallHandler(Z_OBJ(captures[0])).specifyTypes(scope, &captures[2], &captures[3], &captures[4], &captures[5], &captures[6], &argv[0], &captures[7]);
+		zv::Val specifiedTypes = MethodCallHandler(Z_OBJ(captures[0])).specifyTypes(scope, &captures[2], &captures[3], &captures[4], &captures[5], &captures[6], &argv[0], &captures[8], &captures[7]);
 		if (UNEXPECTED(specifiedTypes.isUndef())) return;
 		specifiedTypes.intoReturnValue(return_value);
 	}
 
 	/* function (Type $type, TypeSpecifierContext $createContext, bool
-	 * $nativeTypesPromoted) use ($expr, $varResult, $beforeScope): SpecifiedTypes
-	 * — captures: $this, $expr, $varResult, $beforeScope */
+	 * $nativeTypesPromoted) use ($expr, $varResult, $beforeScope, $callSideEffects):
+	 * SpecifiedTypes — captures: $this, $expr, $varResult, $beforeScope,
+	 * $callSideEffects */
 	static void createTypesCallbackBody(zval *captures, uint32_t argc, zval *argv, zval *return_value)
 	{
 		if (UNEXPECTED(argc < 3)) {
@@ -1033,7 +1079,7 @@ private:
 			s = promotedScope.raw();
 		}
 		bool narrowable;
-		if (UNEXPECTED(!handler.isMethodCallNarrowable(s, expr, varResult, narrowable))) return;
+		if (UNEXPECTED(!handler.isMethodCallNarrowable(s, expr, varResult, &captures[4], narrowable))) return;
 		// !narrowable: the call's value is not remembered, but a nullsafe
 		// receiver chain still narrows not-null. narrowable: delegate with this
 		// call's own stored result (looked up at ask time, never captured) so a
@@ -1085,9 +1131,9 @@ PT_MINIT_REGISTRATION(pt_register_method_call_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *methodCallReturnTypeHelper, *methodThrowPointHelper, *reflectionProvider, *expressionResultFactory, *typeSpecifier, *defaultNarrowingHelper, *storagePrimer, *earlyTerminatingHelper, *argumentsHandler, *preservedPropertiesResolver;
+		zval *methodCallReturnTypeHelper, *methodThrowPointHelper, *reflectionProvider, *expressionResultFactory, *typeSpecifier, *defaultNarrowingHelper, *storagePrimer, *earlyTerminatingHelper, *argumentsHandler, *preservedPropertiesResolver, *dynamicSideEffectsExtensionRegistry;
 		bool rememberPossiblyImpureFunctionValues;
-		ZEND_PARSE_PARAMETERS_START(11, 11)
+		ZEND_PARSE_PARAMETERS_START(12, 12)
 			Z_PARAM_OBJECT(methodCallReturnTypeHelper)
 			Z_PARAM_OBJECT(methodThrowPointHelper)
 			Z_PARAM_OBJECT(reflectionProvider)
@@ -1099,8 +1145,9 @@ PT_MINIT_REGISTRATION(pt_register_method_call_handler)
 			Z_PARAM_OBJECT(earlyTerminatingHelper)
 			Z_PARAM_OBJECT(argumentsHandler)
 			Z_PARAM_OBJECT(preservedPropertiesResolver)
+			Z_PARAM_OBJECT(dynamicSideEffectsExtensionRegistry)
 		ZEND_PARSE_PARAMETERS_END();
-		zval *services[10] = {methodCallReturnTypeHelper, methodThrowPointHelper, reflectionProvider, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, storagePrimer, earlyTerminatingHelper, argumentsHandler, preservedPropertiesResolver};
+		zval *services[11] = {methodCallReturnTypeHelper, methodThrowPointHelper, reflectionProvider, expressionResultFactory, typeSpecifier, defaultNarrowingHelper, storagePrimer, earlyTerminatingHelper, argumentsHandler, preservedPropertiesResolver, dynamicSideEffectsExtensionRegistry};
 		MethodCallHandler(Z_OBJ_P(ZEND_THIS)).construct(services, rememberPossiblyImpureFunctionValues);
 	});
 
@@ -1136,8 +1183,8 @@ PT_MINIT_REGISTRATION(pt_register_method_call_handler)
 	});
 
 	cls.method(sigs::specifyTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *scope, *expr, *normalizedExpr, *varResult, *resolvedParametersAcceptor, *walkMethodReflection, *context, *argsResult = NULL;
-		ZEND_PARSE_PARAMETERS_START(7, 8)
+		zval *scope, *expr, *normalizedExpr, *varResult, *resolvedParametersAcceptor, *walkMethodReflection, *context, *callSideEffects, *argsResult = NULL;
+		ZEND_PARSE_PARAMETERS_START(8, 9)
 			Z_PARAM_OBJECT(scope)
 			Z_PARAM_OBJECT(expr)
 			Z_PARAM_OBJECT(normalizedExpr)
@@ -1145,23 +1192,35 @@ PT_MINIT_REGISTRATION(pt_register_method_call_handler)
 			Z_PARAM_OBJECT_OR_NULL(resolvedParametersAcceptor)
 			Z_PARAM_OBJECT_OR_NULL(walkMethodReflection)
 			Z_PARAM_OBJECT(context)
+			Z_PARAM_OBJECT_OR_NULL(callSideEffects)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_OBJECT_OR_NULL(argsResult)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(MethodCallHandler(Z_OBJ_P(ZEND_THIS)).specifyTypes(scope, expr, normalizedExpr, varResult, resolvedParametersAcceptor, walkMethodReflection, context, argsResult));
+		PT_RETURN_VAL(MethodCallHandler(Z_OBJ_P(ZEND_THIS)).specifyTypes(scope, expr, normalizedExpr, varResult, resolvedParametersAcceptor, walkMethodReflection, context, callSideEffects, argsResult));
 	});
 
 	cls.method(sigs::defaultMethodCallNarrowing, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *scope, *expr, *varResult, *context;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, scope, expr, varResult, context)) RETURN_THROWS();
-		PT_RETURN_VAL(MethodCallHandler(Z_OBJ_P(ZEND_THIS)).defaultMethodCallNarrowing(scope, expr, varResult, context));
+		zval *scope, *expr, *varResult, *context, *callSideEffects = NULL;
+		ZEND_PARSE_PARAMETERS_START(5, 5)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(expr)
+			Z_PARAM_OBJECT(varResult)
+			Z_PARAM_OBJECT(context)
+			Z_PARAM_OBJECT_OR_NULL(callSideEffects)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(MethodCallHandler(Z_OBJ_P(ZEND_THIS)).defaultMethodCallNarrowing(scope, expr, varResult, context, callSideEffects));
 	});
 
 	cls.method(sigs::isMethodCallNarrowable, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *scope, *expr, *varResult;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, scope, expr, varResult)) RETURN_THROWS();
+		zval *scope, *expr, *varResult, *callSideEffects = NULL;
+		ZEND_PARSE_PARAMETERS_START(4, 4)
+			Z_PARAM_OBJECT(scope)
+			Z_PARAM_OBJECT(expr)
+			Z_PARAM_OBJECT(varResult)
+			Z_PARAM_OBJECT_OR_NULL(callSideEffects)
+		ZEND_PARSE_PARAMETERS_END();
 		bool out;
-		if (UNEXPECTED(!MethodCallHandler(Z_OBJ_P(ZEND_THIS)).isMethodCallNarrowable(scope, expr, varResult, out))) RETURN_THROWS();
+		if (UNEXPECTED(!MethodCallHandler(Z_OBJ_P(ZEND_THIS)).isMethodCallNarrowable(scope, expr, varResult, callSideEffects, out))) RETURN_THROWS();
 		RETURN_BOOL(out);
 	});
 

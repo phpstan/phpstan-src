@@ -17,7 +17,7 @@ class PureMethodRuleTest extends RuleTestCase
 
 	public function getRule(): Rule
 	{
-		return new PureMethodRule(new FunctionPurityCheck());
+		return new PureMethodRule(new FunctionPurityCheck($this->createReflectionProvider()));
 	}
 
 	protected function shouldTreatPhpDocTypesAsCertain(): bool
@@ -434,6 +434,18 @@ class PureMethodRuleTest extends RuleTestCase
 			[
 				'Impure echo in pure method PureUnlessParameterPassedMethod\Replacer::replaceWithSideEffect().',
 				44,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.4.0')]
+	public function testBug15322(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/bug-15322.php'], [
+			[
+				'Impure call to method Bug15322\\Impure::magicImpure() in pure method Bug15322\\Bar::magicImpure().',
+				59,
 			],
 		]);
 	}

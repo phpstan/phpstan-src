@@ -2,8 +2,17 @@
 
 namespace PHPStan\Analyser;
 
+use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\NullsafeMethodCall;
+use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
+use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_key_exists;
 use function array_keys;
@@ -17,7 +26,7 @@ use function strtolower;
 final class VolatileExpressionHelper
 {
 
-	private const VOLATILE_FUNCTION_NAMES = ['ob_get_level', 'openssl_error_string'];
+	private const VOLATILE_FUNCTION_NAMES = ['ob_get_level'];
 
 	private const EXISTENCE_CHECK_FUNCTION_NAMES = [
 		'class_exists',
@@ -56,6 +65,113 @@ final class VolatileExpressionHelper
 		}
 
 		return $changed;
+	}
+
+	/**
+	 * Forgets tracked calls of functions and methods whose result depends on
+	 * global state (reads-global), such as ini_get('precision'): the
+	 * invalidating code may write that state. Existence checks are left to
+	 * invalidateNegativeExistenceChecks(): symbols are only ever added, so a
+	 * positive result stays true.
+	 *
+	 * With $writtenStates, the invalidating code writes only those named parts
+	 * of global state, such as ['stat-cache'] for writes-global.stat-cache, and
+	 * only calls that read a named part they overlap with are forgotten:
+	 * reads-global.error is forgotten for error.preg, reads-global alone is not.
+	 *
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $nativeExpressionTypes
+	 * @param list<string>|null $writtenStates
+	 * @return bool whether anything was removed
+	 */
+	public static function invalidateGlobalStateReads(Scope $scope, ReflectionProvider $reflectionProvider, array &$expressionTypes, array &$nativeExpressionTypes, ?array $writtenStates = null): bool
+	{
+		$changed = false;
+		foreach ($expressionTypes as $exprString => $exprTypeHolder) {
+			$expr = $exprTypeHolder->getExpr();
+			if (!$expr instanceof CallLike) {
+				continue;
+			}
+
+			$sideEffects = self::findCallSideEffects($scope, $reflectionProvider, $expr);
+			if (
+				$sideEffects === null
+				|| !$sideEffects->has(SideEffects::READS_GLOBAL)->yes()
+				|| ($writtenStates !== null && !self::readsAnyOf($sideEffects->getListedSubEffects(SideEffects::READS_GLOBAL), $writtenStates))
+			) {
+				continue;
+			}
+
+			unset($expressionTypes[$exprString]);
+			unset($nativeExpressionTypes[$exprString]);
+			$changed = true;
+		}
+
+		return $changed;
+	}
+
+	/**
+	 * The side effects of the function or method a call expression calls,
+	 * null when it is not known or is an existence check.
+	 */
+	private static function findCallSideEffects(Scope $scope, ReflectionProvider $reflectionProvider, Expr $expr): ?SideEffects
+	{
+		if ($expr instanceof FuncCall) {
+			if (
+				$expr->isPartialFunctionApplication()
+				|| !$expr->name instanceof Name
+				|| !$reflectionProvider->hasFunction($expr->name, $scope)
+			) {
+				return null;
+			}
+
+			$function = $reflectionProvider->getFunction($expr->name, $scope);
+			if (in_array(strtolower($function->getName()), self::EXISTENCE_CHECK_FUNCTION_NAMES, true)) {
+				return null;
+			}
+
+			return $function->getSideEffects();
+		}
+
+		// on a variable only: the type of another receiver, such as a call, would be resolved again
+		if ($expr instanceof MethodCall || $expr instanceof NullsafeMethodCall) {
+			if ($expr->isPartialFunctionApplication() || !$expr->name instanceof Identifier || !$expr->var instanceof Variable) {
+				return null;
+			}
+
+			return $scope->getMethodReflection($scope->getType($expr->var), $expr->name->toString())?->getSideEffects();
+		}
+
+		if ($expr instanceof StaticCall) {
+			if ($expr->isPartialFunctionApplication() || !$expr->class instanceof Name || !$expr->name instanceof Identifier) {
+				return null;
+			}
+
+			return $scope->getMethodReflection($scope->resolveTypeByName($expr->class), $expr->name->toString())?->getSideEffects();
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param list<string>|null $readStates
+	 * @param list<string> $writtenStates
+	 */
+	private static function readsAnyOf(?array $readStates, array $writtenStates): bool
+	{
+		foreach ($readStates ?? [] as $readState) {
+			foreach ($writtenStates as $writtenState) {
+				if (
+					$readState === $writtenState
+					|| str_starts_with($readState, $writtenState . '.')
+					|| str_starts_with($writtenState, $readState . '.')
+				) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**

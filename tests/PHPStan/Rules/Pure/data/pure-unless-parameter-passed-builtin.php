@@ -16,7 +16,7 @@ function pureStrReplaceWithoutCount(string $s): string
  */
 function pureStrReplaceWithCount(string $s): string
 {
-	// The by-ref $count is passed, so str_replace() is impure (the flag is certain).
+	// The by-ref $count is passed, but it is a local variable, so the write is not observable.
 	$count = 0;
 
 	return str_replace('a', 'b', $s, $count);
@@ -27,8 +27,8 @@ function pureStrReplaceWithCount(string $s): string
  */
 function purePregMatchWithoutMatches(string $s): int
 {
-	// preg_match() is left out of the metadata even with $matches omitted: an invalid
-	// pattern raises a warning and sets preg_last_error(), so the call stays possibly impure.
+	// The by-ref $matches is omitted, so preg_match() is pure. The error state it sets is
+	// read by preg_last_error(), whose result is nondeterministic and never remembered.
 	return (int) preg_match('/a/', $s);
 }
 
@@ -46,7 +46,7 @@ function pureStrIreplaceWithoutCount(string $s): string
  */
 function pureStrIreplaceWithCount(string $s): string
 {
-	// The by-ref $count is passed, so str_ireplace() is impure (the flag is certain).
+	// The by-ref $count is passed, but it is a local variable, so the write is not observable.
 	$count = 0;
 
 	return str_ireplace('a', 'b', $s, $count);
@@ -66,6 +66,22 @@ function pureSimilarTextWithoutPercent(string $a, string $b): int
  */
 function pureSimilarTextWithPercent(string $a, string $b): int
 {
-	// The by-ref $percent is passed, so similar_text() is impure (the flag is certain).
+	// The by-ref $percent is passed, but it is a local variable, so the write is not observable.
 	return similar_text($a, $b, $percent);
+}
+
+final class Counter
+{
+
+	public int $count = 0;
+
+}
+
+/**
+ * @phpstan-pure
+ */
+function pureStrReplaceWithCountProperty(string $s, Counter $counter): string
+{
+	// The by-ref $count is an object's property, so the write is observable.
+	return str_replace('a', 'b', $s, $counter->count);
 }

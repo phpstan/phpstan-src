@@ -10,6 +10,7 @@ use PHPStan\Reflection\ExtendedFunctionVariant;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\ExtendedParametersAcceptor;
+use PHPStan\Reflection\SideEffects;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
@@ -183,6 +184,11 @@ final class BackedEnumFromMethodReflection implements ExtendedMethodReflection
 	public function getPureUnlessParameterPassedParameters(): array
 	{
 		return $this->method->getPureUnlessParameterPassedParameters();
+	}
+
+	public function getSideEffects(): SideEffects
+	{
+		return $this->method->getSideEffects();
 	}
 
 	public function getAttributes(): array

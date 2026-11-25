@@ -1,0 +1,21 @@
+services:
+	-
+		class: PHPStan\Tests\FunctionSideEffectsFromArguments
+		tags:
+			- phpstan.dynamicFunctionSideEffectsExtension
+	-
+		class: PHPStan\Tests\ErrorReportingGetterSideEffects
+		tags:
+			- phpstan.dynamicFunctionSideEffectsExtension
+	-
+		class: PHPStan\Tests\MethodSideEffectsFromArguments
+		tags:
+			- phpstan.dynamicMethodSideEffectsExtension
+	-
+		class: PHPStan\Tests\StaticMethodSideEffectsFromArguments
+		tags:
+			- phpstan.dynamicStaticMethodSideEffectsExtension
+	-
+		class: PHPStan\Tests\ConstructorSideEffectsFromArguments
+		tags:
+			- phpstan.dynamicStaticMethodSideEffectsExtension

@@ -21,6 +21,8 @@ use PHPStan\Reflection\InitializerExprTypeResolver;
 use PHPStan\Reflection\MethodPrototypeReflection;
 use PHPStan\Reflection\ParameterAllowedConstantsMapProvider;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Reflection\SideEffects;
+use PHPStan\Reflection\SideEffectsFactory;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\ArrayType;
@@ -61,6 +63,8 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	private ?string $name = null;
 
+	private ?SideEffects $sideEffects = null;
+
 	/**
 	 * @param Type[] $phpDocParameterTypes
 	 * @param Type[] $phpDocParameterOutTypes
@@ -69,6 +73,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 	 * @param list<AttributeReflection> $attributes
 	 * @param array<string, bool> $pureUnlessCallableIsImpureParameters
 	 * @param array<string, bool> $pureUnlessParameterPassedParameters
+	 * @param list<string>|null $effects
 	 */
 	public function __construct(
 		private InitializerExprTypeResolver $initializerExprTypeResolver,
@@ -98,6 +103,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		private array $attributes,
 		private array $pureUnlessCallableIsImpureParameters,
 		private array $pureUnlessParameterPassedParameters,
+		private ?array $effects = null,
 	)
 	{
 	}
@@ -394,9 +400,11 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 
 	public function hasSideEffects(): TrinaryLogic
 	{
+		// a void function that is pure unless its callable is impure has only the callable's effects
 		if (
 			strtolower($this->getName()) !== '__construct'
 			&& $this->getReturnType()->isVoid()->yes()
+			&& !in_array(true, $this->pureUnlessCallableIsImpureParameters, true)
 		) {
 			return TrinaryLogic::createYes();
 		}
@@ -463,6 +471,11 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 		return array_map(static fn (bool $value): TrinaryLogic => TrinaryLogic::createFromBoolean($value), $this->pureUnlessParameterPassedParameters);
 	}
 
+	public function getSideEffects(): SideEffects
+	{
+		return $this->sideEffects ??= SideEffectsFactory::createFromReflection($this, $this->effects);
+	}
+
 	public function changePropertyGetHookPhpDocType(Type $phpDocType): self
 	{
 		return new self(
@@ -493,6 +506,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->attributes,
 			$this->pureUnlessCallableIsImpureParameters,
 			$this->pureUnlessParameterPassedParameters,
+			$this->effects,
 		);
 	}
 
@@ -529,6 +543,7 @@ final class PhpMethodReflection implements ExtendedMethodReflection
 			$this->attributes,
 			$this->pureUnlessCallableIsImpureParameters,
 			$this->pureUnlessParameterPassedParameters,
+			$this->effects,
 		);
 	}
 

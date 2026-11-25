@@ -249,3 +249,8 @@ class MyClass {
 	}
 }
 
+/** @phpstan-pure */
+function shellExec(): string
+{
+	return (string) `ls`;
+}

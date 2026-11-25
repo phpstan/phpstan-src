@@ -9,7 +9,7 @@
  * specifyTypesCallback ($this, $expr).
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext,
- * ImplicitToStringCallHelper, VariableFlow, DefaultNarrowingHelper,
+ * ImplicitToStringCallHelper, ImpurePoint, VariableFlow, DefaultNarrowingHelper,
  * TypeCombinator and the Type kernel are called through their direct entries.
  */
 
@@ -27,6 +27,10 @@ namespace {
 using phpstanturbo::visitors::NodeProp;
 
 NodeProp pt_seh_parts = PT_NODE_PROP(PT_CLASS_SHELL_EXEC_EXPR, "parts");
+
+/* the twin's literals, permanent interned strings (module startup) */
+zend_string *pt_seh_shell_exec = nullptr;
+zend_string *pt_seh_shell_execution = nullptr;
 
 /* foreach ($expr->parts as $part): the array iterated (an addref'ed copy,
  * as foreach holds it), or UNDEF with the warning raised for a non-array;
@@ -144,6 +148,11 @@ public:
 			scope = scopeHold.raw();
 		}
 
+		zv::Val impurePoint = pt_impure_point_new(scope, expr, pt_seh_shell_exec, pt_seh_shell_execution, true);
+		if (UNEXPECTED(impurePoint.isUndef())) return zv::Val();
+		impurePoints = ptse::mergeOne(impurePoints.raw(), std::move(impurePoint));
+		if (UNEXPECTED(impurePoints.isUndef())) return zv::Val();
+
 		zv::Val variableFlow = pt_variable_flow_sequence_list(variableFlows.table());
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody);
@@ -202,6 +211,9 @@ using phpstanturbo::ShellExecHandler;
 
 PT_MINIT_REGISTRATION(pt_register_shell_exec_handler)
 {
+	pt_seh_shell_exec = zend_string_init_interned(PT_LC("shellExec"), 1);
+	pt_seh_shell_execution = zend_string_init_interned(PT_LC("shell execution"), 1);
+
 	reg::Class cls("PHPStan\\Analyser\\ExprHandler\\ShellExecHandler");
 	ptdecl::ShellExecHandler::declareClass(cls);
 	ptdecl::ShellExecHandler::declareProperties(cls);

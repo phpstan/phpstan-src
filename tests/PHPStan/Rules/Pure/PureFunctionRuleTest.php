@@ -116,6 +116,10 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure exit in pure function PureFunction\bug13288d().',
 				230,
 			],
+			[
+				'Impure shell execution in pure function PureFunction\shellExec().',
+				255,
+			],
 		]);
 	}
 

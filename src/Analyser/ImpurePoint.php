@@ -8,7 +8,7 @@ use PHPStan\Reflection\SideEffects;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 
 /**
- * @phpstan-type ImpurePointIdentifier = 'echo'|'die'|'exit'|'propertyAssign'|'propertyAssignByRef'|'propertyUnset'|'propertyHookCall'|'methodCall'|'new'|'functionCall'|'include'|'require'|'print'|'eval'|'superglobal'|'yield'|'yieldFrom'|'static'|'global'|'betweenPhpTags'|'staticPropertyAccess'
+ * @phpstan-type ImpurePointIdentifier = 'echo'|'die'|'exit'|'propertyAssign'|'propertyAssignByRef'|'propertyUnset'|'propertyHookCall'|'methodCall'|'new'|'functionCall'|'include'|'require'|'print'|'eval'|'superglobal'|'yield'|'yieldFrom'|'static'|'global'|'betweenPhpTags'|'shellExec'|'staticPropertyAccess'
  * @api
  */
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ImpurePoint.cpp')]

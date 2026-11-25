@@ -12,6 +12,7 @@ use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
 use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
+use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\TypeSpecifierContext;
@@ -78,6 +79,8 @@ final class ShellExecHandler implements ExprHandler
 			$isAlwaysTerminating = $isAlwaysTerminating || $partResult->isAlwaysTerminating();
 			$scope = $partResult->getScope();
 		}
+
+		$impurePoints[] = new ImpurePoint($scope, $expr, 'shellExec', 'shell execution', true);
 
 		return $this->expressionResultFactory->create(
 			$scope,

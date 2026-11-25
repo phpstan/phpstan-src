@@ -1395,6 +1395,13 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug14598(): void
+	{
+		$this->reportPossiblyNonexistentGeneralArrayOffset = true;
+		$this->reportPossiblyNonexistentConstantArrayOffset = true;
+		$this->analyse([__DIR__ . '/data/bug-14598.php'], []);
+	}
+
 	public static function dataUnsealedArrayShapes(): iterable
 	{
 		foreach ([false, true] as $reportPossiblyNonexistentGeneralArrayOffset) {

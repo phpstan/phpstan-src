@@ -10,12 +10,11 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\ImplicitToStringCallHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Dependency\Dependencies;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -42,7 +41,6 @@ final class ShellExecHandler implements ExprHandler
 	public function __construct(
 		private ImplicitToStringCallHelper $implicitToStringCallHelper,
 		private ExpressionResultFactory $expressionResultFactory,
-		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -92,7 +90,8 @@ final class ShellExecHandler implements ExprHandler
 			throwPoints: $throwPoints,
 			impurePoints: $impurePoints,
 			typeCallback: static fn (bool $nativeTypesPromoted): Type => TypeCombinator::union(new StringType(), new ConstantBooleanType(false), new NullType()),
-			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			// the result can differ every time, so it is never narrowed
+			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			dependencies: Dependencies::merge(...$dependencies),
 		);
 	}

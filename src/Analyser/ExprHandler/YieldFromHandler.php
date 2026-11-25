@@ -11,12 +11,11 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ImpurePoint;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
-use PHPStan\Analyser\TypeSpecifierContext;
+use PHPStan\Analyser\SpecifiedTypes;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Turbo\ShadowedByTurboExtension;
@@ -35,7 +34,6 @@ final class YieldFromHandler implements ExprHandler
 
 	public function __construct(
 		private ExpressionResultFactory $expressionResultFactory,
-		private DefaultNarrowingHelper $defaultNarrowingHelper,
 	)
 	{
 	}
@@ -72,7 +70,8 @@ final class YieldFromHandler implements ExprHandler
 
 				return $generatorReturnType;
 			},
-			specifyTypesCallback: fn (TypeSpecifierContext $context, bool $nativeTypesPromoted) => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context),
+			// the result can differ every time, so it is never narrowed
+			specifyTypesCallback: SpecifiedTypes::emptySpecifyCallback(),
 			dependencies: $exprResult->getDependencies(),
 		);
 	}

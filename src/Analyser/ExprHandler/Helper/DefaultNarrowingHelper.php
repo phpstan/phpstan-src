@@ -159,7 +159,8 @@ final class DefaultNarrowingHelper
 
 	/**
 	 * The impure gate read off an already-processed result: a value computed
-	 * by a (possibly) impure call, an include or an eval - the subject itself or any
+	 * by a (possibly) impure call, an include, an eval, a yield or a shell
+	 * execution - the subject itself or any
 	 * call nested in it, like strlen($record->getName()) - must not get a
 	 * remembered type.
 	 * The result carries the impure points of its whole subtree.
@@ -179,6 +180,9 @@ final class DefaultNarrowingHelper
 				&& !$node instanceof Expr\NullsafeMethodCall
 				&& !$node instanceof Expr\Include_
 				&& !$node instanceof Expr\Eval_
+				&& !$node instanceof Expr\Yield_
+				&& !$node instanceof Expr\YieldFrom
+				&& !$node instanceof Expr\ShellExec
 			) {
 				continue;
 			}
@@ -253,6 +257,9 @@ final class DefaultNarrowingHelper
 					|| $subject instanceof Expr\StaticCall
 					|| $subject instanceof Expr\Include_
 					|| $subject instanceof Expr\Eval_
+					|| $subject instanceof Expr\Yield_
+					|| $subject instanceof Expr\YieldFrom
+					|| $subject instanceof Expr\ShellExec
 				)
 				&& !$this->isSubjectValueRemembered($subjectResult, $subject)
 			) {

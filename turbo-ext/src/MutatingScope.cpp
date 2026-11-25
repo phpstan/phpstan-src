@@ -9376,31 +9376,33 @@ public:
 				zend_throw_error(NULL, "phpstan_turbo: an expression type holder has no expression");
 				return zv::Val();
 			}
-			bool invalidated = false;
-			for (auto generalized : zv::TableRef(generalizedExpressions.table())) {
-				zv::Str generalizedExprString = entryKey(generalized.stringKeyOrNull(), generalized.indexKey());
-				bool failed = false;
-				bool should = pt_scope_ops_should_invalidate_expression(
-					thisZval(),
-					exprPrinter.raw(),
-					generalizedExprString.get(),
-					generalized.value().deref().raw(),
-					Z_OBJ_P(variableExpr.raw()),
-					variableExprString.get(),
-					false,
-					NULL,
-					false,
-					NULL,
-					&failed);
-				if (UNEXPECTED(failed)) return zv::Val();
-				if (!should) continue;
-				invalidated = true;
-				break;
-			}
-			if (invalidated) continue;
-
 			zval *otherHolder = pt_ht_find(otherVariableTypeHolders, entry.key, entry.index);
 			if (otherHolder == NULL || Z_TYPE_P(otherHolder) == IS_NULL) {
+				bool invalidated = false;
+				for (auto generalized : zv::TableRef(generalizedExpressions.table())) {
+					zv::Str generalizedExprString = entryKey(generalized.stringKeyOrNull(), generalized.indexKey());
+					bool failed = false;
+					bool should = pt_scope_ops_should_invalidate_expression(
+						thisZval(),
+						exprPrinter.raw(),
+						generalizedExprString.get(),
+						generalized.value().deref().raw(),
+						Z_OBJ_P(variableExpr.raw()),
+						variableExprString.get(),
+						false,
+						NULL,
+						false,
+						NULL,
+						&failed);
+					if (UNEXPECTED(failed)) return zv::Val();
+					if (!should) continue;
+					invalidated = true;
+					break;
+				}
+				/* an expression on a widened root that only this pass tracks
+				 * would keep its precise type */
+				if (invalidated) continue;
+
 				newVariableTypeHolders.set(variableExprString.get(), zv::Val::copyOf(zv::Ref(entry.value)));
 				continue;
 			}

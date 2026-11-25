@@ -5008,14 +5008,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$generalizedExpressions = [];
 		$newVariableTypeHolders = [];
 		foreach ($variableTypeHolders as $variableExprString => $variableTypeHolder) {
-			foreach ($generalizedExpressions as $generalizedExprString => $generalizedExpr) {
-				if (!ScopeOps::shouldInvalidateExpression($this, $this->services->exprPrinter, $generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr(), $variableExprString)) {
-					continue;
+			if (!isset($otherVariableTypeHolders[$variableExprString])) {
+				foreach ($generalizedExpressions as $generalizedExprString => $generalizedExpr) {
+					if (!ScopeOps::shouldInvalidateExpression($this, $this->services->exprPrinter, $generalizedExprString, $generalizedExpr, $variableTypeHolder->getExpr(), $variableExprString)) {
+						continue;
+					}
+
+					// an expression on a widened root that only this pass tracks
+					// would keep its precise type
+					continue 2;
 				}
 
-				continue 2;
-			}
-			if (!isset($otherVariableTypeHolders[$variableExprString])) {
 				$newVariableTypeHolders[$variableExprString] = $variableTypeHolder;
 				continue;
 			}

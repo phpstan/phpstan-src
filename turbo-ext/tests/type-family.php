@@ -7584,6 +7584,47 @@ $observations['native ' . \PHPStan\Reflection\ParametersAcceptorSelector::class]
 			}
 		}
 	}
+	// selectFromNamedTypes(): named argument types put in the position of the
+	// one native signature's parameter (skipped ones filled with a known
+	// default, unknown names, unknown defaults and the variadic tail giving up),
+	// the positional variants selected over them, and the fallbacks
+	$null = new \PHPStan\Type\NullType();
+	$bool = new \PHPStan\Type\BooleanType();
+	$nativeExtParam = static fn (string $name, \PHPStan\Type\Type $type, bool $optional, ?\PHPStan\Type\Type $default, bool $variadic = false): \PHPStan\Reflection\Php\ExtendedDummyParameter => new \PHPStan\Reflection\Php\ExtendedDummyParameter($name, $type, $optional, null, $variadic, $default, $type, $type, null, \PHPStan\TrinaryLogic::createMaybe(), null, [], null, \PHPStan\TrinaryLogic::createNo(), \PHPStan\TrinaryLogic::createNo());
+	$nativeSignature = $extVariant([$nativeExtParam('name', new \PHPStan\Type\UnionType([$string, $null]), true, $null), $nativeExtParam('flag', $bool, true, new \PHPStan\Type\Constant\ConstantBooleanType(false)), $nativeExtParam('unknown', $int, true, new \PHPStan\Type\ErrorType()), $nativeExtParam('last', $int, true, new \PHPStan\Type\Constant\ConstantIntegerType(0)), $nativeExtParam('rest', $int, true, null, true)], true, new \PHPStan\Type\UnionType([$string, $int]));
+	$positionalVariants = [
+		$extVariant([$extParam('varname', $string), $extParam('local', $bool, true), $extParam('other', $int, true)], false, $string),
+		$extVariant([$extParam('varname', $null, true), $extParam('local', $bool, true), $extParam('other', $int, true)], false, $int),
+	];
+	$namedTypeSets = [
+		'none' => [],
+		'name' => ['name' => new \PHPStan\Type\Constant\ConstantStringType('s')],
+		'nameNull' => ['name' => $null],
+		'flagOnly' => ['flag' => $bool],
+		'flagFirst' => ['flag' => $bool, 'name' => $null],
+		'positionalThenNamed' => [new \PHPStan\Type\Constant\ConstantStringType('s'), 'flag' => $bool],
+		'gapsFilled' => ['unknown' => $int],
+		'unknownDefaultGap' => ['last' => $int],
+		'unknownName' => ['nope' => $int],
+		'variadicName' => ['rest' => $int],
+	];
+	$namedVariantSets = [
+		'native' => [$nativeSignature],
+		'plain' => [$variant([$param('name', $string, true, false, $null)])],
+		'two' => [$nativeSignature, $nativeSignature],
+	];
+	foreach ($namedVariantSets as $namedSetName => $namedVariants) {
+		foreach (['variants' => $positionalVariants, 'noVariants' => []] as $variantsName => $variants) {
+			foreach ([false, true] as $unpack) {
+				foreach ($namedTypeSets as $typesName => $types) {
+					$key = "selectFromNamedTypes $namedSetName $variantsName $typesName " . ($unpack ? 'unpack' : 'plain');
+					$r[$key] = $error(static function () use (&$r, $key, $types, $variants, $namedVariants, $unpack, $viewAcceptor): void {
+						$r["$key result"] = $viewAcceptor(\PHPStan\Reflection\ParametersAcceptorSelector::selectFromNamedTypes($types, $variants, $namedVariants, $unpack));
+					});
+				}
+			}
+		}
+	}
 	$r['combineAcceptors empty'] = $error(static fn () => \PHPStan\Reflection\ParametersAcceptorSelector::combineAcceptors([]));
 	$r['selectFromTypes empty'] = $error(static fn () => \PHPStan\Reflection\ParametersAcceptorSelector::selectFromTypes([], [], false));
 	foreach ($r as $key => $value) {

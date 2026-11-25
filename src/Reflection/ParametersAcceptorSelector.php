@@ -31,6 +31,7 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CallableType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
+use PHPStan\Type\ErrorType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
 use PHPStan\Type\IntegerType;
@@ -55,6 +56,7 @@ use function count;
 use function defined;
 use function is_int;
 use function is_string;
+use function max;
 use function sprintf;
 use const ARRAY_FILTER_USE_BOTH;
 use const ARRAY_FILTER_USE_KEY;
@@ -166,10 +168,104 @@ final class ParametersAcceptorSelector
 		}
 
 		if ($hasName && $namedArgumentsVariants !== null) {
-			return self::selectFromTypes($types, $namedArgumentsVariants, $unpack);
+			return self::selectFromNamedTypes($types, $parametersAcceptors, $namedArgumentsVariants, $unpack);
 		}
 
 		return self::selectFromTypes($types, $parametersAcceptors, $unpack);
+	}
+
+	/**
+	 * Named arguments resolve against the php-src signature of a multi-variant
+	 * built-in and then fill its parameters by position, so the return type
+	 * comes from the variant a positional call with those arguments selects.
+	 *
+	 * @internal
+	 * @param array<int|string, Type> $types
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param ParametersAcceptor[] $namedArgumentsVariants
+	 */
+	public static function selectFromNamedTypes(
+		array $types,
+		array $parametersAcceptors,
+		array $namedArgumentsVariants,
+		bool $unpack,
+	): ParametersAcceptor
+	{
+		if ($unpack || count($namedArgumentsVariants) !== 1 || count($parametersAcceptors) === 0) {
+			return self::selectFromTypes($types, $namedArgumentsVariants, $unpack);
+		}
+
+		$namedArgumentsVariant = $namedArgumentsVariants[0];
+		if (!$namedArgumentsVariant instanceof ExtendedParametersAcceptor) {
+			return self::selectFromTypes($types, $namedArgumentsVariants, $unpack);
+		}
+
+		$positionalTypes = self::getPositionalTypes($types, $namedArgumentsVariant);
+		if ($positionalTypes === null) {
+			return self::selectFromTypes($types, $namedArgumentsVariants, $unpack);
+		}
+
+		$positionalAcceptor = self::selectFromTypes($positionalTypes, $parametersAcceptors, false);
+		$returnType = $positionalAcceptor->getReturnType();
+
+		return GenericParametersAcceptorResolver::resolve($types, new ExtendedFunctionVariant(
+			$namedArgumentsVariant->getTemplateTypeMap(),
+			null,
+			$namedArgumentsVariant->getParameters(),
+			$namedArgumentsVariant->isVariadic(),
+			$returnType,
+			$positionalAcceptor instanceof ExtendedParametersAcceptor ? $positionalAcceptor->getPhpDocReturnType() : $returnType,
+			$positionalAcceptor instanceof ExtendedParametersAcceptor ? $positionalAcceptor->getNativeReturnType() : new MixedType(),
+			$namedArgumentsVariant->getCallSiteVarianceMap(),
+		));
+	}
+
+	/**
+	 * Puts named argument types in the position of their parameter, filling
+	 * skipped optional parameters with their default value.
+	 *
+	 * @param array<int|string, Type> $types
+	 * @return list<Type>|null
+	 */
+	private static function getPositionalTypes(array $types, ParametersAcceptor $parametersAcceptor): ?array
+	{
+		$parameters = $parametersAcceptor->getParameters();
+		$positions = [];
+		foreach ($parameters as $i => $parameter) {
+			if ($parameter->isVariadic()) {
+				break;
+			}
+			$positions[$parameter->getName()] = $i;
+		}
+
+		$typesByPosition = [];
+		$count = 0;
+		foreach ($types as $key => $type) {
+			if (is_string($key)) {
+				if (!array_key_exists($key, $positions)) {
+					return null;
+				}
+				$key = $positions[$key];
+			}
+			$typesByPosition[$key] = $type;
+			$count = max($count, $key + 1);
+		}
+
+		$positionalTypes = [];
+		for ($i = 0; $i < $count; $i++) {
+			if (array_key_exists($i, $typesByPosition)) {
+				$positionalTypes[] = $typesByPosition[$i];
+				continue;
+			}
+
+			$defaultValue = isset($parameters[$i]) ? $parameters[$i]->getDefaultValue() : null;
+			if ($defaultValue === null || $defaultValue instanceof ErrorType) {
+				return null;
+			}
+			$positionalTypes[] = $defaultValue;
+		}
+
+		return $positionalTypes;
 	}
 
 	/**

@@ -3107,6 +3107,7 @@ extern zend_class_entry *pt_ce_parameters_acceptor_selector;
  * or IS_NULL for null, everything borrowed); UNDEF = pending exception */
 zv::Val pt_parameters_acceptor_selector_select_from_args(zval *scope, zval *args, zval *parametersAcceptors, zval *namedArgumentsVariants);
 zv::Val pt_parameters_acceptor_selector_select_from_types(zval *types, zval *parametersAcceptors, bool unpack);
+zv::Val pt_parameters_acceptor_selector_select_from_named_types(zval *types, zval *parametersAcceptors, zval *namedArgumentsVariants, bool unpack);
 zv::Val pt_parameters_acceptor_selector_combine_variants_for_normalization(zval *args, zval *variants, zval *namedArgumentsVariants);
 zv::Val pt_parameters_acceptor_selector_combine_acceptors(zval *acceptors);
 /* ::applyIntrinsicArgOverrides(...) over arrays, with the four getters any

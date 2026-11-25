@@ -31,84 +31,94 @@ inline constexpr char strings[] =
 	"\0" /* 82 */
 	"PHPStan\\Reflection\\ParametersAcceptor\0" /* 83 */
 	"selectFromArgs\0" /* 121 */
-	"parametersAcceptor\0" /* 136 */
-	"reorderIntrinsicArgs\0" /* 155 */
-	"typeGetter\0" /* 176 */
-	"Closure\0" /* 187 */
-	"nativeTypeGetter\0" /* 195 */
-	"iterableValueTypeGetter\0" /* 212 */
-	"iterableKeyTypeGetter\0" /* 236 */
-	"applyIntrinsicArgOverrides\0" /* 258 */
-	"acceptor\0" /* 285 */
-	"hasAcceptorTemplateOrLateResolvableType\0" /* 294 */
-	"hasAcceptorTemplateOrLateResolvableParameterType\0" /* 334 */
-	"types\0" /* 383 */
-	"unpack\0" /* 389 */
-	"selectFromTypes\0" /* 396 */
-	"variants\0" /* 412 */
-	"combineVariantsForNormalization\0" /* 421 */
-	"acceptors\0" /* 453 */
-	"PHPStan\\Reflection\\ExtendedParametersAcceptor\0" /* 463 */
-	"combineAcceptors\0" /* 509 */
-	"wrapAcceptor\0" /* 526 */
-	"parameter\0" /* 539 */
-	"PHPStan\\Reflection\\ParameterReflection\0" /* 549 */
-	"PHPStan\\Reflection\\ExtendedParameterReflection\0" /* 588 */
-	"wrapParameter\0" /* 635 */
-	"curlOpt\0" /* 649 */
-	"PHPStan\\Type\\Type\0" /* 657 */
-	"getCurlOptValueType\0" /* 675 */
-	"original\0" /* 695 */
-	"type\0" /* 704 */
-	"nativeType\0" /* 709 */
-	"PHPStan\\Reflection\\Php\\ExtendedDummyParameter\0" /* 720 */
-	"overrideParameterType\0" /* 766 */
-	"parameters\0" /* 788 */
-	"overrideAcceptorParameters"; /* 799 */
+	"types\0" /* 136 */
+	"unpack\0" /* 142 */
+	"selectFromNamedTypes\0" /* 149 */
+	"parametersAcceptor\0" /* 170 */
+	"getPositionalTypes\0" /* 189 */
+	"reorderIntrinsicArgs\0" /* 208 */
+	"typeGetter\0" /* 229 */
+	"Closure\0" /* 240 */
+	"nativeTypeGetter\0" /* 248 */
+	"iterableValueTypeGetter\0" /* 265 */
+	"iterableKeyTypeGetter\0" /* 289 */
+	"applyIntrinsicArgOverrides\0" /* 311 */
+	"acceptor\0" /* 338 */
+	"hasAcceptorTemplateOrLateResolvableType\0" /* 347 */
+	"hasAcceptorTemplateOrLateResolvableParameterType\0" /* 387 */
+	"selectFromTypes\0" /* 436 */
+	"variants\0" /* 452 */
+	"combineVariantsForNormalization\0" /* 461 */
+	"acceptors\0" /* 493 */
+	"PHPStan\\Reflection\\ExtendedParametersAcceptor\0" /* 503 */
+	"combineAcceptors\0" /* 549 */
+	"wrapAcceptor\0" /* 566 */
+	"parameter\0" /* 579 */
+	"PHPStan\\Reflection\\ParameterReflection\0" /* 589 */
+	"PHPStan\\Reflection\\ExtendedParameterReflection\0" /* 628 */
+	"wrapParameter\0" /* 675 */
+	"curlOpt\0" /* 689 */
+	"PHPStan\\Type\\Type\0" /* 697 */
+	"getCurlOptValueType\0" /* 715 */
+	"original\0" /* 735 */
+	"type\0" /* 744 */
+	"nativeType\0" /* 749 */
+	"PHPStan\\Reflection\\Php\\ExtendedDummyParameter\0" /* 760 */
+	"overrideParameterType\0" /* 806 */
+	"parameters\0" /* 828 */
+	"overrideAcceptorParameters"; /* 839 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 6), /* selectFromArgs $scope */
 	reg::packed(29, MAY_BE_ARRAY), /* selectFromArgs $args */
 	reg::packed(34, MAY_BE_ARRAY), /* selectFromArgs $parametersAcceptors */
 	reg::packed(54, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 77), /* selectFromArgs $namedArgumentsVariants */
 	reg::packed(82, 0, 83), /* selectFromArgs return */
+	reg::packed(136, MAY_BE_ARRAY), /* selectFromNamedTypes $types */
+	reg::packed(34, MAY_BE_ARRAY), /* selectFromNamedTypes $parametersAcceptors */
+	reg::packed(54, MAY_BE_ARRAY), /* selectFromNamedTypes $namedArgumentsVariants */
+	reg::packed(142, MAY_BE_BOOL), /* selectFromNamedTypes $unpack */
+	reg::packed(82, 0, 83), /* selectFromNamedTypes return */
+	reg::packed(136, MAY_BE_ARRAY), /* getPositionalTypes $types */
+	reg::packed(170, 0, 83), /* getPositionalTypes $parametersAcceptor */
+	reg::packed(82, MAY_BE_NULL | MAY_BE_ARRAY), /* getPositionalTypes return */
 	reg::packed(29, MAY_BE_ARRAY), /* reorderIntrinsicArgs $args */
-	reg::packed(136, 0, 83), /* reorderIntrinsicArgs $parametersAcceptor */
+	reg::packed(170, 0, 83), /* reorderIntrinsicArgs $parametersAcceptor */
 	reg::packed(82, MAY_BE_ARRAY), /* reorderIntrinsicArgs return */
 	reg::packed(29, MAY_BE_ARRAY), /* applyIntrinsicArgOverrides $args */
 	reg::packed(34, MAY_BE_ARRAY), /* applyIntrinsicArgOverrides $parametersAcceptors */
 	reg::packed(54, MAY_BE_NULL | MAY_BE_ARRAY), /* applyIntrinsicArgOverrides $namedArgumentsVariants */
 	reg::packed(0, 0, 6), /* applyIntrinsicArgOverrides $scope */
-	reg::packed(176, 0, 187), /* applyIntrinsicArgOverrides $typeGetter */
-	reg::packed(195, 0, 187), /* applyIntrinsicArgOverrides $nativeTypeGetter */
-	reg::packed(212, 0, 187), /* applyIntrinsicArgOverrides $iterableValueTypeGetter */
-	reg::packed(236, 0, 187), /* applyIntrinsicArgOverrides $iterableKeyTypeGetter */
+	reg::packed(229, 0, 240), /* applyIntrinsicArgOverrides $typeGetter */
+	reg::packed(248, 0, 240), /* applyIntrinsicArgOverrides $nativeTypeGetter */
+	reg::packed(265, 0, 240), /* applyIntrinsicArgOverrides $iterableValueTypeGetter */
+	reg::packed(289, 0, 240), /* applyIntrinsicArgOverrides $iterableKeyTypeGetter */
 	reg::packed(82, MAY_BE_ARRAY), /* applyIntrinsicArgOverrides return */
-	reg::packed(285, 0, 83), /* hasAcceptorTemplateOrLateResolvableType $acceptor */
+	reg::packed(338, 0, 83), /* hasAcceptorTemplateOrLateResolvableType $acceptor */
 	reg::packed(82, MAY_BE_BOOL), /* hasAcceptorTemplateOrLateResolvableType return */
-	reg::packed(285, 0, 83), /* hasAcceptorTemplateOrLateResolvableParameterType $acceptor */
+	reg::packed(338, 0, 83), /* hasAcceptorTemplateOrLateResolvableParameterType $acceptor */
 	reg::packed(82, MAY_BE_BOOL), /* hasAcceptorTemplateOrLateResolvableParameterType return */
-	reg::packed(383, MAY_BE_ARRAY), /* selectFromTypes $types */
+	reg::packed(136, MAY_BE_ARRAY), /* selectFromTypes $types */
 	reg::packed(34, MAY_BE_ARRAY), /* selectFromTypes $parametersAcceptors */
-	reg::packed(389, MAY_BE_BOOL), /* selectFromTypes $unpack */
+	reg::packed(142, MAY_BE_BOOL), /* selectFromTypes $unpack */
 	reg::packed(82, 0, 83), /* selectFromTypes return */
 	reg::packed(29, MAY_BE_ARRAY), /* combineVariantsForNormalization $args */
-	reg::packed(412, MAY_BE_ARRAY), /* combineVariantsForNormalization $variants */
+	reg::packed(452, MAY_BE_ARRAY), /* combineVariantsForNormalization $variants */
 	reg::packed(54, MAY_BE_NULL | MAY_BE_ARRAY), /* combineVariantsForNormalization $namedArgumentsVariants */
 	reg::packed(82, 0, 83), /* combineVariantsForNormalization return */
-	reg::packed(453, MAY_BE_ARRAY), /* combineAcceptors $acceptors */
-	reg::packed(82, 0, 463), /* combineAcceptors return */
-	reg::packed(285, 0, 83), /* wrapAcceptor $acceptor */
-	reg::packed(82, 0, 463), /* wrapAcceptor return */
-	reg::packed(539, 0, 549), /* wrapParameter $parameter */
-	reg::packed(82, 0, 588), /* wrapParameter return */
-	reg::packed(649, MAY_BE_LONG), /* getCurlOptValueType $curlOpt */
-	reg::packed(82, MAY_BE_NULL, 657), /* getCurlOptValueType return */
-	reg::packed(695, 0, 549), /* overrideParameterType $original */
-	reg::packed(704, 0, 657), /* overrideParameterType $type */
-	reg::packed(709, 0, 657), /* overrideParameterType $nativeType */
-	reg::packed(82, 0, 720), /* overrideParameterType return */
-	reg::packed(285, 0, 83), /* overrideAcceptorParameters $acceptor */
-	reg::packed(788, MAY_BE_ARRAY), /* overrideAcceptorParameters $parameters */
+	reg::packed(493, MAY_BE_ARRAY), /* combineAcceptors $acceptors */
+	reg::packed(82, 0, 503), /* combineAcceptors return */
+	reg::packed(338, 0, 83), /* wrapAcceptor $acceptor */
+	reg::packed(82, 0, 503), /* wrapAcceptor return */
+	reg::packed(579, 0, 589), /* wrapParameter $parameter */
+	reg::packed(82, 0, 628), /* wrapParameter return */
+	reg::packed(689, MAY_BE_LONG), /* getCurlOptValueType $curlOpt */
+	reg::packed(82, MAY_BE_NULL, 697), /* getCurlOptValueType return */
+	reg::packed(735, 0, 589), /* overrideParameterType $original */
+	reg::packed(744, 0, 697), /* overrideParameterType $type */
+	reg::packed(749, 0, 697), /* overrideParameterType $nativeType */
+	reg::packed(82, 0, 760), /* overrideParameterType return */
+	reg::packed(338, 0, 83), /* overrideAcceptorParameters $acceptor */
+	reg::packed(828, MAY_BE_ARRAY), /* overrideAcceptorParameters $parameters */
 	reg::packed(82, 0, 83), /* overrideAcceptorParameters return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -117,18 +127,20 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig selectFromArgs = { { 121 /* selectFromArgs */, 3, 0, 4, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig reorderIntrinsicArgs = { { 155 /* reorderIntrinsicArgs */, 2, 5, 2, 7, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig applyIntrinsicArgOverrides = { { 258 /* applyIntrinsicArgOverrides */, 8, 8, 8, 16, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig hasAcceptorTemplateOrLateResolvableType = { { 294 /* hasAcceptorTemplateOrLateResolvableType */, 1, 17, 1, 18, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig hasAcceptorTemplateOrLateResolvableParameterType = { { 334 /* hasAcceptorTemplateOrLateResolvableParameterType */, 1, 19, 1, 20, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig selectFromTypes = { { 396 /* selectFromTypes */, 3, 21, 3, 24, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig combineVariantsForNormalization = { { 421 /* combineVariantsForNormalization */, 3, 25, 3, 28, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig combineAcceptors = { { 509 /* combineAcceptors */, 1, 29, 1, 30, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig wrapAcceptor = { { 526 /* wrapAcceptor */, 1, 31, 1, 32, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig wrapParameter = { { 635 /* wrapParameter */, 1, 33, 1, 34, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getCurlOptValueType = { { 675 /* getCurlOptValueType */, 1, 35, 1, 36, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig overrideParameterType = { { 766 /* overrideParameterType */, 3, 37, 3, 40, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig overrideAcceptorParameters = { { 799 /* overrideAcceptorParameters */, 2, 41, 2, 43, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig selectFromNamedTypes = { { 149 /* selectFromNamedTypes */, 4, 5, 4, 9, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getPositionalTypes = { { 189 /* getPositionalTypes */, 2, 10, 2, 12, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig reorderIntrinsicArgs = { { 208 /* reorderIntrinsicArgs */, 2, 13, 2, 15, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig applyIntrinsicArgOverrides = { { 311 /* applyIntrinsicArgOverrides */, 8, 16, 8, 24, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasAcceptorTemplateOrLateResolvableType = { { 347 /* hasAcceptorTemplateOrLateResolvableType */, 1, 25, 1, 26, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig hasAcceptorTemplateOrLateResolvableParameterType = { { 387 /* hasAcceptorTemplateOrLateResolvableParameterType */, 1, 27, 1, 28, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig selectFromTypes = { { 436 /* selectFromTypes */, 3, 29, 3, 32, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig combineVariantsForNormalization = { { 461 /* combineVariantsForNormalization */, 3, 33, 3, 36, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig combineAcceptors = { { 549 /* combineAcceptors */, 1, 37, 1, 38, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig wrapAcceptor = { { 566 /* wrapAcceptor */, 1, 39, 1, 40, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig wrapParameter = { { 675 /* wrapParameter */, 1, 41, 1, 42, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getCurlOptValueType = { { 715 /* getCurlOptValueType */, 1, 43, 1, 44, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig overrideParameterType = { { 806 /* overrideParameterType */, 3, 45, 3, 48, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig overrideAcceptorParameters = { { 839 /* overrideAcceptorParameters */, 2, 49, 2, 51, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ParametersAcceptorSelector

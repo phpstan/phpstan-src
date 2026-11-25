@@ -171,7 +171,7 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 					$scan->unsupported = true;
 				}
 				foreach ($stmt->props as $prop) {
-					$scan->properties[$prop->name->toString()] = $stmt->isPrivate() || $stmt->isPrivateSet();
+					$scan->addProperty($prop->name->toString(), $stmt->isPrivate() || $stmt->isPrivateSet(), $stmt->isProtected() || $stmt->isProtectedSet());
 				}
 			} elseif ($stmt instanceof Node\Stmt\ClassMethod) {
 				$methodName = $stmt->name->toLowerString();
@@ -200,7 +200,7 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 					if ($param->hooks !== []) {
 						$scan->unsupported = true;
 					}
-					$scan->properties[$param->var->name] = $param->isPrivate() || $param->isPrivateSet();
+					$scan->addProperty($param->var->name, $param->isPrivate() || $param->isPrivateSet(), $param->isProtected() || $param->isProtectedSet());
 				}
 			}
 		}

@@ -533,6 +533,94 @@ class TraitRoute extends TraitRouteParent
 
 }
 
+/** In a final class only its own code writes a protected property, as long as no parent declares it. */
+final class FinalProtected
+{
+
+	protected int $protected = 0;
+
+	public int $public = 0;
+
+	public function __construct(
+		protected int $promoted = 0,
+	)
+	{
+	}
+
+	public function run(): void
+	{
+		$this->protected = 1;
+		$this->public = 1;
+		$this->promoted = 1;
+		$this->log();
+		assertType('1', $this->protected);
+		assertType('int', $this->public);
+		assertType('1', $this->promoted);
+	}
+
+	private function log(): void
+	{
+		\error_log('x');
+	}
+
+}
+
+/** Code outside a class a subclass can extend can write its protected properties. */
+class NonFinalProtected
+{
+
+	protected int $protected = 0;
+
+	public function run(): void
+	{
+		$this->protected = 1;
+		$this->log();
+		assertType('int', $this->protected);
+	}
+
+	private function log(): void
+	{
+		\error_log('x');
+	}
+
+}
+
+class ProtectedParent
+{
+
+	protected int $declaredByParent = 0;
+
+	public function reset(): void
+	{
+		$this->declaredByParent = 0;
+	}
+
+}
+
+/** The parent's code writes a protected property the parent declares too. */
+final class FinalProtectedChild extends ProtectedParent
+{
+
+	protected int $declaredByParent = 0;
+
+	protected int $childOnly = 0;
+
+	public function run(): void
+	{
+		$this->declaredByParent = 1;
+		$this->childOnly = 1;
+		$this->log();
+		assertType('int', $this->declaredByParent);
+		assertType('1', $this->childOnly);
+	}
+
+	private function log(): void
+	{
+		\error_log('x');
+	}
+
+}
+
 /** Receivers other than $this are not followed. */
 final class Receiver
 {
@@ -847,7 +935,7 @@ class MethodArguments
 
 /**
  * A call that can run code outside the class - a function, another object's method, 'new' -
- * forgets public and protected properties; private ones when the followed code or the class's closures write them.
+ * forgets public properties; private ones, and protected ones of a final class, when the followed code or the class's closures write them.
  */
 final class OutsideCalls
 {
@@ -883,7 +971,7 @@ final class OutsideCalls
 		$this->promoted = true;
 		$this->callsFunction();
 		assertType('bool', $this->public);
-		assertType('bool', $this->protected);
+		assertType('true', $this->protected);
 		assertType('true', $this->private);
 		assertType('true', $this->writtenByPublicMethod);
 		assertType('bool', $this->writtenInClosure);

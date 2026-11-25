@@ -22,8 +22,11 @@ use function usort;
  * Private properties are forgotten when the followed code writes them; code outside
  * calling a method of $this it cannot reach otherwise needs $this, so once the class
  * lets $this out anywhere, a call that runs code outside keeps no property. A call that reaches a __call
- * method, which can write private properties, keeps nothing either, and nothing is kept in a class
- * using a trait.
+ * method, which can write private properties, keeps nothing either.
+ *
+ * The code of the traits a class uses is read like the class's own, when they are in analysed
+ * files and used without adaptations: PreservedPropertiesResolver merges their scans into the
+ * class's at its first call. Otherwise nothing is kept in a class using a trait.
  *
  * @internal
  * @phpstan-type Summary array{writes: array<string, true>, calls: list<array{self::CALL_*, string}>, functionArguments: list<array{list<non-empty-string>, int, string}>, escapes: bool, unknown: bool}
@@ -46,6 +49,12 @@ final class PreservedPropertiesClassScan
 	/** @var array<string, bool> declared instance properties, each with whether only the class's own code can write it */
 	public array $properties = [];
 
+	/** @var array<string, array{bool, bool}> declared instance properties, each with whether it is private and whether it is protected */
+	private array $propertyVisibility = [];
+
+	/** @var list<Node\Stmt\TraitUse> the trait uses of the class, whose code is merged in before its calls are annotated */
+	public array $traitUses = [];
+
 	/** @var array<string, true> protected properties of a final class with a parent, which only the class's own code writes unless the parent declares them too */
 	private array $unlessParentDeclares = [];
 
@@ -66,7 +75,7 @@ final class PreservedPropertiesClassScan
 	public array $methodParameters = [];
 
 	/**
-	 * Magic __get/__set/__unset, a hooked property or a trait: code nothing summarises can write the
+	 * Magic __get/__set/__unset, a hooked property or a trait whose code is not known: code nothing summarises can write the
 	 * properties, so the calls keep and forget what they did before.
 	 */
 	public bool $unsupported = false;
@@ -108,6 +117,7 @@ final class PreservedPropertiesClassScan
 
 	public function addProperty(string $propertyName, bool $isPrivate, bool $isProtected): void
 	{
+		$this->propertyVisibility[$propertyName] = [$isPrivate, $isProtected];
 		// no subclass reaches a protected property of a final class, and the parent's code only one it declares too
 		$this->properties[$propertyName] = $isPrivate || ($isProtected && $this->isFinal);
 		if ($isPrivate || !$isProtected || !$this->isFinal || !$this->hasParent) {
@@ -127,23 +137,98 @@ final class PreservedPropertiesClassScan
 
 	public function annotateCalls(): void
 	{
-		if ($this->unsupported) {
-			return;
-		}
-
-		$overrideWrites = $this->collectOverrideWrites();
+		$overrideWrites = $this->unsupported ? [] : $this->collectOverrideWrites();
 		$results = [];
 		foreach ($this->calls as [$node, $kind, $methodName]) {
 			$key = $kind . ':' . $methodName;
 			if (!array_key_exists($key, $results)) {
-				$results[$key] = $this->resolve($kind, $methodName, $overrideWrites);
+				$results[$key] = $this->unsupported ? null : $this->resolve($kind, $methodName, $overrideWrites);
 			}
 			if ($results[$key] === null) {
+				if ($node->hasAttribute(PreservedPropertiesVisitor::ATTRIBUTE_NAME)) {
+					// the scan deferred until the traits were merged
+					$node->setAttribute(PreservedPropertiesVisitor::ATTRIBUTE_NAME, null);
+				}
 				continue;
 			}
 
 			$node->setAttribute(PreservedPropertiesVisitor::ATTRIBUTE_NAME, $results[$key]);
 		}
+	}
+
+	/**
+	 * Attaches this scan to the class's calls instead of what they keep, which the class's
+	 * traits decide too: their code is in other files.
+	 */
+	public function deferCalls(): void
+	{
+		foreach ($this->calls as [$node]) {
+			$node->setAttribute(PreservedPropertiesVisitor::ATTRIBUTE_NAME, $this);
+		}
+	}
+
+	/**
+	 * Merges the scans of the traits the class uses into it and annotates its calls.
+	 *
+	 * @param list<self>|null $traitScans null when the code of some trait is not known
+	 */
+	public function annotateCallsWithTraits(?array $traitScans): void
+	{
+		if ($traitScans === null) {
+			$this->unsupported = true;
+		}
+		foreach ($traitScans ?? [] as $traitScan) {
+			$this->mergeTrait($traitScan);
+		}
+		$this->traitUses = [];
+
+		$this->annotateCalls();
+	}
+
+	private function mergeTrait(self $trait): void
+	{
+		if ($trait->unsupported || $trait->traitUses !== []) {
+			$this->unsupported = true;
+			return;
+		}
+
+		foreach ($trait->methods as $methodName => $method) {
+			if (isset($this->methods[$methodName])) {
+				// the class's own method replaces the trait's
+				continue;
+			}
+			$this->methods[$methodName] = $method;
+			if (isset($trait->methodParameters[$methodName])) {
+				$this->methodParameters[$methodName] = $trait->methodParameters[$methodName];
+			}
+			if (!isset($trait->summaries[$methodName])) {
+				continue;
+			}
+			$this->summaries[$methodName] = $trait->summaries[$methodName];
+		}
+
+		foreach ($trait->propertyVisibility as $propertyName => [$isPrivate, $isProtected]) {
+			if (isset($this->properties[$propertyName])) {
+				continue;
+			}
+			$this->addProperty($propertyName, $isPrivate, $isProtected);
+		}
+
+		$this->closures['writes'] += $trait->closures['writes'];
+		foreach ($trait->closures['calls'] as $call) {
+			$this->closures['calls'][] = $call;
+		}
+		foreach ($trait->closures['functionArguments'] as $functionArgument) {
+			$this->closures['functionArguments'][] = $functionArgument;
+		}
+		$this->closures['escapes'] = $this->closures['escapes'] || $trait->closures['escapes'];
+		$this->closures['unknown'] = $this->closures['unknown'] || $trait->closures['unknown'];
+		$this->handedOut += $trait->handedOut;
+		$this->nonPlainWrites += $trait->nonPlainWrites;
+		foreach ($trait->assignments as $traitMethodName => $propertyNames) {
+			$this->assignments[$traitMethodName] ??= $propertyNames;
+		}
+		$this->thisEscapes = $this->thisEscapes || $trait->thisEscapes;
 	}
 
 	/**

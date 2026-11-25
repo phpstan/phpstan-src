@@ -2,6 +2,7 @@
 
 namespace PHPStan\Analyser\PreservedProperties;
 
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
@@ -10,7 +11,10 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PHPStan\Analyser\CalledMethodProcessor;
 use PHPStan\Analyser\MutatingScope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
+use PHPStan\Parser\Parser;
+use PHPStan\Parser\PreservedPropertiesClassScan;
 use PHPStan\Parser\PreservedPropertiesVisitor;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\MethodReflection;
@@ -25,6 +29,7 @@ use function count;
 use function explode;
 use function implode;
 use function str_contains;
+use function strtolower;
 
 /**
  * Which properties of $this keep their remembered types across an impure call
@@ -41,8 +46,87 @@ final class PreservedPropertiesResolver
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private CalledMethodProcessor $calledMethodProcessor,
+		#[AutowiredParameter(ref: '@defaultAnalysisParser')]
+		private Parser $parser,
 	)
 	{
+	}
+
+	/**
+	 * What PreservedPropertiesVisitor attached to the call. In a class using traits that is the
+	 * class's scan until its first call: the traits' scans, read from their files, are merged in
+	 * then. A trait outside the analysed files is parsed without them, so the class keeps nothing.
+	 */
+	private function getPreservedProperties(Expr $call): ?PreservedProperties
+	{
+		$attribute = $call->getAttribute(PreservedPropertiesVisitor::ATTRIBUTE_NAME);
+		if ($attribute instanceof PreservedPropertiesClassScan) {
+			$attribute->annotateCallsWithTraits($this->findTraitScans($attribute->traitUses));
+			$attribute = $call->getAttribute(PreservedPropertiesVisitor::ATTRIBUTE_NAME);
+		}
+
+		return $attribute instanceof PreservedProperties ? $attribute : null;
+	}
+
+	/**
+	 * @param list<Node\Stmt\TraitUse> $traitUses
+	 * @return list<PreservedPropertiesClassScan>|null null when the code of some trait is not known
+	 */
+	private function findTraitScans(array $traitUses): ?array
+	{
+		$traitScans = [];
+		foreach ($traitUses as $traitUse) {
+			if ($traitUse->adaptations !== []) {
+				// renamed, hidden or reordered methods are not followed
+				return null;
+			}
+			foreach ($traitUse->traits as $traitName) {
+				$traitName = $traitName->toString();
+				if (!$this->reflectionProvider->hasClass($traitName)) {
+					return null;
+				}
+				$traitReflection = $this->reflectionProvider->getClass($traitName);
+				$fileName = $traitReflection->getFileName();
+				if (!$traitReflection->isTrait() || $fileName === null) {
+					return null;
+				}
+				$traitScan = $this->findTraitScan($this->parser->parseFile($fileName), $traitReflection->getName());
+				if ($traitScan === null) {
+					return null;
+				}
+				$traitScans[] = $traitScan;
+			}
+		}
+
+		return $traitScans;
+	}
+
+	/**
+	 * @param Node\Stmt[] $stmts
+	 */
+	private function findTraitScan(array $stmts, string $traitName): ?PreservedPropertiesClassScan
+	{
+		foreach ($stmts as $stmt) {
+			if ($stmt instanceof Node\Stmt\Namespace_) {
+				$traitScan = $this->findTraitScan($stmt->stmts, $traitName);
+				if ($traitScan !== null) {
+					return $traitScan;
+				}
+				continue;
+			}
+			if (
+				!$stmt instanceof Node\Stmt\Trait_
+				|| $stmt->namespacedName === null
+				|| strtolower($stmt->namespacedName->toString()) !== strtolower($traitName)
+			) {
+				continue;
+			}
+			$traitScan = $stmt->getAttribute(PreservedPropertiesVisitor::TRAIT_SCAN_ATTRIBUTE_NAME);
+
+			return $traitScan instanceof PreservedPropertiesClassScan ? $traitScan : null;
+		}
+
+		return null;
 	}
 
 	/**
@@ -62,7 +146,7 @@ final class PreservedPropertiesResolver
 		$exitScope = $walk[0];
 		$scope = $scope->mergeInitializedProperties($exitScope);
 
-		$preservedProperties = $call->getAttribute(PreservedPropertiesVisitor::ATTRIBUTE_NAME);
+		$preservedProperties = $this->getPreservedProperties($call);
 		if (!$preservedProperties instanceof PreservedProperties) {
 			return $scope;
 		}
@@ -258,7 +342,7 @@ final class PreservedPropertiesResolver
 	 */
 	public function resolve(Expr $call): ?array
 	{
-		$preservedProperties = $call->getAttribute(PreservedPropertiesVisitor::ATTRIBUTE_NAME);
+		$preservedProperties = $this->getPreservedProperties($call);
 		if (!$preservedProperties instanceof PreservedProperties) {
 			return null;
 		}
@@ -296,7 +380,7 @@ final class PreservedPropertiesResolver
 	 */
 	public function forgetWrittenProperties(MutatingScope $scope, Expr $call, MethodReflection $methodReflection): MutatingScope
 	{
-		$preservedProperties = $call->getAttribute(PreservedPropertiesVisitor::ATTRIBUTE_NAME);
+		$preservedProperties = $this->getPreservedProperties($call);
 		if (!$preservedProperties instanceof PreservedProperties) {
 			return $scope;
 		}

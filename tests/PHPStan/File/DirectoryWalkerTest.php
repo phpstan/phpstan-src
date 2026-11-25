@@ -131,6 +131,21 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 		);
 	}
 
+	public function testCircularSymlinkIsNotWalkedAgain(): void
+	{
+		$tmpDir = $this->createTree();
+		$withoutLoop = (new DirectoryWalker(new FileStatSignatures()))->walk($this->directory, ['php']);
+
+		symlink($this->directory . '/src', $this->directory . '/src/Nested/loop');
+		$fresh = (new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php']);
+		$this->waitUntilTheTreeIsInThePast();
+		(new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php']);
+		$fromListings = (new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php']);
+
+		$this->assertSame($withoutLoop, $fresh);
+		$this->assertSame($withoutLoop, $fromListings);
+	}
+
 	public function testExcludedDirectoriesAreNotRead(): void
 	{
 		$tmpDir = $this->createTree();

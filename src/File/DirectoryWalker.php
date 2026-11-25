@@ -21,6 +21,7 @@ use function mkdir;
 use function opendir;
 use function preg_match;
 use function readdir;
+use function realpath;
 use function rename;
 use function rtrim;
 use function serialize;
@@ -156,9 +157,14 @@ final class DirectoryWalker
 
 		$this->loadListings();
 
+		$realDirectory = realpath($directory);
+		if ($realDirectory === false) {
+			return null;
+		}
+
 		$files = [];
 		$visited = [];
-		if (!$this->walkDirectory($directory, Glob::toRegex('*.{' . implode(',', $fileExtensions) . '}'), $this->fileStatSignatures->begin(), $files, $visited)) {
+		if (!$this->walkDirectory($directory, $realDirectory, [], Glob::toRegex('*.{' . implode(',', $fileExtensions) . '}'), $this->fileStatSignatures->begin(), $files, $visited)) {
 			return null;
 		}
 
@@ -168,10 +174,12 @@ final class DirectoryWalker
 	}
 
 	/**
+	 * @param string $realDirectory the directory with symlinks resolved, as realpath() gives it
+	 * @param array<string, true> $ancestors the real paths of the directories the walk is in
 	 * @param list<string> $files
 	 * @param array<string, true> $visited
 	 */
-	private function walkDirectory(string $directory, string $pattern, FileStatSignatureReader $signatures, array &$files, array &$visited): bool
+	private function walkDirectory(string $directory, string $realDirectory, array $ancestors, string $pattern, FileStatSignatureReader $signatures, array &$files, array &$visited): bool
 	{
 		if ($this->directoryExcluder !== null && $this->directoryExcluder->isDirectoryExcludedFromAnalysing($directory)) {
 			return true;
@@ -205,13 +213,22 @@ final class DirectoryWalker
 			return true;
 		}
 
+		$ancestors[$realDirectory] = true;
 		foreach (explode("\0", $entries) as $entry) {
 			$type = $entry[0];
 			$name = substr($entry, 1);
 			$path = $directory . '/' . $name;
+			$realPath = null;
 			if ($type === 'l') {
 				if (is_dir($path)) {
 					if (isset(self::VCS_DIRECTORIES[$name])) {
+						continue;
+					}
+
+					$realPath = realpath($path);
+					// a directory that resolves to one the walk is in would repeat it until the
+					// operating system stops resolving the path - Finder stops there too since 6.4.49
+					if ($realPath === false || isset($ancestors[$realPath])) {
 						continue;
 					}
 					$type = 'd';
@@ -221,7 +238,7 @@ final class DirectoryWalker
 			}
 
 			if ($type === 'd') {
-				if (!$this->walkDirectory($path, $pattern, $signatures, $files, $visited)) {
+				if (!$this->walkDirectory($path, $realPath ?? $realDirectory . '/' . $name, $ancestors, $pattern, $signatures, $files, $visited)) {
 					return false;
 				}
 

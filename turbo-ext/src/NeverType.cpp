@@ -455,6 +455,9 @@ PT_MINIT_REGISTRATION(pt_register_never_type)
 		PT_ARGS(2, 2);
 		RETURN_OBJ_COPY(Z_OBJ_P(ZEND_THIS));
 	});
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<0>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(0); });
 	cls.method(sigs::isNull, ntNo0);
 	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, ntNo0);

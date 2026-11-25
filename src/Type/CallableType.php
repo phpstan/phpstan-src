@@ -670,6 +670,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return TrinaryLogic::createNo();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::STRING | TypeKind::ARRAY | TypeKind::OBJECT;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

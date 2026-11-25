@@ -318,6 +318,11 @@ class IterableType implements CompoundType
 		return $this->getItemType();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::ARRAY | TypeKind::OBJECT;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

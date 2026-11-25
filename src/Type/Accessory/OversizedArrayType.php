@@ -29,6 +29,7 @@ use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
@@ -331,6 +332,11 @@ class OversizedArrayType implements CompoundType, AccessoryType
 	public function isList(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getKindMask(): int
+	{
+		return TypeKind::ARRAY;
 	}
 
 	public function isNull(): TrinaryLogic

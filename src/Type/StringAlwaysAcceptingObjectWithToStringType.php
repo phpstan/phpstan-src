@@ -34,6 +34,12 @@ class StringAlwaysAcceptingObjectWithToStringType extends StringType
 		return $result;
 	}
 
+	/** Stringable objects are its subtypes. */
+	public function getKindMask(): int
+	{
+		return TypeKind::STRING | TypeKind::OBJECT;
+	}
+
 	public function accepts(Type $type, bool $strictTypes): AcceptsResult
 	{
 		$thatClassNames = $type->getObjectClassNames();

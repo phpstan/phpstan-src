@@ -928,6 +928,11 @@ final class TypeCombinator
 	 */
 	private static function compareTypesInUnion(Type $a, Type $b): ?array
 	{
+		// values of different kinds never merge into one member
+		if (TypeKind::areDisjoint($a->getKindMask(), $b->getKindMask())) {
+			return null;
+		}
+
 		if ($a instanceof IntegerRangeType) {
 			$type = $a->tryUnion($b);
 			if ($type !== null) {
@@ -2640,6 +2645,11 @@ final class TypeCombinator
 		// transform int & string to never
 		for ($i = 0; $i < $typesCount; $i++) {
 			for ($j = $i + 1; $j < $typesCount; $j++) {
+				// no value is of both kinds
+				if (TypeKind::areDisjoint($types[$i]->getKindMask(), $types[$j]->getKindMask())) {
+					return new NeverType();
+				}
+
 				if ($types[$j] instanceof SubtractableType) {
 					$typeWithoutSubtractedTypeA = $types[$j]->getTypeWithoutSubtractedType();
 

@@ -109,6 +109,11 @@ class ResourceType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::RESOURCE;
+	}
+
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

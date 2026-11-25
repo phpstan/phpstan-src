@@ -3648,6 +3648,12 @@ PT_MINIT_REGISTRATION(pt_register_intersection_type)
 		pt_it_trinary_type_version(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isSmallerThanOrEqual);
 	});
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(pt_type_kind_mask_of_members(Z_OBJ_P(ZEND_THIS), true));
+	});
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return pt_type_kind_mask_of_members(self, true); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isNull);
 	});

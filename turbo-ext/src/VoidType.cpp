@@ -224,6 +224,9 @@ PT_MINIT_REGISTRATION(pt_register_void_type)
 		RETURN_COPY(pt_trinary_singleton(VoidType::isOffsetAccessLegal()));
 	});
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_ALL>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_ALL); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(VoidType::isNull()));

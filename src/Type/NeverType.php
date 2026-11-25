@@ -520,6 +520,11 @@ class NeverType implements CompoundType
 		return $this;
 	}
 
+	public function getKindMask(): int
+	{
+		return 0;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

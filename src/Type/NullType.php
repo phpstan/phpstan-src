@@ -244,6 +244,11 @@ class NullType implements ConstantScalarType
 		return $this;
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::NULL;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

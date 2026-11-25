@@ -220,6 +220,11 @@ class StringType implements Type
 		return $this;
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::STRING;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

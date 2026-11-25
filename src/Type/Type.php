@@ -467,6 +467,15 @@ interface Type
 	 */
 	public function toValueSet(): ValueSet;
 
+	/**
+	 * The kinds of values this type may hold, as TypeKind bits: a bit can be
+	 * set for a kind the type holds no value of, never the other way round.
+	 * Unions OR the masks of their members, intersections AND them.
+	 *
+	 * @return int-mask-of<TypeKind::*>
+	 */
+	public function getKindMask(): int;
+
 	/** Models the bitwise-not (`~$x`) operator. Returns `ErrorType` for types where `~` is undefined. */
 	public function toBitwiseNotType(): Type;
 

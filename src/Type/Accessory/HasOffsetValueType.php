@@ -42,6 +42,7 @@ use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function spl_object_id;
@@ -423,6 +424,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		}
 
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getKindMask(): int
+	{
+		return TypeKind::STRING | TypeKind::ARRAY | TypeKind::OBJECT;
 	}
 
 	public function isNull(): TrinaryLogic

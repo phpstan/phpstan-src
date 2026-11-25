@@ -156,6 +156,8 @@ enum pt_type_op_id : uint8_t
 	PT_OP_GET_TEMPLATE_TYPE_MAP,
 	PT_OP_GET_RESOLVED_PHP_DOC,
 	PT_OP_WITH_TYPES,
+	/* the type combinator's pair filter */
+	PT_OP_GET_KIND_MASK,
 	PT_OP_COUNT,
 };
 

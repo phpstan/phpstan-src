@@ -1589,6 +1589,13 @@ public:
 	 * pending exception */
 	static int compareTypesInUnion(zval *a, zval *b, zv::Val &merged)
 	{
+		/* values of different kinds never merge into one member */
+		zend_long aKinds = pt_type_kind_mask(Z_OBJ_P(a));
+		if (UNEXPECTED(aKinds < 0)) return -1;
+		zend_long bKinds = pt_type_kind_mask(Z_OBJ_P(b));
+		if (UNEXPECTED(bKinds < 0)) return -1;
+		if (pt_type_kinds_disjoint(aKinds, bKinds)) return 0;
+
 		if (isInstance(a, pt_ce_integer_range_type)) {
 			zv::Val type = call(a, PT_LC("tryunion"), 1, b);
 			if (UNEXPECTED(type.isUndef())) return -1;
@@ -4260,6 +4267,13 @@ public:
 		 * transform int & string to never */
 		for (size_t i = 0; i < typesCount; i++) {
 			for (size_t j = i + 1; j < typesCount; j++) {
+				/* no value is of both kinds */
+				zend_long iKinds = pt_type_kind_mask(Z_OBJ_P(types[i].raw()));
+				PT_FAIL_IF_NEG(iKinds);
+				zend_long jKinds = pt_type_kind_mask(Z_OBJ_P(types[j].raw()));
+				PT_FAIL_IF_NEG(jKinds);
+				if (pt_type_kinds_disjoint(iKinds, jKinds)) return neverType();
+
 				int jSubtractable = isInstanceMap(types[j].raw(), PT_CLASS_SUBTRACTABLE_TYPE);
 				PT_FAIL_IF_NEG(jSubtractable);
 				if (jSubtractable) {

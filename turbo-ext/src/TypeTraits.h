@@ -1622,6 +1622,43 @@ zv::Val pt_prototype_resolved_property(phpstanturbo::PrototypeKind kind, const p
 
 /* }}} */
 
+/* {{{ Type::getKindMask(): the TypeKind bits, with TypeKind's values */
+
+inline constexpr zend_long PT_KIND_NULL = 1;
+inline constexpr zend_long PT_KIND_FALSE = 2;
+inline constexpr zend_long PT_KIND_TRUE = 4;
+inline constexpr zend_long PT_KIND_INT = 8;
+inline constexpr zend_long PT_KIND_FLOAT = 16;
+inline constexpr zend_long PT_KIND_STRING = 32;
+inline constexpr zend_long PT_KIND_ARRAY = 64;
+inline constexpr zend_long PT_KIND_OBJECT = 128;
+inline constexpr zend_long PT_KIND_RESOURCE = 256;
+inline constexpr zend_long PT_KIND_BOOL = PT_KIND_FALSE | PT_KIND_TRUE;
+inline constexpr zend_long PT_KIND_ALL = PT_KIND_NULL | PT_KIND_BOOL | PT_KIND_INT | PT_KIND_FLOAT | PT_KIND_STRING | PT_KIND_ARRAY | PT_KIND_OBJECT | PT_KIND_RESOURCE;
+
+/* TypeKind::areDisjoint() */
+static zend_always_inline bool pt_type_kinds_disjoint(zend_long a, zend_long b)
+{
+	return (a & b) == 0 && a != 0 && b != 0;
+}
+
+/* $type->getKindMask(); -1 = pending exception */
+zend_long pt_type_kind_mask(zend_object *type);
+
+/* UnionType's / IntersectionType's getKindMask(): the members' masks OR-ed,
+ * or AND-ed when $intersect; UNDEF = pending exception */
+zv::Val pt_type_kind_mask_of_members(zend_object *self, bool intersect);
+
+/* getKindMask() returning a constant mask */
+template <zend_long Mask>
+void ZEND_FASTCALL pt_type_kind_mask_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	RETURN_LONG(Mask);
+}
+
+/* }}} */
+
 /* TypeUtils::resolveLateResolvableTypes($type) with the default
  * $resolveUnresolvableTypes = true — the shadowing class's body
  * (TypeUtils.cpp); UNDEF = pending exception */

@@ -408,6 +408,9 @@ PT_MINIT_REGISTRATION(pt_register_has_method_type)
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.isCallable());
 	});
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_STRING | PT_KIND_OBJECT>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_STRING | PT_KIND_OBJECT); });
 	cls.method(sigs::isNull, hmtNo0);
 	cls.method(sigs::isConstantValue, hmtNo0);
 	cls.method(sigs::isConstantScalarValue, hmtNo0);

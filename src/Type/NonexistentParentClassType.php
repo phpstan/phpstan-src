@@ -55,6 +55,11 @@ class NonexistentParentClassType implements Type
 		return new ErrorType();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::OBJECT;
+	}
+
 	public function isObject(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();

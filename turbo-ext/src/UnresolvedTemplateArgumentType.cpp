@@ -705,6 +705,9 @@ PT_MINIT_REGISTRATION(pt_register_unresolved_template_argument_type)
 	cls.method(sigs::isConstantScalarValue, utaDelegate);
 	cls.method(sigs::getConstantScalarTypes, utaDelegate);
 	cls.method(sigs::getConstantScalarValues, utaDelegate);
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_ALL>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_ALL); });
 	cls.method(sigs::isNull, utaDelegate);
 	cls.method(sigs::isTrue, utaDelegate);
 	cls.method(sigs::isFalse, utaDelegate);

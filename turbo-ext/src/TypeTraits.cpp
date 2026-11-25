@@ -156,6 +156,27 @@ zend_long pt_type_trinary_value(zval *trinary)
 	return -1;
 }
 
+zend_long pt_type_kind_mask(zend_object *type)
+{
+	zv::Val mask = pt_type_op(type, PT_OP_GET_KIND_MASK, 0, NULL);
+	if (UNEXPECTED(mask.isUndef())) return -1;
+	/* the declared int return type: a PHP override returns an int too */
+	return Z_LVAL_P(mask.raw());
+}
+
+zv::Val pt_type_kind_mask_of_members(zend_object *self, bool intersect)
+{
+	zv::Val types = pt_type_op(self, PT_OP_GET_TYPES, 0, NULL);
+	if (UNEXPECTED(types.isUndef())) return zv::Val();
+	zend_long mask = intersect ? PT_KIND_ALL : 0;
+	for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
+		zend_long memberMask = pt_type_kind_mask(Z_OBJ_P(entry.value().raw()));
+		if (UNEXPECTED(memberMask < 0)) return zv::Val();
+		mask = intersect ? (mask & memberMask) : (mask | memberMask);
+	}
+	return zv::Val::integer(mask);
+}
+
 zv::Val pt_type_call_static(int classIdx, const char *lcname, size_t len, uint32_t argc, zval *argv)
 {
 	zend_class_entry *ce = pt_class(classIdx);
@@ -1902,6 +1923,8 @@ void pt_type_trait_object(reg::Class &cls)
 
 	cls.traitMethod(sigs::getConstantStrings, emptyArray0);
 	cls.traitMethod(sigs::isCloneable, trinaryYes0);
+	cls.traitMethod(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_OBJECT>);
+	cls.traitOp(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_OBJECT); });
 	cls.traitMethod(sigs::isNull, trinaryNo0);
 	cls.traitOp(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.traitMethod(sigs::isConstantValue, trinaryNo0);
@@ -2387,6 +2410,8 @@ void pt_type_trait_array(reg::Class &cls)
 	cls.traitMethod(sigs::toString, errorType0);
 	cls.traitMethod(sigs::isIterable, trinaryYes0);
 	cls.traitMethod(sigs::isOversizedArray, trinaryMaybe0);
+	cls.traitMethod(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_ARRAY>);
+	cls.traitOp(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_ARRAY); });
 	cls.traitMethod(sigs::isNull, trinaryNo0);
 	cls.traitOp(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.traitMethod(sigs::isTrue, trinaryNo0);
@@ -3913,6 +3938,8 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 	cls.traitMethod(sigs::toCoercedArgumentType, lrDelegate);
 	cls.traitMethod(sigs::isSmallerThan, lrDelegate);
 	cls.traitMethod(sigs::isSmallerThanOrEqual, lrDelegate);
+	cls.traitMethod(sigs::getKindMask, lrDelegate);
+	cls.traitOp(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_GET_KIND_MASK, argc, argv); });
 	cls.traitMethod(sigs::isNull, lrDelegate);
 	cls.traitMethod(sigs::isConstantValue, lrDelegate);
 	cls.traitMethod(sigs::isConstantScalarValue, lrDelegate);

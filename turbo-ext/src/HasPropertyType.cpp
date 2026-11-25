@@ -348,6 +348,9 @@ PT_MINIT_REGISTRATION(pt_register_has_property_type)
 		pt_hpt_one_name(INTERNAL_FUNCTION_PARAM_PASSTHRU, &HasPropertyType::hasStaticProperty);
 	});
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_STRING | PT_KIND_OBJECT>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_STRING | PT_KIND_OBJECT); });
 	cls.method(sigs::isNull, hptNo0);
 	cls.method(sigs::isConstantValue, hptNo0);
 	cls.method(sigs::isConstantScalarValue, hptNo0);

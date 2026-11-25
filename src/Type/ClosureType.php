@@ -934,6 +934,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		);
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::OBJECT;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

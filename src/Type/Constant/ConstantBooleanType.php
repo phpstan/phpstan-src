@@ -20,6 +20,7 @@ use PHPStan\Type\StaticTypeFactory;
 use PHPStan\Type\Traits\ConstantScalarTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
 
@@ -128,6 +129,11 @@ class ConstantBooleanType extends BooleanType implements ConstantScalarType
 		}
 
 		return $this;
+	}
+
+	public function getKindMask(): int
+	{
+		return $this->value ? TypeKind::TRUE : TypeKind::FALSE;
 	}
 
 	public function isTrue(): TrinaryLogic

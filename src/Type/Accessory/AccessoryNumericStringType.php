@@ -36,6 +36,7 @@ use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
@@ -251,6 +252,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		}
 
 		return $this;
+	}
+
+	public function getKindMask(): int
+	{
+		return TypeKind::STRING;
 	}
 
 	public function isNull(): TrinaryLogic

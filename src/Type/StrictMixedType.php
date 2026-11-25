@@ -233,6 +233,11 @@ class StrictMixedType implements CompoundType
 		return $this;
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::ALL;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

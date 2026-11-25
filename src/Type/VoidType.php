@@ -140,6 +140,12 @@ class VoidType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	/** void is no set of values; it compares like a value of any kind. */
+	public function getKindMask(): int
+	{
+		return TypeKind::ALL;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

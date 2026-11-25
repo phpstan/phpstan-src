@@ -501,6 +501,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isSmallerThanOrEqual($otherType, $phpVersion);
 	}
 
+	public function getKindMask(): int
+	{
+		return $this->resolve()->getKindMask();
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return $this->resolve()->isNull();

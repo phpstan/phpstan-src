@@ -1268,6 +1268,9 @@ PT_MINIT_REGISTRATION(pt_register_static_type)
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("islist"), 0, 0);
 	});
 	cls.op(PT_OP_IS_LIST, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_LIST, argc, argv); });
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_OBJECT>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_OBJECT); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isnull"), 0, 0);
 	});

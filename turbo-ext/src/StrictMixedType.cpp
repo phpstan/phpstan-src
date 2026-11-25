@@ -306,6 +306,9 @@ PT_MINIT_REGISTRATION(pt_register_strict_mixed_type)
 	cls.op(PT_OP_GET_ITERABLE_KEY_TYPE, PT_OP_LAMBDA { return pt_op_this(self); });
 	cls.method(sigs::getIterableValueType, smtThis0);
 	cls.op(PT_OP_GET_ITERABLE_VALUE_TYPE, PT_OP_LAMBDA { return pt_op_this(self); });
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_ALL>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_ALL); });
 	cls.method(sigs::isNull, smtNo0);
 	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, smtNo0);

@@ -1487,6 +1487,16 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThanOrEqual($otherType, $phpVersion));
 	}
 
+	public function getKindMask(): int
+	{
+		$mask = TypeKind::ALL;
+		foreach ($this->types as $type) {
+			$mask &= $type->getKindMask();
+		}
+
+		return $mask;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isNull());

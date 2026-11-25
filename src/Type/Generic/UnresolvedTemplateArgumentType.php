@@ -25,6 +25,7 @@ use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueSet;
@@ -780,6 +781,12 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 	public function getConstantScalarValues(): array
 	{
 		return $this->getDelegate()->getConstantScalarValues();
+	}
+
+	/** A variable of its site: not yet the values of the type it stands for. */
+	public function getKindMask(): int
+	{
+		return TypeKind::ALL;
 	}
 
 	public function isNull(): TrinaryLogic

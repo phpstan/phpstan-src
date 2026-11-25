@@ -12,6 +12,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\ValueSet;
 
 trait ArrayTypeTrait
@@ -107,6 +108,11 @@ trait ArrayTypeTrait
 	public function isOversizedArray(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getKindMask(): int
+	{
+		return TypeKind::ARRAY;
 	}
 
 	public function isNull(): TrinaryLogic

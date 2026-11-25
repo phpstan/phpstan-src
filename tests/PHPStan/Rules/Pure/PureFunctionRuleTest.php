@@ -388,6 +388,14 @@ class PureFunctionRuleTest extends RuleTestCase
 				'Impure call to method PureUnlessCallableIsImpureNamedArg\Mapper::map() in pure function PureUnlessCallableIsImpureNamedArg\pureCallingMethodWithImpureCallbackByName().',
 				134,
 			],
+			[
+				'Impure call to function PureUnlessCallableIsImpureNamedArg\\myMapTwice() in pure function PureUnlessCallableIsImpureNamedArg\\forwardingByNameNextToImpure().',
+				172,
+			],
+			[
+				'Impure echo in pure function PureUnlessCallableIsImpureNamedArg\\forwardingByNameNextToImpure().',
+				173,
+			],
 		]);
 	}
 
@@ -585,6 +593,10 @@ class PureFunctionRuleTest extends RuleTestCase
 			[
 				'Impure echo in pure function Bug15075\\pureCaller().',
 				71,
+			],
+			[
+				'Possibly impure call to function Bug15075\\haveFun() in pure function Bug15075\\forwardsUnpacked().',
+				92,
 			],
 		]);
 	}

@@ -226,7 +226,7 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]));
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug15800(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-15800.php'], [
@@ -289,7 +289,7 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 		]);
 	}
 
-	#[RequiresPhp('>= 8.0')]
+	#[RequiresPhp('>= 8.0.0')]
 	public function testBug15800WithoutBleedingEdge(): void
 	{
 		$this->checkMoreFunctions = false;

@@ -618,6 +618,9 @@ final class TypeCombinator
 		// bare ConstantArrayType is the only type whose getConstantArrays() is
 		// itself. Every array went to processArrayTypes(), so only its results
 		// can be such.
+		if (count($arrayTypes) > 1) {
+			$arrayTypes = self::removeArraysWithinOtherMembers($arrayTypes, $types);
+		}
 		$processedArrayTypes = self::processArrayTypes($arrayTypes);
 		$isPlainConstantArray = null;
 		if (count($processedArrayTypes) > 1) {
@@ -687,6 +690,9 @@ final class TypeCombinator
 				}
 
 				[$a, $b] = $compareResult;
+				// a member new to the union, like string from non-empty-string | lowercase-string,
+				// may hold members that were compared with the old ones only
+				$rescan = self::isNewUnionMember($a ?? $b, $types[$i], $types[$j]);
 				if ($a !== null) {
 					$types[$i] = $a;
 					$iGroups = $scanAlreadyNormalized
@@ -698,6 +704,10 @@ final class TypeCombinator
 					}
 					array_splice($types, $j--, 1);
 					$typesCount--;
+					if ($rescan) {
+						$i = -1;
+						continue 2;
+					}
 					continue 1;
 				}
 				if ($b === null) {
@@ -711,6 +721,9 @@ final class TypeCombinator
 				}
 				array_splice($types, $i--, 1);
 				$typesCount--;
+				if ($rescan) {
+					$i = -1;
+				}
 				continue 2;
 			}
 		}
@@ -1050,10 +1063,38 @@ final class TypeCombinator
 			}
 		}
 
-		// numeric-string | non-decimal-int-string → string (preserving common accessories)
-		// Works because decimal-int-string ⊂ numeric-string, so together they cover all strings
-		// A base that is the type itself was compared with the other one above.
 		if ($a->isString()->yes() && $b->isString()->yes()) {
+			// non-empty-X | Y → X when Y ⊆ X holds the strings non-empty-X lacks ('' and,
+			// for non-falsy-X, '0'), like non-empty-string | lowercase-string → string
+			if ($a->isNonEmptyString()->yes() && !$b->isNonEmptyString()->yes()) {
+				$aWithEmpty = self::withEmptyStringsOf($a, $b);
+				if ($aWithEmpty !== null) {
+					return [$aWithEmpty, null];
+				}
+			}
+			if ($b->isNonEmptyString()->yes() && !$a->isNonEmptyString()->yes()) {
+				$bWithEmpty = self::withEmptyStringsOf($b, $a);
+				if ($bWithEmpty !== null) {
+					return [null, $bWithEmpty];
+				}
+			}
+			// non-falsy-X | Y → non-empty-X when '0' ∈ Y ⊆ non-empty-X, like non-falsy-string | numeric-string
+			if ($a->isNonFalsyString()->yes() && !$b->isNonFalsyString()->yes()) {
+				$aNonEmpty = self::withZeroStringOf($a, $b);
+				if ($aNonEmpty !== null) {
+					return [$aNonEmpty, null];
+				}
+			}
+			if ($b->isNonFalsyString()->yes() && !$a->isNonFalsyString()->yes()) {
+				$bNonEmpty = self::withZeroStringOf($b, $a);
+				if ($bNonEmpty !== null) {
+					return [null, $bNonEmpty];
+				}
+			}
+
+			// numeric-string | non-decimal-int-string → string (preserving common accessories)
+			// Works because decimal-int-string ⊂ numeric-string, so together they cover all strings
+			// A base that is the type itself was compared with the other one above.
 			if ($b->isDecimalIntegerString()->no()) {
 				$bBase = self::removeDecimalIntStringAccessory($b);
 				if ($bBase !== $b && $bBase->isSuperTypeOf($a)->yes() && $a->isSuperTypeOf(new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]))->yes()) {
@@ -1069,6 +1110,96 @@ final class TypeCombinator
 		}
 
 		return null;
+	}
+
+	/**
+	 * Ranges are sorted before the pairwise comparison, so a merged range meets
+	 * every range it touches without a rescan.
+	 */
+	private static function isNewUnionMember(?Type $merged, Type $a, Type $b): bool
+	{
+		return $merged !== null
+			&& $merged !== $a
+			&& $merged !== $b
+			&& !$merged instanceof IntegerRangeType
+			&& !$merged instanceof FloatRangeType;
+	}
+
+	/**
+	 * Drops the arrays another member of the union holds, like array<int> next to
+	 * iterable<int>, before processArrayTypes() merges them with the other arrays
+	 * into a type that member no longer holds.
+	 *
+	 * @param list<Type> $arrayTypes
+	 * @param array<Type> $types
+	 * @return list<Type>
+	 */
+	private static function removeArraysWithinOtherMembers(array $arrayTypes, array $types): array
+	{
+		$arrayHolders = [];
+		foreach ($types as $type) {
+			if (!$type->isArray()->maybe()) {
+				continue;
+			}
+			$arrayHolders[] = $type;
+		}
+		if ($arrayHolders === []) {
+			return $arrayTypes;
+		}
+
+		$keptArrayTypes = [];
+		foreach ($arrayTypes as $arrayType) {
+			foreach ($arrayHolders as $arrayHolder) {
+				if ($arrayHolder->isSuperTypeOf($arrayType)->yes()) {
+					continue 2;
+				}
+			}
+			$keptArrayTypes[] = $arrayType;
+		}
+
+		return $keptArrayTypes;
+	}
+
+	/**
+	 * $nonEmpty without its non-empty/non-falsy accessory when that is exactly
+	 * $nonEmpty | $other: $other is within it and holds the strings the
+	 * accessory excludes. Null otherwise.
+	 */
+	private static function withEmptyStringsOf(Type $nonEmpty, Type $other): ?Type
+	{
+		$withEmpty = self::removeNonEmptyStringAccessory($nonEmpty);
+		if ($withEmpty === null || !$withEmpty->isSuperTypeOf($other)->yes()) {
+			return null;
+		}
+		if (!$other->isSuperTypeOf(new ConstantStringType(''))->yes()) {
+			return null;
+		}
+		if (
+			$nonEmpty->isNonFalsyString()->yes()
+			&& !$other->isSuperTypeOf(new ConstantStringType('0'))->yes()
+			&& !$withEmpty->isSuperTypeOf(new ConstantStringType('0'))->no()
+		) {
+			return null;
+		}
+
+		return $withEmpty;
+	}
+
+	/**
+	 * $nonFalsy downgraded to non-empty when that is exactly $nonFalsy | $other:
+	 * $other is within it and holds '0'. Null otherwise.
+	 */
+	private static function withZeroStringOf(Type $nonFalsy, Type $other): ?Type
+	{
+		$nonEmpty = self::downgradeNonFalsyStringToNonEmpty($nonFalsy);
+		if ($nonEmpty === null || !$nonEmpty->isSuperTypeOf($other)->yes()) {
+			return null;
+		}
+		if (!$other->isSuperTypeOf(new ConstantStringType('0'))->yes()) {
+			return null;
+		}
+
+		return $nonEmpty;
 	}
 
 	/**

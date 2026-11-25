@@ -32,11 +32,14 @@ class Foo
 	 * @param __benevolent<int|lowercase-string> $benevolent
 	 * @param uppercase-string $uppercase
 	 * @param non-empty-string $nonEmpty
+	 * @param numeric-string $numeric
 	 */
-	public function benevolent($benevolent, string $uppercase, string $nonEmpty, bool $b): void
+	public function benevolent($benevolent, string $uppercase, string $nonEmpty, string $numeric, bool $b): void
 	{
 		assertType('int|lowercase-string|uppercase-string', $b ? $benevolent : $uppercase);
-		assertType('int|lowercase-string|non-empty-string', $b ? $benevolent : $nonEmpty);
+		assertType('int|lowercase-string|numeric-string', $b ? $benevolent : $numeric);
+		// string absorbs the benevolent lowercase-string
+		assertType('(int|string)', $b ? $benevolent : $nonEmpty);
 		assertType('(int|lowercase-string)', $b ? $benevolent : 'abc');
 	}
 

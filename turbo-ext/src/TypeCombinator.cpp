@@ -338,6 +338,12 @@ static zv::Val stringType()
 	return adopted(pt_string_type_new(&raw), raw);
 }
 
+static zv::Val constantStringType(zend_string *value)
+{
+	zval raw;
+	return adopted(pt_constant_string_type_new(&raw, value), raw);
+}
+
 static zv::Val integerType()
 {
 	zval raw;
@@ -1263,6 +1269,9 @@ public:
 			listFrom(newTypes.raw(), types);
 		}
 
+		if (arrayTypes.size() > 1) {
+			if (UNEXPECTED(!removeArraysWithinOtherMembers(arrayTypes, types))) return zv::Val();
+		}
 		zv::Val processedArrayTypes = processArrayTypes(arrayTypes);
 		PT_FAIL_IF_UNDEF(processedArrayTypes);
 		listFrom(processedArrayTypes.raw(), types);
@@ -1293,17 +1302,24 @@ public:
 				PT_FAIL_IF_NEG(compareResult);
 				if (compareResult == 0) continue;
 
+				/* a member new to the union, like string from non-empty-string | lowercase-string,
+				 * may hold members that were compared with the old ones only */
+				bool rescan = isNewUnionMember(merged.raw(), types[i].raw(), types[j].raw());
 				if (compareResult == 1) {
 					types[i] = std::move(merged);
 					iGroups = normalizedGroupsOf(normalizedGroupsByType, types[i].raw());
 					types.erase(types.begin() + (ptrdiff_t) j);
 					j--;
 					typesCount--;
+					if (rescan) {
+						i = (size_t) -1;
+						break;
+					}
 					continue;
 				}
 				types[j] = std::move(merged);
 				types.erase(types.begin() + (ptrdiff_t) i);
-				i--;
+				i = rescan ? (size_t) -1 : i - 1;
 				typesCount--;
 				break;
 			}
@@ -1708,7 +1724,18 @@ public:
 			zend_long bString = callTrinary(b, PT_LC("isstring"));
 			if (UNEXPECTED(bString < 0)) return -1;
 			if (bString == PT_TRI_YES) {
-				int result = compareStringsInUnion(a, b, merged);
+				/* non-empty-X | Y → X when Y ⊆ X holds the strings non-empty-X lacks */
+				int result = withEmptyStringsInUnion(a, b, merged);
+				if (result != 0) return result < 0 ? -1 : 1;
+				result = withEmptyStringsInUnion(b, a, merged);
+				if (result != 0) return result < 0 ? -1 : 2;
+				/* non-falsy-X | Y → non-empty-X when '0' ∈ Y ⊆ non-empty-X */
+				result = withZeroStringInUnion(a, b, merged);
+				if (result != 0) return result < 0 ? -1 : 1;
+				result = withZeroStringInUnion(b, a, merged);
+				if (result != 0) return result < 0 ? -1 : 2;
+
+				result = compareStringsInUnion(a, b, merged);
 				if (result != 0) return result < 0 ? -1 : 2;
 				result = compareStringsInUnion(b, a, merged);
 				if (result != 0) return result < 0 ? -1 : 1;
@@ -1769,6 +1796,78 @@ public:
 		}
 
 		return 0;
+	}
+
+	/* $type->isSuperTypeOf(new ConstantStringType($value))->yes(); -1 =
+	 * pending exception */
+	static int coversConstantString(zval *type, zend_string *value)
+	{
+		zv::Val constant = constantStringType(value);
+		if (UNEXPECTED(constant.isUndef())) return -1;
+		return isSuperTypeYes(type, constant.raw());
+	}
+
+	/* the non-empty-string arm of compareTypesInUnion(), mirroring
+	 * withEmptyStringsOf(): $nonEmpty without its non-empty/non-falsy
+	 * accessory when that is exactly $nonEmpty | $other; 1 with $merged,
+	 * 0 for no answer, -1 = pending exception */
+	static int withEmptyStringsInUnion(zval *nonEmpty, zval *other, zv::Val &merged)
+	{
+		zend_long isNonEmpty = callTrinary(nonEmpty, PT_LC("isnonemptystring"));
+		if (UNEXPECTED(isNonEmpty < 0)) return -1;
+		if (isNonEmpty != PT_TRI_YES) return 0;
+		zend_long otherNonEmpty = callTrinary(other, PT_LC("isnonemptystring"));
+		if (UNEXPECTED(otherNonEmpty < 0)) return -1;
+		if (otherNonEmpty == PT_TRI_YES) return 0;
+
+		zv::Val withEmpty = removeNonEmptyStringAccessory(nonEmpty);
+		if (UNEXPECTED(withEmpty.isUndef())) return -1;
+		if (isNull(withEmpty)) return 0;
+		int covers = isSuperTypeYes(withEmpty.raw(), other);
+		if (covers <= 0) return covers;
+		covers = coversConstantString(other, ZSTR_EMPTY_ALLOC());
+		if (covers <= 0) return covers;
+		zend_long isNonFalsy = callTrinary(nonEmpty, PT_LC("isnonfalsystring"));
+		if (UNEXPECTED(isNonFalsy < 0)) return -1;
+		if (isNonFalsy == PT_TRI_YES) {
+			covers = coversConstantString(other, ZSTR_CHAR('0'));
+			if (UNEXPECTED(covers < 0)) return -1;
+			if (!covers) {
+				zv::Val zero = constantStringType(ZSTR_CHAR('0'));
+				if (UNEXPECTED(zero.isUndef())) return -1;
+				zend_long withEmptyCoversZero = callResultTrinary(withEmpty.raw(), PT_LC("issupertypeof"), 1, zero.raw());
+				if (UNEXPECTED(withEmptyCoversZero < 0)) return -1;
+				if (withEmptyCoversZero != PT_TRI_NO) return 0;
+			}
+		}
+
+		merged = std::move(withEmpty);
+		return 1;
+	}
+
+	/* the non-falsy-string arm of compareTypesInUnion(), mirroring
+	 * withZeroStringOf(): $nonFalsy downgraded to non-empty when that is
+	 * exactly $nonFalsy | $other; 1 with $merged, 0 for no answer, -1 =
+	 * pending exception */
+	static int withZeroStringInUnion(zval *nonFalsy, zval *other, zv::Val &merged)
+	{
+		zend_long isNonFalsy = callTrinary(nonFalsy, PT_LC("isnonfalsystring"));
+		if (UNEXPECTED(isNonFalsy < 0)) return -1;
+		if (isNonFalsy != PT_TRI_YES) return 0;
+		zend_long otherNonFalsy = callTrinary(other, PT_LC("isnonfalsystring"));
+		if (UNEXPECTED(otherNonFalsy < 0)) return -1;
+		if (otherNonFalsy == PT_TRI_YES) return 0;
+
+		zv::Val nonEmpty = downgradeNonFalsyStringToNonEmpty(nonFalsy);
+		if (UNEXPECTED(nonEmpty.isUndef())) return -1;
+		if (isNull(nonEmpty)) return 0;
+		int covers = isSuperTypeYes(nonEmpty.raw(), other);
+		if (covers <= 0) return covers;
+		covers = coversConstantString(other, ZSTR_CHAR('0'));
+		if (covers <= 0) return covers;
+
+		merged = std::move(nonEmpty);
+		return 1;
 	}
 
 	/* new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]) */
@@ -2189,6 +2288,48 @@ public:
 		}
 
 		return hasOversizedArray ? std::move(emptyArray) : zv::Val::null();
+	}
+
+	/* private static isNewUnionMember(?Type $merged, Type $a, Type $b): bool -
+	 * ranges are sorted before the pairwise comparison, so a merged range
+	 * meets every range it touches without a rescan */
+	static bool isNewUnionMember(zval *merged, zval *a, zval *b)
+	{
+		if (Z_TYPE_P(merged) != IS_OBJECT) return false;
+		if (Z_TYPE_P(a) == IS_OBJECT && Z_OBJ_P(a) == Z_OBJ_P(merged)) return false;
+		if (Z_TYPE_P(b) == IS_OBJECT && Z_OBJ_P(b) == Z_OBJ_P(merged)) return false;
+		return !isInstance(merged, pt_ce_integer_range_type) && !isInstance(merged, pt_ce_float_range_type);
+	}
+
+	/* private static removeArraysWithinOtherMembers(list<Type> $arrayTypes,
+	 * list<Type> $types): list<Type> - in place; false = pending exception */
+	[[nodiscard]] static bool removeArraysWithinOtherMembers(TypeList &arrayTypes, TypeList &types)
+	{
+		std::vector<zval *> arrayHolders;
+		for (zv::Val &type : types) {
+			zend_long isArray = callTrinary(type.raw(), PT_LC("isarray"));
+			if (UNEXPECTED(isArray < 0)) return false;
+			if (isArray != PT_TRI_MAYBE) continue;
+			arrayHolders.push_back(type.raw());
+		}
+		if (arrayHolders.empty()) return true;
+
+		TypeList keptArrayTypes;
+		for (zv::Val &arrayType : arrayTypes) {
+			bool held = false;
+			for (zval *arrayHolder : arrayHolders) {
+				int covers = isSuperTypeYes(arrayHolder, arrayType.raw());
+				if (UNEXPECTED(covers < 0)) return false;
+				if (covers) {
+					held = true;
+					break;
+				}
+			}
+			if (held) continue;
+			keptArrayTypes.push_back(std::move(arrayType));
+		}
+		arrayTypes = std::move(keptArrayTypes);
+		return true;
 	}
 
 	/* private static processArrayTypes(list<Type> $arrayTypes): Type[] */

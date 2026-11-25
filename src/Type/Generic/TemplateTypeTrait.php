@@ -121,6 +121,12 @@ trait TemplateTypeTrait
 	public function subtract(Type $typeToRemove): Type
 	{
 		$removedBound = TypeCombinator::remove($this->getBound(), $typeToRemove);
+		if ($removedBound instanceof NeverType) {
+			// every value the bound allows is removed, so no T is left; as a bound,
+			// never would make the factory fall back to a mixed bound
+			return $removedBound;
+		}
+
 		return TemplateTypeFactory::create(
 			$this->getScope(),
 			$this->getName(),
@@ -408,6 +414,11 @@ trait TemplateTypeTrait
 		// check is only a fast path (equals() has no such shortcut).
 		if ($this->getBound() === $bound || $this->getBound()->equals($bound)) {
 			return null;
+		}
+
+		if ($bound instanceof NeverType) {
+			// see subtract()
+			return $bound;
 		}
 
 		return TemplateTypeFactory::create(

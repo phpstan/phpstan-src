@@ -4,12 +4,11 @@
  *
  * A DI service (#[AutowiredService]): the constructor keeps the twin's
  * arginfo so Nette autowires it. processExpr() is registered as the class's
- * handler entry (Engine.h). The twin's closures are native closures capturing
- * what the PHP closures capture: the typeCallback (nothing) and the
- * specifyTypesCallback ($this, $expr).
+ * handler entry (Engine.h). The typeCallback is a native closure capturing
+ * nothing, and the specifyTypesCallback is SpecifiedTypes::emptySpecifyCallback().
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext,
- * ImplicitToStringCallHelper, ImpurePoint, VariableFlow, DefaultNarrowingHelper,
+ * ImplicitToStringCallHelper, ImpurePoint, VariableFlow, SpecifiedTypes,
  * TypeCombinator and the Type kernel are called through their direct entries.
  */
 
@@ -59,16 +58,14 @@ class ShellExecHandler
 {
 public:
 	static constexpr const char *closureName = "PHPStan\\Analyser\\ExprHandler\\ShellExecHandler::{closure}";
-	static constexpr uint32_t defaultNarrowingHelperSlot = slots::defaultNarrowingHelper;
 
 	explicit ShellExecHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *implicitToStringCallHelper, zval *expressionResultFactory, zval *defaultNarrowingHelper) const
+	void construct(zval *implicitToStringCallHelper, zval *expressionResultFactory) const
 	{
 		pt_write_slot(self, slots::implicitToStringCallHelper, implicitToStringCallHelper);
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
-		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -156,7 +153,7 @@ public:
 		zv::Val variableFlow = pt_variable_flow_sequence_list(variableFlows.table());
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody);
-		zv::Val specifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<ShellExecHandler>, self, expr);
+		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		zv::Val mergedDependencies = pt_dependencies_merge_list(dependencies.table());
 		if (UNEXPECTED(mergedDependencies.isUndef())) return zv::Val();
 		pt_expression_result_args args(scope, beforeScope, expr, hasYield, isAlwaysTerminating, throwPoints.raw(), impurePoints.raw(), typeCallback.raw(), specifyTypesCallback.raw());
@@ -221,9 +218,9 @@ PT_MINIT_REGISTRATION(pt_register_shell_exec_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *implicitToStringCallHelper, *expressionResultFactory, *defaultNarrowingHelper;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, implicitToStringCallHelper, expressionResultFactory, defaultNarrowingHelper)) RETURN_THROWS();
-		ShellExecHandler(Z_OBJ_P(ZEND_THIS)).construct(implicitToStringCallHelper, expressionResultFactory, defaultNarrowingHelper);
+		zval *implicitToStringCallHelper, *expressionResultFactory;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, implicitToStringCallHelper, expressionResultFactory)) RETURN_THROWS();
+		ShellExecHandler(Z_OBJ_P(ZEND_THIS)).construct(implicitToStringCallHelper, expressionResultFactory);
 	});
 
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) {

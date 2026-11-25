@@ -4,13 +4,13 @@
  *
  * A DI service (#[AutowiredService]): the constructor keeps the twin's
  * arginfo so Nette autowires it. processExpr() is registered as the class's
- * handler entry (Engine.h). The twin's closures are native closures capturing
- * what the PHP closures capture: the typeCallback ($functionReflection) and
- * the specifyTypesCallback ($this, $expr).
+ * handler entry (Engine.h). The typeCallback is a native closure capturing
+ * what the PHP closure captures ($functionReflection), and the
+ * specifyTypesCallback is SpecifiedTypes::emptySpecifyCallback().
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext, MutatingScope,
  * InternalThrowPoint, ImpurePoint, VariableFlow(Builder),
- * DefaultNarrowingHelper and the Type kernel are called through their direct
+ * SpecifiedTypes and the Type kernel are called through their direct
  * entries; the function reflection's getReturnType() through a cached site.
  */
 
@@ -48,15 +48,13 @@ class YieldHandler
 {
 public:
 	static constexpr const char *closureName = "PHPStan\\Analyser\\ExprHandler\\YieldHandler::{closure}";
-	static constexpr uint32_t defaultNarrowingHelperSlot = slots::defaultNarrowingHelper;
 
 	explicit YieldHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper) const
+	void construct(zval *expressionResultFactory) const
 	{
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
-		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
 	}
 
 	/* Mirrors supports(); false = pending exception */
@@ -184,7 +182,7 @@ public:
 		}
 
 		zv::Val typeCallback = pt_native_closure(&typeCallbackBody, functionReflection.raw());
-		zv::Val specifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<YieldHandler>, self, expr);
+		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		zv::Val keyDependenciesHold, valueDependenciesHold;
 		zval *keyDependencies = NULL;
 		if (!keyResult.isNull()) {
@@ -268,9 +266,9 @@ PT_MINIT_REGISTRATION(pt_register_yield_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expressionResultFactory, *defaultNarrowingHelper;
-		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper)) RETURN_THROWS();
-		YieldHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper);
+		zval *expressionResultFactory;
+		if (!zp::parse<zp::Obj>(execute_data, expressionResultFactory)) RETURN_THROWS();
+		YieldHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory);
 	});
 
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) {

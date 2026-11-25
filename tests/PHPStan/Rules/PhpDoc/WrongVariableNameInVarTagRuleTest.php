@@ -665,4 +665,35 @@ class WrongVariableNameInVarTagRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15448-dependency-usage.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.0')]
+	public function testBug15796(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15796.php'], [
+			[
+				'PHPDoc tag @var with type Bug15796\\Other<string> is not subtype of native type static(Bug15796\\Items<T>).',
+				72,
+			],
+			[
+				'PHPDoc tag @var with type string is not subtype of native type T of int.',
+				107,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug15796CheckTypeAgainstPhpDocType(): void
+	{
+		$this->checkTypeAgainstPhpDocType = true;
+		$this->analyse([__DIR__ . '/data/bug-15796.php'], [
+			[
+				'PHPDoc tag @var with type Bug15796\\Other<string> is not subtype of native type static(Bug15796\\Items<T>).',
+				72,
+			],
+			[
+				'PHPDoc tag @var with type string is not subtype of native type T of int.',
+				107,
+			],
+		]);
+	}
+
 }

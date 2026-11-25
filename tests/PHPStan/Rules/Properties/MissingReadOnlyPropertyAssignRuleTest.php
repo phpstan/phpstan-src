@@ -343,4 +343,10 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug9789(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9789.php'], []);
+	}
+
 }

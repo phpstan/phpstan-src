@@ -67,8 +67,11 @@ static void pt_pfg_prepare(void)
 	if (stat(pt_pfg_path, &target) != 0) return;
 
 	/* /dev/fd is a symlink to /proc/self/fd on Linux and native on the BSDs
-	 * and macOS; listing it beats fstat()ing every fd up to the rlimit. */
+	 * and macOS; listing it beats fstat()ing every fd up to the rlimit. Some
+	 * Linux sandboxes drop the symlink (AWS Lambda, CodeBuild's Lambda
+	 * compute) while /proc stays mounted, so fall back to the target. */
 	DIR *dir = opendir("/dev/fd");
+	if (dir == NULL) dir = opendir("/proc/self/fd");
 	if (dir == NULL) return;
 	int dir_fd = dirfd(dir);
 

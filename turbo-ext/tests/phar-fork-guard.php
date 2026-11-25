@@ -8,10 +8,13 @@
  * cursor, so concurrent reads race and return bytes from wrong offsets.
  * The guard privatizes the cursor per forked child via pthread_atfork.
  *
- * Two passes over the same workload (parent + 8 forked children hammering
+ * Three passes over the same workload (parent + 8 forked children hammering
  * randomized verified reads):
  *   1. control, guard not armed — must corrupt (proves the workload races)
  *   2. guard armed — must be error-free everywhere
+ *   3. guard armed without /dev/fd (as on AWS Lambda), in a separate process
+ *      in a user and mount namespace — must be error-free too; skipped where
+ *      such namespaces are unavailable
  *
  * The control pass runs first because pthread_atfork registrations cannot
  * be removed. Run: php -d extension=$PWD/phpstan_turbo.so tests/phar-fork-guard.php
@@ -103,6 +106,44 @@ function forkAndHammer(string $pharUrl, array $manifest, int $seedBase): array
 	return [$parentErrors, $corruptChildren];
 }
 
+/**
+ * Pins the archive like the running phar is pinned in the real case —
+ * without a live reference libphar closes the fd at refcount 0 and nothing
+ * is shared — and warms reads so the shared fd is open with a buffered
+ * window, as after boot.
+ *
+ * @param array<string, string> $manifest
+ */
+function pinAndWarm(string $pharPath, array $manifest): Phar
+{
+	$pin = new Phar($pharPath);
+	foreach (array_slice(array_keys($manifest), 0, 20) as $name) {
+		if (md5((string) file_get_contents('phar://' . $pharPath . '/' . $name)) !== $manifest[$name]) {
+			fwrite(STDERR, "pre-fork sanity read failed\n");
+			exit(1);
+		}
+	}
+
+	return $pin;
+}
+
+// The guarded pass without /dev/fd, run in a mount namespace whose /dev is
+// empty (see the parent below) — a fresh process, as atfork hooks stay armed.
+if (($argv[1] ?? null) === '--no-dev-fd') {
+	[, , $pharPath, $manifestPath] = $argv;
+	if (file_exists('/dev/fd')) {
+		fwrite(STDERR, "FAIL: /dev/fd is still present in the namespace\n");
+		exit(1);
+	}
+	/** @var array<string, string> $manifest */
+	$manifest = unserialize(file_get_contents($manifestPath));
+	$pin = pinAndWarm($pharPath, $manifest);
+	PHPStanTurbo\Runtime::enablePharForkGuard($pharPath);
+	[$parentErrors, $corruptChildren] = forkAndHammer('phar://' . $pharPath . '/', $manifest, 3000);
+	printf("guarded, no /dev/fd: parent errors %d, corrupt children %d/%d\n", $parentErrors, $corruptChildren, WORKERS);
+	exit($parentErrors > 0 || $corruptChildren > 0 ? 1 : 0);
+}
+
 $pharPath = tempnam(sys_get_temp_dir(), 'ptpfg') . '.phar';
 $manifestPath = $pharPath . '.manifest';
 
@@ -118,17 +159,7 @@ if ($exitCode !== 0) {
 $manifest = unserialize(file_get_contents($manifestPath));
 $pharUrl = 'phar://' . $pharPath . '/';
 
-// Pin the archive like the running phar is pinned in the real case — without
-// a live reference libphar closes the fd at refcount 0 and nothing is shared.
-$pin = new Phar($pharPath);
-
-// warm reads so the shared fd is open with a buffered window, as after boot
-foreach (array_slice(array_keys($manifest), 0, 20) as $name) {
-	if (md5((string) file_get_contents($pharUrl . $name)) !== $manifest[$name]) {
-		fwrite(STDERR, "pre-fork sanity read failed\n");
-		exit(1);
-	}
-}
+$pin = pinAndWarm($pharPath, $manifest);
 
 [$controlParentErrors, $controlCorruptChildren] = forkAndHammer($pharUrl, $manifest, 1000);
 printf("control (no guard):  parent errors %d, corrupt children %d/%d\n", $controlParentErrors, $controlCorruptChildren, WORKERS);
@@ -137,6 +168,28 @@ PHPStanTurbo\Runtime::enablePharForkGuard($pharPath);
 
 [$guardedParentErrors, $guardedCorruptChildren] = forkAndHammer($pharUrl, $manifest, 2000);
 printf("guarded:             parent errors %d, corrupt children %d/%d\n", $guardedParentErrors, $guardedCorruptChildren, WORKERS);
+
+// Again without /dev/fd, as on AWS Lambda: re-run this script, with the same
+// interpreter flags (from /proc/self/cmdline), in an unprivileged user and
+// mount namespace that mounts an empty tmpfs over /dev.
+$noDevFdExitCode = null;
+$cmdline = PHP_OS_FAMILY === 'Linux' ? @file_get_contents('/proc/self/cmdline') : false;
+if ($cmdline !== false) {
+	exec('unshare --user --map-root-user --mount true 2>&1', $ignored, $probeExitCode);
+}
+if ($cmdline !== false && $probeExitCode === 0) {
+	$phpArgs = explode("\0", rtrim($cmdline, "\0"));
+	$phpArgs = array_slice($phpArgs, 1, (int) array_search($argv[0], $phpArgs, true) - 1);
+	passthru(implode(' ', array_map('escapeshellarg', [
+		'unshare', '--user', '--map-root-user', '--mount',
+		'sh', '-c', 'mount -t tmpfs tmpfs /dev 2>/dev/null || exit 77; exec "$@"', 'sh',
+		PHP_BINARY, ...$phpArgs, ...[__FILE__, '--no-dev-fd', $pharPath, $manifestPath],
+	])) . ' 2>&1', $noDevFdExitCode);
+}
+if ($noDevFdExitCode === null || $noDevFdExitCode === 77) {
+	echo "guarded, no /dev/fd: SKIP (needs Linux with unprivileged user namespaces)\n";
+	$noDevFdExitCode = 0;
+}
 
 unset($pin);
 @unlink($pharPath);
@@ -148,6 +201,10 @@ if ($controlParentErrors === 0 && $controlCorruptChildren === 0) {
 }
 if ($guardedParentErrors > 0 || $guardedCorruptChildren > 0) {
 	fwrite(STDERR, "FAIL: corruption with the guard armed\n");
+	exit(1);
+}
+if ($noDevFdExitCode !== 0) {
+	fwrite(STDERR, "FAIL: the guard did not run without /dev/fd\n");
 	exit(1);
 }
 

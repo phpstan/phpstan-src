@@ -114,4 +114,9 @@ class Foo
 		};
 	}
 
+	public function shellExec(): void
+	{
+		`touch foo`;
+	}
+
 }

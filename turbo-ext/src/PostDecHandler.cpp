@@ -6,14 +6,13 @@
  * arginfo so Nette autowires it. processExpr() is registered as the class's
  * handler entry (Engine.h). The synthetic pre-decrement's typeCallback is
  * IncDecTypeHelper's native closure (pt_inc_dec_type_helper_get_type_callback());
- * the other closures are native closures capturing what the twin's arrow
- * functions capture: the synthetic's specifyTypesCallback ($this,
- * $virtualExpr), the result's typeCallback ($varResult) and
- * specifyTypesCallback ($this, $expr).
+ * the result's typeCallback is a native closure capturing what the twin's
+ * arrow function captures ($varResult), and both specifyTypesCallbacks are
+ * SpecifiedTypes::emptySpecifyCallback().
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext, VariableFlow,
  * VariableFlowBuilder, VariableWrite, IncDecTypeHelper, AssignHandler and
- * DefaultNarrowingHelper are called through their direct entries.
+ * SpecifiedTypes are called through their direct entries.
  */
 
 #include "support.h"
@@ -44,15 +43,13 @@ class PostDecHandler
 {
 public:
 	static constexpr const char *closureName = "PHPStan\\Analyser\\ExprHandler\\PostDecHandler::{closure}";
-	static constexpr uint32_t defaultNarrowingHelperSlot = slots::defaultNarrowingHelper;
 
 	explicit PostDecHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *expressionResultFactory, zval *defaultNarrowingHelper, zval *incDecTypeHelper, zval *assignHandler) const
+	void construct(zval *expressionResultFactory, zval *incDecTypeHelper, zval *assignHandler) const
 	{
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
-		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
 		pt_write_slot(self, slots::incDecTypeHelper, incDecTypeHelper);
 		pt_write_slot(self, slots::assignHandler, assignHandler);
 	}
@@ -87,7 +84,7 @@ public:
 		if (UNEXPECTED(virtualExpr.isUndef())) return zv::Val();
 		zv::Val virtualTypeCallback = pt_inc_dec_type_helper_get_type_callback(OBJ_PROP_NUM(self, slots::incDecTypeHelper), var, varResult.raw(), false);
 		if (UNEXPECTED(virtualTypeCallback.isUndef())) return zv::Val();
-		zv::Val virtualSpecifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<PostDecHandler>, self, virtualExpr.raw());
+		zv::Val virtualSpecifyTypesCallback = pt_specified_types_empty_specify_callback();
 		pt_expression_result_args virtualArgs(child.scope, scope, virtualExpr.raw(), false, false, NULL, NULL, virtualTypeCallback.raw(), virtualSpecifyTypesCallback.raw());
 		zv::Val virtualExprResult = pt_expression_result_create(OBJ_PROP_NUM(self, slots::expressionResultFactory), virtualArgs);
 		if (UNEXPECTED(virtualExprResult.isUndef())) return zv::Val();
@@ -106,7 +103,7 @@ public:
 		if (UNEXPECTED(variableFlow.isUndef())) return zv::Val();
 		// post-decrement evaluates to the variable's pre-mutation value
 		zv::Val typeCallback = pt_native_closure(&ptse::childTypeBody<PostDecHandler>, varResult.raw());
-		zv::Val specifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<PostDecHandler>, self, expr);
+		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 		zv::Val dependenciesHold;
 		zval *dependencies = pt_expression_result_dependencies(varResult.raw(), dependenciesHold);
 		if (UNEXPECTED(dependencies == NULL)) return zv::Val();
@@ -142,9 +139,9 @@ PT_MINIT_REGISTRATION(pt_register_post_dec_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expressionResultFactory, *defaultNarrowingHelper, *incDecTypeHelper, *assignHandler;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, expressionResultFactory, defaultNarrowingHelper, incDecTypeHelper, assignHandler)) RETURN_THROWS();
-		PostDecHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, defaultNarrowingHelper, incDecTypeHelper, assignHandler);
+		zval *expressionResultFactory, *incDecTypeHelper, *assignHandler;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, expressionResultFactory, incDecTypeHelper, assignHandler)) RETURN_THROWS();
+		PostDecHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, incDecTypeHelper, assignHandler);
 	});
 
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) {

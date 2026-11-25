@@ -10,12 +10,10 @@ use PHPStan\Analyser\ExpressionResult;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExprHandler;
-use PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper;
 use PHPStan\Analyser\ExprHandler\Helper\IncDecTypeHelper;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\SpecifiedTypes;
-use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\DependencyInjection\AutowiredService;
@@ -33,7 +31,6 @@ final class PreDecHandler implements ExprHandler
 	public function __construct(
 		private ExpressionResultFactory $expressionResultFactory,
 		private IncDecTypeHelper $incDecTypeHelper,
-		private DefaultNarrowingHelper $defaultNarrowingHelper,
 		private AssignHandler $assignHandler,
 	)
 	{
@@ -51,7 +48,8 @@ final class PreDecHandler implements ExprHandler
 		$varResult = $nodeScopeResolver->processExprNode($stmt, $expr->var, $scope, $storage, $nodeCallback, $valueContext);
 
 		$typeCallback = $this->incDecTypeHelper->getTypeCallback($expr->var, $varResult, false);
-		$specifyTypesCallback = fn (TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes => $this->defaultNarrowingHelper->specifyDefaultTypes($expr, $context);
+		// the result can differ every time, so it is never narrowed
+		$specifyTypesCallback = SpecifiedTypes::emptySpecifyCallback();
 
 		// the result standing for the whole inc/dec expression - threaded into
 		// processVirtualAssign() as the value to assign so applyWrite() reads it

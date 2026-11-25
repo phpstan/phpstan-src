@@ -6,12 +6,11 @@
  * arginfo so Nette autowires it. processExpr() is registered as the class's
  * handler entry (Engine.h). The typeCallback is IncDecTypeHelper's native
  * closure (pt_inc_dec_type_helper_get_type_callback()); the
- * specifyTypesCallback a native closure capturing what the twin's arrow
- * function captures ($this, $expr).
+ * specifyTypesCallback is SpecifiedTypes::emptySpecifyCallback().
  *
  * NodeScopeResolver, ExpressionResult, ExpressionContext, VariableFlow,
  * VariableFlowBuilder, VariableWrite, IncDecTypeHelper, AssignHandler and
- * DefaultNarrowingHelper are called through their direct entries.
+ * SpecifiedTypes are called through their direct entries.
  */
 
 #include "support.h"
@@ -42,16 +41,14 @@ class PreIncHandler
 {
 public:
 	static constexpr const char *closureName = "PHPStan\\Analyser\\ExprHandler\\PreIncHandler::{closure}";
-	static constexpr uint32_t defaultNarrowingHelperSlot = slots::defaultNarrowingHelper;
 
 	explicit PreIncHandler(zend_object *self) : self(self) {}
 
 	/* the constructor body: the promoted properties */
-	void construct(zval *expressionResultFactory, zval *incDecTypeHelper, zval *defaultNarrowingHelper, zval *assignHandler) const
+	void construct(zval *expressionResultFactory, zval *incDecTypeHelper, zval *assignHandler) const
 	{
 		pt_write_slot(self, slots::expressionResultFactory, expressionResultFactory);
 		pt_write_slot(self, slots::incDecTypeHelper, incDecTypeHelper);
-		pt_write_slot(self, slots::defaultNarrowingHelper, defaultNarrowingHelper);
 		pt_write_slot(self, slots::assignHandler, assignHandler);
 	}
 
@@ -78,7 +75,7 @@ public:
 
 		zv::Val typeCallback = pt_inc_dec_type_helper_get_type_callback(OBJ_PROP_NUM(self, slots::incDecTypeHelper), var, varResult.raw(), true);
 		if (UNEXPECTED(typeCallback.isUndef())) return zv::Val();
-		zv::Val specifyTypesCallback = pt_native_closure(&ptse::specifyDefaultTypesBody<PreIncHandler>, self, expr);
+		zv::Val specifyTypesCallback = pt_specified_types_empty_specify_callback();
 
 		ptse::ChildResult child;
 		if (UNEXPECTED(!child.read(varResult.raw()))) return zv::Val();
@@ -139,9 +136,9 @@ PT_MINIT_REGISTRATION(pt_register_pre_inc_handler)
 	/* the real parameter class names: the DI container autowires the
 	 * service by reflecting the constructor */
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *expressionResultFactory, *incDecTypeHelper, *defaultNarrowingHelper, *assignHandler;
-		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, expressionResultFactory, incDecTypeHelper, defaultNarrowingHelper, assignHandler)) RETURN_THROWS();
-		PreIncHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, incDecTypeHelper, defaultNarrowingHelper, assignHandler);
+		zval *expressionResultFactory, *incDecTypeHelper, *assignHandler;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, expressionResultFactory, incDecTypeHelper, assignHandler)) RETURN_THROWS();
+		PreIncHandler(Z_OBJ_P(ZEND_THIS)).construct(expressionResultFactory, incDecTypeHelper, assignHandler);
 	});
 
 	cls.method(sigs::supports, [](INTERNAL_FUNCTION_PARAMETERS) {

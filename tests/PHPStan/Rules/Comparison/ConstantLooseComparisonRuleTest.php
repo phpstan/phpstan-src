@@ -291,4 +291,9 @@ class ConstantLooseComparisonRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug10368(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-10368.php'], []);
+	}
+
 }

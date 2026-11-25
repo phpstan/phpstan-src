@@ -39,3 +39,55 @@ function shellExec(): void
 		assertType('non-falsy-string', 'a' . `ls`);
 	}
 }
+
+/** @param array<int, int> $arr */
+function increments(int $i, string $s, array $arr): void
+{
+	if ($i++ === 5) {
+		assertType('int', $i++);
+	}
+	if ($i++) {
+		assertType('int', $i++);
+	}
+	if (++$i === 5) {
+		assertType('int', ++$i);
+	}
+	if (++$i) {
+		assertType('int', ++$i);
+	}
+	if ($i-- === 5) {
+		assertType('int', $i--);
+	}
+	if (--$i === 5) {
+		assertType('int', --$i);
+	}
+	if (($i += 1) === 5) {
+		assertType('int', $i += 1);
+	}
+	if (($s .= 'a') === 'aa') {
+		assertType('non-falsy-string', $s .= 'a');
+	}
+	if ($arr[$i++] === 5) {
+		assertType('int', $arr[$i++]);
+	}
+	if ('a' . $i++ === 'a5') {
+		assertType('lowercase-string&non-falsy-string', 'a' . $i++);
+	}
+	if ($i++ + 1 === 5) {
+		assertType('int', $i++ + 1);
+	}
+	if (abs($i++) === 5) {
+		assertType('int<0, max>', abs($i++));
+	}
+}
+
+/** @param array<int, int> $arr */
+function coalesceAssign(?int $i, array $arr): void
+{
+	if (($i ??= 1) === 5) {
+		assertType('5', $i);
+	}
+	if ($arr[$i ??= 1] === 5) {
+		assertType('5', $arr[$i ??= 1]);
+	}
+}

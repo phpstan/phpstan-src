@@ -288,6 +288,7 @@ extern "C" {
 
 #include <cctype>
 #include <cmath>
+#include <limits>
 #include <cstring>
 
 zend_class_entry *pt_ce_mutating_scope = nullptr;
@@ -9507,7 +9508,7 @@ public:
 		if (zend_hash_num_elements(ordered[0].table()) == 0 || zend_hash_num_elements(ordered[1].table()) == 0) {
 			result = unionOfLists(ordered[0].table(), ordered[1].table());
 		} else {
-			double min = INFINITY, max = -INFINITY;
+			double min = HUGE_VAL, max = -HUGE_VAL;
 			for (auto entry : zv::TableRef(ordered[0].table())) {
 				double value;
 				if (UNEXPECTED(!pt_constant_float_get_value(entry.value().deref().asObject(), value))) return zv::Val();
@@ -9527,9 +9528,9 @@ public:
 			if (gotGreater && gotSmaller) {
 				result = pt_float_range_from_interval(newMin, newMax);
 			} else if (gotGreater) {
-				result = pt_float_range_from_interval(min, INFINITY);
+				result = pt_float_range_from_interval(min, HUGE_VAL);
 			} else if (gotSmaller) {
-				result = pt_float_range_from_interval(-INFINITY, max);
+				result = pt_float_range_from_interval(-HUGE_VAL, max);
 			} else {
 				result = unionOfLists(ordered[0].table(), ordered[1].table());
 			}
@@ -9537,7 +9538,7 @@ public:
 		if (UNEXPECTED(result.isUndef())) return zv::Val();
 
 		if (!hasNan) return result;
-		zv::Val nan = pt_type_new_constant_float(NAN);
+		zv::Val nan = pt_type_new_constant_float(std::numeric_limits<double>::quiet_NaN());
 		if (UNEXPECTED(nan.isUndef())) return zv::Val();
 		return unionTypes(result.raw(), nan.raw());
 	}
@@ -10102,7 +10103,7 @@ public:
 					resultTypes.push(std::move(floatRangesA));
 				} else {
 					/* PHP's min()/max() over floats that are never NAN */
-					double min = INFINITY, max = -INFINITY;
+					double min = HUGE_VAL, max = -HUGE_VAL;
 					for (auto rangeEntry : zv::TableRef(floatRanges.table(0))) {
 						double rangeMin, rangeMax;
 						if (UNEXPECTED(!pt_float_range_bounds(rangeEntry.value().deref().asObject(), rangeMin, rangeMax))) return zv::Val();
@@ -10125,9 +10126,9 @@ public:
 					if (gotGreater && gotSmaller) {
 						result = pt_float_range_from_interval(newMin, newMax);
 					} else if (gotGreater) {
-						result = pt_float_range_from_interval(min, INFINITY);
+						result = pt_float_range_from_interval(min, HUGE_VAL);
 					} else if (gotSmaller) {
-						result = pt_float_range_from_interval(-INFINITY, max);
+						result = pt_float_range_from_interval(-HUGE_VAL, max);
 					} else {
 						result = unionTypes(floatRangesA.raw(), floatRangesB.raw());
 					}

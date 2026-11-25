@@ -22,22 +22,22 @@ final class ComposerPhpVersionParser
 		$constraint = $parser->parseConstraints($version);
 
 		if (!$constraint->getLowerBound()->isZero()) {
-			$minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion(), false, $buildPhpVersion);
+			$minVersion = $this->buildVersion($constraint->getLowerBound()->getVersion(), false, $constraint->getLowerBound()->isInclusive(), $buildPhpVersion);
 		}
 		if ($constraint->getUpperBound()->isPositiveInfinity()) {
 			return [ $minVersion, null ];
 		}
 
-		$maxVersion = $this->buildVersion($constraint->getUpperBound()->getVersion(), true, $buildPhpVersion);
+		$maxVersion = $this->buildVersion($constraint->getUpperBound()->getVersion(), true, $constraint->getUpperBound()->isInclusive(), $buildPhpVersion);
 		return [ $minVersion, $maxVersion ];
 	}
 
 	/**
 	 * @param callable(string, int, bool):PhpVersion $buildPhpVersion
 	 */
-	private function buildVersion(string $version, bool $isMaxVersion, callable $buildPhpVersion): ?PhpVersion
+	private function buildVersion(string $version, bool $isMaxVersion, bool $isInclusive, callable $buildPhpVersion): ?PhpVersion
 	{
-		$matches = Strings::match($version, '#^(\d+)\.(\d+)(?:\.(\d+))?#');
+		$matches = Strings::match($version, '#^(\d+)\.(\d+)(?:\.(\d+))?(?:\.(\d+))?(-.+)?#');
 		if ($matches === null) {
 			return null;
 		}
@@ -46,6 +46,18 @@ final class ComposerPhpVersionParser
 		$minor = (int) $matches[2];
 		$patch = (int) ($matches[3] ?? 0);
 		$versionId = (int) sprintf('%d%02d%02d', $major, $minor, $patch);
+
+		if (!$isInclusive) {
+			if ($isMaxVersion) {
+				// <8.5.2 excludes 8.5.2 itself, but <8.5.2.1 still allows it
+				if ((int) ($matches[4] ?? 0) === 0) {
+					$versionId--;
+				}
+			} elseif (($matches[5] ?? '') === '') {
+				// >8.2.3 excludes 8.2.3 itself, but >8.2.3-beta still allows the stable 8.2.3
+				$versionId++;
+			}
+		}
 
 		return $buildPhpVersion($version, $versionId, $isMaxVersion);
 	}

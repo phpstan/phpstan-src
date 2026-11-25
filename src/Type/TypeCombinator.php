@@ -1633,7 +1633,35 @@ final class TypeCombinator
 				$typesWithMerged[] = $type;
 				continue;
 			}
-			$merged = $merged === null ? $type : $merged->mergeWith($type);
+			if ($merged === null) {
+				$merged = $type;
+				continue;
+			}
+			if ($merged->getUnsealedTypes() === null || $type->getUnsealedTypes() === null) {
+				// the legacy merge keeps only the keys of $merged - add the
+				// keys only $type has to it first, as optional keys
+				$mergedKeys = [];
+				foreach ($merged->getKeyTypes() as $keyType) {
+					$mergedKeys[$keyType->getValue()] = true;
+				}
+				$builder = null;
+				foreach ($type->getKeyTypes() as $i => $keyType) {
+					if (array_key_exists($keyType->getValue(), $mergedKeys)) {
+						continue;
+					}
+					$builder ??= ConstantArrayTypeBuilder::createFromConstantArray($merged);
+					$builder->setOffsetValueType($keyType, $type->getValueTypes()[$i], true);
+				}
+				if ($builder !== null) {
+					$extended = $builder->getArray();
+					if (!$extended instanceof ConstantArrayType) {
+						$merged = null;
+						break;
+					}
+					$merged = $extended;
+				}
+			}
+			$merged = $merged->mergeWith($type);
 		}
 		if (
 			$merged !== null

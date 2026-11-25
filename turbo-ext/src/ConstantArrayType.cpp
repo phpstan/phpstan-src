@@ -2096,7 +2096,7 @@ public:
 		return booleanType();
 	}
 
-	/* another shape with pairwise equal keys and values, the same optional
+	/* another shape (not a TemplateType) with pairwise equal keys and values, the same optional
 	 * keys, the same extras-or-not and equal extras; false = pending
 	 * exception */
 	[[nodiscard]] bool equals(zval *type, bool &out) const
@@ -2105,7 +2105,13 @@ public:
 			out = true;
 			return true;
 		}
-		if (Z_OBJCE_P(type) != self->ce) {
+		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_constant_array_type)) {
+			out = false;
+			return true;
+		}
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return false;
+		if (isTemplate) {
 			out = false;
 			return true;
 		}

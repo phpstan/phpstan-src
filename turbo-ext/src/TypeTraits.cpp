@@ -1027,8 +1027,14 @@ static void ZEND_FASTCALL constantScalarEquals(INTERNAL_FUNCTION_PARAMETERS);
 
 static bool constantScalarEqualsImpl(zend_object *self, zend_class_entry *scope, zval *type, bool &out)
 {
-	/* get_class($type) === static::class && $this->value === $type->value */
-	if (Z_OBJCE_P(type) != self->ce) {
+	/* $type instanceof self && !$type instanceof TemplateType && $this->value === $type->value */
+	if (!instanceof_function(Z_OBJCE_P(type), scope)) {
+		out = false;
+		return true;
+	}
+	bool isTemplate;
+	if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return false;
+	if (isTemplate) {
 		out = false;
 		return true;
 	}

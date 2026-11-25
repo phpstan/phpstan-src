@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Generic\TemplateType;
 use PhpParser\Node\Identifier;
 use PHPStan\Php\PhpVersion;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
@@ -22,7 +23,6 @@ use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\OperatorTypeTrait;
-use function get_class;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isNull()')]
@@ -105,7 +105,7 @@ class NullType implements ConstantScalarType
 
 	public function equals(Type $type): bool
 	{
-		return get_class($type) === static::class;
+		return $type instanceof self && !$type instanceof TemplateType;
 	}
 
 	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic

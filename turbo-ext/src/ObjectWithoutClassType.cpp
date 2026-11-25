@@ -164,11 +164,17 @@ public:
 		return pt_type_call(Z_OBJ_P(isSuperType.raw()), PT_LC("negate"), 0, NULL);
 	}
 
-	/* another instance (of any subclass) with an equal subtracted type;
+	/* another instance (of any subclass but a TemplateType) with an equal subtracted type;
 	 * false with an exception pending on an uninitialized slot */
 	[[nodiscard]] bool equals(zval *type, bool &out) const
 	{
-		if (Z_OBJCE_P(type) != self->ce) {
+		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_object_without_class_type)) {
+			out = false;
+			return true;
+		}
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return false;
+		if (isTemplate) {
 			out = false;
 			return true;
 		}

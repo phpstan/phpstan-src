@@ -403,7 +403,7 @@ class IntersectionType implements CompoundType
 
 	public function equals(Type $type): bool
 	{
-		if (get_class($type) !== static::class) {
+		if (!$type instanceof static || $type instanceof TemplateType) {
 			return false;
 		}
 

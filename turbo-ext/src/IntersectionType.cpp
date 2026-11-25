@@ -705,12 +705,18 @@ public:
 		return result;
 	}
 
-	/* the same class (`get_class($type) === static::class`) with the same member
+	/* the same class (`$type instanceof static`, not a TemplateType) with the same member
 	 * count, each member equal to one of the other's, consumed once; false
 	 * with an exception pending */
 	bool equals(zval *type, bool &out) const
 	{
-		if (Z_OBJCE_P(type) != self->ce) {
+		if (!instanceof_function(Z_OBJCE_P(type), self->ce)) {
+			out = false;
+			return true;
+		}
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return false;
+		if (isTemplate) {
 			out = false;
 			return true;
 		}

@@ -10,10 +10,10 @@ use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\ConstantScalarType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Type;
 use PHPStan\Type\ValueSet;
-use function get_class;
 
 trait ConstantScalarTypeTrait
 {
@@ -72,7 +72,7 @@ trait ConstantScalarTypeTrait
 
 	public function equals(Type $type): bool
 	{
-		return get_class($type) === static::class && $this->value === $type->value;
+		return $type instanceof self && !$type instanceof TemplateType && $this->value === $type->value;
 	}
 
 	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic

@@ -394,11 +394,17 @@ public:
 		return resultAnd(std::move(result), objectResult.raw());
 	}
 
-	/* another instance (of any subclass) with the same properties (each
+	/* another instance (of any subclass but a TemplateType) with the same properties (each
 	 * equal) and the same optional ones; false with an exception pending */
 	[[nodiscard]] bool equals(zval *type, bool &out) const
 	{
-		if (Z_OBJCE_P(type) != self->ce) {
+		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_object_shape_type)) {
+			out = false;
+			return true;
+		}
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return false;
+		if (isTemplate) {
 			out = false;
 			return true;
 		}

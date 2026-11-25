@@ -43,7 +43,6 @@ use PHPStan\Type\Traverser\UnsafeArrayStringKeyCastingTraverser;
 use function array_map;
 use function array_merge;
 use function count;
-use function get_class;
 use function in_array;
 use function spl_object_id;
 use function sprintf;
@@ -189,7 +188,8 @@ class ArrayType implements Type
 
 	public function equals(Type $type): bool
 	{
-		return get_class($type) === static::class
+		return $type instanceof self
+			&& !$type instanceof TemplateType
 			&& $this->getItemType()->equals($type->getIterableValueType())
 			&& $this->keyType->equals($type->keyType);
 	}

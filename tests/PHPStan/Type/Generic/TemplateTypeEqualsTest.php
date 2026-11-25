@@ -76,4 +76,15 @@ class TemplateTypeEqualsTest extends PHPStanTestCase
 		$this->assertTrue($templateType->equals($templateType));
 	}
 
+	public function testSubclassOfBoundStillEquals(): void
+	{
+		$constantString = new ConstantStringType('1');
+		$subclass = new class ('1') extends ConstantStringType {
+
+		};
+
+		$this->assertTrue($constantString->equals($subclass));
+		$this->assertTrue($subclass->equals($constantString));
+	}
+
 }

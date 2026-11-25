@@ -6,10 +6,10 @@ use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\Traits\LateResolvableTypeTrait;
 use PHPStan\Type\Traits\NonGeneralizableTypeTrait;
-use function get_class;
 use function sprintf;
 
 /** @api */
@@ -41,7 +41,8 @@ class KeyOfType implements CompoundType, LateResolvableType
 
 	public function equals(Type $type): bool
 	{
-		return get_class($type) === static::class
+		return $type instanceof self
+			&& !$type instanceof TemplateType
 			&& $this->type->equals($type->type);
 	}
 

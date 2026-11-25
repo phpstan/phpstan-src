@@ -74,8 +74,19 @@ public:
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
 	}
 
-	/* get_class($type) === static::class */
-	bool equals(zval *type) const { return Z_OBJCE_P(type) == self->ce; }
+	/* $type instanceof self && !$type instanceof TemplateType; false with an
+	 * exception pending */
+	[[nodiscard]] bool equals(zval *type, bool &out) const
+	{
+		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_null_type)) {
+			out = false;
+			return true;
+		}
+		bool isTemplate;
+		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return false;
+		out = !isTemplate;
+		return true;
+	}
 
 	/* isSmallerThan() / isSmallerThanOrEqual(): `null < $value` / `null <=
 	 * $value` against a ConstantScalarType's value, the CompoundType
@@ -450,12 +461,8 @@ PT_MINIT_REGISTRATION(pt_register_null_type)
 	cls.method<&NullType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 	cls.op<PT_OP_IS_SUPER_TYPE_OF, &NullType::isSuperTypeOf>();
 
-	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *type;
-		if (!zp::parse<zp::TypeObj>(execute_data, type)) RETURN_THROWS();
-		RETURN_BOOL(PT_THIS.equals(type));
-	});
-	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(NullType(self).equals(argv)); });
+	cls.method<&NullType::equals, zp::TypeObj>(sigs::equals);
+	cls.op<PT_OP_EQUALS, &NullType::equals>();
 
 	cls.method(sigs::isSmallerThan, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *otherType, *phpVersion;

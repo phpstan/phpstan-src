@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\Type\Generic\TemplateType;
 use PhpParser\Node\Identifier;
 use PHPStan\Analyser\OutOfClassScope;
 use PHPStan\Php\PhpVersion;
@@ -36,7 +37,6 @@ use function array_filter;
 use function array_key_exists;
 use function array_values;
 use function count;
-use function get_class;
 use function implode;
 use function in_array;
 use function sprintf;
@@ -369,7 +369,7 @@ class ObjectShapeType implements Type
 
 	public function equals(Type $type): bool
 	{
-		if (get_class($type) !== static::class) {
+		if (!$type instanceof self || $type instanceof TemplateType) {
 			return false;
 		}
 

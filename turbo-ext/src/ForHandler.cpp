@@ -212,18 +212,31 @@ public:
 
 		bool isTopLevel;
 		if (UNEXPECTED(!pt_statement_context_is_top_level(context, isTopLevel))) return zv::Val();
-		if (isTopLevel) {
+		bool shouldConvergeLoops;
+		if (UNEXPECTED(!pt_statement_context_should_converge_loops(context, shouldConvergeLoops))) return zv::Val();
+		zv::Val loopHeads = zv::Val::null();
+		// the loop's entry joined with the head it converged to when walked before
+		zv::Val loopEntryScope = zv::Val::copyOf(initScope.ref());
+		zv::Val prevEntryScope;
+		zv::Val previousPassStorage = zv::Val::null();
+		zv::Val lastPassBodyEntry;
+		zv::Val lastPassBodyResult;
+		if (shouldConvergeLoops) {
+			if (UNEXPECTED(!ptlh::contextLoopHeads(context, loopHeads))) return zv::Val();
+			// heads come from pass walks - a top-level walk converges from its own entry
+			if (!isTopLevel) {
+				loopEntryScope = pt_converged_loop_heads_warm_start(loopHeads.raw(), stmt, initScope.raw());
+				if (UNEXPECTED(loopEntryScope.isUndef())) return zv::Val();
+			}
 			zend_long count = 0;
-			zv::Val prevEntryScope;
 			// each pass after the first re-walks only the statements whose
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
 			zv::Val previousPass = zv::Val::null();
-			zv::Val previousPassStorage = zv::Val::null();
 			do {
 				zv::Val prevScope = zv::Val::copyOf(bodyScope.ref());
 				zv::Val storage = pt_expression_result_storage_duplicate(originalStorage);
 				if (UNEXPECTED(storage.isUndef())) return zv::Val();
-				bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), initScope.raw());
+				bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw());
 				if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 				if (!prevEntryScope.isNull()) {
 					bool equal;
@@ -260,17 +273,17 @@ public:
 					zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(stmts));
 					zv::Val noop = ptlh::newNoopNodeCallback();
 					if (UNEXPECTED(noop.isUndef())) return;
-					zv::Val deepContext = pt_statement_context_enter_deep(context);
-					if (UNEXPECTED(deepContext.isUndef())) return;
-					zv::Val passContext = pt_statement_context_without_template_argument_resolution(deepContext.raw());
+					zv::Val passContext = pt_statement_context_enter_loop_pass(context, loopHeads.raw());
 					if (UNEXPECTED(passContext.isUndef())) return;
 					zv::Val passRecord = zv::Val::null();
+					lastPassBodyEntry = zv::Val::copyOf(bodyScope.ref());
 					zv::Val walked = pt_node_scope_resolver_process_loop_pass_stmt_nodes(nodeScopeResolver, stmt, stmtsHold.raw(), bodyScope.raw(), storage.raw(), noop.raw(), passContext.raw(), previousPass.raw(), passRecord);
 					if (UNEXPECTED(walked.isUndef())) return;
 					previousPass = std::move(passRecord);
 					previousPassStorage = zv::Val::copyOf(storage.ref());
 					zv::Val bodyScopeResult = pt_internal_statement_result_filter_out_loop_exit_points(walked.raw());
 					if (UNEXPECTED(bodyScopeResult.isUndef())) return;
+					lastPassBodyResult = zv::Val::copyOf(bodyScopeResult.ref());
 					{
 						zv::Val hold;
 						zval *flow = pt_internal_statement_result_variable_flow(bodyScopeResult.raw(), hold);
@@ -319,8 +332,10 @@ public:
 		}
 
 		zval *storage = originalStorage;
-		bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), initScope.raw());
+		bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw());
 		if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+		if (!isTopLevel && !loopHeads.isNull() && UNEXPECTED(!pt_converged_loop_heads_record(loopHeads.raw(), stmt, bodyScope.raw()))) return zv::Val();
+		zv::Val headScope = zv::Val::copyOf(bodyScope.ref());
 
 		zend_long alwaysIterates = isTopLevel ? PT_TRI_YES : PT_TRI_NO;
 		if (lastCondExpr != NULL) {
@@ -353,11 +368,21 @@ public:
 		}
 
 		zv::Val finalScopeResult;
-		{
+		// a recorded pass result implies its entry, storage and entry scope
+		bool reuseLastPass = !isTopLevel && !lastPassBodyResult.isNull();
+		if (reuseLastPass && UNEXPECTED(!ptlh::scopesEqual(headScope.raw(), prevEntryScope.raw(), reuseLastPass))) return zv::Val();
+		if (reuseLastPass && UNEXPECTED(!ptlh::scopesEqual(bodyScope.raw(), lastPassBodyEntry.raw(), reuseLastPass))) return zv::Val();
+		if (reuseLastPass) {
+			// in a pass context the final walk would repeat the last pass exactly
+			if (UNEXPECTED(!pt_expression_result_storage_merge_results(originalStorage, previousPassStorage.raw()))) return zv::Val();
+			finalScopeResult = std::move(lastPassBodyResult);
+		} else {
 			zval *stmts = ptsh::readNodeProperty(pt_fh_stmts_site, stmt, PT_LC("stmts"));
 			if (UNEXPECTED(stmts == NULL)) return zv::Val();
 			zv::Val stmtsHold = zv::Val::copyOf(zv::Ref(stmts));
-			zv::Val walked = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, stmtsHold.raw(), bodyScope.raw(), storage, nodeCallback, context);
+			zv::Val finalContext = pt_statement_context_with_loop_heads(context, loopHeads.isNull() ? nullptr : loopHeads.raw());
+			if (UNEXPECTED(finalContext.isUndef())) return zv::Val();
+			zv::Val walked = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, stmt, stmtsHold.raw(), bodyScope.raw(), storage, nodeCallback, finalContext.raw());
 			if (UNEXPECTED(walked.isUndef())) return zv::Val();
 			finalScopeResult = pt_internal_statement_result_filter_out_loop_exit_points(walked.raw());
 			if (UNEXPECTED(finalScopeResult.isUndef())) return zv::Val();

@@ -5,6 +5,7 @@ namespace PHPStan\Analyser\StmtHandler;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Do_;
+use PHPStan\Analyser\ConvergedLoopHeads;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
@@ -67,13 +68,21 @@ final class DoWhileHandler implements StmtHandler
 		$prevEntryScope = null;
 		$previousPass = null;
 		$previousPassStorage = null;
-		if ($context->isTopLevel()) {
-			$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
+		$loopHeads = null;
+		// the loop's entry joined with the head it converged to when walked before
+		$loopEntryScope = $scope;
+		if ($context->shouldConvergeLoops()) {
+			$loopHeads = $context->getLoopHeads() ?? new ConvergedLoopHeads();
+			// heads come from pass walks - a top-level walk converges from its own entry
+			if (!$context->isTopLevel()) {
+				$loopEntryScope = $loopHeads->warmStart($stmt, $scope);
+			}
+			$bodyIsReplayable = !$context->isTopLevel() || $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 			// each pass after the first re-walks only the statements whose
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
 			do {
 				$prevScope = $bodyScope;
-				$bodyScope = $bodyScope->mergeWith($scope);
+				$bodyScope = $bodyScope->mergeWith($loopEntryScope);
 				if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 					// walking is deterministic in the entry scope - an unchanged entry
 					// reproduces the previous pass's exit (and repeats only idempotent
@@ -91,7 +100,7 @@ final class DoWhileHandler implements StmtHandler
 				$scope->pushExpressionResultStorage($storage);
 				try {
 					$passRecord = null;
-					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
+					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterLoopPass($loopHeads), $previousPass, $passRecord)->filterOutLoopExitPoints();
 					$previousPass = $passRecord;
 					$previousPassStorage = $storage;
 					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
@@ -128,7 +137,10 @@ final class DoWhileHandler implements StmtHandler
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
 
-			$bodyScope = $bodyScope->mergeWith($scope);
+			$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+			if (!$context->isTopLevel()) {
+				$loopHeads->record($stmt, $bodyScope);
+			}
 		}
 
 		$storage = $originalStorage;
@@ -147,9 +159,9 @@ final class DoWhileHandler implements StmtHandler
 			// the last pass stands in for the statements whose state it walked
 			// with - they replay through the real callback
 			$originalStorage->mergeResults($previousPassStorage);
-			$bodyScopeResult = $nodeScopeResolver->processLoopFinalStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context, $previousPass)->filterOutLoopExitPoints();
+			$bodyScopeResult = $nodeScopeResolver->processLoopFinalStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context->withLoopHeads($loopHeads), $previousPass)->filterOutLoopExitPoints();
 		} else {
-			$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+			$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context->withLoopHeads($loopHeads))->filterOutLoopExitPoints();
 		}
 		$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
 		$backEdgeDead = $backEdgeScope === null;

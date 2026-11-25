@@ -13,6 +13,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\For_;
+use PHPStan\Analyser\ConvergedLoopHeads;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\InternalStatementResult;
@@ -195,17 +196,27 @@ final class ForHandler implements StmtHandler
 			}
 		}
 
-		if ($context->isTopLevel()) {
+		$loopHeads = null;
+		// the loop's entry joined with the head it converged to when walked before
+		$loopEntryScope = $initScope;
+		$prevEntryScope = null;
+		$previousPassStorage = null;
+		$lastPassBodyEntry = null;
+		$lastPassBodyResult = null;
+		if ($context->shouldConvergeLoops()) {
+			$loopHeads = $context->getLoopHeads() ?? new ConvergedLoopHeads();
+			// heads come from pass walks - a top-level walk converges from its own entry
+			if (!$context->isTopLevel()) {
+				$loopEntryScope = $loopHeads->warmStart($stmt, $initScope);
+			}
 			$count = 0;
-			$prevEntryScope = null;
 			// each pass after the first re-walks only the statements whose
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
 			$previousPass = null;
-			$previousPassStorage = null;
 			do {
 				$prevScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
-				$bodyScope = $bodyScope->mergeWith($initScope);
+				$bodyScope = $bodyScope->mergeWith($loopEntryScope);
 				if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 					// walking is deterministic in the entry scope - an unchanged entry
 					// reproduces the previous pass's exit, so the verification walk is skipped
@@ -226,7 +237,9 @@ final class ForHandler implements StmtHandler
 						$passFlows[] = $passCondResult->getVariableFlow();
 					}
 					$passRecord = null;
-					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
+					$lastPassBodyEntry = $bodyScope;
+					$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, new NoopNodeCallback(), $context->enterLoopPass($loopHeads), $previousPass, $passRecord)->filterOutLoopExitPoints();
+					$lastPassBodyResult = $bodyScopeResult;
 					$previousPass = $passRecord;
 					$previousPassStorage = $storage;
 					$passFlows[] = $bodyScopeResult->getVariableFlow();
@@ -261,7 +274,11 @@ final class ForHandler implements StmtHandler
 		}
 
 		$storage = $originalStorage;
-		$bodyScope = $bodyScope->mergeWith($initScope);
+		$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+		if (!$context->isTopLevel()) {
+			$loopHeads?->record($stmt, $bodyScope);
+		}
+		$headScope = $bodyScope;
 
 		$alwaysIterates = TrinaryLogic::createFromBoolean($context->isTopLevel());
 		if ($lastCondExpr !== null) {
@@ -277,7 +294,18 @@ final class ForHandler implements StmtHandler
 			$bodyScope = $this->inferForLoopExpressions($nodeScopeResolver, $stmt, $lastCondExpr, $bodyScope, $storage);
 		}
 
-		$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context)->filterOutLoopExitPoints();
+		if (
+			!$context->isTopLevel()
+			&& $lastPassBodyResult !== null
+			&& $headScope->equals($prevEntryScope)
+			&& $bodyScope->equals($lastPassBodyEntry)
+		) {
+			// in a pass context the final walk would repeat the last pass exactly
+			$originalStorage->mergeResults($previousPassStorage);
+			$finalScopeResult = $lastPassBodyResult;
+		} else {
+			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context->withLoopHeads($loopHeads))->filterOutLoopExitPoints();
+		}
 		$dependencies[] = $finalScopeResult->getDependencies();
 		$backEdgeScope = $finalScopeResult->getLoopBackEdgeScope();
 		$backEdgeDead = $backEdgeScope === null;

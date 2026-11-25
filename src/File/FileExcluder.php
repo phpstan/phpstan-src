@@ -119,6 +119,31 @@ final class FileExcluder
 	}
 
 	/**
+	 * Whether every file under the directory is excluded, so a walk does not have to read it.
+	 * False when that cannot be told from the directory path alone.
+	 */
+	public function isDirectoryExcludedFromAnalysing(string $directory): bool
+	{
+		$directory = $this->fileHelper->normalizePath($directory) . DIRECTORY_SEPARATOR;
+
+		foreach ($this->literalAnalyseDirectoryExcludes as $exclude) {
+			if (str_starts_with($directory, $exclude)) {
+				return true;
+			}
+		}
+
+		// fnmatch() runs without FNM_PATHNAME, so a trailing * matches directory separators too: a
+		// pattern that matches the directory with that * absorbing the end matches every path under it
+		foreach ($this->fnmatchAnalyseExcludes as $exclude) {
+			if (str_ends_with($exclude[0], '*') && $this->matches($exclude, $directory)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param array{string, string, string, string} $exclude
 	 */
 	private function matches(array $exclude, string $path): bool

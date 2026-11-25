@@ -82,11 +82,17 @@ final class DirectoryWalker
 
 	/**
 	 * @param string $tmpDir where the listings are kept between runs, nowhere when empty
+	 * @param FileExcluder|null $directoryExcluder directories it excludes completely are not read. The
+	 *                                             walk is shared by the analyse and the scan FileFinder,
+	 *                                             so this is the scan excluder: what it excludes, the
+	 *                                             analyse excluder excludes too.
 	 */
 	public function __construct(
 		private FileStatSignatures $fileStatSignatures,
 		#[AutowiredParameter]
 		private string $tmpDir = '',
+		#[AutowiredParameter(ref: '@fileExcluderScan')]
+		private ?FileExcluder $directoryExcluder = null,
 	)
 	{
 	}
@@ -167,6 +173,10 @@ final class DirectoryWalker
 	 */
 	private function walkDirectory(string $directory, string $pattern, FileStatSignatureReader $signatures, array &$files, array &$visited): bool
 	{
+		if ($this->directoryExcluder !== null && $this->directoryExcluder->isDirectoryExcludedFromAnalysing($directory)) {
+			return true;
+		}
+
 		$stat = @stat($directory);
 		if ($stat === false) {
 			return false;

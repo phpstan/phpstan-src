@@ -37,19 +37,56 @@ public:
 	/* Mirrors warmStart(). */
 	zv::Val warmStart(zval *loop, zval *entryScope) const
 	{
-		zval *head = zend_hash_index_find(Z_ARRVAL_P(OBJ_PROP_NUM(self, slots::heads)), Z_OBJ_HANDLE_P(loop));
+		zend_ulong id = Z_OBJ_HANDLE_P(loop);
+		zval *head = zend_hash_index_find(Z_ARRVAL_P(OBJ_PROP_NUM(self, slots::heads)), id);
 		if (head == nullptr) return zv::Val::copyOf(zv::Ref(entryScope));
 
-		return pt_mutating_scope_merge_with(Z_OBJ_P(entryScope), head);
+		zval *warmEntry = zend_hash_index_find(Z_ARRVAL_P(OBJ_PROP_NUM(self, slots::warmEntries)), id);
+		if (warmEntry != nullptr) {
+			zval *cachedEntry = zend_hash_index_find(Z_ARRVAL_P(warmEntry), 0);
+			zval *cachedWarm = zend_hash_index_find(Z_ARRVAL_P(warmEntry), 1);
+			zv::Val cachedWarmHold = zv::Val::copyOf(zv::Ref(cachedWarm));
+			bool equal = Z_OBJ_P(cachedEntry) == Z_OBJ_P(entryScope);
+			if (!equal && UNEXPECTED(!pt_mutating_scope_equals(Z_OBJ_P(cachedEntry), Z_OBJ_P(entryScope), equal))) return zv::Val();
+			if (equal) return cachedWarmHold;
+		}
+
+		zv::Val warmScope = pt_mutating_scope_merge_with(Z_OBJ_P(entryScope), head);
+		if (UNEXPECTED(warmScope.isUndef())) return zv::Val();
+		zval pair;
+		array_init_size(&pair, 2);
+		Z_ADDREF_P(entryScope);
+		add_next_index_zval(&pair, entryScope);
+		zval warmCopy;
+		ZVAL_COPY(&warmCopy, warmScope.raw());
+		add_next_index_zval(&pair, &warmCopy);
+		zval *warmEntries = OBJ_PROP_NUM(self, slots::warmEntries);
+		SEPARATE_ARRAY(warmEntries);
+		zend_hash_index_update(Z_ARRVAL_P(warmEntries), id, &pair);
+
+		return warmScope;
 	}
 
-	/* Mirrors record(). */
-	void record(zval *loop, zval *head) const
+	/* Mirrors record(); false = pending exception */
+	[[nodiscard]] bool record(zval *loop, zval *head) const
 	{
+		zend_ulong id = Z_OBJ_HANDLE_P(loop);
+		zval *previous = zend_hash_index_find(Z_ARRVAL_P(OBJ_PROP_NUM(self, slots::heads)), id);
+		// an unchanged head keeps the warm entry derived from it
+		if (previous != nullptr) {
+			bool equal = Z_OBJ_P(previous) == Z_OBJ_P(head);
+			if (!equal && UNEXPECTED(!pt_mutating_scope_equals(Z_OBJ_P(previous), Z_OBJ_P(head), equal))) return false;
+			if (equal) return true;
+		}
+
 		zval *heads = OBJ_PROP_NUM(self, slots::heads);
 		SEPARATE_ARRAY(heads);
 		Z_ADDREF_P(head);
-		zend_hash_index_update(Z_ARRVAL_P(heads), Z_OBJ_HANDLE_P(loop), head);
+		zend_hash_index_update(Z_ARRVAL_P(heads), id, head);
+		zval *warmEntries = OBJ_PROP_NUM(self, slots::warmEntries);
+		SEPARATE_ARRAY(warmEntries);
+		zend_hash_index_del(Z_ARRVAL_P(warmEntries), id);
+		return true;
 	}
 
 private:
@@ -87,10 +124,7 @@ zv::Val pt_converged_loop_heads_warm_start(zval *heads, zval *loop, zval *entryS
 
 bool pt_converged_loop_heads_record(zval *heads, zval *loop, zval *head)
 {
-	if (isNative(heads)) {
-		ConvergedLoopHeads(Z_OBJ_P(heads)).record(loop, head);
-		return true;
-	}
+	if (isNative(heads)) return ConvergedLoopHeads(Z_OBJ_P(heads)).record(loop, head);
 	zv::Args argv{loop, head};
 	zv::Val result = pt_type_call(Z_OBJ_P(heads), PT_LC("record"), 2, argv);
 	return !result.isUndef();
@@ -119,7 +153,7 @@ PT_MINIT_REGISTRATION(pt_register_converged_loop_heads)
 		zval *loop;
 		zval *head;
 		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, loop, head)) RETURN_THROWS();
-		ConvergedLoopHeads(Z_OBJ_P(ZEND_THIS)).record(loop, head);
+		if (!ConvergedLoopHeads(Z_OBJ_P(ZEND_THIS)).record(loop, head)) RETURN_THROWS();
 	});
 
 	cls.shadow(&pt_ce_converged_loop_heads);

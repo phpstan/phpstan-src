@@ -11,6 +11,7 @@ namespace ptdecl::ConvergedLoopHeads {
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
 inline constexpr uint32_t heads = 0;
+inline constexpr uint32_t warmEntries = 1;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -22,6 +23,7 @@ inline void declareClass(reg::Class &cls)
 inline void declareProperties(reg::Class &cls)
 {
 	cls.property("heads", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("warmEntries", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 }
 
 /* the string and parameter tables the signatures below index into (see reg::Sig) */

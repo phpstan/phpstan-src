@@ -69,6 +69,7 @@ final class DoWhileHandler implements StmtHandler
 		$previousPass = null;
 		$previousPassStorage = null;
 		$loopHeads = null;
+		$entryConverged = false;
 		// the loop's entry joined with the head it converged to when walked before
 		$loopEntryScope = $scope;
 		if ($context->shouldConvergeLoops()) {
@@ -76,18 +77,23 @@ final class DoWhileHandler implements StmtHandler
 			// heads come from pass walks - a top-level walk converges from its own entry
 			if (!$context->isTopLevel()) {
 				$loopEntryScope = $loopHeads->warmStart($stmt, $scope);
+				if ($loopEntryScope !== $scope) {
+					$bodyScope = $loopEntryScope;
+				}
 			}
 			$bodyIsReplayable = !$context->isTopLevel() || $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 			// each pass after the first re-walks only the statements whose
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
 			do {
 				$prevScope = $bodyScope;
-				$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+				// a warm start begins at the loop's entry already
+				$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope);
 				if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 					// walking is deterministic in the entry scope - an unchanged entry
 					// reproduces the previous pass's exit (and repeats only idempotent
 					// merges into the final scope), so the verification walk is skipped
-					$bodyScope = $prevScope;
+					$bodyScope = $prevEntryScope;
+					$entryConverged = true;
 					break;
 				}
 				$prevEntryScope = $bodyScope;
@@ -137,7 +143,9 @@ final class DoWhileHandler implements StmtHandler
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
 
-			$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+			if (!$entryConverged) {
+				$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+			}
 			if (!$context->isTopLevel()) {
 				$loopHeads->record($stmt, $bodyScope);
 			}

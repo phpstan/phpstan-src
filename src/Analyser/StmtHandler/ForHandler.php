@@ -197,6 +197,7 @@ final class ForHandler implements StmtHandler
 		}
 
 		$loopHeads = null;
+		$entryConverged = false;
 		// the loop's entry joined with the head it converged to when walked before
 		$loopEntryScope = $initScope;
 		$prevEntryScope = null;
@@ -208,6 +209,9 @@ final class ForHandler implements StmtHandler
 			// heads come from pass walks - a top-level walk converges from its own entry
 			if (!$context->isTopLevel()) {
 				$loopEntryScope = $loopHeads->warmStart($stmt, $initScope);
+				if ($loopEntryScope !== $initScope) {
+					$bodyScope = $loopEntryScope;
+				}
 			}
 			$count = 0;
 			// each pass after the first re-walks only the statements whose
@@ -216,11 +220,13 @@ final class ForHandler implements StmtHandler
 			do {
 				$prevScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
-				$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+				// a warm start begins at the loop's entry already
+				$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope);
 				if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 					// walking is deterministic in the entry scope - an unchanged entry
 					// reproduces the previous pass's exit, so the verification walk is skipped
-					$bodyScope = $prevScope;
+					$bodyScope = $prevEntryScope;
+					$entryConverged = true;
 					break;
 				}
 				$prevEntryScope = $bodyScope;
@@ -274,7 +280,9 @@ final class ForHandler implements StmtHandler
 		}
 
 		$storage = $originalStorage;
-		$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+		if (!$entryConverged) {
+			$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+		}
 		if (!$context->isTopLevel()) {
 			$loopHeads?->record($stmt, $bodyScope);
 		}

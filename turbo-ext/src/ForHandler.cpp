@@ -215,6 +215,7 @@ public:
 		bool shouldConvergeLoops;
 		if (UNEXPECTED(!pt_statement_context_should_converge_loops(context, shouldConvergeLoops))) return zv::Val();
 		zv::Val loopHeads = zv::Val::null();
+		bool entryConverged = false;
 		// the loop's entry joined with the head it converged to when walked before
 		zv::Val loopEntryScope = zv::Val::copyOf(initScope.ref());
 		zv::Val prevEntryScope;
@@ -227,6 +228,7 @@ public:
 			if (!isTopLevel) {
 				loopEntryScope = pt_converged_loop_heads_warm_start(loopHeads.raw(), stmt, initScope.raw());
 				if (UNEXPECTED(loopEntryScope.isUndef())) return zv::Val();
+				if (Z_OBJ_P(loopEntryScope.raw()) != Z_OBJ_P(initScope.raw())) bodyScope = zv::Val::copyOf(loopEntryScope.ref());
 			}
 			zend_long count = 0;
 			// each pass after the first re-walks only the statements whose
@@ -236,7 +238,8 @@ public:
 				zv::Val prevScope = zv::Val::copyOf(bodyScope.ref());
 				zv::Val storage = pt_expression_result_storage_duplicate(originalStorage);
 				if (UNEXPECTED(storage.isUndef())) return zv::Val();
-				bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw());
+				// a warm start begins at the loop's entry already
+				if (Z_OBJ_P(bodyScope.raw()) != Z_OBJ_P(loopEntryScope.raw())) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw());
 				if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 				if (!prevEntryScope.isNull()) {
 					bool equal;
@@ -244,7 +247,8 @@ public:
 					if (equal) {
 						// walking is deterministic in the entry scope - an unchanged entry
 						// reproduces the previous pass's exit, so the verification walk is skipped
-						bodyScope = std::move(prevScope);
+						bodyScope = zv::Val::copyOf(prevEntryScope.ref());
+						entryConverged = true;
 						break;
 					}
 				}
@@ -332,7 +336,7 @@ public:
 		}
 
 		zval *storage = originalStorage;
-		bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw());
+		if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw());
 		if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 		if (!isTopLevel && !loopHeads.isNull() && UNEXPECTED(!pt_converged_loop_heads_record(loopHeads.raw(), stmt, bodyScope.raw()))) return zv::Val();
 		zv::Val headScope = zv::Val::copyOf(bodyScope.ref());

@@ -84,6 +84,7 @@ use function array_unique;
 use function array_values;
 use function assert;
 use function count;
+use function get_class;
 use function implode;
 use function in_array;
 use function is_int;
@@ -999,7 +1000,7 @@ class ConstantArrayType implements Type
 			return true;
 		}
 
-		if (!$type instanceof self) {
+		if (get_class($type) !== static::class) {
 			return false;
 		}
 

@@ -525,7 +525,7 @@ class UnionType implements CompoundType
 
 	public function equals(Type $type): bool
 	{
-		if (!$type instanceof static) {
+		if (!$type instanceof static || $type instanceof TemplateType) {
 			return false;
 		}
 

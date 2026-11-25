@@ -22,6 +22,7 @@ use PHPStan\Type\Traits\NonIterableTypeTrait;
 use PHPStan\Type\Traits\NonObjectTypeTrait;
 use PHPStan\Type\Traits\NonRemoveableTypeTrait;
 use PHPStan\Type\Traits\OperatorTypeTrait;
+use function get_class;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isNull()')]
@@ -104,7 +105,7 @@ class NullType implements ConstantScalarType
 
 	public function equals(Type $type): bool
 	{
-		return $type instanceof self;
+		return get_class($type) === static::class;
 	}
 
 	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic

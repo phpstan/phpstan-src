@@ -2105,7 +2105,7 @@ public:
 			out = true;
 			return true;
 		}
-		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_constant_array_type)) {
+		if (Z_OBJCE_P(type) != self->ce) {
 			out = false;
 			return true;
 		}

@@ -85,11 +85,11 @@ public:
 	/* $this->type->getReferencedTemplateTypes($positionVariance) */
 	zv::Val getReferencedTemplateTypes(zval *positionVariance) const { return callType(PT_LC("getreferencedtemplatetypes"), 1, positionVariance); }
 
-	/* $type instanceof self && $this->type->equals($type->type); false with
+	/* get_class($type) === static::class && $this->type->equals($type->type); false with
 	 * an exception pending */
 	bool equals(zval *type, bool &out) const
 	{
-		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_key_of_type)) {
+		if (Z_OBJCE_P(type) != self->ce) {
 			out = false;
 			return true;
 		}

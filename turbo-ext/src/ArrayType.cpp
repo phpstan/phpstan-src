@@ -344,11 +344,11 @@ public:
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
 	}
 
-	/* $type instanceof self && $this->getItemType()->equals($type->getIterableValueType()) && $this->keyType->equals($type->keyType);
+	/* get_class($type) === static::class && $this->getItemType()->equals($type->getIterableValueType()) && $this->keyType->equals($type->keyType);
 	 * false = pending exception */
 	[[nodiscard]] bool equals(zval *type, bool &out) const
 	{
-		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_array_type)) {
+		if (Z_OBJCE_P(type) != self->ce) {
 			out = false;
 			return true;
 		}

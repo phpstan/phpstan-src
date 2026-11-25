@@ -74,8 +74,8 @@ public:
 		return pt_type_is_super_type_of_result(PT_TRI_NO);
 	}
 
-	/* $type instanceof self */
-	static bool equals(zval *type) { return instanceof_function(Z_OBJCE_P(type), pt_ce_null_type); }
+	/* get_class($type) === static::class */
+	bool equals(zval *type) const { return Z_OBJCE_P(type) == self->ce; }
 
 	/* isSmallerThan() / isSmallerThanOrEqual(): `null < $value` / `null <=
 	 * $value` against a ConstantScalarType's value, the CompoundType
@@ -453,9 +453,9 @@ PT_MINIT_REGISTRATION(pt_register_null_type)
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *type;
 		if (!zp::parse<zp::TypeObj>(execute_data, type)) RETURN_THROWS();
-		RETURN_BOOL(NullType::equals(type));
+		RETURN_BOOL(PT_THIS.equals(type));
 	});
-	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(NullType::equals(argv)); });
+	cls.op(PT_OP_EQUALS, PT_OP_LAMBDA { return zv::Val::boolean(NullType(self).equals(argv)); });
 
 	cls.method(sigs::isSmallerThan, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *otherType, *phpVersion;

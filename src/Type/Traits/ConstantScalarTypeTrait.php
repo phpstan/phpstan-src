@@ -13,6 +13,7 @@ use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\Type;
 use PHPStan\Type\ValueSet;
+use function get_class;
 
 trait ConstantScalarTypeTrait
 {
@@ -71,7 +72,7 @@ trait ConstantScalarTypeTrait
 
 	public function equals(Type $type): bool
 	{
-		return $type instanceof self && $this->value === $type->value;
+		return get_class($type) === static::class && $this->value === $type->value;
 	}
 
 	public function isSmallerThan(Type $otherType, PhpVersion $phpVersion): TrinaryLogic

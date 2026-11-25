@@ -36,6 +36,7 @@ use function array_filter;
 use function array_key_exists;
 use function array_values;
 use function count;
+use function get_class;
 use function implode;
 use function in_array;
 use function sprintf;
@@ -368,7 +369,7 @@ class ObjectShapeType implements Type
 
 	public function equals(Type $type): bool
 	{
-		if (!$type instanceof self) {
+		if (get_class($type) !== static::class) {
 			return false;
 		}
 

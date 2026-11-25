@@ -907,7 +907,14 @@ public:
 	 * match consumed once; false with an exception pending */
 	[[nodiscard]] bool equals(zval *type, bool &out) const
 	{
+		/* $type instanceof static && !$type instanceof TemplateType */
 		if (!instanceof_function(Z_OBJCE_P(type), self->ce)) {
+			out = false;
+			return true;
+		}
+		bool isTemplate;
+		if (UNEXPECTED(!isInstance(type, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return false;
+		if (isTemplate) {
 			out = false;
 			return true;
 		}

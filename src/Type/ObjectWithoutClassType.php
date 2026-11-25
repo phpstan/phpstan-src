@@ -14,6 +14,7 @@ use PHPStan\Type\Traits\ObjectTypeTrait;
 use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\SubstractableTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonTypeTrait;
+use function get_class;
 
 /** @api */
 #[InstanceofDeprecated(insteadUse: 'Type::isObject()')]
@@ -110,7 +111,7 @@ class ObjectWithoutClassType implements SubtractableType
 
 	public function equals(Type $type): bool
 	{
-		if (!$type instanceof self) {
+		if (get_class($type) !== static::class) {
 			return false;
 		}
 

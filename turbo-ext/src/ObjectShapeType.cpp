@@ -398,7 +398,7 @@ public:
 	 * equal) and the same optional ones; false with an exception pending */
 	[[nodiscard]] bool equals(zval *type, bool &out) const
 	{
-		if (!instanceof_function(Z_OBJCE_P(type), pt_ce_object_shape_type)) {
+		if (Z_OBJCE_P(type) != self->ce) {
 			out = false;
 			return true;
 		}

@@ -1027,8 +1027,8 @@ static void ZEND_FASTCALL constantScalarEquals(INTERNAL_FUNCTION_PARAMETERS);
 
 static bool constantScalarEqualsImpl(zend_object *self, zend_class_entry *scope, zval *type, bool &out)
 {
-	/* $type instanceof self && $this->value === $type->value */
-	if (!instanceof_function(Z_OBJCE_P(type), scope)) {
+	/* get_class($type) === static::class && $this->value === $type->value */
+	if (Z_OBJCE_P(type) != self->ce) {
 		out = false;
 		return true;
 	}

@@ -2786,6 +2786,54 @@ public:
 					merged = copy(type);
 					continue;
 				}
+				zv::Val mergedUnsealed = call(merged.raw(), PT_LC("getunsealedtypes"));
+				PT_FAIL_IF_UNDEF(mergedUnsealed);
+				zv::Val typeUnsealed = call(type, PT_LC("getunsealedtypes"));
+				PT_FAIL_IF_UNDEF(typeUnsealed);
+				if (isNull(mergedUnsealed) || isNull(typeUnsealed)) {
+					/* the legacy merge keeps only the keys of `merged` - add
+					 * the keys only `type` has to it first, as optional keys */
+					zv::Val mergedKeyTypes = call(merged.raw(), PT_LC("getkeytypes"));
+					PT_FAIL_IF_UNDEF(mergedKeyTypes);
+					zv::Arr mergedKeys = zv::Arr::create(countOf(mergedKeyTypes.raw()));
+					for (zv::ArrayEntry keyEntry : zv::ArrRef(mergedKeyTypes.raw())) {
+						zv::Val keyValue = call(keyEntry.value().raw(), PT_LC("getvalue"));
+						PT_FAIL_IF_UNDEF(keyValue);
+						zval trueZv;
+						ZVAL_TRUE(&trueZv);
+						if (UNEXPECTED(!symtableSet(mergedKeys.table(), keyValue.raw(), &trueZv))) return zv::Val();
+					}
+					zv::Val typeKeyTypes = call(type, PT_LC("getkeytypes"));
+					PT_FAIL_IF_UNDEF(typeKeyTypes);
+					zv::Val typeValueTypes = call(type, PT_LC("getvaluetypes"));
+					PT_FAIL_IF_UNDEF(typeValueTypes);
+					zv::Val builder;
+					for (zv::ArrayEntry keyEntry : zv::ArrRef(typeKeyTypes.raw())) {
+						zv::Val keyValue = call(keyEntry.value().raw(), PT_LC("getvalue"));
+						PT_FAIL_IF_UNDEF(keyValue);
+						if (symtableFind(mergedKeys.table(), keyValue.raw()) != NULL) continue;
+						if (UNEXPECTED(EG(exception) != NULL)) return zv::Val();
+						zval *valueType = zend_hash_index_find(Z_ARRVAL_P(typeValueTypes.raw()), keyEntry.indexKey());
+						if (UNEXPECTED(valueType == NULL)) {
+							zend_throw_error(NULL, "Undefined array key " ZEND_ULONG_FMT, keyEntry.indexKey());
+							return zv::Val();
+						}
+						if (builder.isUndef()) {
+							builder = pt_constant_array_type_builder_create_from_constant_array(merged.raw());
+							PT_FAIL_IF_UNDEF(builder);
+						}
+						if (UNEXPECTED(!pt_constant_array_type_builder_set_offset_value_type(builder.raw(), keyEntry.value().raw(), valueType, true))) return zv::Val();
+					}
+					if (!builder.isUndef()) {
+						zv::Val extended = pt_constant_array_type_builder_get_array(builder.raw());
+						PT_FAIL_IF_UNDEF(extended);
+						if (!isInstance(extended.raw(), pt_ce_constant_array_type)) {
+							merged = zv::Val();
+							break;
+						}
+						merged = std::move(extended);
+					}
+				}
 				zv::Val next = call(merged.raw(), PT_LC("mergewith"), 1, type);
 				PT_FAIL_IF_UNDEF(next);
 				merged = std::move(next);

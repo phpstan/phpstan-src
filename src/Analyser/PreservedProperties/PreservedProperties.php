@@ -23,6 +23,8 @@ final class PreservedProperties
 	 *        and does not write otherwise
 	 * @param array<string, true> $closureWrittenPropertyNames written by the class's closures, which whoever
 	 *        holds one can run at any time, so the walk of a method does not tell their type after it
+	 * @param array<string, true> $unlessParentDeclares the ones among $propertyNames kept only when the parent class
+	 *        does not declare them: protected properties of a final class, which the parent's code can write otherwise
 	 * @param array<string, array<string, array{list<string>, list<array{list<non-empty-string>, int, string}>}|null>> $overrideWrittenPropertyNames
 	 *        the private properties each non-private method of the class writes, by lowercase name - the parent's code can
 	 *        run the ones that override its methods whenever it runs - each with the methods it runs that assign it and the
@@ -35,6 +37,7 @@ final class PreservedProperties
 		private array $writtenFunctionArguments,
 		private array $closureWrittenPropertyNames,
 		private ?string $parentClassName = null,
+		private array $unlessParentDeclares = [],
 		private array $overrideWrittenPropertyNames = [],
 	)
 	{
@@ -83,6 +86,14 @@ final class PreservedProperties
 	public function getParentClassName(): ?string
 	{
 		return $this->parentClassName;
+	}
+
+	/**
+	 * @return array<string, true>
+	 */
+	public function getUnlessParentDeclares(): array
+	{
+		return $this->unlessParentDeclares;
 	}
 
 	/**

@@ -264,6 +264,19 @@ final class PreservedPropertiesResolver
 		}
 
 		$propertyNames = $preservedProperties->getPropertyNames();
+		$unlessParentDeclares = $preservedProperties->getUnlessParentDeclares();
+		if (count($unlessParentDeclares) > 0) {
+			$parentClassName = $preservedProperties->getParentClassName();
+			$parentClassReflection = $parentClassName !== null && $this->reflectionProvider->hasClass($parentClassName)
+				? $this->reflectionProvider->getClass($parentClassName)
+				: null;
+			foreach (array_keys($unlessParentDeclares) as $propertyName) {
+				if ($parentClassReflection !== null && !$parentClassReflection->hasNativeProperty($propertyName)) {
+					continue;
+				}
+				unset($propertyNames[$propertyName]);
+			}
+		}
 		foreach ($preservedProperties->getFunctionArguments() as [$functionNames, $position, $propertyName]) {
 			if (!isset($propertyNames[$propertyName]) || $this->isFunctionArgumentByValue($functionNames, $position)) {
 				continue;

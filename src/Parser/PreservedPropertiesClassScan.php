@@ -46,6 +46,9 @@ final class PreservedPropertiesClassScan
 	/** @var array<string, bool> declared instance properties, each with whether only the class's own code can write it */
 	public array $properties = [];
 
+	/** @var array<string, true> protected properties of a final class with a parent, which only the class's own code writes unless the parent declares them too */
+	private array $unlessParentDeclares = [];
+
 	/** @var array<string, true> properties written in ways no walk sees the value of: not by assigning it, or in closures */
 	public array $nonPlainWrites = [];
 
@@ -101,6 +104,17 @@ final class PreservedPropertiesClassScan
 		public ?string $lowerName,
 	)
 	{
+	}
+
+	public function addProperty(string $propertyName, bool $isPrivate, bool $isProtected): void
+	{
+		// no subclass reaches a protected property of a final class, and the parent's code only one it declares too
+		$this->properties[$propertyName] = $isPrivate || ($isProtected && $this->isFinal);
+		if ($isPrivate || !$isProtected || !$this->isFinal || !$this->hasParent) {
+			return;
+		}
+
+		$this->unlessParentDeclares[$propertyName] = true;
 	}
 
 	/**
@@ -301,11 +315,16 @@ final class PreservedPropertiesClassScan
 		[$written, $functionArguments, $escapes, $directWritten, $directFunctionArguments] = $collected;
 
 		$preserved = [];
+		$unlessParentDeclares = [];
 		foreach ($this->properties as $propertyName => $isPrivate) {
 			if (isset($written[$propertyName]) || ($escapes && !$isPrivate)) {
 				continue;
 			}
 			$preserved[$propertyName] = true;
+			if (!$escapes || !isset($this->unlessParentDeclares[$propertyName])) {
+				continue;
+			}
+			$unlessParentDeclares[$propertyName] = true;
 		}
 
 		$preservedFunctionArguments = [];
@@ -328,7 +347,7 @@ final class PreservedPropertiesClassScan
 			return null;
 		}
 
-		return new PreservedProperties($preserved, $preservedFunctionArguments, $directWritten, $directFunctionArgumentsUnwritten, $this->closures['writes'], $this->parentName, $overrideWrites);
+		return new PreservedProperties($preserved, $preservedFunctionArguments, $directWritten, $directFunctionArgumentsUnwritten, $this->closures['writes'], $this->parentName, $unlessParentDeclares, $overrideWrites);
 	}
 
 	/**

@@ -8,6 +8,7 @@ use function in_array;
 use function is_dir;
 use function is_file;
 use function preg_match;
+use function str_ends_with;
 use function str_starts_with;
 use function strlen;
 use function substr;
@@ -60,7 +61,15 @@ final class FileExcluder
 			}
 
 			if (self::isFnmatchPattern($normalized)) {
-				$this->fnmatchAnalyseExcludes[] = $normalized;
+				// a path that ends with a separator names a directory, and no file matches it
+				if (!$trailingDirSeparator) {
+					$this->fnmatchAnalyseExcludes[] = $normalized;
+				}
+
+				// a directory the pattern matches excludes the files in it, as a literal directory does
+				if (!str_ends_with($normalized, '*')) {
+					$this->fnmatchAnalyseExcludes[] = ($trailingDirSeparator ? $normalized : $normalized . DIRECTORY_SEPARATOR) . '*';
+				}
 			} else {
 				if (is_file($normalized)) {
 					$this->literalAnalyseFilesExcludes[$normalized] = true;

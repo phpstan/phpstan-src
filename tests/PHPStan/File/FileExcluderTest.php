@@ -113,6 +113,21 @@ class FileExcluderTest extends PHPStanTestCase
 				['c:\etc\phpstan*'],
 				true,
 			],
+			[
+				'C:\Project\themes\foo\node_modules\baz.php',
+				['C:/Project/themes/*/node_modules/'],
+				true,
+			],
+			[
+				'C:\Project\themes\foo\node_modules\baz.php',
+				['C:/Project/themes/*/node_modules'],
+				true,
+			],
+			[
+				'C:\Project\themes\foo\node_modules-old\baz.php',
+				['C:/Project/themes/*/node_modules'],
+				false,
+			],
 		];
 	}
 
@@ -199,6 +214,46 @@ class FileExcluderTest extends PHPStanTestCase
 			[
 				'/etc/phpstan-test/dummy-2.php',
 				['/etc/phpstan*'],
+				true,
+			],
+			[
+				'/project/themes/foo/node_modules/bar/baz.php',
+				['/project/themes/*/node_modules/'],
+				true,
+			],
+			[
+				'/project/themes/foo/node_modules/bar/baz.php',
+				['/project/themes/*/node_modules'],
+				true,
+			],
+			[
+				'/project/themes/foo/node_modules-old/baz.php',
+				['/project/themes/*/node_modules'],
+				false,
+			],
+			[
+				'/project/themes/foo/node_modules-old/baz.php',
+				['/project/themes/*/node_modules/'],
+				false,
+			],
+			[
+				'/project/themes/foo/src/baz.php',
+				['/project/themes/*/node_modules'],
+				false,
+			],
+			[
+				'/project/src/FooTest.php',
+				['/project/src/*Test.php'],
+				true,
+			],
+			[
+				'/project/src/Foo.php',
+				['/project/src/*Test.php'],
+				false,
+			],
+			[
+				'/project/src/FooTest/Bar.php',
+				['/project/src/*Test'],
 				true,
 			],
 		];

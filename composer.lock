@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "1d606471b686936d0b51dbe3d329603c",
+  "content-hash": "7a8460e0f8c0b295f682b9e387fd8507",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -2578,20 +2578,20 @@
     },
     {
       "name": "symfony/deprecation-contracts",
-      "version": "v3.8.1",
+      "version": "v2.5.4",
       "source": {
         "type": "git",
         "url": "https://github.com/symfony/deprecation-contracts.git",
-        "reference": "feb1edf4e546af3b85c5caebe8359a20db230ca3"
+        "reference": "605389f2a7e5625f273b53960dc46aeaf9c62918"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/feb1edf4e546af3b85c5caebe8359a20db230ca3",
-        "reference": "feb1edf4e546af3b85c5caebe8359a20db230ca3",
+        "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/605389f2a7e5625f273b53960dc46aeaf9c62918",
+        "reference": "605389f2a7e5625f273b53960dc46aeaf9c62918",
         "shasum": ""
       },
       "require": {
-        "php": ">=8.1"
+        "php": ">=7.1"
       },
       "type": "library",
       "extra": {
@@ -2600,7 +2600,7 @@
           "name": "symfony/contracts"
         },
         "branch-alias": {
-          "dev-main": "3.8-dev"
+          "dev-main": "2.5-dev"
         }
       },
       "autoload": {
@@ -2625,7 +2625,7 @@
       "description": "A generic function and convention to trigger deprecation notices",
       "homepage": "https://symfony.com",
       "support": {
-        "source": "https://github.com/symfony/deprecation-contracts/tree/v3.8.1"
+        "source": "https://github.com/symfony/deprecation-contracts/tree/v2.5.4"
       },
       "funding": [
         {
@@ -2637,15 +2637,12 @@
           "type": "github"
         },
         {
-          "url": "https://github.com/nicolas-grekas",
-          "type": "github"
-        },
-        {
           "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
           "type": "tidelift"
         }
       ],
-      "time": "2026-09-16T14:15:10+00:00"
+      "time": "2024-09-25T14:11:13+00:00",
+      "published-time": "2024-11-27T12:25:26+00:00"
     },
     {
       "name": "symfony/finder",

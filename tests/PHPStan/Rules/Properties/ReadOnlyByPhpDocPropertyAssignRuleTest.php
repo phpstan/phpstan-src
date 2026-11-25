@@ -192,4 +192,14 @@ class ReadOnlyByPhpDocPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/readonly-phpdoc-property-assign-clone-with.php'], []);
 	}
 
+	public function testBug9326(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9326-phpdoc.php'], [
+			[
+				'@readonly property Bug9326PhpDoc\\AlsoCalledElsewhere::$foo is assigned outside of the constructor.',
+				38,
+			],
+		]);
+	}
+
 }

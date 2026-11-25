@@ -6,9 +6,12 @@ use PHPStan\DependencyInjection\AutowiredExtensions;
 use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\DependencyInjection\ExtensionsCollection;
+use PHPStan\Reflection\Php\PhpMethodFromParserNodeReflection;
 use ReflectionException;
 use function array_key_exists;
+use function array_map;
 use function explode;
+use function in_array;
 
 #[AutowiredService]
 final class ConstructorsHelper
@@ -78,6 +81,30 @@ final class ConstructorsHelper
 		$this->additionalConstructorsCache[$classReflection->getName()] = $constructors;
 
 		return $constructors;
+	}
+
+	/**
+	 * Whether only the class's own code calls the method, and only from its constructors,
+	 * directly or through other such methods.
+	 */
+	public function isOnlyCalledFromConstructors(ClassReflection $classReflection, MethodReflection $method): bool
+	{
+		if (!$method instanceof PhpMethodFromParserNodeReflection) {
+			return false;
+		}
+		$callers = $method->getOnlyCalledFrom();
+		if ($callers === null) {
+			return false;
+		}
+
+		$constructors = array_map('strtolower', $this->getConstructors($classReflection));
+		foreach ($callers as $caller) {
+			if (!in_array($caller, $constructors, true)) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

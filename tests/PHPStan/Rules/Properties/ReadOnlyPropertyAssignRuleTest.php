@@ -24,6 +24,7 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 				self::getContainer()->getExtensionsCollection(AdditionalConstructorsExtension::class),
 				[
 					'ReadonlyPropertyAssign\\TestCase::setUp',
+					'Bug9326\\TestCase::setUp',
 				],
 			),
 		);
@@ -292,6 +293,69 @@ class ReadOnlyPropertyAssignRuleTest extends RuleTestCase
 			[
 				'Readonly property Bug12871\A::$foo is assigned outside of the constructor.',
 				54,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug9326(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9326.php'], [
+			[
+				'Readonly property Bug9326\\PrivateAlsoCalledElsewhere::$foo is assigned outside of the constructor.',
+				42,
+			],
+			[
+				'Readonly property Bug9326\\ProtectedInNonFinalClass::$foo is assigned outside of the constructor.',
+				72,
+			],
+			[
+				'Readonly property Bug9326\\PublicInFinalClass::$foo is assigned outside of the constructor.',
+				87,
+			],
+			[
+				'Readonly property Bug9326\\ProtectedInFinalClassOverridingParent::$foo is assigned outside of the constructor.',
+				112,
+			],
+			[
+				'Readonly property Bug9326\\ThroughPrivateMethodAlsoCalledElsewhere::$foo is assigned outside of the constructor.',
+				157,
+			],
+			[
+				'Readonly property Bug9326\\NeverCalled::$foo is assigned outside of the constructor.',
+				195,
+			],
+			[
+				'Readonly property Bug9326\\NeverCalled::$foo is assigned outside of the constructor.',
+				205,
+			],
+			[
+				'Readonly property Bug9326\\CalledInClosure::$foo is assigned outside of the constructor.',
+				224,
+			],
+			[
+				'Readonly property Bug9326\\FirstClassCallable::$foo is assigned outside of the constructor.',
+				244,
+			],
+			[
+				'Readonly property Bug9326\\ArrayCallable::$foo is assigned outside of the constructor.',
+				264,
+			],
+			[
+				'Readonly property Bug9326\\DynamicCall::$foo is assigned outside of the constructor.',
+				284,
+			],
+			[
+				'Readonly property Bug9326\\CalledOnOtherObject::$foo is assigned outside of the constructor.',
+				307,
+			],
+			[
+				'Readonly property Bug9326\\AssignsOtherObject::$foo is assigned outside of the constructor.',
+				323,
+			],
+			[
+				'Readonly property Bug9326\\UsesTrait::$foo is assigned outside of the constructor.',
+				348,
 			],
 		]);
 	}

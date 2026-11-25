@@ -385,7 +385,13 @@ final class ClassPropertiesNode extends NodeAbstract implements VirtualNode
 			$methodName = $methodCallNode->name->toString();
 			if (array_key_exists($methodName, $initializedProperties)) {
 				foreach ($this->getInitializedProperties($callScope, $initializedProperties[$inMethod->getName()] ?? $initialInitializedProperties) as $propertyName => $isInitialized) {
-					$initializedProperties[$methodName][$propertyName] = $initializedProperties[$methodName][$propertyName]->and($isInitialized);
+					if (in_array($methodName, $originalConstructors, true)) {
+						// parent::__construct() is another method of the same name
+						$initializedProperties[$methodName][$propertyName] = $initializedProperties[$methodName][$propertyName]->and($isInitialized);
+						continue;
+					}
+					// maybe when initialized before some calls only: a read can come too early, and a write too late
+					$initializedProperties[$methodName][$propertyName] = TrinaryLogic::extremeIdentity($initializedProperties[$methodName][$propertyName], $isInitialized);
 				}
 				continue;
 			}

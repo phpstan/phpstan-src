@@ -7,8 +7,10 @@ use PhpParser\Node\Expr;
 use PHPStan\Analyser\PreservedProperties\PreservedProperties;
 use function array_key_exists;
 use function array_keys;
+use function array_map;
 use function array_pop;
 use function count;
+use function str_starts_with;
 use function usort;
 
 /**
@@ -107,6 +109,15 @@ final class PreservedPropertiesClassScan
 	/** @var list<array{Expr, self::CALL_*, string}> calls on $this outside closures, with their kind and lowercase method name */
 	public array $calls = [];
 
+	/** @var array<string, array<string, true>> the methods calling each method of the class on $this by lowercase name, self::CLOSURES for calls in closures */
+	public array $callers = [];
+
+	/** @var array<string, true> lowercase method names called other than on $this, handed out, or mentioned in a string, which can name a callable */
+	public array $calledElsewhere = [];
+
+	/** Some code calls a method by a name that is not written in it, which can be any method of the class. */
+	public bool $hasDynamicCalls = false;
+
 	public function __construct(
 		public bool $isFinal,
 		public bool $hasParent,
@@ -133,6 +144,81 @@ final class PreservedPropertiesClassScan
 	public function handOut(int $kind, string $methodName): void
 	{
 		$this->handedOut[$kind . ':' . $methodName] = [$kind, $methodName];
+		$this->calledElsewhere[$methodName] = true;
+	}
+
+	/**
+	 * Attaches to each method only the class's own code can call - private, or protected
+	 * in a final class without a parent - the methods it is only ever run from: the
+	 * methods outside this set that call it on $this, directly or through other such
+	 * methods. A method also called in a closure, on another object, through a callable
+	 * or one the class never calls gets nothing.
+	 */
+	public function annotateOnlyCalledFrom(Node\Stmt\ClassLike $node): void
+	{
+		if ($this->unsupported || $this->traitUses !== [] || $this->hasDynamicCalls) {
+			// code of a trait or a property hook, which the scan does not follow, can call the methods too
+			return;
+		}
+
+		$candidates = [];
+		foreach ($node->stmts as $stmt) {
+			if (!$stmt instanceof Node\Stmt\ClassMethod || $stmt->isStatic() || $stmt->stmts === null) {
+				continue;
+			}
+			$methodName = $stmt->name->toLowerString();
+			if (str_starts_with($methodName, '__')) {
+				// magic methods are called by PHP
+				continue;
+			}
+			if (!$stmt->isPrivate() && !($stmt->isProtected() && $this->isFinal && !$this->hasParent)) {
+				continue;
+			}
+			if (
+				!isset($this->callers[$methodName])
+				|| isset($this->callers[$methodName][self::CLOSURES])
+				|| isset($this->calledElsewhere[$methodName])
+			) {
+				continue;
+			}
+			$candidates[$methodName] = $stmt;
+		}
+
+		$roots = [];
+		foreach (array_keys($candidates) as $methodName) {
+			$roots[$methodName] = [];
+			foreach (array_keys($this->callers[$methodName]) as $callerName) {
+				if (isset($candidates[$callerName])) {
+					continue;
+				}
+				$roots[$methodName][$callerName] = true;
+			}
+		}
+
+		do {
+			$changed = false;
+			foreach (array_keys($candidates) as $methodName) {
+				foreach (array_keys($this->callers[$methodName]) as $callerName) {
+					if (!isset($candidates[$callerName])) {
+						continue;
+					}
+					$count = count($roots[$methodName]);
+					$roots[$methodName] += $roots[$callerName];
+					if (count($roots[$methodName]) === $count) {
+						continue;
+					}
+					$changed = true;
+				}
+			}
+		} while ($changed);
+
+		foreach ($candidates as $methodName => $stmt) {
+			if ($roots[$methodName] === []) {
+				// only called by methods nothing else calls
+				continue;
+			}
+			$stmt->setAttribute(PreservedPropertiesVisitor::ONLY_CALLED_FROM_ATTRIBUTE_NAME, array_map('strval', array_keys($roots[$methodName])));
+		}
 	}
 
 	public function annotateCalls(): void

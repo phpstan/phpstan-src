@@ -349,4 +349,19 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-9789.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug9326(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-9326-already-assigned.php'], [
+			[
+				'Readonly property Bug9326AlreadyAssigned\\CalledTwice::$x is already assigned.',
+				17,
+			],
+			[
+				'Readonly property Bug9326AlreadyAssigned\\Promoted::$x is already assigned.',
+				49,
+			],
+		]);
+	}
+
 }

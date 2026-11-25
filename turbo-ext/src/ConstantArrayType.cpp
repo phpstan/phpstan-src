@@ -2399,6 +2399,21 @@ public:
 
 		if (classOrObject.isUndef() || method.isUndef()) return zv::Val(zv::Arr::empty());
 
+		/* no value of the slots' types names a method */
+		{
+			zv::Val objectWithoutClass = objectWithoutClassType();
+			zv::Val string = stringType();
+			if (UNEXPECTED(objectWithoutClass.isUndef() || string.isUndef())) return zv::Val();
+			zv::Val expected = combinator2(PT_LC("union"), objectWithoutClass.raw(), string.raw());
+			if (UNEXPECTED(expected.isUndef())) return zv::Val();
+			zend_long covers = isSuperTypeOfValue(expected.raw(), classOrObject.raw());
+			if (UNEXPECTED(covers < 0)) return zv::Val();
+			if (covers == PT_TRI_NO) return zv::Val(zv::Arr::empty());
+			covers = isSuperTypeOfValue(string.raw(), method.raw());
+			if (UNEXPECTED(covers < 0)) return zv::Val();
+			if (covers == PT_TRI_NO) return zv::Val(zv::Arr::empty());
+		}
+
 		/* [$classOrObject, $methods] = [$classOrObject, $method] */
 		zv::Val methodConstantStrings = pt_type_call_array(Z_OBJ_P(method.raw()), PT_LC("getconstantstrings"), 0, NULL);
 		if (UNEXPECTED(methodConstantStrings.isUndef())) return zv::Val();

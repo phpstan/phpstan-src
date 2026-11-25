@@ -1190,6 +1190,14 @@ class ConstantArrayType implements Type
 			return [];
 		}
 
+		// no value of the slots' types names a method
+		if (
+			TypeCombinator::union(new ObjectWithoutClassType(), new StringType())->isSuperTypeOf($classOrObject)->no()
+			|| (new StringType())->isSuperTypeOf($method)->no()
+		) {
+			return [];
+		}
+
 		$callableArray = [$classOrObject, $method];
 
 		[$classOrObject, $methods] = $callableArray;

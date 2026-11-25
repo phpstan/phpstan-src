@@ -36,7 +36,7 @@ class StaticTypeTest extends PHPStanTestCase
 		return [
 			[new StaticType($reflectionProvider->getClass('ArrayObject')), TrinaryLogic::createYes()],
 			[new StaticType($reflectionProvider->getClass('Traversable')), TrinaryLogic::createYes()],
-			[new StaticType($reflectionProvider->getClass('DateTime')), TrinaryLogic::createNo()],
+			[new StaticType($reflectionProvider->getClass('DateTime')), TrinaryLogic::createMaybe()],
 		];
 	}
 

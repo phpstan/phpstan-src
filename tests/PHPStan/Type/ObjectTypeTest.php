@@ -59,7 +59,8 @@ class ObjectTypeTest extends PHPStanTestCase
 			[new ObjectType('ArrayObject'), TrinaryLogic::createYes()],
 			[new ObjectType('Traversable'), TrinaryLogic::createYes()],
 			[new ObjectType('Unknown'), TrinaryLogic::createMaybe()],
-			[new ObjectType('DateTime'), TrinaryLogic::createNo()],
+			[new ObjectType('DateTime'), TrinaryLogic::createMaybe()],
+			[new ObjectType('Closure'), TrinaryLogic::createNo()],
 		];
 	}
 

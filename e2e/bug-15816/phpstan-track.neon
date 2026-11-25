@@ -1,0 +1,5 @@
+includes:
+	- phpstan.neon
+
+rules:
+	- Bug15816\TrackClassRule

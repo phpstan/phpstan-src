@@ -8,6 +8,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\File\FileContentHasher;
 use PHPStan\Reflection\ReflectionProvider;
 use function array_key_exists;
+use function array_pop;
 use function hash;
 use function implode;
 use function json_encode;
@@ -52,15 +53,41 @@ final class ClassResultCacheValueExtension implements ResultCacheValueExtension
 			return ValueDependencyCollector::MISSING;
 		}
 
-		$classReflection = $this->reflectionProvider->getClass($key);
+		// The class and its ancestors are walked by name, from the native reflection only:
+		// ClassReflection::getAncestors() resolves @extends and @implements tags, and so asks the
+		// stub PHPDocs - running the StubFilesExtensions, which ResultCacheManager::restore() must not,
+		// because they can rely on bootstrapFiles not executed yet.
 		$declarations = [];
-		foreach ([$classReflection->getName() => $classReflection] + $classReflection->getAncestors() as $name => $declaringClass) {
+		$queue = [$key];
+		while (($className = array_pop($queue)) !== null) {
+			if (!$this->reflectionProvider->hasClass($className)) {
+				continue;
+			}
+
+			$declaringClass = $this->reflectionProvider->getClass($className);
+			$name = $declaringClass->getName();
+			if (array_key_exists(strtolower($name), $declarations)) {
+				continue;
+			}
+
 			// a built-in class is read from a stub, which one depends on the source locator that
 			// reflected it first; it changes only with PHP, its extensions or PHPStan itself
 			$fileName = $declaringClass->isBuiltin() ? null : $declaringClass->getFileName();
 			$declarations[strtolower($name)] = $fileName === null
 				? 'built-in'
 				: sprintf('%s %s', $fileName, $this->getExportedNode($fileName, $name));
+
+			$nativeReflection = $declaringClass->getNativeReflection();
+			$parentClass = $nativeReflection->getParentClass();
+			if ($parentClass !== false) {
+				$queue[] = $parentClass->getName();
+			}
+			foreach ($nativeReflection->getInterfaceNames() as $interfaceName) {
+				$queue[] = $interfaceName;
+			}
+			foreach ($nativeReflection->getTraitNames() as $traitName) {
+				$queue[] = $traitName;
+			}
 		}
 
 		ksort($declarations);

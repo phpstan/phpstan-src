@@ -3994,8 +3994,20 @@ foreach (['php' => [\PHPStan\Analyser\ExpressionContext::class, \PHPStan\Analyse
 		$r['ctor'] = get_class($e);
 	}
 
-	$stcDescribe = static fn (object $c): array => [$turboNorm(get_class($c)), $c->isTopLevel(), $c->getForeachUnrollFactor(), $c->shouldResolveTemplateArguments()];
+	$stcHeads = $side === 'php' ? new \PHPStan\Analyser\ConvergedLoopHeads() : new \PHPStanTurbo\ConvergedLoopHeads();
+	$stcOtherHeads = $side === 'php' ? new \PHPStan\Analyser\ConvergedLoopHeads() : new \PHPStanTurbo\ConvergedLoopHeads();
+	$stcDescribe = static fn (object $c): array => [
+		$turboNorm(get_class($c)),
+		$c->isTopLevel(),
+		$c->getForeachUnrollFactor(),
+		$c->shouldResolveTemplateArguments(),
+		$c->shouldConvergeLoops(),
+		$c->getLoopHeads() === null ? null : ($c->getLoopHeads() === $stcHeads ? 'heads' : ($c->getLoopHeads() === $stcOtherHeads ? 'other heads' : 'unknown')),
+	];
 	$stcDerivations = [
+		'enterLoopPass' => static fn ($c) => $c->enterLoopPass($stcHeads),
+		'withLoopHeads' => static fn ($c) => $c->withLoopHeads($stcOtherHeads),
+		'withLoopHeads null' => static fn ($c) => $c->withLoopHeads(null),
 		'withoutTemplateArgumentResolution' => static fn ($c) => $c->withoutTemplateArgumentResolution(),
 		'enterDeep' => static fn ($c) => $c->enterDeep(),
 		'enterUnrolledForeach 3' => static fn ($c) => $c->enterUnrolledForeach(3),
@@ -4692,6 +4704,7 @@ $coveredElsewhere = [
 	\PHPStan\Analyser\ExprHandler\Helper\DefaultNarrowingHelper::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\IdenticalNarrowingHelper::class => 'walk-trace.php',
 	\PHPStan\Analyser\NodeScopeResolver::class => 'walk-trace.php',
+	\PHPStan\Analyser\ConvergedLoopHeads::class => 'walk-trace.php',
 	\PHPStan\Analyser\StatementsHandler::class => 'walk-trace.php',
 	\PHPStan\Analyser\StatementListWalkState::class => 'walk-trace.php',
 	\PHPStan\Analyser\ExprHandler\Helper\NonNullabilityHelper::class => 'walk-trace.php',

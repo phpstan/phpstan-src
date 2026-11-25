@@ -1895,6 +1895,13 @@ extern zend_class_entry *pt_ce_statement_context;
 extern zend_class_entry *pt_ce_expr_handler_registry;
 extern zend_class_entry *pt_ce_stmt_handler_registry;
 
+/* ConvergedLoopHeads.cpp: new ConvergedLoopHeads(), warmStart($loop,
+ * $entryScope) and record($loop, $head); UNDEF / false = pending exception */
+extern zend_class_entry *pt_ce_converged_loop_heads;
+zv::Val pt_converged_loop_heads_new();
+zv::Val pt_converged_loop_heads_warm_start(zval *heads, zval *loop, zval *entryScope);
+[[nodiscard]] bool pt_converged_loop_heads_record(zval *heads, zval *loop, zval *head);
+
 /* ExpressionContext::createTopLevel($resolveTemplateArguments) /
  * createDeep($resolveTemplateArguments); UNDEF = pending exception */
 zv::Val pt_expression_context_create_top_level(bool resolveTemplateArguments = true);
@@ -1951,6 +1958,10 @@ zv::Val pt_expression_context_get_value_flow_target(zval *context);
 zv::Val pt_statement_context_create_top_level(bool resolveTemplateArguments = true);
 zv::Val pt_statement_context_create_deep(bool resolveTemplateArguments = true);
 [[nodiscard]] bool pt_statement_context_is_top_level(zval *context, bool &out);
+[[nodiscard]] bool pt_statement_context_should_converge_loops(zval *context, bool &out);
+zv::Val pt_statement_context_get_loop_heads(zval *context);
+zv::Val pt_statement_context_enter_loop_pass(zval *context, zval *loopHeads);
+zv::Val pt_statement_context_with_loop_heads(zval *context, zval *loopHeads);
 [[nodiscard]] bool pt_statement_context_should_resolve_template_arguments(zval *context, bool &out);
 [[nodiscard]] bool pt_statement_context_get_foreach_unroll_factor(zval *context, zend_long &out);
 zv::Val pt_statement_context_without_template_argument_resolution(zval *context);

@@ -18,6 +18,7 @@ use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\Foreach_;
 use PHPStan\Analyser\ConditionalExpressionHolder;
+use PHPStan\Analyser\ConvergedLoopHeads;
 use PHPStan\Analyser\ExpressionContext;
 use PHPStan\Analyser\ExpressionResultStorage;
 use PHPStan\Analyser\ExpressionTypeHolder;
@@ -195,7 +196,11 @@ final class ForeachHandler implements StmtHandler
 		$replayEntryScope = null;
 		$unrolledEndScope = null;
 		$unrolledTotalKeys = null;
-		if ($context->isTopLevel()) {
+		$loopHeads = null;
+		// the loop's entry joined with the head it converged to when walked before
+		$loopEntryScope = $nonEmptyIterateeScope;
+		if ($context->shouldConvergeLoops()) {
+			$loopHeads = $context->getLoopHeads() ?? new ConvergedLoopHeads();
 			$storage = $originalStorage->duplicate();
 
 			$originalScope = $nonEmptyIterateeScope;
@@ -213,7 +218,7 @@ final class ForeachHandler implements StmtHandler
 				$foreachIterateeType = $iterateeResult->getType();
 				$foreachNativeIterateeType = $iterateeResult->getNativeType();
 			}
-			$unrolledResult = $this->tryProcessUnrolledConstantArrayForeach($nodeScopeResolver, $stmt, $originalScope, $originalStorage, $context, $foreachIterateeType, $foreachNativeIterateeType);
+			$unrolledResult = !$context->isTopLevel() ? null : $this->tryProcessUnrolledConstantArrayForeach($nodeScopeResolver, $stmt, $originalScope, $originalStorage, $context, $foreachIterateeType, $foreachNativeIterateeType);
 			if ($unrolledResult !== null) {
 				$bodyScope = $unrolledResult['bodyScope'];
 				$unrolledEndScope = $unrolledResult['endScope'];
@@ -225,14 +230,18 @@ final class ForeachHandler implements StmtHandler
 				} finally {
 					$scope->popExpressionResultStorage();
 				}
+				// heads come from pass walks - a top-level walk converges from its own entry
+				if (!$context->isTopLevel()) {
+					$loopEntryScope = $loopHeads->warmStart($stmt, $nonEmptyIterateeScope);
+				}
 				$count = 0;
 				$prevEntryScope = null;
 				// each pass after the first re-walks only the statements whose
 				// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
-				$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
+				$bodyIsReplayable = !$context->isTopLevel() || $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 				do {
 					$prevScope = $bodyScope;
-					$bodyScope = $bodyScope->mergeWith($nonEmptyIterateeScope);
+					$bodyScope = $bodyScope->mergeWith($loopEntryScope);
 					if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 						// walking is deterministic in the entry scope - an unchanged entry
 						// reproduces the previous pass's exit, so the verification walk is skipped
@@ -250,7 +259,7 @@ final class ForeachHandler implements StmtHandler
 					try {
 						$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
 						$passRecord = null;
-						$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterDeep()->withoutTemplateArgumentResolution(), $previousPass, $passRecord)->filterOutLoopExitPoints();
+						$bodyScopeResult = $nodeScopeResolver->processLoopPassStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $bodyRecording, $context->enterLoopPass($loopHeads), $previousPass, $passRecord)->filterOutLoopExitPoints();
 						$previousPass = $passRecord;
 						$previousPassStorage = $storage;
 						$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
@@ -282,8 +291,11 @@ final class ForeachHandler implements StmtHandler
 			}
 		}
 
-		$bodyScope = $bodyScope->mergeWith($nonEmptyIterateeScope);
+		$bodyScope = $bodyScope->mergeWith($loopEntryScope);
 		$finalEntryScope = $bodyScope;
+		if (!$context->isTopLevel()) {
+			$loopHeads?->record($stmt, $finalEntryScope);
+		}
 		$storage = $originalStorage;
 		$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
 		if (
@@ -301,10 +313,10 @@ final class ForeachHandler implements StmtHandler
 			// the last pass stands in for the statements whose state it walked
 			// with - they replay through the real callback
 			$originalStorage->mergeResults($previousPassStorage);
-			$finalScopeResult = $nodeScopeResolver->processLoopFinalStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context, $previousPass)->filterOutLoopExitPoints();
+			$finalScopeResult = $nodeScopeResolver->processLoopFinalStmtNodes($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $context->withLoopHeads($loopHeads), $previousPass)->filterOutLoopExitPoints();
 		} else {
 			$finalPassContext = $unrolledTotalKeys !== null ? $context->enterUnrolledForeach($unrolledTotalKeys) : $context;
-			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $finalPassContext)->filterOutLoopExitPoints();
+			$finalScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $bodyScope, $storage, $nodeCallback, $finalPassContext->withLoopHeads($loopHeads))->filterOutLoopExitPoints();
 		}
 		$finalScope = $finalScopeResult->isEndReachable() ? $finalScopeResult->getScope() : null;
 		$scopesWithIterableValueType = [];

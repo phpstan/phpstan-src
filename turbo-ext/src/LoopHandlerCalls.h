@@ -243,6 +243,18 @@ inline bool boolSlot(zend_object *handler, uint32_t slot)
 	return Z_TYPE_P(OBJ_PROP_NUM(handler, slot)) == IS_TRUE;
 }
 
+/* $context->getLoopHeads() ?? new ConvergedLoopHeads(); false = pending
+ * exception */
+[[nodiscard]] inline bool contextLoopHeads(zval *context, zv::Val &out)
+{
+	zv::Val heads = pt_statement_context_get_loop_heads(context);
+	if (UNEXPECTED(heads.isUndef())) return false;
+	if (heads.isNull()) heads = pt_converged_loop_heads_new();
+	if (UNEXPECTED(heads.isUndef())) return false;
+	out = std::move(heads);
+	return true;
+}
+
 } // namespace ptlh
 
 #endif /* PHPSTANTURBO_LOOP_HANDLER_CALLS_H */

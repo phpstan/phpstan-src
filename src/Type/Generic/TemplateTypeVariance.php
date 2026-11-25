@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type\Generic;
 
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\PhpDocParser\Ast\Type\GenericTypeNode;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
@@ -220,9 +221,12 @@ final class TemplateTypeVariance
 			if (!$result) {
 				$isSuperType = $a->isSuperTypeOf($b)->yes();
 				// invariant arguments are the same type when each is a subtype of the other;
-				// an unresolved template argument stays opaque here - it never equals its delegate
+				// an unresolved template argument stays opaque here - it never equals its delegate.
+				// Legacy array shapes are open as subtypes and closed as supertypes, so array{a: int}
+				// and array{a: int, b?: int} would be subtypes of each other without bleeding edge
 				if (
 					$isSuperType
+					&& BleedingEdgeToggle::isBleedingEdge()
 					&& !UnresolvedTemplateArgumentFinder::contains($a)
 					&& !UnresolvedTemplateArgumentFinder::contains($b)
 					&& $b->isSuperTypeOf($a)->yes()

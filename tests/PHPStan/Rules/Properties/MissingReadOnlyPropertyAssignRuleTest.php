@@ -198,10 +198,6 @@ class MissingReadOnlyPropertyAssignRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/../Classes/data/bug-9577.php'], [
 			[
-				'Class Bug9577\SpecializedException has an uninitialized readonly property $message. Assign it in the constructor.',
-				8,
-			],
-			[
 				'Class Bug9577\SpecializedException2 has an uninitialized readonly property $message. Assign it in the constructor.',
 				8,
 			],

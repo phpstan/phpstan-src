@@ -470,3 +470,32 @@ class InitializedInPrivateSetterWithReturnNever
 	}
 
 }
+
+class InitializedInProtectedSetterThatMayBeOverridden
+{
+
+	private float $amount;
+
+	private string $currency;
+
+	public function __construct(float $amount, string $currency)
+	{
+		$this->setAmount($amount, $currency);
+		echo $this->amount;
+	}
+
+	protected function setAmount(float $amount, string $currency): void
+	{
+		if ($currency !== 'USD') {
+			throw new \LogicException('USD only');
+		}
+		$this->amount = $amount;
+		$this->currency = $currency;
+	}
+
+	public function getAmount(): float
+	{
+		return $this->currency === 'USD' ? $this->amount : 0.0;
+	}
+
+}

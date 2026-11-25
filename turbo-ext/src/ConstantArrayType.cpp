@@ -4969,14 +4969,11 @@ public:
 			return true;
 		}
 
-		bool failOnDifferentValueType = keyTypesCount != otherKeyTypesCount || keyTypesCount < 2;
-
+		/* the keys decide most pairs, so they are checked before the values,
+		 * whose isSuperTypeOf() costs far more */
 		zv::Val keyIndexMap = getKeyIndexMap();
 		if (UNEXPECTED(keyIndexMap.isUndef())) return false;
-		zv::Arr otherKeyValues = zv::Arr::create((uint32_t) otherKeyTypesCount);
-
 		for (zv::ArrayEntry entry : zv::ArrRef(otherK)) {
-			zend_long j = (zend_long) entry.indexKey();
 			zv::Val keyValueZv = keyValue(entry.value().deref().raw());
 			if (UNEXPECTED(keyValueZv.isUndef())) return false;
 			zval *iZv = mapFind(Z_ARRVAL_P(keyIndexMap.raw()), keyValueZv.raw());
@@ -4984,11 +4981,33 @@ public:
 				out = false;
 				return true;
 			}
+		}
 
-			zval trueZv;
-			ZVAL_TRUE(&trueZv);
-			if (UNEXPECTED(!mapSet(otherKeyValues.table(), keyValueZv.raw(), &trueZv))) return false;
+		zv::Val otherKeyIndexMap = ConstantArrayType(other).getKeyIndexMap();
+		if (UNEXPECTED(otherKeyIndexMap.isUndef())) return false;
+		zend_long requiredKeyCount = 0;
+		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
+			zend_long i = (zend_long) entry.indexKey();
+			zv::Val keyValueZv = keyValue(entry.value().deref().raw());
+			if (UNEXPECTED(keyValueZv.isUndef())) return false;
+			if (mapFind(Z_ARRVAL_P(otherKeyIndexMap.raw()), keyValueZv.raw()) != NULL) continue;
+			bool optional;
+			if (UNEXPECTED(!thisIsOptionalKey(i, optional))) return false;
+			if (optional) continue;
 
+			requiredKeyCount++;
+			if (requiredKeyCount > 1) {
+				out = false;
+				return true;
+			}
+		}
+
+		bool failOnDifferentValueType = keyTypesCount != otherKeyTypesCount || keyTypesCount < 2;
+		for (zv::ArrayEntry entry : zv::ArrRef(otherK)) {
+			zend_long j = (zend_long) entry.indexKey();
+			zv::Val keyValueZv = keyValue(entry.value().deref().raw());
+			if (UNEXPECTED(keyValueZv.isUndef())) return false;
+			zval *iZv = mapFind(Z_ARRVAL_P(keyIndexMap.raw()), keyValueZv.raw());
 			zval *valueType = arrayIndexObject(v, Z_LVAL_P(iZv), "valueTypes");
 			zval *otherValueType = valueType != NULL ? arrayIndexObject(otherV, j, "valueTypes") : NULL;
 			if (UNEXPECTED(otherValueType == NULL)) return false;
@@ -5001,23 +5020,6 @@ public:
 				return true;
 			}
 			failOnDifferentValueType = true;
-		}
-
-		zend_long requiredKeyCount = 0;
-		for (zv::ArrayEntry entry : zv::ArrRef(k)) {
-			zend_long i = (zend_long) entry.indexKey();
-			zv::Val keyValueZv = keyValue(entry.value().deref().raw());
-			if (UNEXPECTED(keyValueZv.isUndef())) return false;
-			if (mapFind(otherKeyValues.table(), keyValueZv.raw()) != NULL) continue;
-			bool optional;
-			if (UNEXPECTED(!thisIsOptionalKey(i, optional))) return false;
-			if (optional) continue;
-
-			requiredKeyCount++;
-			if (requiredKeyCount > 1) {
-				out = false;
-				return true;
-			}
 		}
 
 		out = true;

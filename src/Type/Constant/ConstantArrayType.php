@@ -3155,35 +3155,19 @@ class ConstantArrayType implements Type
 			return $keyTypesCount === 0;
 		}
 
-		$failOnDifferentValueType = $keyTypesCount !== $otherKeyTypesCount || $keyTypesCount < 2;
-
+		// The keys decide most pairs, so they are checked before the values,
+		// whose isSuperTypeOf() costs far more.
 		$keyIndexMap = $this->getKeyIndexMap();
-		$otherKeyValues = [];
-
-		foreach ($otherArray->keyTypes as $j => $keyType) {
-			$keyValue = $keyType->getValue();
-			$i = $keyIndexMap[$keyValue] ?? null;
-			if ($i === null) {
+		foreach ($otherArray->keyTypes as $keyType) {
+			if (!isset($keyIndexMap[$keyType->getValue()])) {
 				return false;
 			}
-
-			$otherKeyValues[$keyValue] = true;
-
-			$valueType = $this->valueTypes[$i];
-			$otherValueType = $otherArray->valueTypes[$j];
-			if (!$otherValueType->isSuperTypeOf($valueType)->no()) {
-				continue;
-			}
-
-			if ($failOnDifferentValueType) {
-				return false;
-			}
-			$failOnDifferentValueType = true;
 		}
 
+		$otherKeyIndexMap = $otherArray->getKeyIndexMap();
 		$requiredKeyCount = 0;
 		foreach ($this->keyTypes as $i => $keyType) {
-			if (isset($otherKeyValues[$keyType->getValue()])) {
+			if (isset($otherKeyIndexMap[$keyType->getValue()])) {
 				continue;
 			}
 			if ($this->isOptionalKey($i)) {
@@ -3194,6 +3178,20 @@ class ConstantArrayType implements Type
 			if ($requiredKeyCount > 1) {
 				return false;
 			}
+		}
+
+		$failOnDifferentValueType = $keyTypesCount !== $otherKeyTypesCount || $keyTypesCount < 2;
+		foreach ($otherArray->keyTypes as $j => $keyType) {
+			$valueType = $this->valueTypes[$keyIndexMap[$keyType->getValue()]];
+			$otherValueType = $otherArray->valueTypes[$j];
+			if (!$otherValueType->isSuperTypeOf($valueType)->no()) {
+				continue;
+			}
+
+			if ($failOnDifferentValueType) {
+				return false;
+			}
+			$failOnDifferentValueType = true;
 		}
 
 		return true;

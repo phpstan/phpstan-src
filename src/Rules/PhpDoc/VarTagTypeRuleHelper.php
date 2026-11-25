@@ -225,6 +225,9 @@ final class VarTagTypeRuleHelper
 				return $isAtLeastMaybeSuperTypeOf;
 			}
 
+			// the outer type already proves the @var narrows it; comparing iterable
+			// value types now could only produce false positives, e.g. native
+			// static(Foo<T>) iterates T while @var static<string> iterates string
 			if ($type->isSuperTypeOf($varTagType)->yes()) {
 				return IsSuperTypeOfResult::createYes();
 			}

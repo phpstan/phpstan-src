@@ -6,6 +6,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PHPStan\Analyser\ArgumentsNormalizer;
 use PHPStan\Analyser\Scope;
+use PHPStan\DependencyInjection\AutowiredParameter;
 use PHPStan\DependencyInjection\RegisteredRule;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
@@ -28,6 +29,8 @@ final class ParameterCastableToStringRule implements Rule
 	public function __construct(
 		private ReflectionProvider $reflectionProvider,
 		private ParameterCastableToStringCheck $parameterCastableToStringCheck,
+		#[AutowiredParameter(ref: '%featureToggles.checkMoreParameterCastableToStringFunctions%')]
+		private bool $checkMoreFunctions,
 	)
 	{
 	}
@@ -65,12 +68,27 @@ final class ParameterCastableToStringRule implements Rule
 			'proc_open' => [0, 4],
 			'pcntl_exec' => [1, 2],
 		];
+		$checkMoreFunctionsOnly = [
+			'array_diff_uassoc',
+			'array_intersect_uassoc',
+			'strtr',
+			'substr_replace',
+			'preg_grep',
+			'preg_replace_callback_array',
+			'setlocale',
+			'proc_open',
+			'pcntl_exec',
+		];
 
 		if (
 			!in_array($functionName, $checkAllArgsFunctions, true)
 			&& !in_array($functionName, $checkAllArgsExceptLastFunctions, true)
 			&& !array_key_exists($functionName, $checkArgsFunctions)
 		) {
+			return [];
+		}
+
+		if (!$this->checkMoreFunctions && in_array($functionName, $checkMoreFunctionsOnly, true)) {
 			return [];
 		}
 

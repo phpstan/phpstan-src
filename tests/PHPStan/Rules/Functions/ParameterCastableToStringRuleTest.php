@@ -17,6 +17,8 @@ use const PHP_VERSION_ID;
 class ParameterCastableToStringRuleTest extends RuleTestCase
 {
 
+	private bool $checkMoreFunctions = true;
+
 	protected function getRule(): Rule
 	{
 		$broker = self::createReflectionProvider();
@@ -31,7 +33,7 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 				checkBenevolentUnionTypes: false,
 				discoveringSymbolsTip: true,
 			),
-		));
+		), $this->checkMoreFunctions);
 	}
 
 	public function testRule(): void
@@ -285,6 +287,13 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 				55,
 			],
 		]);
+	}
+
+	#[RequiresPhp('>= 8.0')]
+	public function testBug15800WithoutBleedingEdge(): void
+	{
+		$this->checkMoreFunctions = false;
+		$this->analyse([__DIR__ . '/data/bug-15800.php'], []);
 	}
 
 	/**

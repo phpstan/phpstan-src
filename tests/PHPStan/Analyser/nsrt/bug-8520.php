@@ -12,4 +12,4 @@ for ($i = 0; $i < 7; $i++) {
 	}
 }
 
-assertType('int<7, max>', $i);
+assertType('7', $i);

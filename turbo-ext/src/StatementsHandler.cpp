@@ -46,7 +46,7 @@ namespace stateSlots = ptdecl::StatementListWalkState::slot;
 zend_class_entry *pt_ce_statements_handler = nullptr;
 
 /* NodeScopeResolver::LOOP_SCOPE_ITERATIONS / ::GENERALIZE_AFTER_ITERATION */
-#define PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT 3
+#define PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT 10
 #define PT_SH_GENERALIZE_AFTER_ITERATION_LIMIT 1
 /* the twin's STATIC_WALK_* kinds of the last static-variable walk's log */
 #define PT_SH_STATIC_WALK_WALKED 0

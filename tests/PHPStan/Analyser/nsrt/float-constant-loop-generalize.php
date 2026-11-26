@@ -90,5 +90,5 @@ function toggled(array $items): void
 	foreach ($items as $item) {
 		$sign = -$sign;
 	}
-	assertType('float<min, max>', $sign);
+	assertType('-1.0|1.0', $sign);
 }

@@ -431,7 +431,7 @@ function () {
 							assertVariableCertainty(TrinaryLogic::createYes(), $ternaryMatches);
 							assertType('array{string}', $ternaryMatches);
 							assertVariableCertainty(TrinaryLogic::createYes(), $previousI);
-							assertType('int<1, max>', $previousI);
+							assertType('1', $previousI);
 							assertVariableCertainty(TrinaryLogic::createYes(), $previousJ);
 							assertType('0', $previousJ);
 							assertVariableCertainty(TrinaryLogic::createYes(), $frame);

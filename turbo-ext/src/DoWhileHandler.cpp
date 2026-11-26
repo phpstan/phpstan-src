@@ -73,6 +73,7 @@ public:
 		bool treatPhpDocTypesAsCertain = ptlh::boolSlot(self, slots::treatPhpDocTypesAsCertain);
 		zv::Val finalScope = zv::Val::null();
 		zv::Val bodyScope = zv::Val::copyOf(zv::Ref(scope));
+		zv::Val writtenVariableNames;
 		zend_long count = 0;
 		bool isTopLevel;
 		if (UNEXPECTED(!pt_statement_context_is_top_level(context, isTopLevel))) return zv::Val();
@@ -195,12 +196,15 @@ public:
 					zv::Args flows{bodyFlow, condFlow.raw()};
 					zv::Val passFlow = pt_variable_flow_sequence(2, flows);
 					if (UNEXPECTED(passFlow.isUndef())) return zv::Val();
-					bodyScope = ptlh::generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow.raw());
+					bodyScope = ptlh::generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow.raw(), loopEntryScope.raw(), writtenVariableNames);
 					if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 				}
 				count++;
 			} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
 			bool iterationLimitReached = count >= PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT;
+			/* the limit is only a safety net (PHP twin) */
+			bodyScope = ptlh::forgetIfLimitReached(std::move(bodyScope), count, writtenVariableNames);
+			if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 
 			/* a non-converged body state keeps no vacuous conditionals (PHP mirror) */
 			if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), !iterationLimitReached);

@@ -214,6 +214,7 @@ final class ForHandler implements StmtHandler
 					$bodyScope = $loopEntryScope;
 				}
 			}
+			$writtenVariableNames = null;
 			$count = 0;
 			// each pass after the first re-walks only the statements whose
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
@@ -274,11 +275,17 @@ final class ForHandler implements StmtHandler
 				}
 
 				if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith($bodyScope, LoopWrittenVariableNames::collect($stmt, VariableFlow::sequence(...$passFlows)));
+					$writtenVariableNames = LoopWrittenVariableNames::collect($stmt, VariableFlow::sequence(...$passFlows));
+					$bodyScope = $prevScope->generalizeWith($bodyScope, $writtenVariableNames, $loopEntryScope);
 				}
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
 			$iterationLimitReached = $count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS;
+			if ($iterationLimitReached) {
+				// the limit is only a safety net - a scope still changing after it
+				// is not a fixpoint, so nothing the loop writes keeps a type
+				$bodyScope = $bodyScope->forgetLoopWrittenVariables($writtenVariableNames);
+			}
 		}
 
 		$storage = $originalStorage;
@@ -329,7 +336,7 @@ final class ForHandler implements StmtHandler
 			$dependencies[] = $loopResult->getDependencies();
 			$loopScope = $loopResult->getScope();
 		}
-		$finalScope = $finalScope->generalizeWith($loopScope);
+		$finalScope = $loopScope;
 
 		if ($lastCondExpr !== null) {
 			// the loop condition narrows the post-loop scope to its falsey branch,

@@ -149,6 +149,7 @@ public:
 				if (UNEXPECTED(loopEntryScope.isUndef())) return zv::Val();
 				if (Z_OBJ_P(loopEntryScope.raw()) != Z_OBJ_P(scope.raw())) bodyScope = zv::Val::copyOf(loopEntryScope.ref());
 			}
+			zv::Val writtenVariableNames;
 			zend_long count = 0;
 			zval *stmts = ptsh::readNodeProperty(pt_wh_stmts_site, stmt, PT_LC("stmts"));
 			if (UNEXPECTED(stmts == NULL)) return zv::Val();
@@ -237,12 +238,15 @@ public:
 					zv::Args flows{condFlow.raw(), bodyFlow};
 					zv::Val passFlow = pt_variable_flow_sequence(2, flows);
 					if (UNEXPECTED(passFlow.isUndef())) return zv::Val();
-					bodyScope = ptlh::generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow.raw());
+					bodyScope = ptlh::generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow.raw(), loopEntryScope.raw(), writtenVariableNames);
 					if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 				}
 				count++;
 			} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
 			iterationLimitReached = count >= PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT;
+			/* the limit is only a safety net (PHP twin) */
+			bodyScope = ptlh::forgetIfLimitReached(std::move(bodyScope), count, writtenVariableNames);
+			if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 		}
 
 		/* a non-converged body state keeps no vacuous conditionals (PHP mirror) */

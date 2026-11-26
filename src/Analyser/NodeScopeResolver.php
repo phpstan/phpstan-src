@@ -63,7 +63,7 @@ use function sprintf;
 class NodeScopeResolver
 {
 
-	public const LOOP_SCOPE_ITERATIONS = 3;
+	public const LOOP_SCOPE_ITERATIONS = 10;
 	public const GENERALIZE_AFTER_ITERATION = 1;
 
 	/** @var array<string, true> filePath(string) => bool(true) */

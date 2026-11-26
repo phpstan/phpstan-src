@@ -510,6 +510,7 @@ public:
 					if (UNEXPECTED(loopEntryScope.isUndef())) return zv::Val();
 					if (Z_OBJ_P(loopEntryScope.raw()) != Z_OBJ_P(nonEmptyIterateeScope.raw())) bodyScope = zv::Val::copyOf(loopEntryScope.ref());
 				}
+				zv::Val writtenVariableNames;
 				zend_long count = 0;
 				zv::Val prevEntryScope;
 				// each pass after the first re-walks only the statements whose
@@ -583,12 +584,15 @@ public:
 						zv::Val flowHold;
 						zval *passFlow = pt_internal_statement_result_variable_flow(bodyScopeResult.raw(), flowHold);
 						if (UNEXPECTED(passFlow == NULL)) return zv::Val();
-						bodyScope = ptlh::generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow);
+						bodyScope = ptlh::generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow, loopEntryScope.raw(), writtenVariableNames);
 						if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 					}
 					count++;
 				} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
 				iterationLimitReached = count >= PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT;
+				/* the limit is only a safety net (PHP twin) */
+				bodyScope = ptlh::forgetIfLimitReached(std::move(bodyScope), count, writtenVariableNames);
+				if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 			}
 		}
 

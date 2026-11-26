@@ -376,8 +376,7 @@ final class ClosureProcessor
 		$nodeScopeResolver->pushNodeGatherer($closureStmtsGatherer);
 		try {
 			if (
-				$replayBodyRecording !== null && $replayPassStorage !== null
-				&& $replayPassResult !== null && $replayEntryScope !== null
+				$replayBodyRecording !== null
 				&& $closureScope->equals($replayEntryScope)
 			) {
 				// the final walk would repeat the recorded fixpoint pass exactly

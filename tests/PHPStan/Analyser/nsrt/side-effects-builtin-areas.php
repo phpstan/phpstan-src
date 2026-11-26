@@ -19,11 +19,11 @@ class Foo
 		}
 	}
 
-	public function seedingWritesGlobalState(): void
+	public function seedingWritesOnlyTheRandomState(): void
 	{
 		if (ini_get('precision') === '14') {
 			mt_srand(1);
-			assertType('numeric-string', ini_get('precision'));
+			assertType("'14'", ini_get('precision'));
 		}
 		if (error_reporting() === 0) {
 			error_reporting(E_ALL);
@@ -65,6 +65,159 @@ class Foo
 		assertType('string', ini_get('x'));
 
 		return true;
+	}
+
+	/**
+	 * they write only the state of the seeded random number generator
+	 *
+	 * @param list<int> $a
+	 * @param non-empty-list<string> $list
+	 */
+	public function seededRandomKeepsOtherGlobalState(string $case, string $file, array $a, array $list): void
+	{
+		if ($case === 'mt_rand') {
+			if (ini_get('x') === false) {
+				return;
+			}
+			if (!is_file($file)) {
+				return;
+			}
+			if (!isset($_GET['q']) || !is_string($_GET['q'])) {
+				return;
+			}
+
+			mt_rand();
+
+			assertType('string', ini_get('x'));
+			assertType('true', is_file($file));
+			assertType('string', $_GET['q']);
+		}
+
+		if ($case === 'rand') {
+			if (ini_get('x') === false) {
+				return;
+			}
+			if (!is_file($file)) {
+				return;
+			}
+			if (!isset($_GET['q']) || !is_string($_GET['q'])) {
+				return;
+			}
+
+			rand();
+
+			assertType('string', ini_get('x'));
+			assertType('true', is_file($file));
+			assertType('string', $_GET['q']);
+		}
+
+		if ($case === 'mt_srand') {
+			if (ini_get('x') === false) {
+				return;
+			}
+			if (!is_file($file)) {
+				return;
+			}
+			if (!isset($_GET['q']) || !is_string($_GET['q'])) {
+				return;
+			}
+
+			mt_srand(1);
+
+			assertType('string', ini_get('x'));
+			assertType('true', is_file($file));
+			assertType('string', $_GET['q']);
+		}
+
+		if ($case === 'srand') {
+			if (ini_get('x') === false) {
+				return;
+			}
+			if (!is_file($file)) {
+				return;
+			}
+			if (!isset($_GET['q']) || !is_string($_GET['q'])) {
+				return;
+			}
+
+			srand(1);
+
+			assertType('string', ini_get('x'));
+			assertType('true', is_file($file));
+			assertType('string', $_GET['q']);
+		}
+
+		if ($case === 'shuffle') {
+			if (ini_get('x') === false) {
+				return;
+			}
+			if (!is_file($file)) {
+				return;
+			}
+			if (!isset($_GET['q']) || !is_string($_GET['q'])) {
+				return;
+			}
+
+			shuffle($a);
+
+			assertType('string', ini_get('x'));
+			assertType('true', is_file($file));
+			assertType('string', $_GET['q']);
+		}
+
+		if ($case === 'str_shuffle') {
+			if (ini_get('x') === false) {
+				return;
+			}
+			if (!is_file($file)) {
+				return;
+			}
+			if (!isset($_GET['q']) || !is_string($_GET['q'])) {
+				return;
+			}
+
+			str_shuffle('ab');
+
+			assertType('string', ini_get('x'));
+			assertType('true', is_file($file));
+			assertType('string', $_GET['q']);
+		}
+
+		if ($case === 'array_rand') {
+			if (ini_get('x') === false) {
+				return;
+			}
+			if (!is_file($file)) {
+				return;
+			}
+			if (!isset($_GET['q']) || !is_string($_GET['q'])) {
+				return;
+			}
+
+			array_rand($list);
+
+			assertType('string', ini_get('x'));
+			assertType('true', is_file($file));
+			assertType('string', $_GET['q']);
+		}
+
+		if ($case === 'lcg_value') {
+			if (ini_get('x') === false) {
+				return;
+			}
+			if (!is_file($file)) {
+				return;
+			}
+			if (!isset($_GET['q']) || !is_string($_GET['q'])) {
+				return;
+			}
+
+			lcg_value();
+
+			assertType('string', ini_get('x'));
+			assertType('true', is_file($file));
+			assertType('string', $_GET['q']);
+		}
 	}
 
 	public function randomResultsAreNotRemembered(): void

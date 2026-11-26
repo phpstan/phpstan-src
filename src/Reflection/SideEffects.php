@@ -70,6 +70,15 @@ final class SideEffects
 	public const READS_GLOBAL_SESSION = 'reads-global.session';
 
 	/**
+	 * The state of the seeded random number generator, which mt_srand() and
+	 * srand() seed and mt_rand(), rand(), shuffle(), str_shuffle() and
+	 * array_rand() advance. No call that reads it is remembered, so writing it
+	 * forgets nothing; it keeps a call that only advances it, such as rand(),
+	 * on its own line from being reported as having no effect.
+	 */
+	public const WRITES_GLOBAL_RANDOM = 'writes-global.random';
+
+	/**
 	 * The last error of an extension, which its error getters read. Writing it
 	 * is allowed in pure functions and makes a call on its own line useful.
 	 */

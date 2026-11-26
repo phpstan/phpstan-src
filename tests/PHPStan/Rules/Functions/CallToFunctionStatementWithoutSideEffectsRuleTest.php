@@ -202,6 +202,16 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testAdvancingHandles(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-advancing-handles.php'], [
+			[
+				'Call to function curl_multi_getcontent() on a separate line has no effect.',
+				11,
+			],
+		]);
+	}
+
 	public function testCallbackAfterArrays(): void
 	{
 		$this->analyse([__DIR__ . '/data/function-call-callback-after-arrays.php'], [

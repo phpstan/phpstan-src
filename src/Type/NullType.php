@@ -458,4 +458,14 @@ class NullType implements ConstantScalarType
 		return ValueSet::createNull();
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 }

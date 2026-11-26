@@ -522,6 +522,10 @@ PT_MINIT_REGISTRATION(pt_register_has_offset_type)
 	/* "offsetType" must stay the first declared property (slots::offsetType) */
 	ptdecl::HasOffsetType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType;
 		if (!zp::parse<zp::Zval>(execute_data, offsetType)) RETURN_THROWS();

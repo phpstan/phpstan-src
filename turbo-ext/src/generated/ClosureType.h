@@ -269,7 +269,10 @@ inline constexpr char strings[] =
 	"toNativePhpTypeNode\0" /* 3459 */
 	"hasTemplateOrLateResolvableType\0" /* 3479 */
 	"PHPStan\\Type\\ValueSet\0" /* 3511 */
-	"toValueSet"; /* 3533 */
+	"toValueSet\0" /* 3533 */
+	"otherType\0" /* 3544 */
+	"tryUnion\0" /* 3554 */
+	"tryIntersect"; /* 3563 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_NULL | MAY_BE_ARRAY, reg::NoString, false, false, 11), /* __construct $parameters */
 	reg::packed(16, MAY_BE_NULL, 27, false, false, 11), /* __construct $returnType */
@@ -457,6 +460,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(3418, 0, 3427), /* toNativePhpTypeNode $position */
 	reg::packed(450, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 	reg::packed(450, 0, 3511), /* toValueSet return */
+	reg::packed(3544, 0, 27), /* tryUnion $otherType */
+	reg::packed(450, MAY_BE_NULL, 27), /* tryUnion return */
+	reg::packed(3544, 0, 27), /* tryIntersect $otherType */
+	reg::packed(450, MAY_BE_NULL, 27), /* tryIntersect return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -581,6 +588,8 @@ inline constexpr sigtab::Sig toPhpDocNode = { { 3405 /* toPhpDocNode */, 0, 182,
 inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3459 /* toNativePhpTypeNode */, 1, 183, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3479 /* hasTemplateOrLateResolvableType */, 0, 184, 0, 184, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toValueSet = { { 3533 /* toValueSet */, 0, 185, 0, 185, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryUnion = { { 3554 /* tryUnion */, 1, 186, 1, 187, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 3563 /* tryIntersect */, 1, 188, 1, 189, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ClosureType

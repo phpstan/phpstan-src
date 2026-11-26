@@ -3932,4 +3932,14 @@ class ConstantArrayType implements Type
 		return $this->unsealed[0]->hasUnresolvedTemplateArgumentType() || $this->unsealed[1]->hasUnresolvedTemplateArgumentType();
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 }

@@ -308,6 +308,10 @@ PT_MINIT_REGISTRATION(pt_register_accessory_literal_string_type)
 	ptdecl::AccessoryLiteralStringType::declareClass(cls);
 	ptdecl::AccessoryLiteralStringType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
 	/* mirrors getStringRefinement() */
 	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<PT_STRING_CELLS_LITERAL>);
 	/* mirrors toValueSet() */

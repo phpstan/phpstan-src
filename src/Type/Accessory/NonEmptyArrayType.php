@@ -594,4 +594,14 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		return ValueSet::createArrays($this);
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 }

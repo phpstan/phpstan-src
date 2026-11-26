@@ -7545,6 +7545,10 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantArrayType");
 	ptdecl::ConstantArrayType::declareClass(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
 	/* the slots PT_CAT_PROP_*: the eleven class-body properties first, the
 	 * four promoted constructor properties after them, then the memos of
 	 * getOffsetValueType()'s normalized values and of generalize() (unused

@@ -392,4 +392,14 @@ class FloatType implements Type
 		return ValueSet::createNumbers($this->toNumberSet());
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 }

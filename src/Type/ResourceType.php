@@ -159,4 +159,14 @@ class ResourceType implements Type
 		return ValueSet::createResources();
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 }

@@ -1060,6 +1060,10 @@ PT_MINIT_REGISTRATION(pt_register_callable_type)
 	/* the slots must stay in this order (PT_CT_PROP_*) */
 	ptdecl::CallableType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
 	/* mirrors getStringRefinement() */
 	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 

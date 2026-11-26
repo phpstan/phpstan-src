@@ -249,6 +249,10 @@ PT_MINIT_REGISTRATION(pt_register_integer_type)
 	ptdecl::IntegerType::declareClass(cls);
 	ptdecl::IntegerType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
 	/* mirrors toExactNumberSet() */
 	cls.method(sigs::toExactNumberSet, pt_type_exact_number_set_handler);
 	/* mirrors toValueSet() */

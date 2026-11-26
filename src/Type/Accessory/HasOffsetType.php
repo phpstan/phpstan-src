@@ -499,4 +499,14 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return $this->offsetType->hasUnresolvedTemplateArgumentType();
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 }

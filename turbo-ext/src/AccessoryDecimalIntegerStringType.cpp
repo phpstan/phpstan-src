@@ -559,6 +559,10 @@ PT_MINIT_REGISTRATION(pt_register_accessory_decimal_integer_string_type)
 	/* "inverse" must stay the first declared property (slots::inverse) */
 	ptdecl::AccessoryDecimalIntegerStringType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
 	/* mirrors getStringRefinement() */
 	cls.method(sigs::getStringRefinement, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

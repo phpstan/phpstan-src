@@ -197,6 +197,38 @@ void ZEND_FASTCALL pt_type_null_handler(INTERNAL_FUNCTION_PARAMETERS)
 	RETURN_NULL();
 }
 
+void ZEND_FASTCALL pt_type_try_null_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *otherType;
+	ZEND_PARSE_PARAMETERS_START(1, 1)
+		Z_PARAM_OBJECT(otherType)
+	ZEND_PARSE_PARAMETERS_END();
+	(void) otherType;
+	RETURN_NULL();
+}
+
+static void subtractionTry(INTERNAL_FUNCTION_PARAMETERS, const char *lcname, size_t len)
+{
+	zval *otherType;
+	ZEND_PARSE_PARAMETERS_START(1, 1)
+		Z_PARAM_OBJECT(otherType)
+	ZEND_PARSE_PARAMETERS_END();
+	zval argv[2];
+	ZVAL_OBJ(&argv[0], Z_OBJ_P(ZEND_THIS));
+	ZVAL_COPY_VALUE(&argv[1], otherType);
+	PT_RETURN_VAL(pt_type_call_static(PT_CLASS_SUBTRACTION_ALGEBRA, lcname, len, 2, argv));
+}
+
+void ZEND_FASTCALL pt_type_subtraction_try_union_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	subtractionTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("tryunion"));
+}
+
+void ZEND_FASTCALL pt_type_subtraction_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	subtractionTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("tryintersect"));
+}
+
 void ZEND_FASTCALL pt_type_exact_number_set_handler(INTERNAL_FUNCTION_PARAMETERS)
 {
 	ZEND_PARSE_PARAMETERS_NONE();
@@ -1652,6 +1684,8 @@ void ZEND_FASTCALL pt_type_trait_substractable_describe_subtracted_type(INTERNAL
 void pt_type_trait_substractable(reg::Class &cls)
 {
 	namespace sigs = ptdecl::SubstractableTypeTrait::sig;
+	cls.traitMethod(sigs::tryUnion, pt_type_subtraction_try_union_handler);
+	cls.traitMethod(sigs::tryIntersect, pt_type_subtraction_try_intersect_handler);
 	cls.traitMethod(sigs::describeSubtractedType, pt_type_trait_substractable_describe_subtracted_type);
 }
 
@@ -3971,6 +4005,8 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 	cls.traitMethod(sigs::isSmallerThanOrEqual, lrDelegate);
 	cls.traitMethod(sigs::getKindMask, lrDelegate);
 	cls.traitOp(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_GET_KIND_MASK, argc, argv); });
+	cls.traitMethod(sigs::tryUnion, pt_type_try_null_handler);
+	cls.traitMethod(sigs::tryIntersect, pt_type_try_null_handler);
 	cls.traitMethod(sigs::isNull, lrDelegate);
 	cls.traitMethod(sigs::isConstantValue, lrDelegate);
 	cls.traitMethod(sigs::isConstantScalarValue, lrDelegate);

@@ -533,6 +533,8 @@ enum {
 	PT_CLASS_CLOSURE_ORIGIN,
 	PT_CLASS_CLOSURE_ORIGIN_CALL_REPLAY,
 	PT_CLASS_TYPE_COMBINATOR,
+	/* tryUnion() and tryIntersect() of the subtractable types */
+	PT_CLASS_SUBTRACTION_ALGEBRA,
 	PT_CLASS_COUNT
 };
 

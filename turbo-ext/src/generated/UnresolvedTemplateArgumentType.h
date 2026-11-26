@@ -256,7 +256,9 @@ inline constexpr char strings[] =
 	"positionVariance\0" /* 3771 */
 	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 3788 */
 	"getReferencedTemplateTypes\0" /* 3830 */
-	"toAbsoluteNumber"; /* 3857 */
+	"toAbsoluteNumber\0" /* 3857 */
+	"tryUnion\0" /* 3874 */
+	"tryIntersect"; /* 3883 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* __construct $site */
 	reg::packed(25, 0, 38), /* __construct $templateType */
@@ -506,6 +508,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(3771, 0, 3788), /* getReferencedTemplateTypes $positionVariance */
 	reg::packed(114, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
 	reg::packed(114, 0, 84), /* toAbsoluteNumber return */
+	reg::packed(514, 0, 84), /* tryUnion $otherType */
+	reg::packed(114, MAY_BE_NULL, 84), /* tryUnion return */
+	reg::packed(514, 0, 84), /* tryIntersect $otherType */
+	reg::packed(114, MAY_BE_NULL, 84), /* tryIntersect return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -664,6 +670,8 @@ inline constexpr sigtab::Sig getTemplateType = { { 3686 /* getTemplateType */, 2
 inline constexpr sigtab::Sig inferTemplateTypes = { { 3752 /* inferTemplateTypes */, 1, 243, 1, 244, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 3830 /* getReferencedTemplateTypes */, 1, 245, 1, 246, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toAbsoluteNumber = { { 3857 /* toAbsoluteNumber */, 0, 247, 0, 247, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryUnion = { { 3874 /* tryUnion */, 1, 248, 1, 249, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 3883 /* tryIntersect */, 1, 250, 1, 251, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::UnresolvedTemplateArgumentType

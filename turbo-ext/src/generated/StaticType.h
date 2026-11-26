@@ -228,20 +228,23 @@ inline constexpr char strings[] =
 	"getTypeWithoutSubtractedType\0" /* 3167 */
 	"changeSubtractedType\0" /* 3196 */
 	"getSubtractedType\0" /* 3217 */
-	"typeToRemove\0" /* 3235 */
-	"tryRemove\0" /* 3248 */
-	"exponent\0" /* 3258 */
-	"arithmeticPower\0" /* 3267 */
-	"getFiniteTypes\0" /* 3283 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3298 */
-	"toPhpDocNode\0" /* 3337 */
-	"position\0" /* 3350 */
-	"PHPStan\\Type\\NativeTypePosition\0" /* 3359 */
-	"toNativePhpTypeNode\0" /* 3391 */
-	"hasTemplateOrLateResolvableType\0" /* 3411 */
-	"hasUnresolvedTemplateArgumentType\0" /* 3443 */
-	"PHPStan\\Type\\ValueSet\0" /* 3477 */
-	"toValueSet"; /* 3499 */
+	"otherType\0" /* 3235 */
+	"tryUnion\0" /* 3245 */
+	"tryIntersect\0" /* 3254 */
+	"typeToRemove\0" /* 3267 */
+	"tryRemove\0" /* 3280 */
+	"exponent\0" /* 3290 */
+	"arithmeticPower\0" /* 3299 */
+	"getFiniteTypes\0" /* 3315 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3330 */
+	"toPhpDocNode\0" /* 3369 */
+	"position\0" /* 3382 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 3391 */
+	"toNativePhpTypeNode\0" /* 3423 */
+	"hasTemplateOrLateResolvableType\0" /* 3443 */
+	"hasUnresolvedTemplateArgumentType\0" /* 3475 */
+	"PHPStan\\Type\\ValueSet\0" /* 3509 */
+	"toValueSet"; /* 3531 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 16), /* __construct $classReflection */
 	reg::packed(51, MAY_BE_NULL, 66, false, false, 84), /* __construct $subtractedType */
@@ -447,17 +450,21 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(51, MAY_BE_NULL, 66), /* changeSubtractedType $subtractedType */
 	reg::packed(101, 0, 66), /* changeSubtractedType return */
 	reg::packed(101, MAY_BE_NULL, 66), /* getSubtractedType return */
-	reg::packed(3235, 0, 66), /* tryRemove $typeToRemove */
+	reg::packed(3235, 0, 66), /* tryUnion $otherType */
+	reg::packed(101, MAY_BE_NULL, 66), /* tryUnion return */
+	reg::packed(3235, 0, 66), /* tryIntersect $otherType */
+	reg::packed(101, MAY_BE_NULL, 66), /* tryIntersect return */
+	reg::packed(3267, 0, 66), /* tryRemove $typeToRemove */
 	reg::packed(101, MAY_BE_NULL, 66), /* tryRemove return */
-	reg::packed(3258, 0, 66), /* arithmeticPower $exponent */
+	reg::packed(3290, 0, 66), /* arithmeticPower $exponent */
 	reg::packed(2645, 0, 2656), /* arithmeticPower $phpVersion */
 	reg::packed(101, 0, 66), /* arithmeticPower return */
 	reg::packed(101, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(101, 0, 3298), /* toPhpDocNode return */
-	reg::packed(3350, 0, 3359), /* toNativePhpTypeNode $position */
+	reg::packed(101, 0, 3330), /* toPhpDocNode return */
+	reg::packed(3382, 0, 3391), /* toNativePhpTypeNode $position */
 	reg::packed(101, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 	reg::packed(101, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
-	reg::packed(101, 0, 3477), /* toValueSet return */
+	reg::packed(101, 0, 3509), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -594,14 +601,16 @@ inline constexpr sigtab::Sig subtract = { { 3158 /* subtract */, 1, 198, 1, 199,
 inline constexpr sigtab::Sig getTypeWithoutSubtractedType = { { 3167 /* getTypeWithoutSubtractedType */, 0, 200, 0, 200, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig changeSubtractedType = { { 3196 /* changeSubtractedType */, 1, 201, 1, 202, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getSubtractedType = { { 3217 /* getSubtractedType */, 0, 203, 0, 203, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryRemove = { { 3248 /* tryRemove */, 1, 204, 1, 205, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticPower = { { 3267 /* arithmeticPower */, 2, 206, 2, 208, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 3283 /* getFiniteTypes */, 0, 209, 0, 209, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 3337 /* toPhpDocNode */, 0, 210, 0, 210, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3391 /* toNativePhpTypeNode */, 1, 211, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3411 /* hasTemplateOrLateResolvableType */, 0, 212, 0, 212, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 3443 /* hasUnresolvedTemplateArgumentType */, 0, 213, 0, 213, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toValueSet = { { 3499 /* toValueSet */, 0, 214, 0, 214, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryUnion = { { 3245 /* tryUnion */, 1, 204, 1, 205, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 3254 /* tryIntersect */, 1, 206, 1, 207, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryRemove = { { 3280 /* tryRemove */, 1, 208, 1, 209, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 3299 /* arithmeticPower */, 2, 210, 2, 212, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 3315 /* getFiniteTypes */, 0, 213, 0, 213, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 3369 /* toPhpDocNode */, 0, 214, 0, 214, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3423 /* toNativePhpTypeNode */, 1, 215, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3443 /* hasTemplateOrLateResolvableType */, 0, 216, 0, 216, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 3475 /* hasUnresolvedTemplateArgumentType */, 0, 217, 0, 217, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 3531 /* toValueSet */, 0, 218, 0, 218, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StaticType

@@ -1697,6 +1697,15 @@ zv::Val pt_type_string_refinement_of_members(zend_object *self);
  * toExactNumberSet() of the types they do not describe */
 void ZEND_FASTCALL pt_type_null_handler(INTERNAL_FUNCTION_PARAMETERS);
 
+/* tryUnion() and tryIntersect() of the types that merge with no other type:
+ * (Type $otherType) returning null */
+void ZEND_FASTCALL pt_type_try_null_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* tryUnion() and tryIntersect() of the subtractable types:
+ * SubtractionAlgebra::tryUnion($this, $otherType) / ::tryIntersect() */
+void ZEND_FASTCALL pt_type_subtraction_try_union_handler(INTERNAL_FUNCTION_PARAMETERS);
+void ZEND_FASTCALL pt_type_subtraction_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
+
 /* toExactNumberSet() of IntegerType, FloatType and IntegerRangeType:
  * $this->toNumberSet(), which their subclasses override */
 void ZEND_FASTCALL pt_type_exact_number_set_handler(INTERNAL_FUNCTION_PARAMETERS);

@@ -285,6 +285,10 @@ PT_MINIT_REGISTRATION(pt_register_float_type)
 	ptdecl::FloatType::declareClass(cls);
 	ptdecl::FloatType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
 	/* mirrors getStringRefinement() */
 	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toExactNumberSet() */

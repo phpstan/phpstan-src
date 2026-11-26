@@ -297,7 +297,9 @@ inline constexpr char strings[] =
 	"getPossiblyLooselyEqualType\0" /* 4076 */
 	"getAlwaysLooselyEqualType\0" /* 4104 */
 	"PHPStan\\Type\\ValueSet\0" /* 4130 */
-	"toValueSet"; /* 4152 */
+	"toValueSet\0" /* 4152 */
+	"tryUnion\0" /* 4163 */
+	"tryIntersect"; /* 4172 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $types */
 	reg::packed(6, MAY_BE_BOOL, reg::NoString, false, false, 17), /* __construct $normalized */
@@ -569,6 +571,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1894, 0, 1905), /* getAlwaysLooselyEqualType $phpVersion */
 	reg::packed(78, 0, 79), /* getAlwaysLooselyEqualType return */
 	reg::packed(78, 0, 4130), /* toValueSet return */
+	reg::packed(376, 0, 79), /* tryUnion $otherType */
+	reg::packed(78, MAY_BE_NULL, 79), /* tryUnion return */
+	reg::packed(376, 0, 79), /* tryIntersect $otherType */
+	reg::packed(78, MAY_BE_NULL, 79), /* tryIntersect return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -737,6 +743,8 @@ inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 4042 /* has
 inline constexpr sigtab::Sig getPossiblyLooselyEqualType = { { 4076 /* getPossiblyLooselyEqualType */, 1, 265, 1, 266, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getAlwaysLooselyEqualType = { { 4104 /* getAlwaysLooselyEqualType */, 1, 267, 1, 268, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toValueSet = { { 4152 /* toValueSet */, 0, 269, 0, 269, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryUnion = { { 4163 /* tryUnion */, 1, 270, 1, 271, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 4172 /* tryIntersect */, 1, 272, 1, 273, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::UnionType

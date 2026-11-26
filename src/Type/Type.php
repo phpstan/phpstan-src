@@ -744,6 +744,22 @@ interface Type
 	public function tryRemove(Type $typeToRemove): ?Type;
 
 	/**
+	 * The union with the other type as this type alone, when this type absorbs
+	 * it by more than being its supertype, such as `mixed~int|1` being
+	 * `mixed~(int<min, 0>|int<2, max>)`. Null when it does not; TypeCombinator::union()
+	 * asks the other type the same.
+	 */
+	public function tryUnion(Type $otherType): ?Type;
+
+	/**
+	 * The intersection with the other type as one type, when this type knows it
+	 * better than as the subtype of the two, such as `Foo & object~Bar` being
+	 * `Foo~Bar`. Null when it does not; TypeCombinator::intersect() asks the
+	 * other type the same, and asks both before it drops supertypes.
+	 */
+	public function tryIntersect(Type $otherType): ?Type;
+
+	/**
 	 * Removes constant value information. E.g. 'foo' -> string, 1 -> int.
 	 * Used when types become too complex to track precisely (e.g. loop iterations).
 	 */

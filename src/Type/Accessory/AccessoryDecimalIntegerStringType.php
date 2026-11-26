@@ -520,4 +520,14 @@ class AccessoryDecimalIntegerStringType implements CompoundType, AccessoryType
 		return ValueSet::createStrings($this);
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 }

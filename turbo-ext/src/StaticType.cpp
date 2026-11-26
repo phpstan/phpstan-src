@@ -985,6 +985,10 @@ PT_MINIT_REGISTRATION(pt_register_static_type)
 	reg::Class cls("PHPStan\\Type\\StaticType");
 	ptdecl::StaticType::declareClass(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_subtraction_try_union_handler);
+	cls.method(sigs::tryIntersect, pt_type_subtraction_try_intersect_handler);
+
 	/* mirrors getStringRefinement() */
 	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toValueSet() */

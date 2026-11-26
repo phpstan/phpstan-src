@@ -25,7 +25,6 @@ namespace sigs = ptdecl::ConditionalType::sig;
 
 zend_class_entry *pt_ce_conditional_type = nullptr;
 
-
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Type\ConditionalType. State lives in the PHP object's slots. */
@@ -459,6 +458,7 @@ PT_MINIT_REGISTRATION(pt_register_conditional_type)
 {
 	reg::Class cls("PHPStan\\Type\\ConditionalType");
 	ptdecl::ConditionalType::declareClass(cls);
+
 	/* the slots must stay in this order (PT_CT_PROP_*): the memo properties
 	 * of the class body, then the promoted ones; the trait registrar
 	 * declares $result after them */

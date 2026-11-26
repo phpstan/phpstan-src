@@ -281,7 +281,7 @@ final class TypeCombinatorBench
 	#[DataProvider(method: 'types')]
 	#[ExpectedFor(dataSet: 'types-16', instructions: '2.049M', cycles: '2.625M', memory: '6.313KiB')]
 	#[ExpectedFor(dataSet: 'types-64', instructions: '23.20M', cycles: '25.05M', memory: '35.38KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '329.7M', cycles: '340.6M', memory: '115.6KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '340.6M', cycles: '348.1M', memory: '115.6KiB')]
 	public function benchIntersectIntersections(int $types): Type
 	{
 		return TypeCombinator::intersect(...$this->intersections);
@@ -301,7 +301,7 @@ final class TypeCombinatorBench
 	 * Accessory types only, which need no sorting, a hundred times.
 	 */
 	#[DataProvider(method: 'smallest')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '6.006M', cycles: '7.173M', memory: '2.313KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '6.316M', cycles: '7.491M', memory: '2.313KiB')]
 	public function benchIntersectAccessories(int $types): Type
 	{
 		$type = new StringType();
@@ -378,9 +378,9 @@ final class TypeCombinatorBench
 	 * Integer ranges with a gap between each two, which stay apart.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '944.0K', cycles: '1.143M', memory: '9.992KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '13.26M', cycles: '13.72M', memory: '29.80KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '202.3M', cycles: '205.8M', memory: '136.6KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '1.187M', cycles: '1.379M', memory: '9.992KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '17.35M', cycles: '17.66M', memory: '29.80KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '268.5M', cycles: '269.7M', memory: '136.6KiB')]
 	public function benchUnionDisjointRanges(int $types): Type
 	{
 		return TypeCombinator::union(...$this->disjointRanges);
@@ -402,9 +402,9 @@ final class TypeCombinatorBench
 	 * Integer ranges with a constant in the gap after each, which stay apart.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '1.284M', cycles: '1.547M', memory: '17.91KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '14.74M', cycles: '15.32M', memory: '63.05KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '208.7M', cycles: '212.4M', memory: '244.0KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '1.554M', cycles: '1.813M', memory: '17.91KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '18.93M', cycles: '19.38M', memory: '63.05KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '275.3M', cycles: '277.0M', memory: '244.0KiB')]
 	public function benchUnionIntegersAndRanges(int $types): Type
 	{
 		return TypeCombinator::union(...$this->integersAndRanges);
@@ -414,9 +414,9 @@ final class TypeCombinatorBench
 	 * Two unions of ranges, each range of one overlapping one range of the other at one value.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '3.416M', cycles: '4.298M', memory: '12.50KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '49.38M', cycles: '58.65M', memory: '35.69KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '768.4M', cycles: '914.1M', memory: '166.4KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '3.072M', cycles: '3.750M', memory: '12.50KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '43.87M', cycles: '49.60M', memory: '35.69KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '680.2M', cycles: '764.4M', memory: '166.4KiB')]
 	public function benchIntersectRangeUnions(int $types): Type
 	{
 		return TypeCombinator::intersect(...$this->rangeUnions);

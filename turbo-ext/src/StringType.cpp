@@ -417,6 +417,10 @@ PT_MINIT_REGISTRATION(pt_register_string_type)
 	ptdecl::StringType::declareClass(cls);
 	ptdecl::StringType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
 	/* mirrors getStringRefinement() */
 	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<PT_STRING_CELLS_ALL>);
 	/* mirrors toValueSet() */

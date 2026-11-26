@@ -299,6 +299,10 @@ PT_MINIT_REGISTRATION(pt_register_has_property_type)
 	/* "propertyName" must stay the first declared property (slots::propertyName) */
 	ptdecl::HasPropertyType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
 	cls.method<&HasPropertyType::construct, zp::Str>(sigs::__construct);
 
 	cls.method(sigs::getReferencedClasses, hptEmptyArray0);

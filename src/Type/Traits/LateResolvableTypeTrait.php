@@ -506,6 +506,17 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->getKindMask();
 	}
 
+	/** Stays unresolved: TypeCombinator keeps it apart instead of merging what it resolves to. */
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return $this->resolve()->isNull();

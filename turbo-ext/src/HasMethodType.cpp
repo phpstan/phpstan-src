@@ -352,6 +352,10 @@ PT_MINIT_REGISTRATION(pt_register_has_method_type)
 	/* "methodName" must stay the first declared property (slots::methodName) */
 	ptdecl::HasMethodType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
 	cls.method<&HasMethodType::construct, zp::Str>(sigs::__construct);
 
 	cls.method(sigs::getReferencedClasses, hmtEmptyArray0);

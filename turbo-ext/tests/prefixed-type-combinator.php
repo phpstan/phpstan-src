@@ -21,9 +21,11 @@ return static function (array $manifest, array $classMap): array {
 		'PHPStan\\Type\\TypeCombinator' => $root . '/src/Type/TypeCombinator.php',
 		'PHPStan\\Type\\ScalarUnion' => $root . '/src/Type/ScalarUnion.php',
 		'PHPStan\\Type\\StringRefinement' => $root . '/src/Type/StringRefinement.php',
+		'PHPStan\\Type\\SubtractionAlgebra' => $root . '/src/Type/SubtractionAlgebra.php',
 	];
 	if (class_exists('PHPStanTurbo\\TypeCombinator', false)) {
 		$classMap['typeCombinator'] = 'PHPStanTurbo\\TypeCombinator';
+		$classMap['subtractionAlgebra'] = 'PHPStanTurbo\\SubtractionAlgebra';
 		return $classMap;
 	}
 
@@ -93,5 +95,6 @@ return static function (array $manifest, array $classMap): array {
 	}
 
 	$classMap['typeCombinator'] = 'PHPStanTurbo\\TypeCombinator';
+	$classMap['subtractionAlgebra'] = 'PHPStanTurbo\\SubtractionAlgebra';
 	return $classMap;
 };

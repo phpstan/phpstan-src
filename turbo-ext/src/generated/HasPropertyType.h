@@ -116,7 +116,9 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\NativeTypePosition\0" /* 1043 */
 	"toNativePhpTypeNode\0" /* 1075 */
 	"hasTemplateOrLateResolvableType\0" /* 1095 */
-	"hasUnresolvedTemplateArgumentType"; /* 1127 */
+	"hasUnresolvedTemplateArgumentType\0" /* 1127 */
+	"tryUnion\0" /* 1161 */
+	"tryIntersect"; /* 1170 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $propertyName */
 	reg::packed(25, MAY_BE_ARRAY), /* getReferencedClasses return */
@@ -187,6 +189,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1034, 0, 1043), /* toNativePhpTypeNode $position */
 	reg::packed(25, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 	reg::packed(25, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
+	reg::packed(245, 0, 93), /* tryUnion $otherType */
+	reg::packed(25, MAY_BE_NULL, 93), /* tryUnion return */
+	reg::packed(245, 0, 93), /* tryIntersect $otherType */
+	reg::packed(25, MAY_BE_NULL, 93), /* tryIntersect return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -243,6 +249,8 @@ inline constexpr sigtab::Sig toPhpDocNode = { { 1021 /* toPhpDocNode */, 0, 65, 
 inline constexpr sigtab::Sig toNativePhpTypeNode = { { 1075 /* toNativePhpTypeNode */, 1, 66, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1095 /* hasTemplateOrLateResolvableType */, 0, 67, 0, 67, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 1127 /* hasUnresolvedTemplateArgumentType */, 0, 68, 0, 68, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryUnion = { { 1161 /* tryUnion */, 1, 69, 1, 70, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 1170 /* tryIntersect */, 1, 71, 1, 72, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::HasPropertyType

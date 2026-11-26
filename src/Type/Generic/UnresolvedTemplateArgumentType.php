@@ -924,4 +924,14 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 		return $this->getDelegate()->toAbsoluteNumber();
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 }

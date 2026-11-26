@@ -383,6 +383,10 @@ PT_MINIT_REGISTRATION(pt_register_accessory_numeric_string_type)
 	ptdecl::AccessoryNumericStringType::declareClass(cls);
 	ptdecl::AccessoryNumericStringType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
 	/* mirrors getStringRefinement() */
 	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<pt_string_cells_of(PT_STRING_CELL_ZERO | PT_STRING_CELL_DECIMAL | PT_STRING_CELL_NUMERIC | PT_STRING_CELL_NUMERIC_LOWER | PT_STRING_CELL_NUMERIC_UPPER)>);
 	/* mirrors toValueSet() */

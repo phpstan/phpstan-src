@@ -1937,4 +1937,14 @@ class UnionType implements CompoundType
 		return $valueSet;
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 }

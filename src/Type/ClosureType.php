@@ -1155,4 +1155,14 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		return ValueSet::createObjects($this);
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 }

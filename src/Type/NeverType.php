@@ -695,4 +695,14 @@ class NeverType implements CompoundType
 		return ValueSet::createNever($this);
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 }

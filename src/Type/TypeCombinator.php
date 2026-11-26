@@ -9,7 +9,6 @@ use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
-use PHPStan\Type\Accessory\HasPropertyType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
@@ -934,30 +933,14 @@ final class TypeCombinator
 			];
 		}
 
-		if ($a instanceof SubtractableType) {
-			$typeWithoutSubtractedTypeA = $a->getTypeWithoutSubtractedType();
-			if ($typeWithoutSubtractedTypeA instanceof MixedType && $b instanceof MixedType) {
-				$isSuperType = $typeWithoutSubtractedTypeA->isSuperTypeOfMixed($b);
-			} else {
-				$isSuperType = $typeWithoutSubtractedTypeA->isSuperTypeOf($b);
-			}
-			if ($isSuperType->yes()) {
-				$a = self::intersectWithSubtractedType($a, $b);
-				return [$a, null];
-			}
+		$union = $a->tryUnion($b);
+		if ($union !== null) {
+			return [$union, null];
 		}
 
-		if ($b instanceof SubtractableType) {
-			$typeWithoutSubtractedTypeB = $b->getTypeWithoutSubtractedType();
-			if ($typeWithoutSubtractedTypeB instanceof MixedType && $a instanceof MixedType) {
-				$isSuperType = $typeWithoutSubtractedTypeB->isSuperTypeOfMixed($a);
-			} else {
-				$isSuperType = $typeWithoutSubtractedTypeB->isSuperTypeOf($a);
-			}
-			if ($isSuperType->yes()) {
-				$b = self::intersectWithSubtractedType($b, $a);
-				return [null, $b];
-			}
+		$union = $b->tryUnion($a);
+		if ($union !== null) {
+			return [null, $union];
 		}
 
 		if ($b->isSuperTypeOf($a)->yes()) {
@@ -969,129 +952,6 @@ final class TypeCombinator
 		}
 
 		return null;
-	}
-
-	private static function unionWithSubtractedType(
-		Type $type,
-		?Type $subtractedType,
-	): Type
-	{
-		if ($subtractedType === null) {
-			return $type;
-		}
-
-		if ($subtractedType instanceof SubtractableType) {
-			$withoutSubtracted = $subtractedType->getTypeWithoutSubtractedType();
-			if ($withoutSubtracted->isSuperTypeOf($type)->yes()) {
-				$subtractedSubtractedType = $subtractedType->getSubtractedType();
-				if ($subtractedSubtractedType === null) {
-					return new NeverType();
-				}
-
-				return self::intersect($type, $subtractedSubtractedType);
-			}
-		}
-
-		if ($type instanceof SubtractableType) {
-			$subtractedType = $type->getSubtractedType() === null
-				? $subtractedType
-				: self::union($type->getSubtractedType(), $subtractedType);
-
-			$subtractedType = self::intersect(
-				$type->getTypeWithoutSubtractedType(),
-				$subtractedType,
-			);
-			if ($subtractedType instanceof NeverType) {
-				$subtractedType = null;
-			}
-
-			return $type->changeSubtractedType($subtractedType);
-		}
-
-		if ($subtractedType->isSuperTypeOf($type)->yes()) {
-			return new NeverType();
-		}
-
-		return self::remove($type, $subtractedType);
-	}
-
-	private static function intersectWithSubtractedType(
-		SubtractableType $a,
-		Type $b,
-	): Type
-	{
-		if ($a->getSubtractedType() === null || $b instanceof NeverType) {
-			return $a;
-		}
-
-		if ($b instanceof IntersectionType) {
-			$subtractableTypes = [];
-			foreach ($b->getTypes() as $innerType) {
-				if (!$innerType instanceof SubtractableType) {
-					continue;
-				}
-
-				$subtractableTypes[] = $innerType;
-			}
-
-			if (count($subtractableTypes) === 0) {
-				return $a->getTypeWithoutSubtractedType();
-			}
-
-			$subtractedTypes = [];
-			foreach ($subtractableTypes as $subtractableType) {
-				if ($subtractableType->getSubtractedType() === null) {
-					continue;
-				}
-
-				$subtractedTypes[] = $subtractableType->getSubtractedType();
-			}
-
-			if (count($subtractedTypes) === 0) {
-				return $a->getTypeWithoutSubtractedType();
-
-			}
-
-			$subtractedType = self::union(...$subtractedTypes);
-		} else {
-			$isBAlreadySubtracted = $a->getSubtractedType()->isSuperTypeOf($b);
-
-			if ($isBAlreadySubtracted->no()) {
-				return $a;
-			} elseif ($isBAlreadySubtracted->yes()) {
-				$subtractedType = self::remove($a->getSubtractedType(), $b);
-
-				if (
-					$subtractedType instanceof NeverType
-					|| !$subtractedType->isSuperTypeOf($b)->no()
-				) {
-					$subtractedType = null;
-				}
-
-				return $a->changeSubtractedType($subtractedType);
-			} elseif ($b instanceof SubtractableType) {
-				$subtractedType = $b->getSubtractedType();
-				if ($subtractedType === null) {
-					return $a->getTypeWithoutSubtractedType();
-				}
-			} else {
-				$subtractedTypeTmp = self::intersect($a->getTypeWithoutSubtractedType(), $a->getSubtractedType());
-				if ($b->isSuperTypeOf($subtractedTypeTmp)->yes()) {
-					return $a->getTypeWithoutSubtractedType();
-				}
-				$subtractedType = new MixedType(subtractedType: $b);
-			}
-		}
-
-		$subtractedType = self::intersect(
-			$a->getSubtractedType(),
-			$subtractedType,
-		);
-		if ($subtractedType instanceof NeverType) {
-			$subtractedType = null;
-		}
-
-		return $a->changeSubtractedType($subtractedType);
 	}
 
 	/**
@@ -2368,16 +2228,11 @@ final class TypeCombinator
 		$hasOffsetValueTypeCount = 0;
 		$typesCount = count($types);
 		$typesNeedSorting = false;
-		$hasPropertyType = false;
 		for ($i = 0; $i < $typesCount; $i++) {
 			$type = $types[$i];
 
-			if ($type instanceof SubtractableType || $type instanceof ConstantArrayType) {
+			if ($type instanceof ConstantArrayType) {
 				$typesNeedSorting = true;
-			}
-
-			if ($type instanceof HasPropertyType) {
-				$hasPropertyType = true;
 			}
 
 			if ($type instanceof IntersectionType && !$type instanceof TemplateType) {
@@ -2399,14 +2254,6 @@ final class TypeCombinator
 
 		if ($typesNeedSorting) {
 			usort($types, static function (Type $a, Type $b): int {
-				// move subtractables with subtracts before those without to avoid losing them in the union logic
-				if ($a instanceof SubtractableType && $a->getSubtractedType() !== null) {
-					return -1;
-				}
-				if ($b instanceof SubtractableType && $b->getSubtractedType() !== null) {
-					return 1;
-				}
-
 				if ($a instanceof ConstantArrayType && !$b instanceof ConstantArrayType) {
 					return -1;
 				}
@@ -2418,37 +2265,27 @@ final class TypeCombinator
 			});
 		}
 
-		// Resolve object-shape optional keys that a HasPropertyType asserts are present before the
-		// reduction loop below. In that loop the generic supertype dedup can drop a HasPropertyType
-		// as redundant against a dynamic-property class such as stdClass (which reports every
-		// property as present) before it is ever paired with the object shape. Which of the two
-		// fires first depends on the member order, so the collapse runs here, where order does not
-		// change the result of what is meant to be an order-independent value. Gated on the presence
-		// of a HasPropertyType so the common intersection pays only the flag check set above.
-		if ($hasPropertyType) {
-			for ($i = 0; $i < $typesCount; $i++) {
-				for ($j = $i + 1; $j < $typesCount; $j++) {
-					if (
-						$types[$i] instanceof ObjectShapeType
-						&& $types[$j] instanceof HasPropertyType
-						&& !$types[$i]->hasInstanceProperty($types[$j]->getPropertyName())->no()
-					) {
-						$types[$i] = $types[$i]->makePropertyRequired($types[$j]->getPropertyName());
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue;
-					}
+		// Exact merges first: a member that a supertype drop below removes as
+		// redundant, such as a HasPropertyType next to stdClass, can still sharpen
+		// another one, such as the object shape it makes a property of required.
+		// Which of the two reaches the pair first would depend on the order of the
+		// members, and the intersection must not.
+		for ($i = 0; $i < $typesCount; $i++) {
+			for ($j = $i + 1; $j < $typesCount; $j++) {
+				$intersectionType = $types[$j]->tryIntersect($types[$i]);
+				if ($intersectionType !== null) {
+					$types[$i] = $intersectionType;
+					array_splice($types, $j--, 1);
+					$typesCount--;
+					continue;
+				}
 
-					if (
-						$types[$j] instanceof ObjectShapeType
-						&& $types[$i] instanceof HasPropertyType
-						&& !$types[$j]->hasInstanceProperty($types[$i]->getPropertyName())->no()
-					) {
-						$types[$j] = $types[$j]->makePropertyRequired($types[$i]->getPropertyName());
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
+				$intersectionType = $types[$i]->tryIntersect($types[$j]);
+				if ($intersectionType !== null) {
+					$types[$j] = $intersectionType;
+					array_splice($types, $i--, 1);
+					$typesCount--;
+					continue 2;
 				}
 			}
 		}
@@ -2466,48 +2303,6 @@ final class TypeCombinator
 				// no value is of both kinds
 				if (TypeKind::areDisjoint($types[$i]->getKindMask(), $types[$j]->getKindMask())) {
 					return new NeverType();
-				}
-
-				if ($types[$j] instanceof SubtractableType) {
-					$typeWithoutSubtractedTypeA = $types[$j]->getTypeWithoutSubtractedType();
-
-					if ($typeWithoutSubtractedTypeA instanceof MixedType && $types[$i] instanceof MixedType) {
-						$isSuperTypeSubtractableA = $typeWithoutSubtractedTypeA->isSuperTypeOfMixed($types[$i]);
-					} else {
-						$isSuperTypeSubtractableA = $typeWithoutSubtractedTypeA->isSuperTypeOf($types[$i]);
-					}
-					if ($isSuperTypeSubtractableA->yes()) {
-						$types[$i] = self::unionWithSubtractedType($types[$i], $types[$j]->getSubtractedType());
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue 1;
-					}
-				}
-
-				if ($types[$i] instanceof SubtractableType) {
-					$typeWithoutSubtractedTypeB = $types[$i]->getTypeWithoutSubtractedType();
-
-					if ($typeWithoutSubtractedTypeB instanceof MixedType && $types[$j] instanceof MixedType) {
-						$isSuperTypeSubtractableB = $typeWithoutSubtractedTypeB->isSuperTypeOfMixed($types[$j]);
-					} else {
-						$isSuperTypeSubtractableB = $typeWithoutSubtractedTypeB->isSuperTypeOf($types[$j]);
-					}
-					if ($isSuperTypeSubtractableB->yes()) {
-						$types[$j] = self::unionWithSubtractedType($types[$j], $types[$i]->getSubtractedType());
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
-				}
-
-				if ($types[$i] instanceof IntegerRangeType || $types[$i] instanceof FloatRangeType) {
-					$intersectionType = $types[$i]->tryIntersect($types[$j]);
-					if ($intersectionType !== null) {
-						$types[$j] = $intersectionType;
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
 				}
 
 				if ($types[$j] instanceof IterableType) {

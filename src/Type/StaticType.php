@@ -922,6 +922,16 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->subtractedType;
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return SubtractionAlgebra::tryUnion($this, $otherType);
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return SubtractionAlgebra::tryIntersect($this, $otherType);
+	}
+
 	public function tryRemove(Type $typeToRemove): ?Type
 	{
 		if ($this->getStaticObjectType()->isSuperTypeOf($typeToRemove)->yes()) {

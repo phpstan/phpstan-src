@@ -354,9 +354,9 @@ final class TypeCombinatorBench
 	 * Non-empty arrays with a different value at the same offset each, which merge into one.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '4.356M', cycles: '5.605M', memory: '34.29KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '44.27M', cycles: '48.85M', memory: '120.8KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '660.1M', cycles: '705.4M', memory: '547.9KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '1.945M', cycles: '2.760M', memory: '31.11KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '7.285M', cycles: '8.835M', memory: '112.0KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '29.02M', cycles: '33.59M', memory: '498.6KiB')]
 	public function benchUnionOffsetValueIntersections(int $types): Type
 	{
 		return TypeCombinator::union(...$this->offsetValueIntersections);

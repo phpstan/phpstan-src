@@ -227,7 +227,14 @@ final class ArrayUnion
 			}
 
 			if ($accessoryType[0] instanceof HasOffsetValueType) {
-				$commonAccessoryTypes[] = TypeCombinator::union(...$accessoryType);
+				// of one offset, so their union is the offset of all their
+				// values, as HasOffsetValueType::tryUnion() merges two of them
+				$offsetType = $accessoryType[0]->getOffsetType();
+				$valueTypes = [];
+				foreach ($accessoryType as $hasOffsetValue) {
+					$valueTypes[] = $hasOffsetValue->getOffsetValueType($offsetType);
+				}
+				$commonAccessoryTypes[] = new HasOffsetValueType($offsetType, TypeCombinator::union(...$valueTypes));
 				continue;
 			}
 

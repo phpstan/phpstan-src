@@ -83,7 +83,7 @@ final class MutatingScopeBench
 	/**
 	 * Only the cases with a left side that may be set narrow the scope by isset() (#4661).
 	 */
-	#[Expected(instructions: '965.3K', cycles: '2.091M', memory: '93.89KiB')]
+	#[Expected(instructions: '988.4K', cycles: '2.096M', memory: '93.89KiB')]
 	public function benchGetTypeOfCoalesceWithNullLeft(): Type
 	{
 		return $this->scope()->getType(self::coalesce());

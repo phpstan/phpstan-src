@@ -96,7 +96,7 @@ final class NodeScopeResolverWalkBench
 	#[ExpectedFor(dataSet: 'nested-dim-assign', instructions: '277.4M', cycles: '330.1M', memory: '801.3KiB')]
 	#[ExpectedFor(dataSet: 'or-chain-16', instructions: '22.42M', cycles: '31.58M', memory: '614.1KiB')]
 	#[ExpectedFor(dataSet: 'or-chain-32', instructions: '50.17M', cycles: '67.50M', memory: '1.219MiB')]
-	#[ExpectedFor(dataSet: 'while', instructions: '10.43M', cycles: '16.14M', memory: '236.3KiB')]
+	#[ExpectedFor(dataSet: 'while', instructions: '10.06M', cycles: '15.48M', memory: '228.8KiB')]
 	public function benchProcessStmtNodes(string $code): Type
 	{
 		$stmts = $this->meter->exclude(fn (): array => $this->parse($code));

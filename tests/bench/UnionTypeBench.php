@@ -76,9 +76,9 @@ final class UnionTypeBench
 	 * Each member is an intersection, described in parentheses.
 	 */
 	#[DataProvider(method: 'members')]
-	#[ExpectedFor(dataSet: 'members-16', instructions: '1.728M', cycles: '2.738M', memory: '16.65KiB')]
-	#[ExpectedFor(dataSet: 'members-64', instructions: '7.620M', cycles: '10.73M', memory: '44.40KiB')]
-	#[ExpectedFor(dataSet: 'members-256', instructions: '33.75M', cycles: '45.31M', memory: '176.8KiB')]
+	#[ExpectedFor(dataSet: 'members-16', instructions: '1.988M', cycles: '3.002M', memory: '16.65KiB')]
+	#[ExpectedFor(dataSet: 'members-64', instructions: '8.676M', cycles: '11.81M', memory: '44.40KiB')]
+	#[ExpectedFor(dataSet: 'members-256', instructions: '37.83M', cycles: '49.65M', memory: '176.8KiB')]
 	public function benchDescribeIntersections(int $members): string
 	{
 		if ($this->intersections === null) {

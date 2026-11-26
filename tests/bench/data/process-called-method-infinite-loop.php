@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 129.5M
- * cycles: 178.7M
- * memory: 1.365MiB
+ * instructions: 127.6M
+ * cycles: 176.4M
+ * memory: 1.214MiB
  */
 
 namespace ProcessCalledMethodInfiniteLoop;

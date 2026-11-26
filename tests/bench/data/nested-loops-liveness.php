@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 1.343B
- * cycles: 1.737B
- * memory: 11.08MiB
+ * instructions: 1.820B
+ * cycles: 2.353B
+ * memory: 10.57MiB
  */
 
 namespace BenchNestedLoopsLiveness;

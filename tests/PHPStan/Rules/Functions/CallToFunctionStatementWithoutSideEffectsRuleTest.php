@@ -272,4 +272,14 @@ class CallToFunctionStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testSeededRandom(): void
+	{
+		$this->analyse([__DIR__ . '/data/function-call-seeded-random.php'], [
+			[
+				'Call to function lcg_value() on a separate line has no effect.',
+				21,
+			],
+		]);
+	}
+
 }

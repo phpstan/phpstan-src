@@ -735,4 +735,18 @@ class PureFunctionRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testRandom(): void
+	{
+		$this->analyse([__DIR__ . '/data/pure-random.php'], [
+			[
+				'Impure call to function mt_rand() in pure function PureRandom\\seededRandom().',
+				8,
+			],
+			[
+				'Impure call to function lcg_value() in pure function PureRandom\\unseededRandom().',
+				14,
+			],
+		]);
+	}
+
 }

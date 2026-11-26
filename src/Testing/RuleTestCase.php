@@ -221,16 +221,20 @@ abstract class RuleTestCase extends PHPStanTestCase
 			$actualErrors,
 		);
 
+		$assertionMessage = sprintf(
+			'Errors reported in %s do not match the expected errors.',
+			implode(', ', array_map([$this->getFileHelper(), 'normalizePath'], $files)),
+		);
 		$expectedErrorsString = implode("\n", $expectedErrors) . "\n";
 		$actualErrorsString = implode("\n", $actualErrors) . "\n";
 
 		if (count($delayedErrors) === 0) {
-			$this->assertSame($expectedErrorsString, $actualErrorsString);
+			$this->assertSame($expectedErrorsString, $actualErrorsString, $assertionMessage);
 			return;
 		}
 
 		if ($expectedErrorsString === $actualErrorsString) {
-			$this->assertSame($expectedErrorsString, $actualErrorsString);
+			$this->assertSame($expectedErrorsString, $actualErrorsString, $assertionMessage);
 			return;
 		}
 
@@ -244,7 +248,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 			$actualErrorsString .= sprintf("* %s\n", $delayedError->getMessage());
 		}
 
-		$this->assertSame($expectedErrorsString, $actualErrorsString);
+		$this->assertSame($expectedErrorsString, $actualErrorsString, $assertionMessage);
 	}
 
 	/**
@@ -308,8 +312,8 @@ abstract class RuleTestCase extends PHPStanTestCase
 				}
 
 				$patchResult = $patcher->apply($contentsByFile, $diffGroups);
-				$this->assertGreaterThan(0, $patchResult['appliedCount'], 'Some fixes overlap and could not be applied together.');
-				$this->assertLessThan(self::FIX_ROUNDS_LIMIT, $round, sprintf('Fixing did not finish after %d rounds.', $round));
+				$this->assertGreaterThan(0, $patchResult['appliedCount'], sprintf('Some fixes in %s overlap and could not be applied together.', $fixedFile));
+				$this->assertLessThan(self::FIX_ROUNDS_LIMIT, $round, sprintf('Fixing %s did not finish after %d rounds.', $fixedFile, $round));
 				$contentsByFile = $patchResult['contents'];
 
 				// a new directory every round, so nothing cached for the contents of an earlier round is reused;
@@ -330,7 +334,11 @@ abstract class RuleTestCase extends PHPStanTestCase
 
 		$fixedFileContents = FileReader::read($expectedFile);
 
-		$this->assertSame($this->normalizeLineEndings($fixedFileContents), $this->normalizeLineEndings($contentsByFile[$fixedFile]));
+		$this->assertSame(
+			$this->normalizeLineEndings($fixedFileContents),
+			$this->normalizeLineEndings($contentsByFile[$fixedFile]),
+			sprintf('Fixed contents of %s do not match the expected contents in %s.', $fixedFile, $fileHelper->normalizePath($expectedFile)),
+		);
 	}
 
 	private function normalizeLineEndings(string $string): string

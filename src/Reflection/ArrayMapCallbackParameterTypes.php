@@ -5,10 +5,12 @@ namespace PHPStan\Reflection;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function array_pop;
+use function array_fill;
 use function count;
+use function in_array;
 use function is_int;
 use function max;
+use function min;
 
 /**
  * With more than one array, array_map() calls the callback once per index of
@@ -19,32 +21,202 @@ final class ArrayMapCallbackParameterTypes
 {
 
 	/**
-	 * Returns the value type of each array, and the value type of the arrays after
-	 * them when their number is not known (see UnpackedArgumentTypes::expand()).
-	 * The arrays after them are compared with the others as one more array.
+	 * Returns the value type of each array the args pass, and the value type of
+	 * the arrays after them when their number is not known (see
+	 * UnpackedArgumentTypes::expand()).
 	 *
-	 * @param list<Type> $arrayTypes
+	 * @param list<Type> $argTypes
+	 * @param list<bool> $unpacked whether each arg is unpacked
 	 * @return array{list<Type>, Type|null}
 	 */
-	public static function getCallbackValueTypes(array $arrayTypes, ?Type $restArrayType): array
+	public static function getCallbackValueTypes(array $argTypes, array $unpacked): array
 	{
-		if ($restArrayType !== null) {
-			$arrayTypes[] = $restArrayType;
-		}
+		[$arrayTypes, $restArrayType] = self::expand($argTypes, $unpacked);
 
 		$valueTypes = [];
 		foreach ($arrayTypes as $arrayType) {
 			$valueTypes[] = $arrayType->getIterableValueType();
 		}
-		$valueTypes = self::addPaddingNull($valueTypes, $arrayTypes);
 
-		if ($restArrayType === null) {
-			return [$valueTypes, null];
+		return self::addPaddingNullToArgs($valueTypes, $restArrayType?->getIterableValueType(), $argTypes, $unpacked);
+	}
+
+	/**
+	 * Does what addPaddingNull() does for the value types of the arrays that
+	 * UnpackedArgumentTypes::expand() gives for the args.
+	 *
+	 * expand() merges each position across the shapes of an unpacked union, so
+	 * that each shape's arrays are compared here on their own. The arrays after
+	 * the known positions are different arrays, so their smallest size counts.
+	 *
+	 * @param list<Type> $valueTypes
+	 * @param list<Type> $argTypes
+	 * @param list<bool> $unpacked whether each arg is unpacked
+	 * @return array{list<Type>, Type|null}
+	 */
+	public static function addPaddingNullToArgs(array $valueTypes, ?Type $restValueType, array $argTypes, array $unpacked): array
+	{
+		$knownCount = count($valueTypes);
+		$padded = array_fill(0, $knownCount, false);
+		$restPadded = false;
+		foreach (self::getShapeVariants($argTypes, $unpacked) as $variant) {
+			if ($variant === null) {
+				// more than one unpacked union: add null wherever an array can be shorter
+				$padded = array_fill(0, $knownCount, true);
+				$restPadded = true;
+				break;
+			}
+
+			[$arrayTypes, $restArrayType] = self::expand($variant, $unpacked);
+			[$variantPadded, $variantRestPadded] = self::getPaddedArrays($arrayTypes, $restArrayType);
+			foreach ($variantPadded as $i => $isPadded) {
+				if (!$isPadded) {
+					continue;
+				}
+
+				// a shape can have more known positions than the merged union
+				if ($i < $knownCount) {
+					$padded[$i] = true;
+				} else {
+					$restPadded = true;
+				}
+			}
+			$restPadded = $restPadded || $variantRestPadded;
 		}
 
-		$restValueType = array_pop($valueTypes);
+		foreach ($valueTypes as $i => $valueType) {
+			if (!$padded[$i]) {
+				continue;
+			}
+
+			$valueTypes[$i] = TypeCombinator::addNull($valueType);
+		}
+
+		if ($restValueType !== null && $restPadded) {
+			$restValueType = TypeCombinator::addNull($restValueType);
+		}
 
 		return [$valueTypes, $restValueType];
+	}
+
+	/**
+	 * The args once for each shape of the one unpacked arg that is a union of
+	 * shapes. null when more than one unpacked arg is.
+	 *
+	 * @param list<Type> $argTypes
+	 * @param list<bool> $unpacked
+	 * @return list<list<Type>|null>
+	 */
+	private static function getShapeVariants(array $argTypes, array $unpacked): array
+	{
+		$unionIndex = null;
+		foreach ($argTypes as $i => $argType) {
+			if (!$unpacked[$i] || count($argType->getConstantArrays()) < 2) {
+				continue;
+			}
+
+			if ($unionIndex !== null) {
+				return [null];
+			}
+
+			$unionIndex = $i;
+		}
+
+		if ($unionIndex === null) {
+			return [$argTypes];
+		}
+
+		$variants = [];
+		foreach ($argTypes[$unionIndex]->getConstantArrays() as $constantArray) {
+			$variant = [];
+			foreach ($argTypes as $i => $argType) {
+				$variant[] = $i === $unionIndex ? $constantArray : $argType;
+			}
+			$variants[] = $variant;
+		}
+
+		return $variants;
+	}
+
+	/**
+	 * @param list<Type> $argTypes
+	 * @param list<bool> $unpacked
+	 * @return array{list<Type>, Type|null}
+	 */
+	private static function expand(array $argTypes, array $unpacked): array
+	{
+		if (!in_array(true, $unpacked, true)) {
+			return [$argTypes, null];
+		}
+
+		return UnpackedArgumentTypes::expand($argTypes, $unpacked);
+	}
+
+	/**
+	 * Which of the arrays are shorter than another one, as addPaddingNull()
+	 * decides it, and whether one of the arrays after them, whose number is not
+	 * known, can be.
+	 *
+	 * @param list<Type> $arrayTypes
+	 * @return array{list<bool>, bool}
+	 */
+	private static function getPaddedArrays(array $arrayTypes, ?Type $restArrayType): array
+	{
+		$notPadded = [array_fill(0, count($arrayTypes), false), false];
+		if ($restArrayType === null && count($arrayTypes) < 2) {
+			return $notPadded;
+		}
+
+		$maxSizes = [];
+		foreach ($arrayTypes as $arrayType) {
+			$sizes = self::getSizes($arrayType);
+			if ($sizes === []) {
+				// general arrays can have the same size, but the type system cannot say so
+				return $notPadded;
+			}
+
+			$maxSizes[] = max($sizes);
+		}
+
+		$restSizes = [];
+		if ($restArrayType !== null) {
+			$restSizes = self::getSizes($restArrayType);
+			if ($restSizes === []) {
+				return $notPadded;
+			}
+		}
+
+		$sizes = [...$maxSizes, ...$restSizes];
+		if ($sizes === []) {
+			return $notPadded;
+		}
+
+		$longestSize = max($sizes);
+		$padded = [];
+		foreach ($maxSizes as $maxSize) {
+			$padded[] = $maxSize < $longestSize;
+		}
+
+		return [$padded, $restSizes !== [] && min($restSizes) < $longestSize];
+	}
+
+	/**
+	 * @return list<int>
+	 */
+	private static function getSizes(Type $arrayType): array
+	{
+		$sizes = [];
+		foreach ($arrayType->getArraySize()->getFiniteTypes() as $sizeType) {
+			foreach ($sizeType->getConstantScalarValues() as $size) {
+				if (!is_int($size)) {
+					continue;
+				}
+
+				$sizes[] = $size;
+			}
+		}
+
+		return $sizes;
 	}
 
 	/**
@@ -66,17 +238,7 @@ final class ArrayMapCallbackParameterTypes
 
 		$maxSizes = [];
 		foreach ($arrayTypes as $i => $arrayType) {
-			$sizes = [];
-			foreach ($arrayType->getArraySize()->getFiniteTypes() as $sizeType) {
-				foreach ($sizeType->getConstantScalarValues() as $size) {
-					if (!is_int($size)) {
-						continue;
-					}
-
-					$sizes[] = $size;
-				}
-			}
-
+			$sizes = self::getSizes($arrayType);
 			if ($sizes === []) {
 				// general arrays can have the same size, but the type system cannot say so
 				return $valueTypes;

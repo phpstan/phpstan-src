@@ -43,8 +43,9 @@ final class ArrayMapParameterClosureTypeExtension implements FunctionParameterCl
 			$unpacked[] = $args[$i]->unpack;
 		}
 
+		$arrayTypes = $argTypes;
 		if (in_array(true, $unpacked, true)) {
-			[$argTypes, $restType] = UnpackedArgumentTypes::expand($argTypes, $unpacked);
+			[$arrayTypes, $restType] = UnpackedArgumentTypes::expand($argTypes, $unpacked);
 			if ($restType !== null) {
 				// the number of arrays is not known
 				return null;
@@ -52,12 +53,12 @@ final class ArrayMapParameterClosureTypeExtension implements FunctionParameterCl
 		}
 
 		$valueTypes = [];
-		foreach ($argTypes as $argType) {
-			$valueTypes[] = $scope->getIterableValueType($argType);
+		foreach ($arrayTypes as $arrayType) {
+			$valueTypes[] = $scope->getIterableValueType($arrayType);
 		}
 
 		$callbackParameters = [];
-		foreach (ArrayMapCallbackParameterTypes::addPaddingNull($valueTypes, $argTypes) as $valueType) {
+		foreach (ArrayMapCallbackParameterTypes::addPaddingNullToArgs($valueTypes, null, $argTypes, $unpacked)[0] as $valueType) {
 			$callbackParameters[] = $this->createParameter($valueType);
 		}
 

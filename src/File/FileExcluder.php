@@ -8,6 +8,8 @@ use function in_array;
 use function is_dir;
 use function is_file;
 use function preg_match;
+use function str_contains;
+use function str_ends_with;
 use function str_starts_with;
 use function strlen;
 use function substr;
@@ -34,8 +36,10 @@ final class FileExcluder
 	private array $literalAnalyseFilesExcludes = [];
 
 	/**
-	 * fnmatch() patterns to use for excluding files and directories from analysing
-	 * @var string[]
+	 * fnmatch() patterns to use for excluding files and directories from analysing, each with text
+	 * a matching path has to contain. Checking that text is cheaper than fnmatch().
+	 *
+	 * @var list<array{string, string}>
 	 */
 	private array $fnmatchAnalyseExcludes = [];
 
@@ -49,6 +53,13 @@ final class FileExcluder
 		array $analyseExcludes,
 	)
 	{
+		$isWindows = DIRECTORY_SEPARATOR === '\\';
+		if ($isWindows) {
+			$this->fnmatchFlags = FNM_NOESCAPE | FNM_CASEFOLD;
+		} else {
+			$this->fnmatchFlags = 0;
+		}
+
 		foreach ($analyseExcludes as $exclude) {
 			$len = strlen($exclude);
 			$trailingDirSeparator = ($len > 0 && in_array($exclude[$len - 1], ['\\', '/'], true));
@@ -60,7 +71,22 @@ final class FileExcluder
 			}
 
 			if (self::isFnmatchPattern($normalized)) {
-				$this->fnmatchAnalyseExcludes[] = $normalized;
+				// a path that ends with a separator names a directory, and no file matches it
+				if (!$trailingDirSeparator) {
+					$this->fnmatchAnalyseExcludes[] = [$normalized, ''];
+				}
+
+				// a directory the pattern matches excludes the files in it, as a literal directory does
+				if (!str_ends_with($normalized, '*')) {
+					$directory = $trailingDirSeparator ? $normalized : $normalized . DIRECTORY_SEPARATOR;
+
+					// the path of a file in such a directory contains the literal text the pattern ends
+					// with, and the separator after it - not provable on Windows, which matches case-insensitively
+					$this->fnmatchAnalyseExcludes[] = [
+						$directory . '*',
+						!$isWindows && preg_match('~[^*?[\]]*$~', $directory, $matches) === 1 ? $matches[0] : '',
+					];
+				}
 			} else {
 				if (is_file($normalized)) {
 					$this->literalAnalyseFilesExcludes[$normalized] = true;
@@ -72,13 +98,6 @@ final class FileExcluder
 					$this->literalAnalyseDirectoryExcludes[] = $normalized;
 				}
 			}
-		}
-
-		$isWindows = DIRECTORY_SEPARATOR === '\\';
-		if ($isWindows) {
-			$this->fnmatchFlags = FNM_NOESCAPE | FNM_CASEFOLD;
-		} else {
-			$this->fnmatchFlags = 0;
 		}
 	}
 
@@ -94,8 +113,8 @@ final class FileExcluder
 				return true;
 			}
 		}
-		foreach ($this->fnmatchAnalyseExcludes as $exclude) {
-			if (fnmatch($exclude, $file, $this->fnmatchFlags)) {
+		foreach ($this->fnmatchAnalyseExcludes as [$pattern, $mustContain]) {
+			if (str_contains($file, $mustContain) && fnmatch($pattern, $file, $this->fnmatchFlags)) {
 				return true;
 			}
 		}

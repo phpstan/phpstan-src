@@ -639,7 +639,7 @@ public:
 		zval *a = p != NULL ? assertions() : NULL;
 		if (UNEXPECTED(a == NULL)) return false;
 		bool has;
-		if (UNEXPECTED(!pt_callable_parameters_or_asserts_have_template(p, a, has))) return false;
+		if (UNEXPECTED(!pt_callable_parameters_or_asserts_have_template(p, a, PT_LC("hastemplateorlateresolvabletype"), has))) return false;
 		if (has) {
 			out = true;
 			return true;
@@ -651,6 +651,26 @@ public:
 			return false;
 		}
 		return pt_type_op_bool(Z_OBJ_P(returnType.raw()), PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, 0, NULL, out);
+	}
+
+	/* false = pending exception */
+	[[nodiscard]] bool hasUnresolvedTemplateArgumentType(bool &out) const
+	{
+		zval *p = parameters();
+		zval *a = p != NULL ? assertions() : NULL;
+		if (UNEXPECTED(a == NULL)) return false;
+		bool has;
+		if (UNEXPECTED(!pt_callable_parameters_or_asserts_have_template(p, a, PT_LC("hasunresolvedtemplateargumenttype"), has))) return false;
+		if (has) {
+			out = true;
+			return true;
+		}
+		zv::Val returnType = thisReturnType();
+		if (UNEXPECTED(returnType.isUndef())) return false;
+		int returnHas = pt_type_has_unresolved_template_argument(returnType.raw());
+		if (UNEXPECTED(returnHas < 0)) return false;
+		out = returnHas == 1;
+		return true;
 	}
 
 	/* the $this-calls a subclass may answer differently, with the direct
@@ -1238,6 +1258,7 @@ PT_MINIT_REGISTRATION(pt_register_callable_type)
 
 	cls.method<&CallableType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
 	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &CallableType::hasTemplateOrLateResolvableType>();
+	cls.method<&CallableType::hasUnresolvedTemplateArgumentType>(sigs::hasUnresolvedTemplateArgumentType);
 
 	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *position;

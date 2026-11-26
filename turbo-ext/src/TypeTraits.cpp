@@ -208,6 +208,36 @@ void pt_value_set_of_members(INTERNAL_FUNCTION_PARAMETERS, bool intersect)
 	PT_RETURN_VAL(std::move(valueSet));
 }
 
+int pt_type_has_unresolved_template_argument(zval *value)
+{
+	if (Z_TYPE_P(value) == IS_NULL) return 0;
+	if (Z_TYPE_P(value) == IS_ARRAY) {
+		for (zv::ArrayEntry entry : zv::ArrRef(value)) {
+			int has = pt_type_has_unresolved_template_argument(entry.value().deref().raw());
+			if (has != 0) return has;
+		}
+		return 0;
+	}
+	if (UNEXPECTED(Z_TYPE_P(value) != IS_OBJECT)) {
+		zend_type_error("phpstan_turbo: expected a Type, %s given", zend_zval_value_name(value));
+		return -1;
+	}
+	return pt_type_call_is_true(Z_OBJ_P(value), PT_LC("hasunresolvedtemplateargumenttype"), 0, NULL);
+}
+
+void pt_has_unresolved_template_argument_of(INTERNAL_FUNCTION_PARAMETERS, std::initializer_list<PtTypeGetter> getters)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	for (const PtTypeGetter &getter : getters) {
+		zv::Val value = pt_type_call(PT_THIS_OBJ, getter.lcname, getter.len, 0, NULL);
+		if (UNEXPECTED(value.isUndef())) RETURN_THROWS();
+		int has = pt_type_has_unresolved_template_argument(value.raw());
+		if (UNEXPECTED(has < 0)) RETURN_THROWS();
+		if (has == 1) RETURN_TRUE;
+	}
+	RETURN_FALSE;
+}
+
 zv::Val pt_type_new(int classIdx, uint32_t argc, zval *argv)
 {
 	zend_class_entry *ce = pt_class(classIdx);
@@ -3044,24 +3074,24 @@ zv::Val pt_callable_type_node(const char *identifier, size_t identifierLen, bool
 	return pt_type_new(PT_CLASS_CALLABLE_TYPE_NODE, 4, args);
 }
 
-/* $type->hasTemplateOrLateResolvableType(); -1 = pending exception */
-static int pt_callable_type_has_template(zval *type)
+/* $type->hasTemplateOrLateResolvableType() / hasUnresolvedTemplateArgumentType(); -1 = pending exception */
+static int pt_callable_type_has_template(zval *type, const char *lcHas, size_t hasLen)
 {
 	zend_object *object = pt_callable_element_object(type, "a type");
 	if (UNEXPECTED(object == NULL)) return -1;
-	return pt_callable_call_bool(object, PT_LC("hastemplateorlateresolvabletype"), 0, NULL);
+	return pt_callable_call_bool(object, lcHas, hasLen, 0, NULL);
 }
 
-/* $parameter->getOutType() / getClosureThisType() !== null && ->hasTemplateOrLateResolvableType() */
-static int pt_callable_nullable_type_has_template(zend_object *parameter, const char *lcname, size_t len)
+/* $parameter->getOutType() / getClosureThisType() !== null && ->hasTemplateOrLateResolvableType() / ... */
+static int pt_callable_nullable_type_has_template(zend_object *parameter, const char *lcname, size_t len, const char *lcHas, size_t hasLen)
 {
 	zv::Val type = pt_type_call(parameter, lcname, len, 0, NULL);
 	if (UNEXPECTED(type.isUndef())) return -1;
 	if (type.isNull()) return 0;
-	return pt_callable_type_has_template(type.raw());
+	return pt_callable_type_has_template(type.raw(), lcHas, hasLen);
 }
 
-bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *assertions, bool &out)
+bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *assertions, const char *lcHas, size_t hasLen, bool &out)
 {
 	if (UNEXPECTED(Z_TYPE_P(parameters) != IS_ARRAY)) {
 		zend_type_error("phpstan_turbo: the parameters must be an array");
@@ -3072,7 +3102,7 @@ bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *ass
 		if (UNEXPECTED(parameter == NULL)) return false;
 		zv::Val type = pt_type_call(parameter, PT_LC("gettype"), 0, NULL);
 		if (UNEXPECTED(type.isUndef())) return false;
-		int has = pt_callable_type_has_template(type.raw());
+		int has = pt_callable_type_has_template(type.raw(), lcHas, hasLen);
 		if (UNEXPECTED(has < 0)) return false;
 		if (has == 1) {
 			out = true;
@@ -3081,13 +3111,13 @@ bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *ass
 		bool extended;
 		if (UNEXPECTED(!pt_type_instanceof(entry.value().raw(), PT_CLASS_EXTENDED_PARAMETER_REFLECTION, extended))) return false;
 		if (!extended) continue;
-		has = pt_callable_nullable_type_has_template(parameter, PT_LC("getouttype"));
+		has = pt_callable_nullable_type_has_template(parameter, PT_LC("getouttype"), lcHas, hasLen);
 		if (UNEXPECTED(has < 0)) return false;
 		if (has == 1) {
 			out = true;
 			return true;
 		}
-		has = pt_callable_nullable_type_has_template(parameter, PT_LC("getclosurethistype"));
+		has = pt_callable_nullable_type_has_template(parameter, PT_LC("getclosurethistype"), lcHas, hasLen);
 		if (UNEXPECTED(has < 0)) return false;
 		if (has == 1) {
 			out = true;
@@ -3101,7 +3131,7 @@ bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *ass
 		if (UNEXPECTED(assertTag == NULL)) return false;
 		zv::Val type = pt_type_call(assertTag, PT_LC("gettype"), 0, NULL);
 		if (UNEXPECTED(type.isUndef())) return false;
-		int has = pt_callable_type_has_template(type.raw());
+		int has = pt_callable_type_has_template(type.raw(), lcHas, hasLen);
 		if (UNEXPECTED(has < 0)) return false;
 		if (has == 1) {
 			out = true;
@@ -3950,6 +3980,7 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 		RETURN_TRUE;
 	});
 	cls.traitOp(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(true); });
+	cls.traitMethod(sigs::hasUnresolvedTemplateArgumentType, lrDelegate);
 }
 
 /* }}} */
@@ -5101,6 +5132,7 @@ void pt_type_trait_template_type(reg::Class &cls)
 		RETURN_TRUE;
 	});
 	cls.traitOp(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(true); });
+	cls.traitMethod(sigs::hasUnresolvedTemplateArgumentType, PT_HAS_UNRESOLVED_TEMPLATE_ARGUMENT_OF(PT_TYPE_GETTER("getbound")));
 }
 
 /* }}} */

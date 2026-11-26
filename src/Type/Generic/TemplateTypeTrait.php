@@ -430,4 +430,9 @@ trait TemplateTypeTrait
 		return true;
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		return $this->getBound()->hasUnresolvedTemplateArgumentType();
+	}
+
 }

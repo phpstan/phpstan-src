@@ -609,6 +609,17 @@ class ObjectShapeType implements Type
 		return false;
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		foreach ($this->properties as $type) {
+			if ($type->hasUnresolvedTemplateArgumentType()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createObjects($this);

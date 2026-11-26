@@ -335,4 +335,9 @@ class HasPropertyType implements AccessoryType, CompoundType
 		return false;
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		return false;
+	}
+
 }

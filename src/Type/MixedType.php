@@ -1255,6 +1255,11 @@ class MixedType implements CompoundType, SubtractableType
 		return false;
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		return false;
+	}
+
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createUnknown($this);

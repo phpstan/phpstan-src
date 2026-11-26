@@ -1376,6 +1376,7 @@ PT_MINIT_REGISTRATION(pt_register_object_shape_type)
 	cls.method<&ObjectShapeType::toPhpDocNode>(sigs::toPhpDocNode);
 
 	cls.method<&ObjectShapeType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
+	cls.method(sigs::hasUnresolvedTemplateArgumentType, PT_HAS_UNRESOLVED_TEMPLATE_ARGUMENT_OF(PT_TYPE_GETTER("getproperties")));
 
 	/* the traits, in the twin's `use` order (ObjectTypeTrait brings the
 	 * MaybeCallable, MaybeIterable, MaybeOffsetAccessible, NonArray and

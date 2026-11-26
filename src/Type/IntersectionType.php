@@ -2178,6 +2178,17 @@ class IntersectionType implements CompoundType
 		return false;
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		foreach ($this->types as $type) {
+			if ($type->hasUnresolvedTemplateArgumentType()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public function toValueSet(): ValueSet
 	{
 		$valueSet = ValueSet::createUnknown();

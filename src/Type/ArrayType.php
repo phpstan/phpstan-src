@@ -1049,4 +1049,9 @@ class ArrayType implements Type
 		return $this->keyType->hasTemplateOrLateResolvableType() || $this->itemType->hasTemplateOrLateResolvableType();
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		return $this->keyType->hasUnresolvedTemplateArgumentType() || $this->itemType->hasUnresolvedTemplateArgumentType();
+	}
+
 }

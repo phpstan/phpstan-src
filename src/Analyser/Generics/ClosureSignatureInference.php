@@ -1121,7 +1121,7 @@ final class ClosureSignatureInference
 			return false;
 		}
 
-		return !$closureType->containsUnresolvedTemplateArgument();
+		return !$closureType->hasUnresolvedTemplateArgumentType();
 	}
 
 	/**

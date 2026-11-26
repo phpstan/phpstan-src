@@ -206,6 +206,35 @@ int pt_value_set_compare_scalar_values(zval *left, zval *right, zval *phpVersion
 
 /* }}} */
 
+/* {{{ Type::hasUnresolvedTemplateArgumentType() */
+
+/* a getter of the types a composite type holds, lowercased */
+struct PtTypeGetter {
+	const char *lcname;
+	size_t len;
+};
+
+#define PT_TYPE_GETTER(lcname) PtTypeGetter{PT_LC(lcname)}
+
+/* $value->hasUnresolvedTemplateArgumentType() of a Type, false for null, any
+ * element's for an array of types; -1 = pending exception */
+int pt_type_has_unresolved_template_argument(zval *value);
+
+/* whether a type $this->getter() returns has one, for each getter in order */
+void pt_has_unresolved_template_argument_of(INTERNAL_FUNCTION_PARAMETERS, std::initializer_list<PtTypeGetter> getters);
+
+#define PT_HAS_UNRESOLVED_TEMPLATE_ARGUMENT_OF(...) \
+	[](INTERNAL_FUNCTION_PARAMETERS) { pt_has_unresolved_template_argument_of(INTERNAL_FUNCTION_PARAM_PASSTHRU, {__VA_ARGS__}); }
+
+/* the types holding no other type */
+#define PT_HAS_NO_UNRESOLVED_TEMPLATE_ARGUMENT \
+	[](INTERNAL_FUNCTION_PARAMETERS) { \
+		ZEND_PARSE_PARAMETERS_NONE(); \
+		RETURN_FALSE; \
+	}
+
+/* }}} */
+
 /* $position->allowed() ? new NodeClass($name) : null — the keyword and
  * class-name answers of Type::toNativePhpTypeNode(); allowedLc is the
  * lowercased NativeTypePosition check, nodeClassIdx a class-map PhpParser node
@@ -768,7 +797,7 @@ zv::Val pt_callable_type_node(const char *identifier, size_t identifierLen, bool
  * assertion's type has a template or late-resolvable type — the
  * hasTemplateOrLateResolvableType() body before the return type's answer;
  * false = pending exception */
-[[nodiscard]] bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *assertions, bool &out);
+[[nodiscard]] bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *assertions, const char *lcHas, size_t hasLen, bool &out);
 /* the getReferencedTemplateTypes() body; UNDEF = pending exception */
 zv::Val pt_callable_referenced_template_types(zend_object *self, pt_callable_this_getter getReturnType, pt_callable_this_getter getParameters, zval *assertions, zval *positionVariance);
 /* the private inferTemplateTypesOnParametersAcceptor() body; UNDEF =

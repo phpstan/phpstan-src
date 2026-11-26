@@ -1023,6 +1023,7 @@ PT_MINIT_REGISTRATION(pt_register_iterable_type)
 
 	cls.method<&IterableType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
 	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &IterableType::hasTemplateOrLateResolvableType>();
+	cls.method(sigs::hasUnresolvedTemplateArgumentType, PT_HAS_UNRESOLVED_TEMPLATE_ARGUMENT_OF(PT_TYPE_GETTER("getkeytype"), PT_TYPE_GETTER("getitemtype")));
 
 	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *position;

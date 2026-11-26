@@ -1754,7 +1754,7 @@ public:
 		if (frame.isNull()) return true;
 
 		bool contains;
-		if (UNEXPECTED(!pt_closure_type_contains_unresolved_template_argument(closureType, contains))) return false;
+		if (UNEXPECTED(!pt_closure_type_has_unresolved_template_argument(closureType, contains))) return false;
 		out = !contains;
 		return true;
 	}

@@ -547,6 +547,7 @@ PT_MINIT_REGISTRATION(pt_register_accessory_numeric_string_type)
 		RETURN_FALSE;
 	});
 	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return zv::Val::boolean(false); });
+	cls.method(sigs::hasUnresolvedTemplateArgumentType, PT_HAS_NO_UNRESOLVED_TEMPLATE_ARGUMENT);
 
 	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *position;

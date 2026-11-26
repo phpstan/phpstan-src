@@ -291,10 +291,11 @@ inline constexpr char strings[] =
 	"toNativePhpTypeNode\0" /* 3931 */
 	"notBenevolentPickFromTypes\0" /* 3951 */
 	"hasTemplateOrLateResolvableType\0" /* 3978 */
-	"getPossiblyLooselyEqualType\0" /* 4010 */
-	"getAlwaysLooselyEqualType\0" /* 4038 */
-	"PHPStan\\Type\\ValueSet\0" /* 4064 */
-	"toValueSet"; /* 4086 */
+	"hasUnresolvedTemplateArgumentType\0" /* 4010 */
+	"getPossiblyLooselyEqualType\0" /* 4044 */
+	"getAlwaysLooselyEqualType\0" /* 4072 */
+	"PHPStan\\Type\\ValueSet\0" /* 4098 */
+	"toValueSet"; /* 4120 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $types */
 	reg::packed(6, MAY_BE_BOOL, reg::NoString, false, false, 17), /* __construct $normalized */
@@ -558,11 +559,12 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(3805, MAY_BE_CALLABLE), /* notBenevolentPickFromTypes $getValues */
 	reg::packed(78, MAY_BE_ARRAY), /* notBenevolentPickFromTypes return */
 	reg::packed(78, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
+	reg::packed(78, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
 	reg::packed(1874, 0, 1885), /* getPossiblyLooselyEqualType $phpVersion */
 	reg::packed(78, 0, 79), /* getPossiblyLooselyEqualType return */
 	reg::packed(1874, 0, 1885), /* getAlwaysLooselyEqualType $phpVersion */
 	reg::packed(78, 0, 79), /* getAlwaysLooselyEqualType return */
-	reg::packed(78, 0, 4064), /* toValueSet return */
+	reg::packed(78, 0, 4098), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -725,9 +727,10 @@ inline constexpr sigtab::Sig toPhpDocNode = { { 3877 /* toPhpDocNode */, 0, 257,
 inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3931 /* toNativePhpTypeNode */, 1, 258, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig notBenevolentPickFromTypes = { { 3951 /* notBenevolentPickFromTypes */, 1, 259, 1, 260, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3978 /* hasTemplateOrLateResolvableType */, 0, 261, 0, 261, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getPossiblyLooselyEqualType = { { 4010 /* getPossiblyLooselyEqualType */, 1, 262, 1, 263, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getAlwaysLooselyEqualType = { { 4038 /* getAlwaysLooselyEqualType */, 1, 264, 1, 265, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toValueSet = { { 4086 /* toValueSet */, 0, 266, 0, 266, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 4010 /* hasUnresolvedTemplateArgumentType */, 0, 262, 0, 262, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPossiblyLooselyEqualType = { { 4044 /* getPossiblyLooselyEqualType */, 1, 263, 1, 264, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAlwaysLooselyEqualType = { { 4072 /* getAlwaysLooselyEqualType */, 1, 265, 1, 266, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 4120 /* toValueSet */, 0, 267, 0, 267, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::UnionType

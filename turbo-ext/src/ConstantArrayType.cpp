@@ -7892,6 +7892,7 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 		PT_RETURN_BOOL_OR_THROW(PT_THIS.hasTemplateOrLateResolvableType(pt_out__));
 	});
 	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &ConstantArrayType::hasTemplateOrLateResolvableType>();
+	cls.method(sigs::hasUnresolvedTemplateArgumentType, PT_HAS_UNRESOLVED_TEMPLATE_ARGUMENT_OF(PT_TYPE_GETTER("getvaluetypes"), PT_TYPE_GETTER("getunsealedtypes")));
 
 	/* `use ArrayTypeTrait { chunkArray as traitChunkArray; }`: the trait's
 	 * chunkArray() under its alias (the trait's own name is overridden by

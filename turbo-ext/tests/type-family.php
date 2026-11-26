@@ -303,7 +303,7 @@ $intOthers = static fn (string $int, string $constInt, string $range): array => 
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
-			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType'] as $method) {
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType', 'hasUnresolvedTemplateArgumentType'] as $method) {
 			if ($method === 'getReferencedTemplateTypes') {
 				$r["$name $method"] = $view($subject->$method(\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()));
 				continue;
@@ -561,7 +561,7 @@ $stringOthers = static fn (string $string, string $constString, string $classStr
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
-			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType'] as $method) {
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType', 'hasUnresolvedTemplateArgumentType'] as $method) {
 			if ($method === 'getReferencedTemplateTypes') {
 				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
 					$r["$name $method $vi"] = $view($subject->$method($variance));
@@ -816,7 +816,7 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
-			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType'] as $method) {
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType', 'hasUnresolvedTemplateArgumentType'] as $method) {
 			if ($method === 'getReferencedTemplateTypes') {
 				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
 					$r["$name $method $vi"] = $view($subject->$method($variance));
@@ -1211,7 +1211,7 @@ $mixedOthers = static fn (string $never, string $mixed, string $strictMixed): ar
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
-			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType'] as $method) {
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType', 'hasUnresolvedTemplateArgumentType'] as $method) {
 			if ($method === 'getReferencedTemplateTypes') {
 				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
 					$r["$name $method $vi"] = $view($subject->$method($variance));
@@ -1585,7 +1585,7 @@ $objectOthers = static fn (string $object, string $static, string $thisType, str
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
-			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType'] as $method) {
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType', 'hasUnresolvedTemplateArgumentType'] as $method) {
 			if ($method === 'getReferencedTemplateTypes') {
 				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
 					$r["$name $method $vi"] = $view($subject->$method($variance));
@@ -1725,7 +1725,7 @@ $objectOthers = static fn (string $object, string $static, string $thisType, str
 	// an uninitialized instance: every typed-slot read raises the same Error
 	foreach ([$objectClass, $staticClass, $thisClass, $genericStaticClass, $shapeClass] as $uninitializedClass) {
 		$uninitialized = (new \ReflectionClass($uninitializedClass))->newInstanceWithoutConstructor();
-		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'isSuperTypeOf' => [$others['int']], 'equals' => [$uninitialized], 'getSubtractedType' => [], 'subtract' => [$others['int']], 'getClassName' => [], 'getClassReflection' => [], 'getStaticObjectType' => [], 'getProperties' => [], 'getOptionalProperties' => [], 'hasInstanceProperty' => ['a'], 'getTypes' => [], 'getVariances' => [], 'toPhpDocNode' => [], 'getMethod' => ['x', $objectOutOfClassScope], 'hasTemplateOrLateResolvableType' => [], 'traverse' => [static fn ($t) => $t]] as $method => $args) {
+		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'isSuperTypeOf' => [$others['int']], 'equals' => [$uninitialized], 'getSubtractedType' => [], 'subtract' => [$others['int']], 'getClassName' => [], 'getClassReflection' => [], 'getStaticObjectType' => [], 'getProperties' => [], 'getOptionalProperties' => [], 'hasInstanceProperty' => ['a'], 'getTypes' => [], 'getVariances' => [], 'toPhpDocNode' => [], 'getMethod' => ['x', $objectOutOfClassScope], 'hasTemplateOrLateResolvableType' => [], 'hasUnresolvedTemplateArgumentType' => [], 'traverse' => [static fn ($t) => $t]] as $method => $args) {
 			if (!method_exists($uninitialized, $method)) {
 				continue;
 			}
@@ -2040,7 +2040,7 @@ $arrayOthers = static fn (string $array, string $nonEmpty, string $list, string 
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
-			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType'] as $method) {
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType', 'hasUnresolvedTemplateArgumentType'] as $method) {
 			if ($method === 'getReferencedTemplateTypes') {
 				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
 					$r["$name $method $vi"] = $view($subject->$method($variance));
@@ -2155,7 +2155,7 @@ $arrayOthers = static fn (string $array, string $nonEmpty, string $list, string 
 	// an uninitialized instance: every typed-slot read raises the same Error
 	foreach ([$arrayClass, $hasOffsetClass, $hasOffsetValueClass] as $uninitializedClass) {
 		$uninitialized = (new \ReflectionClass($uninitializedClass))->newInstanceWithoutConstructor();
-		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'isSuperTypeOf' => [$others['int']], 'equals' => [$uninitialized], 'getKeyType' => [], 'getItemType' => [], 'getOffsetType' => [], 'getValueType' => [], 'getIterableKeyType' => [], 'isList' => [], 'toPhpDocNode' => [], 'hasTemplateOrLateResolvableType' => [], 'getReferencedClasses' => [], 'isCallable' => [], 'unsetOffset' => [$others['int0']]] as $method => $args) {
+		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'isSuperTypeOf' => [$others['int']], 'equals' => [$uninitialized], 'getKeyType' => [], 'getItemType' => [], 'getOffsetType' => [], 'getValueType' => [], 'getIterableKeyType' => [], 'isList' => [], 'toPhpDocNode' => [], 'hasTemplateOrLateResolvableType' => [], 'hasUnresolvedTemplateArgumentType' => [], 'getReferencedClasses' => [], 'isCallable' => [], 'unsetOffset' => [$others['int0']]] as $method => $args) {
 			if (!method_exists($uninitialized, $method)) {
 				continue;
 			}
@@ -2528,7 +2528,7 @@ $objectOthers = static fn (string $object, string $generic, string $case): array
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
-			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType',
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType', 'hasUnresolvedTemplateArgumentType',
 			'getClassName', 'getClassReflection', 'getNakedClassReflection', 'getSubtractedType', 'getTypeWithoutSubtractedType', 'withoutFinalByKeywordOverride'] as $method) {
 			if ($method === 'getReferencedTemplateTypes') {
 				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
@@ -2647,7 +2647,7 @@ $objectOthers = static fn (string $object, string $generic, string $case): array
 	// uninitialized instances: every typed-slot read raises the same Error
 	foreach ([$objectClass, $genericClass, $caseClass] as $uninitializedClass) {
 		$uninitialized = (new \ReflectionClass($uninitializedClass))->newInstanceWithoutConstructor();
-		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'describeTypeOnly' => [\PHPStan\Type\VerbosityLevel::typeOnly()], 'isSuperTypeOf' => [$others['int']], 'equals' => [$uninitialized], 'getClassName' => [], 'getSubtractedType' => [], 'getReferencedClasses' => [], 'getTypes' => [], 'getVariances' => [], 'getEnumCaseName' => [], 'toPhpDocNode' => [], 'hasTemplateOrLateResolvableType' => [], 'traverse' => [static fn ($t) => $t]] as $method => $args) {
+		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'describeTypeOnly' => [\PHPStan\Type\VerbosityLevel::typeOnly()], 'isSuperTypeOf' => [$others['int']], 'equals' => [$uninitialized], 'getClassName' => [], 'getSubtractedType' => [], 'getReferencedClasses' => [], 'getTypes' => [], 'getVariances' => [], 'getEnumCaseName' => [], 'toPhpDocNode' => [], 'hasTemplateOrLateResolvableType' => [], 'hasUnresolvedTemplateArgumentType' => [], 'traverse' => [static fn ($t) => $t]] as $method => $args) {
 			$realMethod = $method === 'describeTypeOnly' ? 'describe' : $method;
 			if (!method_exists($uninitialized, $realMethod)) {
 				continue;
@@ -3051,7 +3051,7 @@ $callableOthers = static fn (): array => [
 		}
 		if ($subject instanceof \PHPStan\Type\ClosureType) {
 			// asked twice: the second answer is the memoized one
-			$r["$name containsUnresolvedTemplateArgument"] = [$subject->containsUnresolvedTemplateArgument(), $subject->containsUnresolvedTemplateArgument()];
+			$r["$name hasUnresolvedTemplateArgumentType"] = [$subject->hasUnresolvedTemplateArgumentType(), $subject->hasUnresolvedTemplateArgumentType()];
 		}
 		if ($subject instanceof \PHPStan\Type\TypeWithClassName) {
 			$r["$name withClassName"] = [$subject->getClassName(), $cv($subject->getClassReflection()), $cv($subject->getAncestorWithClassName(\Closure::class)), $cv($subject->getAncestorWithClassName(\stdClass::class))];
@@ -3365,7 +3365,7 @@ $callableOthers = static fn (): array => [
 			$r["$name describe $levelName"] = $subject->describe($level);
 		}
 		foreach (['isSealed', 'isUnsealed', 'getUnsealedTypes', 'dropUnsealedTypes', 'getConstantArrays', 'getReferencedClasses', 'getIterableKeyType', 'getIterableValueType', 'getKeyType', 'getItemType', 'isConstantValue', 'getNextAutoIndexes', 'getOptionalKeys', 'getAllArrays', 'getKeyTypes', 'getValueTypes', 'sortKeys', 'isCallable', 'findTypeAndMethodNames',
-			'popArray', 'shiftArray', 'shuffleArray', 'flipArray', 'isIterableAtLeastOnce', 'getArraySize', 'getFirstIterableKeyType', 'getLastIterableKeyType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isConstantArray', 'isList', 'toBoolean', 'toInteger', 'toFloat', 'generalizeValues', 'getKeysArray', 'getValuesArray', 'makeList', 'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'toPhpDocNode', 'getFiniteTypes', 'hasTemplateOrLateResolvableType',
+			'popArray', 'shiftArray', 'shuffleArray', 'flipArray', 'isIterableAtLeastOnce', 'getArraySize', 'getFirstIterableKeyType', 'getLastIterableKeyType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isConstantArray', 'isList', 'toBoolean', 'toInteger', 'toFloat', 'generalizeValues', 'getKeysArray', 'getValuesArray', 'makeList', 'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'toPhpDocNode', 'getFiniteTypes', 'hasTemplateOrLateResolvableType', 'hasUnresolvedTemplateArgumentType',
 			'toNumber', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck', 'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
 			'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'isObject', 'isEnum', 'getArrays', 'getConstantStrings', 'getObjectClassNames', 'getObjectClassReflections', 'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isArray', 'isOversizedArray', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getEnumCases', 'getEnumCaseObject', 'isCloneable'] as $method) {
 			$r["$name $method"] = $catch(static fn () => $subject->$method());
@@ -3475,7 +3475,7 @@ $callableOthers = static fn (): array => [
 	$r['construct named optional'] = $viewR(new $catClass([$ci(0)], [$int], optionalKeys: [0]));
 	// an uninitialized instance: every typed-slot read raises the same Error
 	$uninitialized = (new \ReflectionClass($catClass))->newInstanceWithoutConstructor();
-	foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'isSuperTypeOf' => [$int], 'accepts' => [$int, true], 'equals' => [$uninitialized], 'getKeyType' => [], 'getItemType' => [], 'getIterableKeyType' => [], 'getIterableValueType' => [], 'isList' => [], 'isUnsealed' => [], 'toPhpDocNode' => [], 'hasTemplateOrLateResolvableType' => [], 'getReferencedClasses' => [], 'isCallable' => [], 'unsetOffset' => [$others['int0']], 'getArraySize' => [], 'getOptionalKeys' => [], 'getNextAutoIndexes' => [], 'getUnsealedTypes' => [], 'getAllArrays' => [], 'sortKeys' => [], 'popArray' => [], 'getKeysArray' => [], 'generalizeValues' => [], 'isIterableAtLeastOnce' => [], 'hasOffsetValueType' => [$others['int0']], 'getOffsetValueType' => [$others['int0']], 'isOptionalKey' => [0], 'getFiniteTypes' => [], 'flipArray' => [], 'makeList' => []] as $method => $args) {
+	foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'isSuperTypeOf' => [$int], 'accepts' => [$int, true], 'equals' => [$uninitialized], 'getKeyType' => [], 'getItemType' => [], 'getIterableKeyType' => [], 'getIterableValueType' => [], 'isList' => [], 'isUnsealed' => [], 'toPhpDocNode' => [], 'hasTemplateOrLateResolvableType' => [], 'hasUnresolvedTemplateArgumentType' => [], 'getReferencedClasses' => [], 'isCallable' => [], 'unsetOffset' => [$others['int0']], 'getArraySize' => [], 'getOptionalKeys' => [], 'getNextAutoIndexes' => [], 'getUnsealedTypes' => [], 'getAllArrays' => [], 'sortKeys' => [], 'popArray' => [], 'getKeysArray' => [], 'generalizeValues' => [], 'isIterableAtLeastOnce' => [], 'hasOffsetValueType' => [$others['int0']], 'getOffsetValueType' => [$others['int0']], 'isOptionalKey' => [0], 'getFiniteTypes' => [], 'flipArray' => [], 'makeList' => []] as $method => $args) {
 		$r["uninitialized $method"] = $catch(static fn () => $uninitialized->$method(...$args));
 	}
 	// a PHP subclass overriding what the native calls through $this
@@ -3765,7 +3765,7 @@ $compoundOthers = static fn (string $union, string $benevolent, string $intersec
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
-			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType'] as $method) {
+			'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'getEnumCases', 'getEnumCaseObject', 'isCallable', 'isCloneable', 'toPhpDocNode', 'getReferencedTemplateTypes', 'hasTemplateOrLateResolvableType', 'hasUnresolvedTemplateArgumentType'] as $method) {
 			if ($method === 'getReferencedTemplateTypes') {
 				foreach ([\PHPStan\Type\Generic\TemplateTypeVariance::createInvariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createCovariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createContravariant()] as $vi => $variance) {
 					$r["$name $method $vi"] = $view($subject->$method($variance));
@@ -3932,7 +3932,7 @@ $compoundOthers = static fn (string $union, string $benevolent, string $intersec
 	// an uninitialized instance: every typed-slot read raises the same Error
 	foreach ([$unionClass, $benevolentClass, $intersectionClass] as $uninitializedClass) {
 		$uninitialized = (new \ReflectionClass($uninitializedClass))->newInstanceWithoutConstructor();
-		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'isSuperTypeOf' => [$others['int']], 'equals' => [$uninitialized], 'getTypes' => [], 'isNormalized' => [], 'getFiniteTypeSet' => [], 'getIterableKeyType' => [], 'isList' => [], 'isNull' => [], 'toPhpDocNode' => [], 'hasTemplateOrLateResolvableType' => [], 'getReferencedClasses' => [], 'isCallable' => [], 'unsetOffset' => [$others['int0']], 'tryRemove' => [$others['int0']], 'inferTemplateTypes' => [$others['int0']]] as $method => $args) {
+		foreach (['describe' => [\PHPStan\Type\VerbosityLevel::precise()], 'isSuperTypeOf' => [$others['int']], 'equals' => [$uninitialized], 'getTypes' => [], 'isNormalized' => [], 'getFiniteTypeSet' => [], 'getIterableKeyType' => [], 'isList' => [], 'isNull' => [], 'toPhpDocNode' => [], 'hasTemplateOrLateResolvableType' => [], 'hasUnresolvedTemplateArgumentType' => [], 'getReferencedClasses' => [], 'isCallable' => [], 'unsetOffset' => [$others['int0']], 'tryRemove' => [$others['int0']], 'inferTemplateTypes' => [$others['int0']]] as $method => $args) {
 			if (!method_exists($uninitialized, $method)) {
 				continue;
 			}
@@ -5401,6 +5401,37 @@ $lateOthers = static fn (array $subjects): array => [
 		$r["$name unwrapBare"] = $lateView([\PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare($marker), \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare(new \PHPStan\Type\UnionType([$marker, new \PHPStan\Type\NullType()])), \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare(new \PHPStan\Type\ArrayType(new \PHPStan\Type\IntegerType(), $marker)), \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare(new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [new \PHPStan\Type\IntegerType(), $marker])), \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare(new \PHPStan\Type\IterableType(new \PHPStan\Type\IntegerType(), $marker)), \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare($others['int']) === $others['int'], \PHPStan\Type\Generic\UnresolvedTemplateArgumentType::unwrapBare($others['array']) === $others['array']]);
 		$r["$name traverse toMarker"] = $attempt(static fn () => $marker->traverse(static fn (\PHPStan\Type\Type $t): \PHPStan\Type\Type => $t instanceof \PHPStan\Type\Generic\TemplateType ? $subjects['unresolvedIntSiteB'] : $t));
 		$r["$name traverseSimultaneously toRight"] = $attempt(static fn () => $marker->traverseSimultaneously($others['string'], static fn ($a, $b) => $b));
+	}
+	// every type holding a marker, at any depth, reports it
+	$marker = $subjects['unresolvedInt'];
+	$objectMarker = $subjects['unresolvedEnum'];
+	$int = new \PHPStan\Type\IntegerType();
+	foreach ([
+		'arrayValue' => new \PHPStan\Type\ArrayType($int, $marker),
+		'arrayKey' => new \PHPStan\Type\ArrayType($marker, $int),
+		'arrayNone' => new \PHPStan\Type\ArrayType($int, $int),
+		'iterable' => new \PHPStan\Type\IterableType($int, $marker),
+		'hasOffsetValue' => new \PHPStan\Type\Accessory\HasOffsetValueType(new \PHPStan\Type\Constant\ConstantIntegerType(0), $marker),
+		'classString' => new \PHPStan\Type\Generic\GenericClassStringType($objectMarker),
+		'generic' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [$int, $marker]),
+		'genericNested' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [$int, new \PHPStan\Type\ArrayType($int, $marker)]),
+		'genericNone' => new \PHPStan\Type\Generic\GenericObjectType(\ArrayIterator::class, [$int, $int]),
+		'objectSubtracted' => new \PHPStan\Type\ObjectType(\stdClass::class, $objectMarker),
+		'constantArray' => new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantIntegerType(0)], [$marker], [1]),
+		'constantArrayUnsealed' => new \PHPStan\Type\Constant\ConstantArrayType([], [], [0], [], null, [$int, $marker]),
+		'union' => new \PHPStan\Type\UnionType([new \PHPStan\Type\NullType(), $marker]),
+		'intersection' => new \PHPStan\Type\IntersectionType([new \PHPStan\Type\ArrayType($int, $marker), new \PHPStan\Type\Accessory\NonEmptyArrayType()]),
+		'objectShape' => new \PHPStan\Type\ObjectShapeType(['a' => $marker], []),
+		'callableParameter' => new \PHPStan\Type\CallableType([$callableParam('a', $marker)], $int, false),
+		'callableReturn' => new \PHPStan\Type\CallableType([], $marker, false),
+		'callableNone' => new \PHPStan\Type\CallableType([$callableParam('a', $int)], $int, false),
+		'closureParameter' => new \PHPStan\Type\ClosureType([$callableParam('a', $marker)], $int, false),
+		'closureReturn' => new \PHPStan\Type\ClosureType([], $marker, false),
+		'closureNone' => new \PHPStan\Type\ClosureType([], $int, false),
+		'conditional' => $subjects['condTIsInt'],
+		'template' => $lateT,
+	] as $holderName => $holder) {
+		$r["hasUnresolvedTemplateArgumentType $holderName"] = $attempt(static fn () => $holder->hasUnresolvedTemplateArgumentType());
 	}
 	$r['marker nested initial type'] = $attempt(static fn () => new \PHPStan\Type\Generic\UnresolvedTemplateArgumentType($lateSiteA, $lateT, $subjects['unresolvedInt']));
 	// a union keeps template-argument markers apart: no other type absorbs one,

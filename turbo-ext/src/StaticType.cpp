@@ -1452,6 +1452,7 @@ PT_MINIT_REGISTRATION(pt_register_static_type)
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("hastemplateorlateresolvabletype"), 0, 0);
 	});
 	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, argc, argv); });
+	cls.method(sigs::hasUnresolvedTemplateArgumentType, PT_HAS_UNRESOLVED_TEMPLATE_ARGUMENT_OF(PT_TYPE_GETTER("getstaticobjecttype")));
 
 	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *position;

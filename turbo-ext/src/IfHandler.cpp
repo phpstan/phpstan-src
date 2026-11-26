@@ -105,6 +105,16 @@ void pushFlowBranch(zv::Arr &flowBranches, zv::Val conditionFlow, zval *branchFl
 	flowBranches.push(zv::Ref(branchFlow));
 }
 
+/* $deadBranchScopes[] = $branchScopeStatementResult->getScope(); false = pending exception */
+[[nodiscard]] bool pushDeadBranchScope(zv::Arr &deadBranchScopes, zval *branchResult)
+{
+	zv::Val hold;
+	zval *branchScope = pt_internal_statement_result_scope(branchResult, hold);
+	if (UNEXPECTED(branchScope == NULL)) return false;
+	deadBranchScopes.push(zv::Ref(branchScope));
+	return true;
+}
+
 } // namespace
 
 namespace phpstanturbo {
@@ -137,6 +147,7 @@ public:
 		zv::Arr dependencies = zv::Arr::empty();
 		zval *entryScope = scope;
 		zv::Arr flowBranches = zv::Arr::empty();
+		zv::Arr deadBranchScopes = zv::Arr::empty();
 		zv::Val elseFlow = zv::Val::null();
 
 		zval *cond = ptsh::readNodeProperty(pt_ih_cond_site, stmt, PT_LC("cond"));
@@ -200,6 +211,8 @@ public:
 				bool branchHasYield;
 				if (UNEXPECTED(!pt_internal_statement_result_has_yield(branchResult.raw(), branchHasYield))) return zv::Val();
 				hasYield = branchHasYield || hasYield;
+			} else if (UNEXPECTED(!pushDeadBranchScope(deadBranchScopes, branchResult.raw()))) {
+				return zv::Val();
 			}
 		}
 
@@ -258,6 +271,8 @@ public:
 				pushFlowBranch(flowBranches, std::move(conditionFlow), branchFlow);
 				if (!ifAlwaysTrue && !lastElseIfConditionIsTrue && elseIfConditionType.isTrue != PT_TRI_NO) {
 					if (UNEXPECTED(!mergeBranch(branchResult.raw(), exitPoints, throwPoints, impurePoints, finalScope, alwaysTerminating, endStatements, elseif, pt_ih_elseif_stmts_site, hasYield))) return zv::Val();
+				} else if (UNEXPECTED(!pushDeadBranchScope(deadBranchScopes, branchResult.raw()))) {
+					return zv::Val();
 				}
 
 				if (elseIfConditionType.isTrue == PT_TRI_YES) {
@@ -309,11 +324,23 @@ public:
 				if (UNEXPECTED(elseNode == NULL)) return zv::Val();
 				elseHold = zv::Val::copyOf(zv::Ref(elseNode));
 				if (UNEXPECTED(!mergeBranch(branchResult.raw(), exitPoints, throwPoints, impurePoints, finalScope, alwaysTerminating, endStatements, elseHold.raw(), pt_ih_else_stmts_site, hasYield))) return zv::Val();
+			} else if (UNEXPECTED(!pushDeadBranchScope(deadBranchScopes, branchResult.raw()))) {
+				return zv::Val();
 			}
 		}
 
 		if (finalScope.isNull()) {
 			finalScope = zv::Val::copyOf(zv::Ref(scopeValue.raw()));
+		}
+
+		// a branch the condition rules out is still walked and its rules still
+		// see its calls - their template arguments are resolved from it too
+		for (auto entry : zv::TableRef(deadBranchScopes.table())) {
+			zv::Val constraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(entry.value().raw()));
+			if (UNEXPECTED(constraints.isUndef())) return zv::Val();
+			zv::Val constrained = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(finalScope.raw()), constraints.raw());
+			if (UNEXPECTED(constrained.isUndef())) return zv::Val();
+			finalScope = std::move(constrained);
 		}
 
 		elseNode = ptsh::readNodeProperty(pt_ih_else_site, stmt, PT_LC("else"));

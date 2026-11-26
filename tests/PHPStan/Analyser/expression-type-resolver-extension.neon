@@ -4,4 +4,8 @@ services:
 		class: ExpressionTypeResolverExtension\MethodCallReturnsBoolExpressionTypeResolverExtension
 		tags:
 			- phpstan.broker.expressionTypeResolverExtension
+	-
+		class: ExpressionTypeResolverExtension\VirtualPropertyExpressionTypeResolverExtension
+		tags:
+			- phpstan.broker.expressionTypeResolverExtension
 

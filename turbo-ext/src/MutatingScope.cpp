@@ -401,6 +401,9 @@ static zval *pt_ms_service_of(zval *services, uint32_t which)
 /* private const GLOBAL_CONSTANT_FETCH_KEYS_LIMIT */
 #define PT_MS_GLOBAL_CONSTANT_FETCH_KEYS_LIMIT 8192
 
+/* private const GENERALIZED_ARRAY_DEPTH_LIMIT */
+#define PT_MS_GENERALIZED_ARRAY_DEPTH_LIMIT 2
+
 /* the twin's private CUSTOM_SERIALIZATION_METHODS (the serialization check
  * walks the same names), a persistent list built once at module startup */
 static const pt_superglobal_name pt_ms_custom_serialization_methods[] = {
@@ -9707,8 +9710,21 @@ public:
 						if (UNEXPECTED(valueA.isUndef())) return zv::Val();
 						zv::Val valueB = pt_type_op(Z_OBJ_P(constantArraysB.raw()), PT_OP_GET_OFFSET_VALUE_TYPE, 1, keyType.raw());
 						if (UNEXPECTED(valueB.isUndef())) return zv::Val();
-						zv::Val generalizedValue = generalizeType(valueA.raw(), valueB.raw(), depth + 1);
-						if (UNEXPECTED(generalizedValue.isUndef())) return zv::Val();
+						zend_long aDepth, bDepth;
+						if (UNEXPECTED(!getArrayDepth(valueA.raw(), aDepth) || !getArrayDepth(valueB.raw(), bDepth))) return zv::Val();
+						aDepth += depth;
+						bDepth += depth;
+						zv::Val generalizedValue;
+						/* a value nested deeper in every pass, like `$x = [$x]`, would
+						 * otherwise keep growing until the loop runs out of passes */
+						if ((aDepth > PT_MS_GENERALIZED_ARRAY_DEPTH_LIMIT || bDepth > PT_MS_GENERALIZED_ARRAY_DEPTH_LIMIT) && aDepth != bDepth) {
+							zval mixedZv;
+							if (UNEXPECTED(!pt_mixed_type_new(&mixedZv))) return zv::Val();
+							generalizedValue = zv::Val::adopt(mixedZv);
+						} else {
+							generalizedValue = generalizeType(valueA.raw(), valueB.raw(), depth + 1);
+							if (UNEXPECTED(generalizedValue.isUndef())) return zv::Val();
+						}
 						zend_long hasA = typeOpTrinary(Z_OBJ_P(constantArraysA.raw()), PT_OP_HAS_OFFSET_VALUE_TYPE, 1, keyType.raw());
 						if (UNEXPECTED(hasA < 0)) return zv::Val();
 						zend_long hasB = typeOpTrinary(Z_OBJ_P(constantArraysB.raw()), PT_OP_HAS_OFFSET_VALUE_TYPE, 1, keyType.raw());
@@ -9847,7 +9863,7 @@ public:
 					if (UNEXPECTED(!getArrayDepth(aValueType.raw(), aDepth) || !getArrayDepth(bValueType.raw(), bDepth))) return zv::Val();
 					aDepth += depth;
 					bDepth += depth;
-					if ((aDepth > 2 || bDepth > 2) && aDepth != bDepth) {
+					if ((aDepth > PT_MS_GENERALIZED_ARRAY_DEPTH_LIMIT || bDepth > PT_MS_GENERALIZED_ARRAY_DEPTH_LIMIT) && aDepth != bDepth) {
 						zval aMixed, bMixed;
 						if (UNEXPECTED(!pt_mixed_type_new(&aMixed))) return zv::Val();
 						aValueType = zv::Val::adopt(aMixed);
@@ -12732,6 +12748,7 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.privateStaticTypedArrayPropertyDefaultEmpty("resolvingMergedCalls");
 	cls.privateClassConstantLong("COMPLEX_UNION_TYPE_MEMBER_LIMIT", PT_MS_COMPLEX_UNION_TYPE_MEMBER_LIMIT);
 	cls.privateClassConstantLong("GLOBAL_CONSTANT_FETCH_KEYS_LIMIT", PT_MS_GLOBAL_CONSTANT_FETCH_KEYS_LIMIT);
+	cls.privateClassConstantLong("GENERALIZED_ARRAY_DEPTH_LIMIT", PT_MS_GENERALIZED_ARRAY_DEPTH_LIMIT);
 	pt_ms_custom_serialization_methods_list = pt_persistent_string_list(pt_ms_custom_serialization_methods, sizeof(pt_ms_custom_serialization_methods) / sizeof(pt_ms_custom_serialization_methods[0]));
 	cls.privateClassConstantValue("CUSTOM_SERIALIZATION_METHODS", pt_ms_custom_serialization_methods_constant);
 	/* }}} */

@@ -154,6 +154,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	/** Distinct name/namespace combinations getGlobalConstantType() remembers the expression keys of. */
 	private const GLOBAL_CONSTANT_FETCH_KEYS_LIMIT = 8192;
 
+	/** Past this array nesting, widening between loop passes turns an array value whose nesting grew into mixed. */
+	private const GENERALIZED_ARRAY_DEPTH_LIMIT = 2;
+
 	/** Magic methods that let the author decide which properties survive a serialize()/unserialize() round trip. */
 	private const CUSTOM_SERIALIZATION_METHODS = ['__sleep', '__serialize', '__unserialize'];
 
@@ -5181,11 +5184,25 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				) {
 					$resultArrayBuilder = ConstantArrayTypeBuilder::createEmpty();
 					foreach (TypeUtils::flattenTypes($constantArraysA->getIterableKeyType()) as $keyType) {
+						$aOffsetValueType = $constantArraysA->getOffsetValueType($keyType);
+						$bOffsetValueType = $constantArraysB->getOffsetValueType($keyType);
+						$aDepth = self::getArrayDepth($aOffsetValueType) + $depth;
+						$bDepth = self::getArrayDepth($bOffsetValueType) + $depth;
+						// a value nested deeper in every pass, like `$x = [$x]`, would
+						// otherwise keep growing until the loop runs out of passes
+						if (($aDepth > self::GENERALIZED_ARRAY_DEPTH_LIMIT || $bDepth > self::GENERALIZED_ARRAY_DEPTH_LIMIT) && $aDepth !== $bDepth) {
+							$resultArrayBuilder->setOffsetValueType(
+								$keyType,
+								new MixedType(),
+								!$constantArraysA->hasOffsetValueType($keyType)->and($constantArraysB->hasOffsetValueType($keyType))->negate()->no(),
+							);
+							continue;
+						}
 						$resultArrayBuilder->setOffsetValueType(
 							$keyType,
 							$this->generalizeType(
-								$constantArraysA->getOffsetValueType($keyType),
-								$constantArraysB->getOffsetValueType($keyType),
+								$aOffsetValueType,
+								$bOffsetValueType,
 								$depth + 1,
 							),
 							!$constantArraysA->hasOffsetValueType($keyType)->and($constantArraysB->hasOffsetValueType($keyType))->negate()->no(),
@@ -5274,7 +5291,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 					$aDepth = self::getArrayDepth($aValueType) + $depth;
 					$bDepth = self::getArrayDepth($bValueType) + $depth;
 					if (
-						($aDepth > 2 || $bDepth > 2)
+						($aDepth > self::GENERALIZED_ARRAY_DEPTH_LIMIT || $bDepth > self::GENERALIZED_ARRAY_DEPTH_LIMIT)
 						&& abs($aDepth - $bDepth) > 0
 					) {
 						$aValueType = new MixedType();

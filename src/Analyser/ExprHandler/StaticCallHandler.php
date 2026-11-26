@@ -236,7 +236,8 @@ final class StaticCallHandler implements ExprHandler
 			$scope = $nameResult->getScope();
 		}
 
-		if ($expr->class instanceof Expr) {
+		// a resolved method gets its throw point from the actual arguments below
+		if ($expr->class instanceof Expr && $methodReflection === null) {
 			// the class expr was processed above as the receiver; read its
 			// already-computed result instead of re-walking via Scope::getType().
 			$objectClasses = $classResult->getType()->getObjectClassNames();

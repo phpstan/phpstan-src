@@ -529,49 +529,42 @@ public:
 			if (UNEXPECTED(objectClasses.isUndef())) return zv::Val();
 			zend_long objectClassCount = countOf(objectClasses.raw());
 			if (UNEXPECTED(objectClassCount < 0)) return zv::Val();
-			zv::Val additionalThrowPoints;
 			if (objectClassCount == 1) {
 				zval *objectClass = firstOf(objectClasses.raw(), &null);
 				if (UNEXPECTED(objectClass == NULL)) return zv::Val();
-				zv::Val objectClassName = pt_name_node_new(PT_CLASS_NAME, objectClass);
-				if (UNEXPECTED(objectClassName.isUndef())) return zv::Val();
-				zv::Val attributes = syntheticSiteAttributes();
-				zv::Arr noArgs = zv::Arr::empty();
-				zv::Args newArgv{objectClassName.raw(), noArgs.raw(), attributes.raw()};
-				zv::Val syntheticNew = pt_type_new(PT_CLASS_NEW, 3, newArgv);
-				if (UNEXPECTED(syntheticNew.isUndef())) return zv::Val();
-				zv::Val noopNodeCallback = pt_type_new(PT_CLASS_NOOP_NODE_CALLBACK, 0, NULL);
-				if (UNEXPECTED(noopNodeCallback.isUndef())) return zv::Val();
-				zv::Val deepContext = pt_expression_context_enter_deep(context);
-				if (UNEXPECTED(deepContext.isUndef())) return zv::Val();
-				zv::Val syntheticContext = pt_expression_context_without_template_argument_resolution(deepContext.raw());
-				if (UNEXPECTED(syntheticContext.isUndef())) return zv::Val();
-				zv::Val objectExprResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, syntheticNew.raw(), currentScope.raw(), storage, noopNodeCallback.raw(), syntheticContext.raw());
-				if (UNEXPECTED(objectExprResult.isUndef())) return zv::Val();
-				objectClass = firstOf(objectClasses.raw(), &null);
-				if (UNEXPECTED(objectClass == NULL)) return zv::Val();
 				className = zv::Val::copyOf(zv::Ref(objectClass));
-				borrowed = pt_expression_result_throw_points(objectExprResult.raw(), hold);
-				if (UNEXPECTED(borrowed == NULL)) return zv::Val();
-				additionalThrowPoints = zv::Val::copyOf(zv::Ref(borrowed));
+				if (UNEXPECTED(!processConstructorReflection(className.raw(), expr, parts))) return zv::Val();
+				deferredConstructorImpureIsDynamic = 1;
+
+				// a resolved constructor gets its throw point from the actual arguments below
+				if (parts.constructorReflection.isNull()) {
+					zv::Val objectClassName = pt_name_node_new(PT_CLASS_NAME, className.raw());
+					if (UNEXPECTED(objectClassName.isUndef())) return zv::Val();
+					zv::Val attributes = syntheticSiteAttributes();
+					zv::Arr noArgs = zv::Arr::empty();
+					zv::Args newArgv{objectClassName.raw(), noArgs.raw(), attributes.raw()};
+					zv::Val syntheticNew = pt_type_new(PT_CLASS_NEW, 3, newArgv);
+					if (UNEXPECTED(syntheticNew.isUndef())) return zv::Val();
+					zv::Val noopNodeCallback = pt_type_new(PT_CLASS_NOOP_NODE_CALLBACK, 0, NULL);
+					if (UNEXPECTED(noopNodeCallback.isUndef())) return zv::Val();
+					zv::Val deepContext = pt_expression_context_enter_deep(context);
+					if (UNEXPECTED(deepContext.isUndef())) return zv::Val();
+					zv::Val syntheticContext = pt_expression_context_without_template_argument_resolution(deepContext.raw());
+					if (UNEXPECTED(syntheticContext.isUndef())) return zv::Val();
+					zv::Val objectExprResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, syntheticNew.raw(), currentScope.raw(), storage, noopNodeCallback.raw(), syntheticContext.raw());
+					if (UNEXPECTED(objectExprResult.isUndef())) return zv::Val();
+					borrowed = pt_expression_result_throw_points(objectExprResult.raw(), hold);
+					if (UNEXPECTED(borrowed == NULL)) return zv::Val();
+					if (UNEXPECTED(Z_TYPE_P(throwPoints.raw()) != IS_ARRAY || Z_TYPE_P(borrowed) != IS_ARRAY)) {
+						zend_type_error("array_merge(): Argument #%d must be of type array, %s given", Z_TYPE_P(throwPoints.raw()) != IS_ARRAY ? 1 : 2, zend_zval_value_name(Z_TYPE_P(throwPoints.raw()) != IS_ARRAY ? throwPoints.raw() : borrowed));
+						return zv::Val();
+					}
+					throwPoints = arrayMerge(throwPoints.raw(), borrowed);
+				}
 			} else {
 				zv::Val throwPoint = pt_internal_throw_point_create_implicit(currentScope.raw(), expr);
 				if (UNEXPECTED(throwPoint.isUndef())) return zv::Val();
-				zv::Arr list = zv::Arr::create(1);
-				list.push(std::move(throwPoint));
-				additionalThrowPoints = zv::Val(std::move(list));
-			}
-
-			if (UNEXPECTED(Z_TYPE_P(throwPoints.raw()) != IS_ARRAY || Z_TYPE_P(additionalThrowPoints.raw()) != IS_ARRAY)) {
-				zend_type_error("array_merge(): Argument #%d must be of type array, %s given", Z_TYPE_P(throwPoints.raw()) != IS_ARRAY ? 1 : 2, zend_zval_value_name(Z_TYPE_P(throwPoints.raw()) != IS_ARRAY ? throwPoints.raw() : additionalThrowPoints.raw()));
-				return zv::Val();
-			}
-			throwPoints = arrayMerge(throwPoints.raw(), additionalThrowPoints.raw());
-
-			if (!className.isNull()) {
-				if (UNEXPECTED(!processConstructorReflection(className.raw(), expr, parts))) return zv::Val();
-				deferredConstructorImpureIsDynamic = 1;
-			} else {
+				appendTo(throwPoints, std::move(throwPoint));
 				zv::Val point = pt_impure_point_new(currentScope.raw(), expr, pt_nh_new, pt_nh_instantiation_of_unknown_class, false);
 				if (UNEXPECTED(point.isUndef())) return zv::Val();
 				appendTo(impurePoints, std::move(point));

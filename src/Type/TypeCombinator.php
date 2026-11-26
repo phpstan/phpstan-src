@@ -6,20 +6,30 @@ use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Combinator\AbsorbedArrayUnionRule;
+use PHPStan\Type\Combinator\AtOnceUnionRemoveRule;
 use PHPStan\Type\Combinator\BooleanUnionRule;
+use PHPStan\Type\Combinator\DisjointFiniteUnionRemoveRule;
 use PHPStan\Type\Combinator\DuplicateIntersectRule;
 use PHPStan\Type\Combinator\ExactIntersectRule;
+use PHPStan\Type\Combinator\FiniteTypesRemoveRule;
 use PHPStan\Type\Combinator\FoldedShapeUnionRule;
 use PHPStan\Type\Combinator\GeneralArrayUnionRule;
 use PHPStan\Type\Combinator\IntersectRule;
 use PHPStan\Type\Combinator\IterableUnionRule;
+use PHPStan\Type\Combinator\MixedUnionRemoveRule;
 use PHPStan\Type\Combinator\NumberUnionRule;
 use PHPStan\Type\Combinator\OffsetValueLimitIntersectRule;
+use PHPStan\Type\Combinator\PeelUnionRemoveRule;
+use PHPStan\Type\Combinator\RemoveRule;
 use PHPStan\Type\Combinator\ShapeUnionRule;
 use PHPStan\Type\Combinator\SingleValueUnionRule;
 use PHPStan\Type\Combinator\StringUnionRule;
 use PHPStan\Type\Combinator\SubsumptionIntersectRule;
+use PHPStan\Type\Combinator\SubsumptionRemoveRule;
 use PHPStan\Type\Combinator\SubsumptionUnionRule;
+use PHPStan\Type\Combinator\SubtractedMixedRemoveRule;
+use PHPStan\Type\Combinator\TypeRemoveRule;
+use PHPStan\Type\Combinator\UnionRemoveRule;
 use PHPStan\Type\Combinator\UnionRule;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
@@ -53,6 +63,12 @@ final class TypeCombinator
 
 	/** @var list<IntersectRule>|null */
 	private static ?array $intersectRules = null;
+
+	/** @var list<UnionRemoveRule>|null */
+	private static ?array $unionRemoveRules = null;
+
+	/** @var list<RemoveRule>|null */
+	private static ?array $removeRules = null;
 
 	/**
 	 * Turned on by TurboExtensionEnabler when the native extension is active, so that
@@ -88,6 +104,39 @@ final class TypeCombinator
 		return $type;
 	}
 
+	/**
+	 * The rules remove() asks in order when it removes a union, the first
+	 * answer winning: all members at once where the order of removals cannot
+	 * matter, then one at a time.
+	 *
+	 * @return list<UnionRemoveRule>
+	 */
+	private static function createUnionRemoveRules(): array
+	{
+		return [
+			new AtOnceUnionRemoveRule(),
+			new MixedUnionRemoveRule(),
+			new DisjointFiniteUnionRemoveRule(),
+			new PeelUnionRemoveRule(),
+		];
+	}
+
+	/**
+	 * The rules remove() asks in order when it removes any other type, the
+	 * first answer winning.
+	 *
+	 * @return list<RemoveRule>
+	 */
+	private static function createRemoveRules(): array
+	{
+		return [
+			new SubsumptionRemoveRule(),
+			new SubtractedMixedRemoveRule(),
+			new TypeRemoveRule(),
+			new FiniteTypesRemoveRule(),
+		];
+	}
+
 	public static function remove(Type $fromType, Type $typeToRemove): Type
 	{
 		if (self::$cacheEnabled ??= TurboExtensionEnabler::isTypeCombinatorCacheEnabled()) {
@@ -97,144 +146,24 @@ final class TypeCombinator
 		return self::doRemove($fromType, $typeToRemove);
 	}
 
-	/**
-	 * Whether removing the union's members all at once gives what removing them
-	 * one at a time would: true when the subtraction is a set difference, so no
-	 * order of removals can sharpen the result.
-	 *
-	 * Everywhere else the members have to come off one at a time - removing one
-	 * can narrow the type so that removing the next achieves more.
-	 */
-	private static function canRemoveUnionAtOnce(Type $fromType): bool
-	{
-		// A sealed hierarchy - an enum, or a hierarchy an
-		// AllowedSubTypesClassReflectionExtension seals - subtracts by dropping
-		// allowed subtypes, and which ones are dropped does not depend on order.
-		$classReflections = $fromType->getObjectClassReflections();
-		if (count($classReflections) === 1 && $classReflections[0]->getAllowedSubTypes() !== null) {
-			return true;
-		}
-
-		// A union removes the whole thing from each of its members, and each of
-		// those removals weighs this same question again - so a member that needs
-		// the removals one at a time still gets them that way.
-		return $fromType instanceof UnionType;
-	}
-
 	/** @internal Delegated to from TypeCombinatorCache, which the native extension shadows to memoize it. */
 	public static function doRemove(Type $fromType, Type $typeToRemove): Type
 	{
 		if ($typeToRemove instanceof UnionType) {
-			// Removing the members one at a time is what keeps the result precise:
-			// removing one can narrow the type so that removing the next achieves
-			// more. A sealed hierarchy is the exception - there the subtraction is
-			// a set difference over the allowed subtypes, so the order the members
-			// come off cannot matter, and peeling them would rebuild the whole
-			// subtraction once per member (removing an enum from its own type then
-			// costs O(cases^2)).
-			if (self::canRemoveUnionAtOnce($fromType)) {
-				$removed = $fromType->tryRemove($typeToRemove);
+			foreach (self::$unionRemoveRules ??= self::createUnionRemoveRules() as $rule) {
+				$removed = $rule->tryRemove($fromType, $typeToRemove);
 				if ($removed !== null) {
 					return $removed;
 				}
-
-				// a union removed the whole union from each of its members and none
-				// of them changed - removing the members of it one at a time cannot
-				// change one either, peeling would only repeat that work
-				if ($fromType instanceof UnionType) {
-					return $fromType;
-				}
 			}
 
-			// mixed is the top type, so removing a union from it is exactly
-			// subtracting the members it does not subtract already, all of them at
-			// once. Peeling them one at a time would ask each member about the mixed
-			// the earlier members left, which walks everything they subtracted.
-			if ($fromType instanceof MixedType && !$fromType instanceof TemplateType) {
-				$subtractedType = $fromType->getSubtractedType();
-				$remainingTypes = [];
-				foreach ($typeToRemove->getTypes() as $unionTypeToRemove) {
-					if ($subtractedType !== null && $subtractedType->isSuperTypeOf($unionTypeToRemove)->yes()) {
-						continue;
-					}
-					$remainingTypes[] = $unionTypeToRemove;
-				}
-
-				if ($remainingTypes === []) {
-					return $fromType;
-				}
-
-				return $fromType->subtract(count($remainingTypes) === 1 ? $remainingTypes[0] : new UnionType($remainingTypes));
-			}
-
-			// a value none of the union's keyed members stands for overlaps none
-			// of them - one lookup instead of a removal per member
-			$fromTypeKey = FiniteTypeSet::key($fromType);
-			if ($fromTypeKey !== null) {
-				$finiteTypeSet = $typeToRemove->getFiniteTypeSet();
-				if ($finiteTypeSet !== null && $finiteTypeSet->isComplete() && !$finiteTypeSet->has($fromTypeKey)) {
-					return $fromType;
-				}
-			}
-
-			foreach ($typeToRemove->getTypes() as $unionTypeToRemove) {
-				$fromType = self::remove($fromType, $unionTypeToRemove);
-				if ($fromType instanceof NeverType) {
-					// there is nothing left to remove from
-					break;
-				}
-			}
 			return $fromType;
 		}
 
-		$isSuperType = $typeToRemove->isSuperTypeOf($fromType);
-		if ($isSuperType->yes()) {
-			return new NeverType();
-		}
-		if ($isSuperType->no()) {
-			return $fromType;
-		}
-
-		if ($typeToRemove instanceof MixedType) {
-			$typeToRemoveSubtractedType = $typeToRemove->getSubtractedType();
-			if ($typeToRemoveSubtractedType !== null) {
-				return self::intersect($fromType, $typeToRemoveSubtractedType);
-			}
-		}
-
-		$removed = $fromType->tryRemove($typeToRemove);
-		if ($removed !== null) {
-			return $removed;
-		}
-
-		$fromFiniteTypes = $fromType->getFiniteTypes();
-		if (count($fromFiniteTypes) > 0) {
-			$finiteTypesToRemove = $typeToRemove->getFiniteTypes();
-			if (count($finiteTypesToRemove) > 0) {
-				$result = [];
-				foreach ($fromFiniteTypes as $finiteType) {
-					foreach ($finiteTypesToRemove as $finiteTypeToRemove) {
-						if ($finiteType->equals($finiteTypeToRemove)) {
-							continue 2;
-						}
-					}
-
-					$result[] = $finiteType;
-				}
-
-				if (count($result) === count($fromFiniteTypes)) {
-					return $fromType;
-				}
-
-				if (count($result) === 0) {
-					return new NeverType();
-				}
-
-				if (count($result) === 1) {
-					return $result[0];
-				}
-
-				return new UnionType($result);
+		foreach (self::$removeRules ??= self::createRemoveRules() as $rule) {
+			$removed = $rule->tryRemove($fromType, $typeToRemove);
+			if ($removed !== null) {
+				return $removed;
 			}
 		}
 

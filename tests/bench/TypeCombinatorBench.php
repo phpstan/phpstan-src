@@ -426,9 +426,9 @@ final class TypeCombinatorBench
 	 * A constant in the middle of each range of a union removed from it, splitting each range.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '2.635M', cycles: '3.423M', memory: '9.609KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '28.14M', cycles: '31.18M', memory: '16.73KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '391.2M', cycles: '411.2M', memory: '46.51KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '2.839M', cycles: '3.677M', memory: '9.609KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '30.74M', cycles: '33.95M', memory: '16.73KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '433.1M', cycles: '454.4M', memory: '47.23KiB')]
 	public function benchRemoveConstantsFromRanges(int $types): Type
 	{
 		return TypeCombinator::remove(...$this->rangesAndConstants);

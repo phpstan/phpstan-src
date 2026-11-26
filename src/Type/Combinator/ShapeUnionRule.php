@@ -31,6 +31,10 @@ final class ShapeUnionRule implements UnionRule
 		}
 
 		$arrayList = array_values($arrays);
+		// one array, already normalized as every operand is, has nothing to merge with
+		if (count($arrayList) === 1 && $dropped === []) {
+			return $types;
+		}
 		if (count($arrayList) > 1) {
 			foreach ($arrayList as $array) {
 				if ($array->getConstantArrays() === []) {

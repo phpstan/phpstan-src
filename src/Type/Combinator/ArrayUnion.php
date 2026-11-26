@@ -166,6 +166,13 @@ final class ArrayUnion
 	 */
 	public static function getCommonAccessoryTypes(array $arrayTypes): array
 	{
+		// the keys are what describe() gives these accessories of an intersection below
+		static $list = null, $listKey = null, $nonEmpty = null, $nonEmptyKey = null;
+		$list ??= new AccessoryArrayListType();
+		$listKey ??= $list->describe(VerbosityLevel::cache());
+		$nonEmpty ??= new NonEmptyArrayType();
+		$nonEmptyKey ??= $nonEmpty->describe(VerbosityLevel::cache());
+
 		$isIterableAtLeastOnce = [];
 		$accessoryTypes = [];
 		foreach ($arrayTypes as $i => $arrayType) {
@@ -202,16 +209,14 @@ final class ArrayUnion
 
 			foreach ($constantArrays as $constantArray) {
 				if ($constantArray->isList()->yes()) {
-					$list = new AccessoryArrayListType();
-					$accessoryTypes[$list->describe(VerbosityLevel::cache())][$i] = $list;
+					$accessoryTypes[$listKey][$i] = $list;
 				}
 
 				if (!$constantArray->isIterableAtLeastOnce()->yes()) {
 					continue;
 				}
 
-				$nonEmpty = new NonEmptyArrayType();
-				$accessoryTypes[$nonEmpty->describe(VerbosityLevel::cache())][$i] = $nonEmpty;
+				$accessoryTypes[$nonEmptyKey][$i] = $nonEmpty;
 			}
 		}
 
@@ -263,6 +268,15 @@ final class ArrayUnion
 				$accessoryTypes,
 				static fn (Type $t): bool => !($t instanceof OversizedArrayType) && !($t instanceof NonEmptyArrayType),
 			));
+		}
+
+		// the ones the array is already of add nothing, as list to a list shape
+		$accessoryTypes = array_values(array_filter(
+			$accessoryTypes,
+			static fn (Type $t): bool => !$t->isSuperTypeOf($array)->yes(),
+		));
+		if ($accessoryTypes === []) {
+			return $array;
 		}
 
 		return TypeCombinator::intersect($array, ...$accessoryTypes);

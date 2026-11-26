@@ -310,7 +310,7 @@ final class ArrayUnion
 		$arrayType = new ArrayType(
 			TypeCombinator::union(...$keyTypes),
 			// merging the arrays into one generalizes them already, and bounds what it merges
-			TypeCombinator::union(...TypeCombinator::optimizeConstantArrays($valueTypes)),
+			TypeCombinator::union(...ArrayWidening::widen($valueTypes)),
 		);
 
 		if ($templateArrayType !== null) {

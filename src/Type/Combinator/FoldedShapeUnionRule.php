@@ -2,7 +2,6 @@
 
 namespace PHPStan\Type\Combinator;
 
-use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeKind;
 use function array_values;
 
@@ -47,7 +46,7 @@ final class FoldedShapeUnionRule implements UnionRule
 
 		$accessoryTypes = ArrayUnion::getCommonAccessoryTypes(array_values($arrays));
 		$result = [];
-		foreach (ArrayUnion::reduceShapes(array_values(TypeCombinator::optimizeConstantArrays($shapes))) as $shape) {
+		foreach (ArrayUnion::reduceShapes(ArrayWidening::widen($shapes)) as $shape) {
 			$result[] = ArrayUnion::withAccessoryTypes($shape, $accessoryTypes);
 		}
 

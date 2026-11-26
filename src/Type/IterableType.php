@@ -593,7 +593,7 @@ class IterableType implements CompoundType
 
 	public function tryIntersect(Type $otherType): ?Type
 	{
-		return null;
+		return ArrayAlgebra::tryIntersectIterable($this, $otherType);
 	}
 
 }

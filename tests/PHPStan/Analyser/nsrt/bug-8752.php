@@ -12,7 +12,7 @@ class HelloWorld
 	public function sayHello(string $s): void
 	{
 		if (method_exists($s, 'abc')) {
-			assertType('class-string&hasMethod(abc)&literal-string', $s);
+			assertType('class-string&literal-string&hasMethod(abc)', $s);
 
 			$s::abc();
 			$s->abc();

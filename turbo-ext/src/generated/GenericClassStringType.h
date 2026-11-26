@@ -65,7 +65,9 @@ inline constexpr char strings[] =
 	"typeToRemove\0" /* 667 */
 	"tryRemove\0" /* 680 */
 	"hasTemplateOrLateResolvableType\0" /* 690 */
-	"hasUnresolvedTemplateArgumentType"; /* 722 */
+	"hasUnresolvedTemplateArgumentType\0" /* 722 */
+	"otherType\0" /* 756 */
+	"tryIntersect"; /* 766 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* __construct $type */
 	reg::packed(35, MAY_BE_ARRAY), /* getReferencedClasses return */
@@ -100,6 +102,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(35, MAY_BE_NULL, 5), /* tryRemove return */
 	reg::packed(35, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 	reg::packed(35, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
+	reg::packed(756, 0, 5), /* tryIntersect $otherType */
+	reg::packed(35, MAY_BE_NULL, 5), /* tryIntersect return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -125,6 +129,7 @@ inline constexpr sigtab::Sig toPhpDocNode = { { 654 /* toPhpDocNode */, 0, 28, 0
 inline constexpr sigtab::Sig tryRemove = { { 680 /* tryRemove */, 1, 29, 1, 30, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 690 /* hasTemplateOrLateResolvableType */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 722 /* hasUnresolvedTemplateArgumentType */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 766 /* tryIntersect */, 1, 33, 1, 34, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::GenericClassStringType

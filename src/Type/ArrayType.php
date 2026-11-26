@@ -1061,7 +1061,7 @@ class ArrayType implements Type
 
 	public function tryIntersect(Type $otherType): ?Type
 	{
-		return null;
+		return ArrayAlgebra::tryIntersectArray($this, $otherType);
 	}
 
 }

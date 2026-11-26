@@ -2073,7 +2073,7 @@ PT_MINIT_REGISTRATION(pt_register_array_type)
 
 	/* mirrors tryUnion() and tryIntersect() */
 	cls.method(sigs::tryUnion, pt_type_try_null_handler);
-	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_array_try_intersect_handler);
 	/* the slots PT_AT_PROP_*: the three class-body properties first, the
 	 * promoted $itemType after them, then the generalize() memo (unused
 	 * natively: TypeCombinatorCache memoizes the work it saves) */

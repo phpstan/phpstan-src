@@ -4,24 +4,25 @@ namespace PHPStan\Type;
 
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\TurboExtensionEnabler;
-use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryType;
-use PHPStan\Type\Accessory\HasOffsetValueType;
-use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Combinator\AbsorbedArrayUnionRule;
 use PHPStan\Type\Combinator\BooleanUnionRule;
+use PHPStan\Type\Combinator\DuplicateIntersectRule;
+use PHPStan\Type\Combinator\ExactIntersectRule;
 use PHPStan\Type\Combinator\FoldedShapeUnionRule;
 use PHPStan\Type\Combinator\GeneralArrayUnionRule;
+use PHPStan\Type\Combinator\IntersectRule;
 use PHPStan\Type\Combinator\IterableUnionRule;
 use PHPStan\Type\Combinator\NumberUnionRule;
+use PHPStan\Type\Combinator\OffsetValueLimitIntersectRule;
 use PHPStan\Type\Combinator\ShapeUnionRule;
 use PHPStan\Type\Combinator\SingleValueUnionRule;
 use PHPStan\Type\Combinator\StringUnionRule;
+use PHPStan\Type\Combinator\SubsumptionIntersectRule;
 use PHPStan\Type\Combinator\SubsumptionUnionRule;
 use PHPStan\Type\Combinator\UnionRule;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
-use PHPStan\Type\Generic\GenericClassStringType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
@@ -29,9 +30,8 @@ use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use function array_key_exists;
-use function array_merge;
+use function array_push;
 use function array_slice;
-use function array_splice;
 use function array_values;
 use function count;
 use function get_class;
@@ -50,6 +50,9 @@ final class TypeCombinator
 
 	/** @var list<UnionRule>|null */
 	private static ?array $widenRules = null;
+
+	/** @var list<IntersectRule>|null */
+	private static ?array $intersectRules = null;
 
 	/**
 	 * Turned on by TurboExtensionEnabler when the native extension is active, so that
@@ -725,6 +728,26 @@ final class TypeCombinator
 		return $finiteTypeSet->getMembers();
 	}
 
+	/**
+	 * The rules intersect() runs on the members, in this order: the exact
+	 * merges, then any member holding another gives way to it.
+	 *
+	 * @return list<IntersectRule>
+	 */
+	private static function createIntersectRules(): array
+	{
+		$pairRules = [
+			new ExactIntersectRule(),
+			new SubsumptionIntersectRule(),
+		];
+
+		return [
+			new DuplicateIntersectRule($pairRules),
+			new OffsetValueLimitIntersectRule(),
+			...$pairRules,
+		];
+	}
+
 	public static function intersect(Type ...$types): Type
 	{
 		if (self::$cacheEnabled ??= TurboExtensionEnabler::isTypeCombinatorCacheEnabled()) {
@@ -859,232 +882,21 @@ final class TypeCombinator
 			return $union;
 		}
 
-		$newTypes = [];
-		$hasOffsetValueTypeCount = 0;
-		$typesCount = count($types);
-		$typesNeedSorting = false;
-		for ($i = 0; $i < $typesCount; $i++) {
-			$type = $types[$i];
-
-			if ($type instanceof ConstantArrayType) {
-				$typesNeedSorting = true;
-			}
-
+		// transform A & (B & C) to A & B & C
+		$members = [];
+		foreach ($types as $type) {
 			if ($type instanceof IntersectionType && !$type instanceof TemplateType) {
-				// transform A & (B & C) to A & B & C
-				array_splice($types, $i--, 1, $type->getTypes());
-				$typesCount = count($types);
-			} elseif ($type instanceof HasOffsetValueType) {
-				$hasOffsetValueTypeCount++;
-			} else {
-				$newTypes[] = $type;
+				array_push($members, ...$type->getTypes());
+				continue;
 			}
+			$members[] = $type;
 		}
 
-		if ($hasOffsetValueTypeCount > 32) {
-			$newTypes[] = new OversizedArrayType();
-			$types = $newTypes;
-			$typesCount = count($types);
+		foreach (self::$intersectRules ??= self::createIntersectRules() as $rule) {
+			$members = $rule->apply($members);
 		}
-
-		if ($typesNeedSorting) {
-			usort($types, static function (Type $a, Type $b): int {
-				if ($a instanceof ConstantArrayType && !$b instanceof ConstantArrayType) {
-					return -1;
-				}
-				if ($b instanceof ConstantArrayType && !$a instanceof ConstantArrayType) {
-					return 1;
-				}
-
-				return 0;
-			});
-		}
-
-		// Exact merges first: a member that a supertype drop below removes as
-		// redundant, such as a HasPropertyType next to stdClass, can still sharpen
-		// another one, such as the object shape it makes a property of required.
-		// Which of the two reaches the pair first would depend on the order of the
-		// members, and the intersection must not.
-		for ($i = 0; $i < $typesCount; $i++) {
-			for ($j = $i + 1; $j < $typesCount; $j++) {
-				$intersectionType = $types[$j]->tryIntersect($types[$i]);
-				if ($intersectionType !== null) {
-					$types[$i] = $intersectionType;
-					array_splice($types, $j--, 1);
-					$typesCount--;
-					continue;
-				}
-
-				$intersectionType = $types[$i]->tryIntersect($types[$j]);
-				if ($intersectionType !== null) {
-					$types[$j] = $intersectionType;
-					array_splice($types, $i--, 1);
-					$typesCount--;
-					continue 2;
-				}
-			}
-		}
-
-		// transform IntegerType & ConstantIntegerType to ConstantIntegerType
-		// transform Child & Parent to Child
-		// transform Object & ~null to Object
-		// transform A & A to A
-		// transform int[] & string to never
-		// transform callable & int to never
-		// transform A & ~A to never
-		// transform int & string to never
-		for ($i = 0; $i < $typesCount; $i++) {
-			for ($j = $i + 1; $j < $typesCount; $j++) {
-				// no value is of both kinds
-				if (TypeKind::areDisjoint($types[$i]->getKindMask(), $types[$j]->getKindMask())) {
-					return new NeverType();
-				}
-
-				if ($types[$j] instanceof IterableType) {
-					$isSuperTypeA = $types[$j]->isSuperTypeOfMixed($types[$i]);
-				} else {
-					$isSuperTypeA = $types[$j]->isSuperTypeOf($types[$i]);
-				}
-
-				if ($isSuperTypeA->yes()) {
-					array_splice($types, $j--, 1);
-					$typesCount--;
-					continue;
-				}
-
-				if ($types[$i] instanceof IterableType) {
-					$isSuperTypeB = $types[$i]->isSuperTypeOfMixed($types[$j]);
-				} else {
-					$isSuperTypeB = $types[$i]->isSuperTypeOf($types[$j]);
-				}
-
-				if ($isSuperTypeB->maybe()) {
-					$constArrayIsI = $types[$i] instanceof ConstantArrayType && ($types[$j] instanceof ArrayType || $types[$j] instanceof ConstantArrayType);
-					$constArrayIsJ = $types[$j] instanceof ConstantArrayType && ($types[$i] instanceof ArrayType || $types[$i] instanceof ConstantArrayType);
-					if ($constArrayIsI || $constArrayIsJ) {
-						$constArray = $constArrayIsI ? $types[$i] : $types[$j];
-						$otherArray = $constArrayIsI ? $types[$j] : $types[$i];
-						$otherConstantArray = $otherArray instanceof ConstantArrayType ? $otherArray : null;
-
-						if (
-							$otherConstantArray !== null
-							&& !$constArray->isUnsealed()->maybe()
-							&& !$otherConstantArray->isUnsealed()->maybe()
-						) {
-							$merged = self::intersectDefiniteConstantArrays($constArray, $otherConstantArray);
-							if ($merged instanceof NeverType) {
-								if ($merged->getReason() === null) {
-									$reasons = array_merge($isSuperTypeA->getReasons(), $isSuperTypeB->getReasons());
-									if ($reasons !== []) {
-										return new NeverType(reason: $reasons[0]);
-									}
-								}
-								return $merged;
-							}
-							$newArrayType = $merged;
-						} else {
-							$newArray = ConstantArrayTypeBuilder::createEmpty();
-							// Preserve unsealed extras from the source shape so the
-							// rebuild doesn't silently turn `array{k: int, ...} & X`
-							// into a sealed `array{k: int}` — intersect with the other
-							// side's iterable key/value so the open part keeps both
-							// sides' refinements.
-							$constUnsealed = $constArray->getUnsealedTypes();
-							if ($constUnsealed !== null && $constArray->isUnsealed()->yes()) {
-								$newUnsealedKey = self::intersect($constUnsealed[0], $otherArray->getIterableKeyType());
-								$newUnsealedValue = self::intersect($constUnsealed[1], $otherArray->getIterableValueType());
-								if (!$newUnsealedKey instanceof NeverType && !$newUnsealedValue instanceof NeverType) {
-									$newArray->makeUnsealed($newUnsealedKey, $newUnsealedValue);
-								}
-							}
-							$valueTypes = $constArray->getValueTypes();
-							foreach ($constArray->getKeyTypes() as $k => $keyType) {
-								$hasOffset = $otherArray->hasOffsetValueType($keyType);
-								if ($hasOffset->no()) {
-									// a shape that may have keys it does not list answers No for them too
-									if (
-										!$constArray->isOptionalKey($k)
-										&& ($otherConstantArray === null || !$otherConstantArray->isUnsealed()->maybe())
-									) {
-										return new NeverType();
-									}
-									continue;
-								}
-								$newArray->setOffsetValueType(
-									self::intersect($keyType, $otherArray->getIterableKeyType()),
-									self::intersect($valueTypes[$k], $otherArray->getOffsetValueType($keyType)),
-									$constArray->isOptionalKey($k) && !$hasOffset->yes(),
-								);
-							}
-							$newArrayType = $newArray->getArray();
-							if ($constArray->isList()->yes()) {
-								$newArrayType = self::intersect($newArrayType, new AccessoryArrayListType());
-							}
-						}
-
-						if ($constArrayIsI) {
-							$types[$i] = $newArrayType;
-							array_splice($types, $j, 1);
-						} else {
-							$types[$j] = $newArrayType;
-							array_splice($types, $i--, 1);
-						}
-						$typesCount--;
-						continue 2;
-					}
-
-					if (
-						($types[$i] instanceof ArrayType || $types[$i] instanceof ConstantArrayType || $types[$i] instanceof IterableType) &&
-						($types[$j] instanceof ArrayType || $types[$j] instanceof ConstantArrayType || $types[$j] instanceof IterableType)
-					) {
-						$keyType = self::intersect($types[$i]->getIterableKeyType(), $types[$j]->getKeyType());
-						$itemType = self::intersect($types[$i]->getItemType(), $types[$j]->getItemType());
-						if ($types[$i] instanceof IterableType && $types[$j] instanceof IterableType) {
-							$types[$j] = new IterableType($keyType, $itemType);
-						} else {
-							$types[$j] = new ArrayType($keyType, $itemType);
-						}
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
-
-					if ($types[$i] instanceof GenericClassStringType && $types[$j] instanceof GenericClassStringType) {
-						$genericType = self::intersect($types[$i]->getGenericType(), $types[$j]->getGenericType());
-						$types[$i] = new GenericClassStringType($genericType);
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue;
-					}
-
-					if (
-						$types[$i] instanceof ArrayType
-						&& get_class($types[$i]) === ArrayType::class
-						&& $types[$j] instanceof AccessoryArrayListType
-						&& !$types[$j]->getIterableKeyType()->isSuperTypeOf($types[$i]->getIterableKeyType())->yes()
-					) {
-						$keyType = self::intersect($types[$i]->getIterableKeyType(), $types[$j]->getIterableKeyType());
-						if ($keyType instanceof NeverType) {
-							return $keyType;
-						}
-						$types[$i] = new ArrayType($keyType, $types[$i]->getItemType());
-						continue;
-					}
-
-					continue;
-				}
-
-				if ($isSuperTypeB->yes()) {
-					array_splice($types, $i--, 1);
-					$typesCount--;
-					continue 2;
-				}
-
-				if ($isSuperTypeA->no()) {
-					return new NeverType(reason: $isSuperTypeA->getReasons()[0] ?? null);
-				}
-			}
-		}
+		$types = $members;
+		$typesCount = count($types);
 
 		if ($typesCount === 1) {
 			return $types[0];
@@ -1118,124 +930,6 @@ final class TypeCombinator
 		}
 
 		return new IntersectionType($types);
-	}
-
-	private static function intersectDefiniteConstantArrays(ConstantArrayType $a, ConstantArrayType $b): Type
-	{
-		$aSealed = $a->isUnsealed()->no();
-		$bSealed = $b->isUnsealed()->no();
-		$bothUnsealed = !$aSealed && !$bSealed && $a->getUnsealedTypes() !== null && $b->getUnsealedTypes() !== null;
-
-		$aKeyByValue = [];
-		foreach ($a->getKeyTypes() as $k => $keyType) {
-			$aKeyByValue[$keyType->getValue()] = $k;
-		}
-		$bKeyByValue = [];
-		foreach ($b->getKeyTypes() as $k => $keyType) {
-			$bKeyByValue[$keyType->getValue()] = $k;
-		}
-
-		if ($aSealed && $bSealed) {
-			foreach ($aKeyByValue as $keyValue => $k) {
-				if (!$a->isOptionalKey($k) && !array_key_exists($keyValue, $bKeyByValue)) {
-					return new NeverType();
-				}
-			}
-			foreach ($bKeyByValue as $keyValue => $k) {
-				if (!$b->isOptionalKey($k) && !array_key_exists($keyValue, $aKeyByValue)) {
-					return new NeverType();
-				}
-			}
-		}
-
-		$newArray = ConstantArrayTypeBuilder::createEmpty();
-
-		if ($bothUnsealed) {
-			$aUnsealed = $a->getUnsealedTypes();
-			$bUnsealed = $b->getUnsealedTypes();
-			$unsealedKey = self::intersect($aUnsealed[0], $bUnsealed[0]);
-			$unsealedValue = self::intersect($aUnsealed[1], $bUnsealed[1]);
-			if ($unsealedKey instanceof NeverType || $unsealedValue instanceof NeverType) {
-				return new NeverType();
-			}
-			$newArray->makeUnsealed($unsealedKey, $unsealedValue);
-		} else {
-			$never = new NeverType(true);
-			$newArray->makeUnsealed($never, $never);
-		}
-
-		$resolveOtherValue = static function (ConstantArrayType $other, Type $keyType): ?Type {
-			if ($other->hasOffsetValueType($keyType)->yes()) {
-				return $other->getOffsetValueType($keyType);
-			}
-			$otherUnsealed = $other->getUnsealedTypes();
-			if ($otherUnsealed === null) {
-				return null;
-			}
-			[$unsealedKey, $unsealedValue] = $otherUnsealed;
-			if ($unsealedKey instanceof NeverType && $unsealedKey->isExplicit()) {
-				return null;
-			}
-			if ($unsealedKey->isSuperTypeOf($keyType)->no()) {
-				return null;
-			}
-			return $unsealedValue;
-		};
-
-		$keysToProcess = [];
-		foreach ($aKeyByValue as $keyValue => $k) {
-			$keysToProcess[$keyValue] = [$k, $bKeyByValue[$keyValue] ?? null];
-		}
-		foreach ($bKeyByValue as $keyValue => $k) {
-			if (array_key_exists($keyValue, $keysToProcess)) {
-				continue;
-			}
-
-			$keysToProcess[$keyValue] = [null, $k];
-		}
-
-		foreach ($keysToProcess as [$aIdx, $bIdx]) {
-			if ($aIdx !== null && $bIdx !== null) {
-				$keyType = $a->getKeyTypes()[$aIdx];
-				$value = self::intersect($a->getValueTypes()[$aIdx], $b->getValueTypes()[$bIdx]);
-				$optional = $a->isOptionalKey($aIdx) && $b->isOptionalKey($bIdx);
-			} elseif ($aIdx !== null) {
-				$keyType = $a->getKeyTypes()[$aIdx];
-				$aValue = $a->getValueTypes()[$aIdx];
-				$bValue = $resolveOtherValue($b, $keyType);
-				if ($bValue === null) {
-					if ($a->isOptionalKey($aIdx)) {
-						continue;
-					}
-					return new NeverType();
-				}
-				$value = self::intersect($aValue, $bValue);
-				$optional = $a->isOptionalKey($aIdx);
-			} else {
-				/** @var int<0, max> $bIdx */
-				$keyType = $b->getKeyTypes()[$bIdx];
-				$bValue = $b->getValueTypes()[$bIdx];
-				$aValue = $resolveOtherValue($a, $keyType);
-				if ($aValue === null) {
-					if ($b->isOptionalKey($bIdx)) {
-						continue;
-					}
-					return new NeverType();
-				}
-				$value = self::intersect($aValue, $bValue);
-				$optional = $b->isOptionalKey($bIdx);
-			}
-
-			if ($value instanceof NeverType) {
-				if ($optional) {
-					continue;
-				}
-				return new NeverType();
-			}
-			$newArray->setOffsetValueType($keyType, $value, $optional);
-		}
-
-		return $newArray->getArray();
 	}
 
 	public static function removeFalsey(Type $type): Type

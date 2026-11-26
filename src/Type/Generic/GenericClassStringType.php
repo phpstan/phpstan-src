@@ -9,6 +9,7 @@ use PHPStan\Reflection\ReflectionProviderStaticAccessor;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
 use PHPStan\Type\ClassNameToObjectTypeResult;
+use PHPStan\Type\ClassStringAlgebra;
 use PHPStan\Type\ClassStringType;
 use PHPStan\Type\CompoundType;
 use PHPStan\Type\Constant\ConstantStringType;
@@ -287,6 +288,11 @@ class GenericClassStringType extends ClassStringType
 	public function hasUnresolvedTemplateArgumentType(): bool
 	{
 		return $this->type->hasUnresolvedTemplateArgumentType();
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return ClassStringAlgebra::tryIntersect($this, $otherType);
 	}
 
 }

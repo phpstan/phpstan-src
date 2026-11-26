@@ -24,7 +24,9 @@ return static function (array $manifest, array $classMap): array {
 		'PHPStan\\Type\\SubtractionAlgebra' => $root . '/src/Type/SubtractionAlgebra.php',
 		'PHPStan\\Type\\ArrayAlgebra' => $root . '/src/Type/ArrayAlgebra.php',
 		'PHPStan\\Type\\IntersectionAlgebra' => $root . '/src/Type/IntersectionAlgebra.php',
+		'PHPStan\\Type\\ClassStringAlgebra' => $root . '/src/Type/ClassStringAlgebra.php',
 		'PHPStan\\Type\\Combinator\\UnionRule' => $root . '/src/Type/Combinator/UnionRule.php',
+		'PHPStan\\Type\\Combinator\\IntersectRule' => $root . '/src/Type/Combinator/IntersectRule.php',
 		'PHPStan\\Type\\Combinator\\WideningStep' => $root . '/src/Type/Combinator/WideningStep.php',
 		'PHPStan\\Type\\Combinator\\AbsorbedArrayUnionRule' => $root . '/src/Type/Combinator/AbsorbedArrayUnionRule.php',
 		'PHPStan\\Type\\Combinator\\ArrayWidening' => $root . '/src/Type/Combinator/ArrayWidening.php',
@@ -33,6 +35,10 @@ return static function (array $manifest, array $classMap): array {
 		'PHPStan\\Type\\Combinator\\SharedKeyShapeWidening' => $root . '/src/Type/Combinator/SharedKeyShapeWidening.php',
 		'PHPStan\\Type\\Combinator\\ArrayUnion' => $root . '/src/Type/Combinator/ArrayUnion.php',
 		'PHPStan\\Type\\Combinator\\BooleanUnionRule' => $root . '/src/Type/Combinator/BooleanUnionRule.php',
+		'PHPStan\\Type\\Combinator\\DuplicateIntersectRule' => $root . '/src/Type/Combinator/DuplicateIntersectRule.php',
+		'PHPStan\\Type\\Combinator\\ExactIntersectRule' => $root . '/src/Type/Combinator/ExactIntersectRule.php',
+		'PHPStan\\Type\\Combinator\\OffsetValueLimitIntersectRule' => $root . '/src/Type/Combinator/OffsetValueLimitIntersectRule.php',
+		'PHPStan\\Type\\Combinator\\SubsumptionIntersectRule' => $root . '/src/Type/Combinator/SubsumptionIntersectRule.php',
 		'PHPStan\\Type\\Combinator\\FoldedShapeUnionRule' => $root . '/src/Type/Combinator/FoldedShapeUnionRule.php',
 		'PHPStan\\Type\\Combinator\\GeneralArrayUnionRule' => $root . '/src/Type/Combinator/GeneralArrayUnionRule.php',
 		'PHPStan\\Type\\Combinator\\IterableUnionRule' => $root . '/src/Type/Combinator/IterableUnionRule.php',
@@ -47,6 +53,7 @@ return static function (array $manifest, array $classMap): array {
 		$classMap['subtractionAlgebra'] = 'PHPStanTurbo\\SubtractionAlgebra';
 		$classMap['arrayAlgebra'] = 'PHPStanTurbo\\ArrayAlgebra';
 		$classMap['intersectionAlgebra'] = 'PHPStanTurbo\\IntersectionAlgebra';
+		$classMap['classStringAlgebra'] = 'PHPStanTurbo\\ClassStringAlgebra';
 		return $classMap;
 	}
 
@@ -119,5 +126,6 @@ return static function (array $manifest, array $classMap): array {
 	$classMap['subtractionAlgebra'] = 'PHPStanTurbo\\SubtractionAlgebra';
 	$classMap['arrayAlgebra'] = 'PHPStanTurbo\\ArrayAlgebra';
 	$classMap['intersectionAlgebra'] = 'PHPStanTurbo\\IntersectionAlgebra';
+	$classMap['classStringAlgebra'] = 'PHPStanTurbo\\ClassStringAlgebra';
 	return $classMap;
 };

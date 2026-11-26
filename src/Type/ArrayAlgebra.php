@@ -9,8 +9,12 @@ use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
+use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Generic\TemplateType;
+use function array_key_exists;
+use function array_merge;
 use function count;
+use function get_class;
 use function min;
 
 /**
@@ -34,6 +38,12 @@ final class ArrayAlgebra
 	/** @see Type::tryIntersect() */
 	public static function tryIntersectConstantArray(ConstantArrayType $array, Type $otherType): ?Type
 	{
+		if ($otherType instanceof ConstantArrayType || $otherType instanceof ArrayType) {
+			return self::tryIntersectShapeWithArray($array, $otherType);
+		}
+		if ($otherType instanceof IterableType) {
+			return self::tryIntersectIterables($array, $otherType);
+		}
 		if (
 			!$otherType instanceof HasOffsetType
 			&& !$otherType instanceof HasOffsetValueType
@@ -89,6 +99,263 @@ final class ArrayAlgebra
 		}
 
 		return new HasOffsetValueType($type->getOffsetType(), TypeCombinator::union($type->getValueType(), $otherType->getValueType()));
+	}
+
+	/**
+	 * Two arrays or iterables neither holding the other are the one of the
+	 * keys and the values both allow, and a general array is a list of the
+	 * keys a list allows.
+	 *
+	 * @see Type::tryIntersect()
+	 */
+	public static function tryIntersectArray(ArrayType $array, Type $otherType): ?Type
+	{
+		if ($otherType instanceof ArrayType || $otherType instanceof IterableType) {
+			return self::tryIntersectIterables($array, $otherType);
+		}
+		if (
+			!$otherType instanceof AccessoryArrayListType
+			|| get_class($array) !== ArrayType::class
+			|| !self::overlapsNeitherContaining($array, $otherType)
+			|| $otherType->getIterableKeyType()->isSuperTypeOf($array->getIterableKeyType())->yes()
+		) {
+			return null;
+		}
+
+		$keyType = TypeCombinator::intersect($array->getIterableKeyType(), $otherType->getIterableKeyType());
+		if ($keyType instanceof NeverType) {
+			return $keyType;
+		}
+
+		return TypeCombinator::intersect(new ArrayType($keyType, $array->getItemType()), $otherType);
+	}
+
+	/** @see Type::tryIntersect() */
+	public static function tryIntersectIterable(IterableType $iterable, Type $otherType): ?Type
+	{
+		if (!$otherType instanceof ArrayType && !$otherType instanceof ConstantArrayType && !$otherType instanceof IterableType) {
+			return null;
+		}
+
+		return self::tryIntersectIterables($iterable, $otherType);
+	}
+
+	/**
+	 * Of an array or iterable and another, the one of the keys and the values
+	 * both allow: an iterable of two iterables, an array otherwise.
+	 */
+	private static function tryIntersectIterables(ArrayType|ConstantArrayType|IterableType $type, ArrayType|ConstantArrayType|IterableType $otherType): ?Type
+	{
+		// two equal arrays or iterables hold each other: the other one stands
+		// for both, as it does when a member holding another gives way to it
+		if (
+			get_class($type) === get_class($otherType)
+			&& (get_class($type) === ArrayType::class || get_class($type) === IterableType::class)
+			&& $type->equals($otherType)
+		) {
+			return $otherType;
+		}
+
+		if (!self::overlapsNeitherContaining($type, $otherType)) {
+			return null;
+		}
+
+		$keyType = TypeCombinator::intersect($otherType->getIterableKeyType(), $type->getKeyType());
+		$itemType = TypeCombinator::intersect($otherType->getItemType(), $type->getItemType());
+		if ($type instanceof IterableType && $otherType instanceof IterableType) {
+			return new IterableType($keyType, $itemType);
+		}
+
+		return new ArrayType($keyType, $itemType);
+	}
+
+	/**
+	 * A shape and an array neither holding the other: the shape with the
+	 * values at its keys narrowed to the values the other array allows there,
+	 * or never when one of its required keys cannot be there.
+	 */
+	private static function tryIntersectShapeWithArray(ConstantArrayType $constArray, Type $otherArray): ?Type
+	{
+		$isSuperTypeA = $otherArray->isSuperTypeOf($constArray);
+		$isSuperTypeB = $constArray->isSuperTypeOf($otherArray);
+		if ($isSuperTypeA->yes() || $isSuperTypeB->yes() || ($isSuperTypeA->no() && $isSuperTypeB->no())) {
+			return null;
+		}
+
+		$otherConstantArray = $otherArray instanceof ConstantArrayType ? $otherArray : null;
+		if (
+			$otherConstantArray !== null
+			&& !$constArray->isUnsealed()->maybe()
+			&& !$otherConstantArray->isUnsealed()->maybe()
+		) {
+			$merged = self::intersectDefiniteConstantArrays($constArray, $otherConstantArray);
+			if ($merged instanceof NeverType && $merged->getReason() === null) {
+				$reasons = array_merge($isSuperTypeA->getReasons(), $isSuperTypeB->getReasons());
+				if ($reasons !== []) {
+					return new NeverType(reason: $reasons[0]);
+				}
+			}
+
+			return $merged;
+		}
+
+		$newArray = ConstantArrayTypeBuilder::createEmpty();
+		// Preserve unsealed extras from the source shape so the
+		// rebuild doesn't silently turn `array{k: int, ...} & X`
+		// into a sealed `array{k: int}` — intersect with the other
+		// side's iterable key/value so the open part keeps both
+		// sides' refinements.
+		$constUnsealed = $constArray->getUnsealedTypes();
+		if ($constUnsealed !== null && $constArray->isUnsealed()->yes()) {
+			$newUnsealedKey = TypeCombinator::intersect($constUnsealed[0], $otherArray->getIterableKeyType());
+			$newUnsealedValue = TypeCombinator::intersect($constUnsealed[1], $otherArray->getIterableValueType());
+			if (!$newUnsealedKey instanceof NeverType && !$newUnsealedValue instanceof NeverType) {
+				$newArray->makeUnsealed($newUnsealedKey, $newUnsealedValue);
+			}
+		}
+		$valueTypes = $constArray->getValueTypes();
+		foreach ($constArray->getKeyTypes() as $k => $keyType) {
+			$hasOffset = $otherArray->hasOffsetValueType($keyType);
+			if ($hasOffset->no()) {
+				// a shape that may have keys it does not list answers No for them too
+				if (
+					!$constArray->isOptionalKey($k)
+					&& ($otherConstantArray === null || !$otherConstantArray->isUnsealed()->maybe())
+				) {
+					return new NeverType();
+				}
+				continue;
+			}
+			$newArray->setOffsetValueType(
+				TypeCombinator::intersect($keyType, $otherArray->getIterableKeyType()),
+				TypeCombinator::intersect($valueTypes[$k], $otherArray->getOffsetValueType($keyType)),
+				$constArray->isOptionalKey($k) && !$hasOffset->yes(),
+			);
+		}
+		$newArrayType = $newArray->getArray();
+		if ($constArray->isList()->yes()) {
+			$newArrayType = TypeCombinator::intersect($newArrayType, new AccessoryArrayListType());
+		}
+
+		return $newArrayType;
+	}
+
+	private static function intersectDefiniteConstantArrays(ConstantArrayType $a, ConstantArrayType $b): Type
+	{
+		$aSealed = $a->isUnsealed()->no();
+		$bSealed = $b->isUnsealed()->no();
+		$bothUnsealed = !$aSealed && !$bSealed && $a->getUnsealedTypes() !== null && $b->getUnsealedTypes() !== null;
+
+		$aKeyByValue = [];
+		foreach ($a->getKeyTypes() as $k => $keyType) {
+			$aKeyByValue[$keyType->getValue()] = $k;
+		}
+		$bKeyByValue = [];
+		foreach ($b->getKeyTypes() as $k => $keyType) {
+			$bKeyByValue[$keyType->getValue()] = $k;
+		}
+
+		if ($aSealed && $bSealed) {
+			foreach ($aKeyByValue as $keyValue => $k) {
+				if (!$a->isOptionalKey($k) && !array_key_exists($keyValue, $bKeyByValue)) {
+					return new NeverType();
+				}
+			}
+			foreach ($bKeyByValue as $keyValue => $k) {
+				if (!$b->isOptionalKey($k) && !array_key_exists($keyValue, $aKeyByValue)) {
+					return new NeverType();
+				}
+			}
+		}
+
+		$newArray = ConstantArrayTypeBuilder::createEmpty();
+
+		if ($bothUnsealed) {
+			$aUnsealed = $a->getUnsealedTypes();
+			$bUnsealed = $b->getUnsealedTypes();
+			$unsealedKey = TypeCombinator::intersect($aUnsealed[0], $bUnsealed[0]);
+			$unsealedValue = TypeCombinator::intersect($aUnsealed[1], $bUnsealed[1]);
+			if ($unsealedKey instanceof NeverType || $unsealedValue instanceof NeverType) {
+				return new NeverType();
+			}
+			$newArray->makeUnsealed($unsealedKey, $unsealedValue);
+		} else {
+			$never = new NeverType(true);
+			$newArray->makeUnsealed($never, $never);
+		}
+
+		$resolveOtherValue = static function (ConstantArrayType $other, Type $keyType): ?Type {
+			if ($other->hasOffsetValueType($keyType)->yes()) {
+				return $other->getOffsetValueType($keyType);
+			}
+			$otherUnsealed = $other->getUnsealedTypes();
+			if ($otherUnsealed === null) {
+				return null;
+			}
+			[$unsealedKey, $unsealedValue] = $otherUnsealed;
+			if ($unsealedKey instanceof NeverType && $unsealedKey->isExplicit()) {
+				return null;
+			}
+			if ($unsealedKey->isSuperTypeOf($keyType)->no()) {
+				return null;
+			}
+			return $unsealedValue;
+		};
+
+		$keysToProcess = [];
+		foreach ($aKeyByValue as $keyValue => $k) {
+			$keysToProcess[$keyValue] = [$k, $bKeyByValue[$keyValue] ?? null];
+		}
+		foreach ($bKeyByValue as $keyValue => $k) {
+			if (array_key_exists($keyValue, $keysToProcess)) {
+				continue;
+			}
+
+			$keysToProcess[$keyValue] = [null, $k];
+		}
+
+		foreach ($keysToProcess as [$aIdx, $bIdx]) {
+			if ($aIdx !== null && $bIdx !== null) {
+				$keyType = $a->getKeyTypes()[$aIdx];
+				$value = TypeCombinator::intersect($a->getValueTypes()[$aIdx], $b->getValueTypes()[$bIdx]);
+				$optional = $a->isOptionalKey($aIdx) && $b->isOptionalKey($bIdx);
+			} elseif ($aIdx !== null) {
+				$keyType = $a->getKeyTypes()[$aIdx];
+				$aValue = $a->getValueTypes()[$aIdx];
+				$bValue = $resolveOtherValue($b, $keyType);
+				if ($bValue === null) {
+					if ($a->isOptionalKey($aIdx)) {
+						continue;
+					}
+					return new NeverType();
+				}
+				$value = TypeCombinator::intersect($aValue, $bValue);
+				$optional = $a->isOptionalKey($aIdx);
+			} else {
+				/** @var int<0, max> $bIdx */
+				$keyType = $b->getKeyTypes()[$bIdx];
+				$bValue = $b->getValueTypes()[$bIdx];
+				$aValue = $resolveOtherValue($a, $keyType);
+				if ($aValue === null) {
+					if ($b->isOptionalKey($bIdx)) {
+						continue;
+					}
+					return new NeverType();
+				}
+				$value = TypeCombinator::intersect($aValue, $bValue);
+				$optional = $b->isOptionalKey($bIdx);
+			}
+
+			if ($value instanceof NeverType) {
+				if ($optional) {
+					continue;
+				}
+				return new NeverType();
+			}
+			$newArray->setOffsetValueType($keyType, $value, $optional);
+		}
+
+		return $newArray->getArray();
 	}
 
 	/** @see Type::tryIntersect() */
@@ -343,6 +610,18 @@ final class ArrayAlgebra
 	private static function overlapsWithoutContaining(Type $array, Type $otherType): bool
 	{
 		return !$otherType->isSuperTypeOf($array)->yes() && $array->isSuperTypeOf($otherType)->maybe();
+	}
+
+	/** Whether the two types may have values in common and neither holds the other. */
+	private static function overlapsNeitherContaining(Type $type, Type $otherType): bool
+	{
+		$isSuperType = $type->isSuperTypeOf($otherType);
+		if ($isSuperType->yes()) {
+			return false;
+		}
+		$isSubType = $otherType->isSuperTypeOf($type);
+
+		return !$isSubType->yes() && ($isSuperType->maybe() || $isSubType->maybe());
 	}
 
 }

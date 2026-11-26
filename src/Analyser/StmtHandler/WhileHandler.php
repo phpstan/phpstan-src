@@ -68,7 +68,7 @@ final class WhileHandler implements StmtHandler
 			$condScope = $condResult->getFalseyScope();
 			if (!$context->isTopLevel() && $beforeCondBooleanType->isFalse()->yes()) {
 				if (!$this->polluteScopeWithLoopInitialAssignments) {
-					$scope = $condScope->mergeWith($scope);
+					$scope = $condScope->mergeWith($scope, true);
 				}
 
 				return new InternalStatementResult(
@@ -96,6 +96,7 @@ final class WhileHandler implements StmtHandler
 		$previousPassStorage = null;
 		$loopHeads = null;
 		$entryConverged = false;
+		$iterationLimitReached = false;
 		// the loop's entry joined with the head it converged to when walked before
 		$loopEntryScope = $scope;
 		if ($context->shouldConvergeLoops()) {
@@ -112,7 +113,7 @@ final class WhileHandler implements StmtHandler
 			do {
 				$prevScope = $bodyScope;
 				// a warm start begins at the loop's entry already
-				$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope);
+				$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope, true);
 				if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 					// walking is deterministic in the entry scope - an unchanged entry
 					// reproduces the previous pass's exit, so the verification walk is skipped
@@ -166,10 +167,13 @@ final class WhileHandler implements StmtHandler
 				}
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+			$iterationLimitReached = $count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS;
 		}
 
 		if (!$entryConverged) {
-			$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+			// a body state that did not converge may still reach the guards
+			// a vacuous conditional excludes, so only a fixpoint keeps them
+			$bodyScope = $bodyScope->mergeWith($loopEntryScope, !$iterationLimitReached);
 		}
 		if (!$context->isTopLevel()) {
 			$loopHeads?->record($stmt, $bodyScope);
@@ -239,7 +243,7 @@ final class WhileHandler implements StmtHandler
 		if (count($breakExitPoints) > 0) {
 			$breakScope = $alwaysIterates || $backEdgeDead ? null : $finalScope;
 			foreach ($breakExitPoints as $breakExitPoint) {
-				$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
+				$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope(), true);
 			}
 			$finalScope = $breakScope;
 		}
@@ -259,7 +263,7 @@ final class WhileHandler implements StmtHandler
 		}
 		if (!$isIterableAtLeastOnce) {
 			if (!$this->polluteScopeWithLoopInitialAssignments) {
-				$condScope = $condScope->mergeWith($scope);
+				$condScope = $condScope->mergeWith($scope, true);
 			}
 			// the loop either ran or exited on its first condition, so these are
 			// alternative paths like an if's branches: keep a conditional that only

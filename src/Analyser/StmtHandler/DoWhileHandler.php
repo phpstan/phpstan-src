@@ -87,7 +87,7 @@ final class DoWhileHandler implements StmtHandler
 			do {
 				$prevScope = $bodyScope;
 				// a warm start begins at the loop's entry already
-				$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope);
+				$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope, true);
 				if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 					// walking is deterministic in the entry scope - an unchanged entry
 					// reproduces the previous pass's exit (and repeats only idempotent
@@ -110,9 +110,9 @@ final class DoWhileHandler implements StmtHandler
 					$previousPass = $passRecord;
 					$previousPassStorage = $storage;
 					$backEdgeScope = $bodyScopeResult->getLoopBackEdgeScope();
-					$finalScope = $backEdgeScope === null ? $finalScope : $backEdgeScope->mergeWith($finalScope);
+					$finalScope = $backEdgeScope === null ? $finalScope : $backEdgeScope->mergeWith($finalScope, true);
 					foreach ($bodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-						$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope);
+						$finalScope = $breakExitPoint->getScope()->mergeWith($finalScope, true);
 					}
 					// the candidate to replace the final body walk when this pass's
 					// entry turns out to be the fixpoint
@@ -142,9 +142,12 @@ final class DoWhileHandler implements StmtHandler
 				}
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+			$iterationLimitReached = $count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS;
 
 			if (!$entryConverged) {
-				$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+				// a body state that did not converge may still reach the guards
+				// a vacuous conditional excludes, so only a fixpoint keeps them
+				$bodyScope = $bodyScope->mergeWith($loopEntryScope, !$iterationLimitReached);
 			}
 			if (!$context->isTopLevel()) {
 				$loopHeads->record($stmt, $bodyScope);
@@ -193,7 +196,7 @@ final class DoWhileHandler implements StmtHandler
 		} else {
 			$alwaysTerminating = $bodyScopeResult->isAlwaysTerminating();
 		}
-		$finalScope = $alwaysTerminating || $backEdgeDead ? $finalScope : $bodyScope->mergeWith($finalScope);
+		$finalScope = $alwaysTerminating || $backEdgeDead ? $finalScope : $bodyScope->mergeWith($finalScope, true);
 		if ($finalScope === null) {
 			$finalScope = $scope;
 		}
@@ -214,7 +217,7 @@ final class DoWhileHandler implements StmtHandler
 		if (count($breakExitPoints) > 0) {
 			$breakScope = $alwaysIterates || $backEdgeDead ? null : $finalScope;
 			foreach ($breakExitPoints as $breakExitPoint) {
-				$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
+				$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope(), true);
 			}
 			$finalScope = $breakScope;
 		}

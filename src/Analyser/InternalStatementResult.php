@@ -94,7 +94,7 @@ final class InternalStatementResult
 	{
 		$backEdge = $this->endReachable ? $this->scope : null;
 		foreach ($this->getExitPointsByType(Stmt\Continue_::class) as $continueExitPoint) {
-			$backEdge = $backEdge === null ? $continueExitPoint->getScope() : $backEdge->mergeWith($continueExitPoint->getScope());
+			$backEdge = $backEdge === null ? $continueExitPoint->getScope() : $backEdge->mergeWith($continueExitPoint->getScope(), true);
 		}
 		return $backEdge;
 	}

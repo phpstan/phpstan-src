@@ -145,7 +145,6 @@ abstract class NativeFileMonitor implements FileMonitor
 	 */
 	private function verifyWatchesDeliver(): void
 	{
-		$directory = null;
 		$probe = null;
 		foreach (array_keys($this->watchedDirectories) as $candidate) {
 			$path = $candidate . DIRECTORY_SEPARATOR . '.phpstan-file-monitor-probe-' . uniqid();
@@ -154,12 +153,11 @@ abstract class NativeFileMonitor implements FileMonitor
 				continue;
 			}
 
-			$directory = $candidate;
 			$probe = $path;
 			break;
 		}
 
-		if ($probe === null || $directory === null) {
+		if ($probe === null) {
 			// nothing writable to prove anything with
 			throw new FileMonitorNotSupportedException();
 		}

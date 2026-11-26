@@ -211,7 +211,7 @@ public:
 			zv::Val hold;
 			zval *exitScope = ptsr::scopeOf(internalExitPoints, continueExitPoint, hold);
 			if (UNEXPECTED(exitScope == NULL)) return zv::Val();
-			backEdge = pt_mutating_scope_merge_with(Z_OBJ_P(backEdge.raw()), exitScope);
+			backEdge = pt_mutating_scope_merge_with(Z_OBJ_P(backEdge.raw()), exitScope, true);
 			if (UNEXPECTED(backEdge.isUndef())) return zv::Val();
 		}
 		return backEdge;

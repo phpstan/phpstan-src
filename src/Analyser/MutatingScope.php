@@ -5020,7 +5020,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$this->getNamespace(),
 			$variableTypeHolders,
 			$nativeTypes,
-			$this->conditionalExpressions,
+			self::withoutWidenedConditionalExpressions($this->conditionalExpressions, $this->expressionTypes, $variableTypeHolders),
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
@@ -5033,6 +5033,33 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$this->templateArgumentFrame,
 			$this->templateArgumentConstraints,
 		);
+	}
+
+	/**
+	 * Widening replaces a variable's type with a coarser one meant to cover the
+	 * passes not walked yet. A holder targeting it was derived from the type before
+	 * widening, and applying it would narrow the variable back for the states its
+	 * guards match - so holders of widened targets are dropped; the next pass
+	 * derives them again if they still hold.
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param array<string, ExpressionTypeHolder> $expressionTypes
+	 * @param array<string, ExpressionTypeHolder> $generalizedExpressionTypes
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private static function withoutWidenedConditionalExpressions(array $conditionalExpressions, array $expressionTypes, array $generalizedExpressionTypes): array
+	{
+		foreach (array_keys($conditionalExpressions) as $exprString) {
+			$before = $expressionTypes[$exprString] ?? null;
+			$after = $generalizedExpressionTypes[$exprString] ?? null;
+			if ($before === $after || ($before !== null && $after !== null && $before->equals($after))) {
+				continue;
+			}
+
+			unset($conditionalExpressions[$exprString]);
+		}
+
+		return $conditionalExpressions;
 	}
 
 	/**

@@ -139,9 +139,30 @@ final class TypehintHelper
 			}
 
 			if ($type instanceof UnionType) {
+				// a native member is described by the PHPDoc type when it contains one of its members,
+				// e.g. iterable in iterable|Foo for iterable<object>; only a PHPDoc member that no single
+				// native member contains, like iterable<object> for array|Traversable, falls back to overlap,
+				// so a non-final Foo is not dropped just because its subclass might be iterable
+				$nativeTypes = $type->getTypes();
+				$describedNativeTypes = [];
+				foreach ($resultType instanceof UnionType ? $resultType->getTypes() : [$resultType] as $resultInnerType) {
+					$containingTypes = [];
+					$overlappingTypes = [];
+					foreach ($nativeTypes as $i => $innerType) {
+						$isSuperType = $innerType->isSuperTypeOf($resultInnerType);
+						if ($isSuperType->yes()) {
+							$containingTypes[$i] = true;
+						} elseif ($isSuperType->maybe()) {
+							$overlappingTypes[$i] = true;
+						}
+					}
+
+					$describedNativeTypes += count($containingTypes) > 0 ? $containingTypes : $overlappingTypes;
+				}
+
 				$addToUnionTypes = [];
-				foreach ($type->getTypes() as $innerType) {
-					if (!$innerType->isSuperTypeOf($resultType)->no()) {
+				foreach ($nativeTypes as $i => $innerType) {
+					if (isset($describedNativeTypes[$i])) {
 						continue;
 					}
 

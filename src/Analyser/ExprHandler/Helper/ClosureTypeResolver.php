@@ -231,6 +231,9 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		$closureImpurePoints = [];
 		$invalidateExpressions = [];
 
+		// a body walked while the enclosing body observes keeps its unresolved
+		// template arguments for the enclosing body to resolve
+		$resolveTemplateArguments = $scope->getCurrentTemplateArgumentFrame()?->isObserving() !== true;
 		try {
 			$walkStorage = new ExpressionResultStorage();
 			$closureScope->pushExpressionResultStorage($walkStorage);
@@ -270,7 +273,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 				}
 
 				$closureYieldStatements[] = [$node, $scope];
-			}, StatementContext::createTopLevel())->toPublic();
+			}, StatementContext::createTopLevel($resolveTemplateArguments))->toPublic();
 		} finally {
 			$closureScope->popExpressionResultStorage();
 			self::$resolveClosureTypeDepth--;

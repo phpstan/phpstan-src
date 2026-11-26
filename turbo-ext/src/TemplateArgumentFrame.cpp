@@ -93,9 +93,10 @@ public:
 	 * $settledClosureSites = [], private readonly bool $observingClosures =
 	 * false, private readonly array $byRefSites = [], private readonly array
 	 * $staticVariableTypes = [], private readonly array
-	 * $staticVariableConditionalExpressions = []); NULL for null / []. false =
+	 * $staticVariableConditionalExpressions = [], private readonly array
+	 * $sentResolutionKeys = []); NULL for null / []. false =
 	 * pending exception (a repeated construction modifies readonly properties) */
-	[[nodiscard]] bool construct(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites, zval *staticVariableTypes, zval *staticVariableConditionalExpressions) const
+	[[nodiscard]] bool construct(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites, zval *staticVariableTypes, zval *staticVariableConditionalExpressions, zval *sentResolutionKeys) const
 	{
 		if (UNEXPECTED(Z_TYPE_P(OBJ_PROP_NUM(self, slots::parent)) != IS_UNDEF)) {
 			zend_throw_error(NULL, "Cannot modify readonly property %s::$parent", ZSTR_VAL(self->ce->name));
@@ -158,6 +159,12 @@ public:
 			ZVAL_EMPTY_ARRAY(&value);
 			pt_write_slot(self, slots::staticVariableConditionalExpressions, &value);
 		}
+		if (sentResolutionKeys != NULL) {
+			pt_write_slot(self, slots::sentResolutionKeys, sentResolutionKeys);
+		} else {
+			ZVAL_EMPTY_ARRAY(&value);
+			pt_write_slot(self, slots::sentResolutionKeys, &value);
+		}
 		return true;
 	}
 
@@ -215,7 +222,8 @@ public:
 			Z_TYPE_P(OBJ_PROP_NUM(self, slots::observingClosures)) == IS_TRUE,
 			OBJ_PROP_NUM(self, slots::byRefSites),
 			staticVariableTypes,
-			conditionalExpressions
+			conditionalExpressions,
+			OBJ_PROP_NUM(self, slots::sentResolutionKeys)
 		);
 	}
 
@@ -269,8 +277,8 @@ public:
 	/* Mirrors withObservedClosures(): new self($this->parent,
 	 * ($this->resolutions ?? []) + $closureResolutions,
 	 * $this->siteStatementIndexes + $closureSiteStatementIndexes, the body,
-	 * its statements, $settledClosureSites, byRefSites: $byRefSites); UNDEF =
-	 * pending exception */
+	 * its statements, $settledClosureSites, byRefSites: $byRefSites, the
+	 * static variable types and sentResolutionKeys); UNDEF = pending exception */
 	zv::Val withObservedClosures(zval *closureResolutions, zval *closureSiteStatementIndexes, zval *settledClosureSites, zval *byRefSites) const
 	{
 		zval *parent = pt_typed_slot(self, slots::parent, self->ce, "parent");
@@ -292,7 +300,8 @@ public:
 			false,
 			byRefSites,
 			OBJ_PROP_NUM(self, slots::staticVariableTypes),
-			OBJ_PROP_NUM(self, slots::staticVariableConditionalExpressions)
+			OBJ_PROP_NUM(self, slots::staticVariableConditionalExpressions),
+			OBJ_PROP_NUM(self, slots::sentResolutionKeys)
 		);
 	}
 
@@ -336,12 +345,12 @@ public:
 	zval *closureSignatureStmts() const { return OBJ_PROP_NUM(self, slots::closureSignatureStmts); }
 
 	/* new self(...); UNDEF = pending exception */
-	static zv::Val create(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites, zval *staticVariableTypes = NULL, zval *staticVariableConditionalExpressions = NULL)
+	static zv::Val create(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites, zval *staticVariableTypes = NULL, zval *staticVariableConditionalExpressions = NULL, zval *sentResolutionKeys = NULL)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_template_argument_frame) != SUCCESS)) return zv::Val();
 		zv::Val frame = zv::Val::adopt(object);
-		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(frame.raw())).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites, staticVariableTypes, staticVariableConditionalExpressions))) return zv::Val();
+		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(frame.raw())).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites, staticVariableTypes, staticVariableConditionalExpressions, sentResolutionKeys))) return zv::Val();
 		return frame;
 	}
 
@@ -487,6 +496,43 @@ public:
 				ZVAL_STR(&nameZv, templateName);
 				zv::Args argv{&siteZv, &nameZv};
 				return pt_type_call(Z_OBJ_P(parent), PT_LC("resolve"), 2, argv);
+			}
+			frame = Z_OBJ_P(parent);
+		}
+	}
+
+	/* Mirrors resolveSentFromEnclosingBody(): the resolution of the key on
+	 * the nearest frame that lists it in sentResolutionKeys; PHP null for
+	 * none. UNDEF = pending exception */
+	zv::Val resolveSentFromEnclosingBody(zval *site, zend_string *templateName) const
+	{
+		smart_str key = {};
+		smart_str_append_long(&key, (zend_long) Z_OBJ_HANDLE_P(site));
+		smart_str_appendc(&key, '#');
+		smart_str_append(&key, templateName);
+		smart_str_0(&key);
+		zv::Str keyStr = zv::Str::adopt(key.s);
+
+		zend_object *frame = self;
+		for (;;) {
+			zval *sentKeys = OBJ_PROP_NUM(frame, slots::sentResolutionKeys);
+			zval *resolutions = OBJ_PROP_NUM(frame, slots::resolutions);
+			if (Z_TYPE_P(sentKeys) == IS_ARRAY && Z_TYPE_P(resolutions) == IS_ARRAY) {
+				zval *sent = zend_symtable_find(Z_ARRVAL_P(sentKeys), keyStr.get());
+				if (sent != NULL && Z_TYPE_P(sent) != IS_NULL) {
+					zval *found = zend_symtable_find(Z_ARRVAL_P(resolutions), keyStr.get());
+					if (found != NULL && Z_TYPE_P(found) != IS_NULL) return zv::Val::copyOf(zv::Ref(found));
+				}
+			}
+			zval *parent = pt_typed_slot(frame, slots::parent, frame->ce, "parent");
+			if (UNEXPECTED(parent == NULL)) return zv::Val();
+			if (Z_TYPE_P(parent) == IS_NULL) return zv::Val::null();
+			if (UNEXPECTED(Z_OBJCE_P(parent) != frame->ce)) {
+				zval siteZv, nameZv;
+				ZVAL_COPY_VALUE(&siteZv, site);
+				ZVAL_STR(&nameZv, templateName);
+				zv::Args argv{&siteZv, &nameZv};
+				return pt_type_call(Z_OBJ_P(parent), PT_LC("resolvesentfromenclosingbody"), 2, argv);
 			}
 			frame = Z_OBJ_P(parent);
 		}
@@ -645,9 +691,9 @@ bool pt_template_argument_frame_is_settled_closure_site(zval *frame, zval *site,
 	return true;
 }
 
-zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites)
+zv::Val pt_template_argument_frame_new(zval *parent, zval *resolutions, zval *siteStatementIndexes, zval *closureSignatureBody, zval *closureSignatureStmts, zval *settledClosureSites, bool observingClosures, zval *byRefSites, zval *sentResolutionKeys)
 {
-	return TemplateArgumentFrame::create(parent != NULL && Z_TYPE_P(parent) == IS_NULL ? NULL : parent, resolutions != NULL && Z_TYPE_P(resolutions) == IS_NULL ? NULL : resolutions, siteStatementIndexes, closureSignatureBody != NULL && Z_TYPE_P(closureSignatureBody) == IS_NULL ? NULL : closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites);
+	return TemplateArgumentFrame::create(parent != NULL && Z_TYPE_P(parent) == IS_NULL ? NULL : parent, resolutions != NULL && Z_TYPE_P(resolutions) == IS_NULL ? NULL : resolutions, siteStatementIndexes, closureSignatureBody != NULL && Z_TYPE_P(closureSignatureBody) == IS_NULL ? NULL : closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites, NULL, NULL, sentResolutionKeys);
 }
 
 zv::Val pt_template_argument_frame_with_observed_closures(zval *frame, zval *closureResolutions, zval *closureSiteStatementIndexes, zval *settledClosureSites, zval *byRefSites)
@@ -703,6 +749,15 @@ zv::Val pt_template_argument_frame_resolve(zval *frame, zval *site, zend_string 
 	return pt_type_call(Z_OBJ_P(frame), PT_LC("resolve"), 2, argv);
 }
 
+zv::Val pt_template_argument_frame_resolve_sent_from_enclosing_body(zval *frame, zval *site, zend_string *templateName)
+{
+	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return TemplateArgumentFrame(Z_OBJ_P(frame)).resolveSentFromEnclosingBody(site, templateName);
+	zval nameZv;
+	ZVAL_STR(&nameZv, templateName);
+	zv::Args argv{site, &nameZv};
+	return pt_type_call(Z_OBJ_P(frame), PT_LC("resolvesentfromenclosingbody"), 2, argv);
+}
+
 zv::Val pt_template_argument_frame_resolve_or_unconstrained(zval *frame, zval *site, zval *templateType)
 {
 	if (EXPECTED(Z_OBJCE_P(frame) == pt_ce_template_argument_frame)) return TemplateArgumentFrame(Z_OBJ_P(frame)).resolveOrUnconstrained(site, templateType);
@@ -748,9 +803,9 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 	});
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *parent, *resolutions = NULL, *siteStatementIndexes = NULL, *closureSignatureBody = NULL, *closureSignatureStmts = NULL, *settledClosureSites = NULL, *byRefSites = NULL, *staticVariableTypes = NULL, *staticVariableConditionalExpressions = NULL;
+		zval *parent, *resolutions = NULL, *siteStatementIndexes = NULL, *closureSignatureBody = NULL, *closureSignatureStmts = NULL, *settledClosureSites = NULL, *byRefSites = NULL, *staticVariableTypes = NULL, *staticVariableConditionalExpressions = NULL, *sentResolutionKeys = NULL;
 		bool observingClosures = false;
-		ZEND_PARSE_PARAMETERS_START(1, 10)
+		ZEND_PARSE_PARAMETERS_START(1, 11)
 			Z_PARAM_OBJECT_OR_NULL(parent)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY_OR_NULL(resolutions)
@@ -762,8 +817,9 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 			Z_PARAM_ARRAY(byRefSites)
 			Z_PARAM_ARRAY(staticVariableTypes)
 			Z_PARAM_ARRAY(staticVariableConditionalExpressions)
+			Z_PARAM_ARRAY(sentResolutionKeys)
 		ZEND_PARSE_PARAMETERS_END();
-		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites, staticVariableTypes, staticVariableConditionalExpressions))) RETURN_THROWS();
+		if (UNEXPECTED(!TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).construct(parent, resolutions, siteStatementIndexes, closureSignatureBody, closureSignatureStmts, settledClosureSites, observingClosures, byRefSites, staticVariableTypes, staticVariableConditionalExpressions, sentResolutionKeys))) RETURN_THROWS();
 	});
 
 	cls.method(sigs::withObservedClosures, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -851,6 +907,13 @@ PT_MINIT_REGISTRATION(pt_register_template_argument_frame)
 		zend_string *templateName;
 		if (!zp::parse<zp::Obj, zp::Str>(execute_data, site, templateName)) RETURN_THROWS();
 		PT_RETURN_VAL(TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).resolve(site, templateName));
+	});
+
+	cls.method(sigs::resolveSentFromEnclosingBody, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *site;
+		zend_string *templateName;
+		if (!zp::parse<zp::Obj, zp::Str>(execute_data, site, templateName)) RETURN_THROWS();
+		PT_RETURN_VAL(TemplateArgumentFrame(Z_OBJ_P(ZEND_THIS)).resolveSentFromEnclosingBody(site, templateName));
 	});
 
 	cls.method<&TemplateArgumentFrame::getResolutionCacheKeySuffix>(sigs::getResolutionCacheKeySuffix);

@@ -68,6 +68,7 @@ final class TemplateArgumentFrame
 	 * @param array<int, array{Expr\Closure, int, bool}> $byRefSites spl_object_id() of the closure node => the node, its statement index, whether every invocation was seen
 	 * @param array<int, array{Expr\Variable, Type, Type}> $staticVariableTypes spl_object_id() of a `static` variable node => the node, its phpdoc and native type - see StaticVariableInference
 	 * @param array<int, array{Node\Stmt\Static_, array<string, ConditionalExpressionHolder[]>}> $staticVariableConditionalExpressions spl_object_id() of the last statement of a run of `static` statements => the statement, the conditional expressions between the run's variables - see StaticVariableInference::getRuns()
+	 * @param array<string, true> $sentResolutionKeys the keys of the resolutions a send decided - see resolveSentFromEnclosingBody()
 	 */
 	public function __construct(
 		private readonly ?self $parent,
@@ -80,6 +81,7 @@ final class TemplateArgumentFrame
 		private readonly array $byRefSites = [],
 		private readonly array $staticVariableTypes = [],
 		private readonly array $staticVariableConditionalExpressions = [],
+		private readonly array $sentResolutionKeys = [],
 	)
 	{
 	}
@@ -131,6 +133,7 @@ final class TemplateArgumentFrame
 			$this->byRefSites,
 			$staticVariableTypes,
 			$conditionalExpressions,
+			$this->sentResolutionKeys,
 		);
 	}
 
@@ -190,6 +193,7 @@ final class TemplateArgumentFrame
 			byRefSites: $byRefSites,
 			staticVariableTypes: $this->staticVariableTypes,
 			staticVariableConditionalExpressions: $this->staticVariableConditionalExpressions,
+			sentResolutionKeys: $this->sentResolutionKeys,
 		);
 	}
 
@@ -326,6 +330,26 @@ final class TemplateArgumentFrame
 
 		if ($this->parent !== null) {
 			return $this->parent->resolve($site, $templateName);
+		}
+
+		return null;
+	}
+
+	/**
+	 * The resolution a body enclosing this one gave a site of a closure body it
+	 * encloses, when a send in it decided the argument - the closure's own walk
+	 * cannot see that send. An argument the enclosing body merely inferred is
+	 * left to the closure's walk, which infers it from its own state.
+	 */
+	public function resolveSentFromEnclosingBody(Expr $site, string $templateName): ?Type
+	{
+		$key = self::key($site, $templateName);
+		if (isset($this->sentResolutionKeys[$key], $this->resolutions[$key])) {
+			return $this->resolutions[$key];
+		}
+
+		if ($this->parent !== null) {
+			return $this->parent->resolveSentFromEnclosingBody($site, $templateName);
 		}
 
 		return null;

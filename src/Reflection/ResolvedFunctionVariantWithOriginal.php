@@ -400,6 +400,11 @@ final class ResolvedFunctionVariantWithOriginal implements ResolvedFunctionVaria
 	private function unresolvedOrResolvedTemplateArgument(TemplateType $template, Type $inferred, Expr $site, TemplateArgumentFrame $frame, bool $allowUnresolved, bool $onlyCovariant): Type
 	{
 		if ($allowUnresolved && $frame->isObserving()) {
+			// a send in a body enclosing this one decided the site
+			$resolved = $frame->resolveSentFromEnclosingBody($site, $template->getName());
+			if ($resolved !== null) {
+				return $resolved;
+			}
 			if ($inferred instanceof UnresolvedTemplateArgumentType) {
 				return $inferred;
 			}

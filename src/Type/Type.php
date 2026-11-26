@@ -626,6 +626,8 @@ interface Type
 	 * The strings this type holds as StringRefinement cells, when they are
 	 * exactly the strings of those cells: string and the conjunctions of its
 	 * accessory types. Null for any other type, a constant string included.
+	 *
+	 * @return int-mask-of<StringRefinement::*>|null
 	 */
 	public function getStringRefinement(): ?int;
 

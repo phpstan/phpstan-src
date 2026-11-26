@@ -56,7 +56,12 @@ final class StringRefinement
 	public const LITERAL = self::VALUES;
 	public const ALL = self::VALUES | (self::VALUES << self::NON_LITERAL_SHIFT);
 
-	/** The cells of the strings of these values, literal or not. */
+	/**
+	 * The cells of the strings of these values, literal or not.
+	 *
+	 * @param int<0, self::VALUES> $values
+	 * @return int-mask-of<self::*>
+	 */
 	public static function of(int $values): int
 	{
 		return $values | ($values << self::NON_LITERAL_SHIFT);
@@ -65,6 +70,8 @@ final class StringRefinement
 	/**
 	 * The cell of a constant string, a literal one. Its predicates decide it, so
 	 * the rules of what is numeric or lowercase stay where they are defined.
+	 *
+	 * @return int<1, self::VALUES>
 	 */
 	public static function ofConstant(ConstantStringType $string): int
 	{

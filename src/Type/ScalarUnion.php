@@ -191,7 +191,7 @@ final class ScalarUnion
 	 */
 	public static function unionStrings(array $refinements, array $constantStrings): array
 	{
-		/** @var list<array{int, Type, bool}> $items cells, type, whether it is a constant */
+		/** @var list<array{int, Type, false}|array{int<1, StringRefinement::VALUES>, Type, true}> $items cells, type, whether it is a constant */
 		$items = [];
 		foreach ($refinements as $refinement) {
 			$items[] = [$refinement->getStringRefinement() ?? StringRefinement::ALL, $refinement, false];
@@ -256,13 +256,13 @@ final class ScalarUnion
 		return [$result, $constants];
 	}
 
-	/** @param array{int, Type, bool} $item */
+	/** @param array{int, Type, false}|array{int<1, StringRefinement::VALUES>, Type, true} $item */
 	private static function widenConstant(array $item): int
 	{
 		return $item[2] ? StringRefinement::of($item[0]) : $item[0];
 	}
 
-	/** @param list<array{int, Type, bool}> $items */
+	/** @param list<array{int, Type, false}|array{int<1, StringRefinement::VALUES>, Type, true}> $items */
 	private static function isHeldByOne(array $items, int $cells): bool
 	{
 		foreach ($items as [$itemCells]) {

@@ -199,7 +199,7 @@ final class OptimizedDirectorySourceLocator implements SourceLocator
 				$fetchedFile = $file;
 			}
 
-			if ($fetchedFunctionNode === null || $fetchedFile === null) {
+			if ($fetchedFunctionNode === null) {
 				return null;
 			}
 

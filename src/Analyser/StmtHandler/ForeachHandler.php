@@ -198,6 +198,7 @@ final class ForeachHandler implements StmtHandler
 		$unrolledTotalKeys = null;
 		$loopHeads = null;
 		$entryConverged = false;
+		$iterationLimitReached = false;
 		// the loop's entry joined with the head it converged to when walked before
 		$loopEntryScope = $nonEmptyIterateeScope;
 		if ($context->shouldConvergeLoops()) {
@@ -246,7 +247,7 @@ final class ForeachHandler implements StmtHandler
 				do {
 					$prevScope = $bodyScope;
 					// a warm start begins at the loop's entry already
-					$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope);
+					$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope, true);
 					if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 						// walking is deterministic in the entry scope - an unchanged entry
 						// reproduces the previous pass's exit, so the verification walk is skipped
@@ -294,11 +295,14 @@ final class ForeachHandler implements StmtHandler
 					}
 					$count++;
 				} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+				$iterationLimitReached = $count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS;
 			}
 		}
 
 		if (!$entryConverged) {
-			$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+			// a body state that did not converge may still reach the guards
+			// a vacuous conditional excludes, so only a fixpoint keeps them
+			$bodyScope = $bodyScope->mergeWith($loopEntryScope, !$iterationLimitReached);
 		}
 		$finalEntryScope = $bodyScope;
 		if (!$context->isTopLevel()) {
@@ -357,7 +361,7 @@ final class ForeachHandler implements StmtHandler
 
 		foreach ($finalScopeResult->getExitPointsByType(Continue_::class) as $continueExitPoint) {
 			$continueScope = $continueExitPoint->getScope();
-			$finalScope = $finalScope === null ? $continueScope : $continueScope->mergeWith($finalScope);
+			$finalScope = $finalScope === null ? $continueScope : $continueScope->mergeWith($finalScope, true);
 			if ($trackingExpr === null || !$continueScope->hasExpressionType($trackingExpr)->yes()) {
 				$continueExitPointHasUnoriginalKeyType = true;
 				continue;
@@ -366,7 +370,7 @@ final class ForeachHandler implements StmtHandler
 		}
 		$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);
 		foreach ($breakExitPoints as $breakExitPoint) {
-			$finalScope = $finalScope === null ? $breakExitPoint->getScope() : $breakExitPoint->getScope()->mergeWith($finalScope);
+			$finalScope = $finalScope === null ? $breakExitPoint->getScope() : $breakExitPoint->getScope()->mergeWith($finalScope, true);
 		}
 		$finalScope ??= $finalScopeResult->getScope();
 
@@ -494,6 +498,7 @@ final class ForeachHandler implements StmtHandler
 		if ($isIterableAtLeastOnce->maybe() || $exprType->isIterable()->no()) {
 			$finalScope = $finalScope->mergeWith(
 				$this->container->getByType(ForeachEmptyOrObjectNarrowingHelper::class)->narrowToEmptyOrObject($nodeScopeResolver, $scope, $stmt->expr, $condResult, $storage),
+				true,
 			);
 		} elseif ($isIterableAtLeastOnce->no() || $finalScopeResult->isAlwaysTerminating()) {
 			$finalScope = $scope;
@@ -832,12 +837,15 @@ final class ForeachHandler implements StmtHandler
 				}
 
 				if ($isOptional) {
-					$chainScope = $iterEndScope->mergeWith($chainScope);
+					$chainScope = $iterEndScope->mergeWith($chainScope, true);
 				} else {
 					$chainScope = $iterEndScope;
 				}
 			}
 
+			// the entries of the unrolled iterations are not loop heads: the plain
+			// join keeps their correlations without carrying every holder of
+			// every key into the joined body scope
 			$arrayBodyScope = $entryScopes[0];
 			for ($i = 1, $c = count($entryScopes); $i < $c; $i++) {
 				$arrayBodyScope = $arrayBodyScope->mergeWith($entryScopes[$i]);
@@ -865,12 +873,12 @@ final class ForeachHandler implements StmtHandler
 
 		$chainEndScope = null;
 		foreach ($allChainScopes as $chainScope) {
-			$chainEndScope = $chainEndScope === null ? $chainScope : $chainEndScope->mergeWith($chainScope);
+			$chainEndScope = $chainEndScope === null ? $chainScope : $chainEndScope->mergeWith($chainScope, true);
 		}
 
 		$endScope = $chainEndScope;
 		foreach ($allBreakScopes as $breakScope) {
-			$endScope = $endScope === null ? $breakScope : $endScope->mergeWith($breakScope);
+			$endScope = $endScope === null ? $breakScope : $endScope->mergeWith($breakScope, true);
 		}
 
 		// Unsealed shapes describe zero-or-more additional entries beyond the
@@ -884,19 +892,19 @@ final class ForeachHandler implements StmtHandler
 			do {
 				$prevLoopScope = $loopScope;
 				$iterStorage = $originalStorage->duplicate();
-				$iterBodyScope = $loopScope->mergeWith($endScope);
+				$iterBodyScope = $loopScope->mergeWith($endScope, true);
 				$iterBodyScope = $this->enterForeach($nodeScopeResolver, $iterBodyScope, $iterStorage, $originalScope, $stmt, $iterateeType, $nativeIterateeType, new NoopNodeCallback());
 				$iterBodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
 				$backEdgeScope = $iterBodyScopeResult->getLoopBackEdgeScope();
 				foreach ($iterBodyScopeResult->getExitPointsByType(Break_::class) as $breakExitPoint) {
-					$endScope = $endScope->mergeWith($breakExitPoint->getScope());
+					$endScope = $endScope->mergeWith($breakExitPoint->getScope(), true);
 				}
 				if ($backEdgeScope === null) {
 					$loopScope = $prevLoopScope;
 					break;
 				}
 				$loopScope = $backEdgeScope;
-				$bodyScope = $bodyScope->mergeWith($loopScope);
+				$bodyScope = $bodyScope->mergeWith($loopScope, true);
 				if ($loopScope->equals($prevLoopScope)) {
 					break;
 				}
@@ -906,7 +914,7 @@ final class ForeachHandler implements StmtHandler
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
 
-			$endScope = $endScope->mergeWith($loopScope);
+			$endScope = $endScope->mergeWith($loopScope, true);
 		}
 
 		return ['bodyScope' => $bodyScope, 'endScope' => $endScope, 'totalKeys' => $totalKeys];

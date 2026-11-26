@@ -457,6 +457,7 @@ public:
 		if (UNEXPECTED(!pt_statement_context_should_converge_loops(context, shouldConvergeLoops))) return zv::Val();
 		zv::Val loopHeads = zv::Val::null();
 		bool entryConverged = false;
+		bool iterationLimitReached = false;
 		// the loop's entry joined with the head it converged to when walked before
 		zv::Val loopEntryScope = zv::Val::copyOf(nonEmptyIterateeScope.ref());
 		if (shouldConvergeLoops) {
@@ -518,7 +519,7 @@ public:
 				do {
 					zv::Val prevScope = zv::Val::copyOf(bodyScope.ref());
 					// a warm start begins at the loop's entry already
-					if (Z_OBJ_P(bodyScope.raw()) != Z_OBJ_P(loopEntryScope.raw())) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw());
+					if (Z_OBJ_P(bodyScope.raw()) != Z_OBJ_P(loopEntryScope.raw())) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), true);
 					if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 					if (!prevEntryScope.isNull()) {
 						bool equal;
@@ -587,10 +588,12 @@ public:
 					}
 					count++;
 				} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
+				iterationLimitReached = count >= PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT;
 			}
 		}
 
-		if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw());
+		/* a non-converged body state keeps no vacuous conditionals (PHP mirror) */
+		if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), !iterationLimitReached);
 		if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 		zv::Val finalEntryScope = zv::Val::copyOf(bodyScope.ref());
 		if (!isTopLevel && !loopHeads.isNull() && UNEXPECTED(!pt_converged_loop_heads_record(loopHeads.raw(), stmt, finalEntryScope.raw()))) return zv::Val();
@@ -700,7 +703,7 @@ public:
 				zv::Val continueScope = zv::Val::copyOf(zv::Ref(continueScopeSlot));
 				if (finalScope.isNull()) {
 					finalScope = zv::Val::copyOf(continueScope.ref());
-				} else if (UNEXPECTED(!ptlh::otherMergeWith(continueScope.raw(), finalScope))) {
+				} else if (UNEXPECTED(!ptlh::otherMergeWith(continueScope.raw(), finalScope, true))) {
 					return zv::Val();
 				}
 				bool tracked = false;
@@ -724,7 +727,7 @@ public:
 			if (UNEXPECTED(breakScope == NULL)) return zv::Val();
 			if (finalScope.isNull()) {
 				finalScope = zv::Val::copyOf(zv::Ref(breakScope));
-			} else if (UNEXPECTED(!ptlh::otherMergeWith(breakScope, finalScope))) {
+			} else if (UNEXPECTED(!ptlh::otherMergeWith(breakScope, finalScope, true))) {
 				return zv::Val();
 			}
 		}
@@ -783,7 +786,7 @@ public:
 		if (narrowToEmpty) {
 			zv::Val emptyScope = narrowToEmptyOrObject(nodeScopeResolver, scope.raw(), iteratee, condResult.raw(), originalStorage);
 			if (UNEXPECTED(emptyScope.isUndef())) return zv::Val();
-			zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), emptyScope.raw());
+			zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), emptyScope.raw(), true);
 			if (UNEXPECTED(merged.isUndef())) return zv::Val();
 			finalScope = std::move(merged);
 		} else if (isIterableAtLeastOnce == PT_TRI_NO || resultAlwaysTerminating) {
@@ -1656,7 +1659,7 @@ private:
 				}
 
 				if (isOptional) {
-					zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(iterEndScope.raw()), chainScope.raw());
+					zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(iterEndScope.raw()), chainScope.raw(), true);
 					if (UNEXPECTED(merged.isUndef())) return false;
 					chainScope = std::move(merged);
 				} else {
@@ -1700,12 +1703,12 @@ private:
 
 		zv::Val chainEndScope = zv::Val::null();
 		for (auto entry : zv::ArrRef(allChainScopes.raw())) {
-			if (UNEXPECTED(!ptlh::mergeOrTake(chainEndScope, entry.value().deref().raw()))) return false;
+			if (UNEXPECTED(!ptlh::mergeOrTake(chainEndScope, entry.value().deref().raw(), true))) return false;
 		}
 
 		zv::Val endScope = chainEndScope.isNull() ? zv::Val::null() : zv::Val::copyOf(chainEndScope.ref());
 		for (auto entry : zv::ArrRef(allBreakScopes.raw())) {
-			if (UNEXPECTED(!ptlh::mergeOrTake(endScope, entry.value().deref().raw()))) return false;
+			if (UNEXPECTED(!ptlh::mergeOrTake(endScope, entry.value().deref().raw(), true))) return false;
 		}
 
 		// Unsealed shapes describe zero-or-more additional entries beyond the
@@ -1720,7 +1723,7 @@ private:
 				zv::Val prevLoopScope = zv::Val::copyOf(loopScope.ref());
 				zv::Val iterStorage = pt_expression_result_storage_duplicate(originalStorage);
 				if (UNEXPECTED(iterStorage.isUndef())) return false;
-				zv::Val iterBodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(loopScope.raw()), endScope.raw());
+				zv::Val iterBodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(loopScope.raw()), endScope.raw(), true);
 				if (UNEXPECTED(iterBodyScope.isUndef())) return false;
 				{
 					zv::Val noop = ptlh::newNoopNodeCallback();
@@ -1747,7 +1750,7 @@ private:
 						zv::Val hold;
 						zval *breakScope = pt_internal_statement_exit_point_scope(breakEntry.value().deref().raw(), hold);
 						if (UNEXPECTED(breakScope == NULL)) return false;
-						zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(endScope.raw()), breakScope);
+						zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(endScope.raw()), breakScope, true);
 						if (UNEXPECTED(merged.isUndef())) return false;
 						endScope = std::move(merged);
 					}
@@ -1758,7 +1761,7 @@ private:
 				}
 				loopScope = std::move(backEdgeScope);
 				{
-					zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopScope.raw());
+					zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopScope.raw(), true);
 					if (UNEXPECTED(merged.isUndef())) return false;
 					bodyScope = std::move(merged);
 				}
@@ -1775,7 +1778,7 @@ private:
 				count++;
 			} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
 
-			zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(endScope.raw()), loopScope.raw());
+			zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(endScope.raw()), loopScope.raw(), true);
 			if (UNEXPECTED(merged.isUndef())) return false;
 			endScope = std::move(merged);
 		}

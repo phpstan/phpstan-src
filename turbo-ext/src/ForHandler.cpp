@@ -216,6 +216,7 @@ public:
 		if (UNEXPECTED(!pt_statement_context_should_converge_loops(context, shouldConvergeLoops))) return zv::Val();
 		zv::Val loopHeads = zv::Val::null();
 		bool entryConverged = false;
+		bool iterationLimitReached = false;
 		// the loop's entry joined with the head it converged to when walked before
 		zv::Val loopEntryScope = zv::Val::copyOf(initScope.ref());
 		zv::Val prevEntryScope;
@@ -239,7 +240,7 @@ public:
 				zv::Val storage = pt_expression_result_storage_duplicate(originalStorage);
 				if (UNEXPECTED(storage.isUndef())) return zv::Val();
 				// a warm start begins at the loop's entry already
-				if (Z_OBJ_P(bodyScope.raw()) != Z_OBJ_P(loopEntryScope.raw())) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw());
+				if (Z_OBJ_P(bodyScope.raw()) != Z_OBJ_P(loopEntryScope.raw())) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), true);
 				if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 				if (!prevEntryScope.isNull()) {
 					bool equal;
@@ -333,10 +334,12 @@ public:
 				}
 				count++;
 			} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
+			iterationLimitReached = count >= PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT;
 		}
 
 		zval *storage = originalStorage;
-		if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw());
+		/* a non-converged body state keeps no vacuous conditionals (PHP mirror) */
+		if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), !iterationLimitReached);
 		if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 		if (!isTopLevel && !loopHeads.isNull() && UNEXPECTED(!pt_converged_loop_heads_record(loopHeads.raw(), stmt, bodyScope.raw()))) return zv::Val();
 		zv::Val headScope = zv::Val::copyOf(bodyScope.ref());
@@ -458,7 +461,7 @@ public:
 				zv::Val hold;
 				zval *breakExitScope = pt_internal_statement_exit_point_scope(entry.value().deref().raw(), hold);
 				if (UNEXPECTED(breakExitScope == NULL)) return zv::Val();
-				if (UNEXPECTED(!ptlh::mergeOrTake(breakScope, breakExitScope))) return zv::Val();
+				if (UNEXPECTED(!ptlh::mergeOrTake(breakScope, breakExitScope, true))) return zv::Val();
 			}
 			finalScope = std::move(breakScope);
 		}
@@ -474,10 +477,10 @@ public:
 		if (resetToEntry) {
 			finalScope = zv::Val::copyOf(zv::Ref(polluteScopeWithLoopInitialAssignments ? initScope.raw() : scope));
 		} else if (isIterableAtLeastOnce == PT_TRI_MAYBE) {
-			finalScope = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), polluteScopeWithLoopInitialAssignments ? initScope.raw() : scope);
+			finalScope = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), polluteScopeWithLoopInitialAssignments ? initScope.raw() : scope, true);
 			if (UNEXPECTED(finalScope.isUndef())) return zv::Val();
 		} else if (!polluteScopeWithLoopInitialAssignments) {
-			finalScope = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), scope);
+			finalScope = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), scope, true);
 			if (UNEXPECTED(finalScope.isUndef())) return zv::Val();
 		}
 

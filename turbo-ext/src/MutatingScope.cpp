@@ -9380,16 +9380,54 @@ public:
 		zv::Val nativeTypes = generalizeVariableTypeHolders(Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()), otherNativeTypes, writableTable);
 		if (UNEXPECTED(nativeTypes.isUndef())) return zv::Val();
 
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS, "conditionalExpressions"))) return zv::Val();
+		zv::Val conditionalExpressions = withoutWidenedConditionalExpressions(Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()), ourExpressionTypes, Z_ARRVAL_P(variableTypeHolders.raw()));
+		if (UNEXPECTED(conditionalExpressions.isUndef())) return zv::Val();
+
 		CreateArgs a;
 		if (UNEXPECTED(!fillFromSlots(a))) return zv::Val();
 		if (UNEXPECTED(!fillDispatched(a, true, false))) return zv::Val();
 		a.setOwned(CreateArgs::EXPRESSION_TYPES, std::move(variableTypeHolders));
 		a.setOwned(CreateArgs::NATIVE_EXPRESSION_TYPES, std::move(nativeTypes));
+		a.setOwned(CreateArgs::CONDITIONAL_EXPRESSIONS, std::move(conditionalExpressions));
 		a.setBool(CreateArgs::IN_FIRST_LEVEL_STATEMENT, slotBool(PT_MS_PROP_IN_FIRST_LEVEL_STATEMENT));
 		a.setEmptyArray(CreateArgs::CURRENTLY_ASSIGNED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::CURRENTLY_ALLOWED_UNDEFINED_EXPRESSIONS);
 		a.setEmptyArray(CreateArgs::IN_FUNCTION_CALLS_STACK);
 		return scopeFactoryCreate(a);
+	}
+
+	/* whether the holder of a key differs between the two tables (absent on one
+	 * side counts); false = pending exception */
+	[[nodiscard]] static bool isWidenedHolder(zval *before, zval *after, bool &out)
+	{
+		if (before == after || (before != NULL && after != NULL && sameObject(zv::Ref(before), zv::Ref(after)))) {
+			out = false;
+			return true;
+		}
+		if (before == NULL || after == NULL) {
+			out = true;
+			return true;
+		}
+		bool equal;
+		if (UNEXPECTED(!holderEquals(zv::Ref(before), zv::Ref(after), equal))) return false;
+		out = !equal;
+		return true;
+	}
+
+	/* private static (twin withoutWidenedConditionalExpressions()): the holders
+	 * of the targets generalizing left unchanged; UNDEF = pending exception */
+	static zv::Val withoutWidenedConditionalExpressions(HashTable *conditionalExpressions, HashTable *expressionTypes, HashTable *generalizedExpressionTypes)
+	{
+		zv::Arr result = zv::Arr::copyOfTable(conditionalExpressions);
+		for (auto entry : zv::TableRef(conditionalExpressions)) {
+			bool widened;
+			if (UNEXPECTED(!isWidenedHolder(findByEntryKey(expressionTypes, entry), findByEntryKey(generalizedExpressionTypes, entry), widened))) return zv::Val();
+			if (!widened) continue;
+			result.separate();
+			deleteByEntryKey(result.table(), entry);
+		}
+		return zv::Val::copyOf(zv::Ref(result.raw()));
 	}
 
 	/* private (twin 4961) */

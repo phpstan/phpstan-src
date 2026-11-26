@@ -198,6 +198,7 @@ final class ForHandler implements StmtHandler
 
 		$loopHeads = null;
 		$entryConverged = false;
+		$iterationLimitReached = false;
 		// the loop's entry joined with the head it converged to when walked before
 		$loopEntryScope = $initScope;
 		$prevEntryScope = null;
@@ -221,7 +222,7 @@ final class ForHandler implements StmtHandler
 				$prevScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
 				// a warm start begins at the loop's entry already
-				$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope);
+				$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope, true);
 				if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 					// walking is deterministic in the entry scope - an unchanged entry
 					// reproduces the previous pass's exit, so the verification walk is skipped
@@ -277,11 +278,14 @@ final class ForHandler implements StmtHandler
 				}
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+			$iterationLimitReached = $count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS;
 		}
 
 		$storage = $originalStorage;
 		if (!$entryConverged) {
-			$bodyScope = $bodyScope->mergeWith($loopEntryScope);
+			// a body state that did not converge may still reach the guards
+			// a vacuous conditional excludes, so only a fixpoint keeps them
+			$bodyScope = $bodyScope->mergeWith($loopEntryScope, !$iterationLimitReached);
 		}
 		if (!$context->isTopLevel()) {
 			$loopHeads?->record($stmt, $bodyScope);
@@ -345,7 +349,7 @@ final class ForHandler implements StmtHandler
 		if (count($breakExitPoints) > 0) {
 			$breakScope = $alwaysIterates->yes() || $backEdgeDead ? null : $finalScope;
 			foreach ($breakExitPoints as $breakExitPoint) {
-				$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope());
+				$breakScope = $breakScope === null ? $breakExitPoint->getScope() : $breakScope->mergeWith($breakExitPoint->getScope(), true);
 			}
 			$finalScope = $breakScope;
 		}
@@ -359,13 +363,13 @@ final class ForHandler implements StmtHandler
 
 		} elseif ($isIterableAtLeastOnce->maybe()) {
 			if ($this->polluteScopeWithLoopInitialAssignments) {
-				$finalScope = $finalScope->mergeWith($initScope);
+				$finalScope = $finalScope->mergeWith($initScope, true);
 			} else {
-				$finalScope = $finalScope->mergeWith($scope);
+				$finalScope = $finalScope->mergeWith($scope, true);
 			}
 		} else {
 			if (!$this->polluteScopeWithLoopInitialAssignments) {
-				$finalScope = $finalScope->mergeWith($scope);
+				$finalScope = $finalScope->mergeWith($scope, true);
 			}
 		}
 

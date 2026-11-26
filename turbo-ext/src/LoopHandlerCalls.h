@@ -177,13 +177,13 @@ inline uint32_t countOf(zval *list)
 
 /* $scope = $scope === null ? $other : $scope->mergeWith($other) — `scope`
  * null or UNDEF for null; false = pending exception */
-[[nodiscard]] inline bool mergeOrTake(zv::Val &scope, zval *other)
+[[nodiscard]] inline bool mergeOrTake(zv::Val &scope, zval *other, bool preserveVacuousConditionals = false)
 {
 	if (scope.isNull()) {
 		scope = zv::Val::copyOf(zv::Ref(other));
 		return true;
 	}
-	zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(scope.raw()), other);
+	zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(scope.raw()), other, preserveVacuousConditionals);
 	if (UNEXPECTED(merged.isUndef())) return false;
 	scope = std::move(merged);
 	return true;
@@ -191,9 +191,9 @@ inline uint32_t countOf(zval *list)
 
 /* $scope = $other->mergeWith($scope) ($scope null or UNDEF for null); false
  * = pending exception */
-[[nodiscard]] inline bool otherMergeWith(zval *other, zv::Val &scope)
+[[nodiscard]] inline bool otherMergeWith(zval *other, zv::Val &scope, bool preserveVacuousConditionals = false)
 {
-	zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(other), scope.isUndef() ? NULL : scope.raw());
+	zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(other), scope.isUndef() ? NULL : scope.raw(), preserveVacuousConditionals);
 	if (UNEXPECTED(merged.isUndef())) return false;
 	scope = std::move(merged);
 	return true;

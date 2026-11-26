@@ -56,7 +56,7 @@ public:
 			if (equal) return cachedWarmHold;
 		}
 
-		zv::Val warmScope = pt_mutating_scope_merge_with(Z_OBJ_P(entryScope), head);
+		zv::Val warmScope = pt_mutating_scope_merge_with(Z_OBJ_P(entryScope), head, true);
 		if (UNEXPECTED(warmScope.isUndef())) return zv::Val();
 		zval pair;
 		array_init_size(&pair, 2);

@@ -5,7 +5,9 @@ namespace PHPStan\File;
 use PHPStan\Testing\PHPStanTestCase;
 use Symfony\Component\Finder\Finder;
 use function clearstatcache;
+use function fclose;
 use function file_put_contents;
+use function fstat;
 use function implode;
 use function max;
 use function mkdir;
@@ -14,7 +16,7 @@ use function rmdir;
 use function stat;
 use function symlink;
 use function sys_get_temp_dir;
-use function time;
+use function tmpfile;
 use function uniqid;
 use function unlink;
 use function usleep;
@@ -173,9 +175,21 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 			$latest = max($latest, $stat['mtime'], $stat['ctime']);
 		}
 
-		while (time() <= $latest) {
+		// the same clock FileStatSignatures reads, which lags time() by a few milliseconds
+		while ($this->getFilesystemTime() <= $latest) {
 			usleep(50_000);
 		}
+	}
+
+	private function getFilesystemTime(): int
+	{
+		$probe = tmpfile();
+		$this->assertIsResource($probe);
+		$stat = fstat($probe);
+		fclose($probe);
+		$this->assertIsArray($stat);
+
+		return $stat['mtime'];
 	}
 
 	/**

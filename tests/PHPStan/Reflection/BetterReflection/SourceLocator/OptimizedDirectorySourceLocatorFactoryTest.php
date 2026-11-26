@@ -13,13 +13,15 @@ use PHPStan\Php\PhpVersion;
 use PHPStan\Testing\PHPStanTestCase;
 use function array_keys;
 use function clearstatcache;
+use function fclose;
 use function file_put_contents;
+use function fstat;
 use function max;
 use function mkdir;
 use function sprintf;
 use function stat;
 use function sys_get_temp_dir;
-use function time;
+use function tmpfile;
 use function uniqid;
 use function usleep;
 use const DIRECTORY_SEPARATOR;
@@ -156,9 +158,21 @@ final class OptimizedDirectorySourceLocatorFactoryTest extends PHPStanTestCase
 		$stat = stat($file);
 		$this->assertIsArray($stat);
 		$latest = max($stat['mtime'], $stat['ctime']);
-		while (time() <= $latest) {
+		// the same clock FileStatSignatures reads, which lags time() by a few milliseconds
+		while ($this->getFilesystemTime() <= $latest) {
 			usleep(50_000);
 		}
+	}
+
+	private function getFilesystemTime(): int
+	{
+		$probe = tmpfile();
+		$this->assertIsResource($probe);
+		$stat = fstat($probe);
+		fclose($probe);
+		$this->assertIsArray($stat);
+
+		return $stat['mtime'];
 	}
 
 }

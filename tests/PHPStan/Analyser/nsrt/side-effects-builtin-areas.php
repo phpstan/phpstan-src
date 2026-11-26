@@ -31,6 +31,42 @@ class Foo
 		}
 	}
 
+	public function randomIntKeepsGlobalState(string $path): bool
+	{
+		if (!is_file($path)) {
+			return false;
+		}
+
+		if (ini_get('x') === false) {
+			return false;
+		}
+
+		random_int(1, 10);
+
+		assertType('true', is_file($path));
+		assertType('string', ini_get('x'));
+
+		return true;
+	}
+
+	public function randomBytesKeepsGlobalState(string $path): bool
+	{
+		if (!is_file($path)) {
+			return false;
+		}
+
+		if (ini_get('x') === false) {
+			return false;
+		}
+
+		random_bytes(8);
+
+		assertType('true', is_file($path));
+		assertType('string', ini_get('x'));
+
+		return true;
+	}
+
 	public function randomResultsAreNotRemembered(): void
 	{
 		if (str_shuffle('ab') === 'ab') {

@@ -4,6 +4,7 @@ namespace PHPStan\Analyser;
 
 use PhpParser\Node;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\NeverType;
 use function spl_object_id;
 
 /**
@@ -15,6 +16,10 @@ use function spl_object_id;
  * converging from the head it reached the previous time instead of from
  * scratch - a nested loop whose head is already stable converges in a single
  * pass, which also stands in for its final walk.
+ *
+ * A walk from an unreachable entry records no head: its variables narrowed to
+ * never make the types read from them *ERROR*, which would swallow the types
+ * of the reachable entries the head is joined into later.
  */
 #[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/ConvergedLoopHeads.cpp')]
 final class ConvergedLoopHeads
@@ -22,6 +27,13 @@ final class ConvergedLoopHeads
 
 	/** @var array<int, MutatingScope> */
 	private array $heads = [];
+
+	/**
+	 * The entry each loop was last walked from.
+	 *
+	 * @var array<int, MutatingScope>
+	 */
+	private array $entries = [];
 
 	/**
 	 * The last entry each loop was warm-started from and the warm entry it gave
@@ -35,6 +47,7 @@ final class ConvergedLoopHeads
 	public function warmStart(Node $loop, MutatingScope $entryScope): MutatingScope
 	{
 		$id = spl_object_id($loop);
+		$this->entries[$id] = $entryScope;
 		$head = $this->heads[$id] ?? null;
 		if ($head === null) {
 			return $entryScope;
@@ -54,6 +67,11 @@ final class ConvergedLoopHeads
 	public function record(Node $loop, MutatingScope $head): void
 	{
 		$id = spl_object_id($loop);
+		// a walk the entry of which is unreachable does not widen the head
+		if (self::isUnreachable($this->entries[$id])) {
+			return;
+		}
+
 		$previous = $this->heads[$id] ?? null;
 		// an unchanged head keeps the warm entry derived from it
 		if ($previous !== null && ($previous === $head || $previous->equals($head))) {
@@ -62,6 +80,21 @@ final class ConvergedLoopHeads
 
 		$this->heads[$id] = $head;
 		unset($this->warmEntries[$id]);
+	}
+
+	/**
+	 * A variable that can hold no value - the walk is in a branch the
+	 * condition rules out, such as isset() of an offset of an empty array.
+	 */
+	private static function isUnreachable(MutatingScope $scope): bool
+	{
+		foreach ($scope->getDefinedVariables() as $variableName) {
+			if ($scope->getVariableType($variableName) instanceof NeverType) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 }

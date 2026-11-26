@@ -4173,23 +4173,26 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 						$type = TypeCombinator::intersect($type, $expressions[$i]->getTypeHolder()->getType());
 					}
 
+					$narrowedType = TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $type);
+
 					// The holders' types were derived from PHPDoc types. Where the target
 					// and every guard have native types equal to their PHPDoc types, the
 					// PHPDoc knowledge the holder carries is implied by the native types
 					// too, so the holder narrows the native type the way the condition
-					// it was derived from would have
+					// it was derived from would have. The native type equals the PHPDoc
+					// type then, so it narrows to the same type.
 					if ($scope->narrowsNativeTypeByHolders($conditionalExprString, $expressions)) {
 						$nativeHolder = $scope->nativeExpressionTypes[$conditionalExprString];
 						$scope->nativeExpressionTypes[$conditionalExprString] = new ExpressionTypeHolder(
 							$nativeHolder->getExpr(),
-							TypeCombinator::intersect($nativeHolder->getType(), $type),
+							$narrowedType,
 							$nativeHolder->getCertainty(),
 						);
 					}
 
 					$scope->expressionTypes[$conditionalExprString] = new ExpressionTypeHolder(
 						$scope->expressionTypes[$conditionalExprString]->getExpr(),
-						TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $type),
+						$narrowedType,
 						TrinaryLogic::maxMin($scope->expressionTypes[$conditionalExprString]->getCertainty(), $certainty),
 					);
 				} else {

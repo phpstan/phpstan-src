@@ -8219,27 +8219,6 @@ public:
 				if (UNEXPECTED(intersected.isUndef())) return zv::Val();
 				type = std::move(intersected);
 			}
-			/* the holders narrow the native type too where the target and every
-			 * guard have equal native and PHPDoc types */
-			bool narrowsNative;
-			if (UNEXPECTED(!narrowsNativeTypeByHolders(conditionalExprString.get(), holders, narrowsNative))) return zv::Val();
-			if (narrowsNative) {
-				zval *nativeExisting = zend_symtable_find(Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()), conditionalExprString.get());
-				zv::Val nativeExpr = holderExpr(zv::Ref(nativeExisting));
-				zv::Val nativeType = holderType(zv::Ref(nativeExisting));
-				if (UNEXPECTED(nativeExpr.isUndef() || nativeType.isUndef())) return zv::Val();
-				zend_long nativeCertainty = holderCertainty(zv::Ref(nativeExisting));
-				if (UNEXPECTED(nativeCertainty < 0)) return zv::Val();
-				zv::Val nativeIntersected = intersectTypes(nativeType.raw(), type.raw());
-				if (UNEXPECTED(nativeIntersected.isUndef())) return zv::Val();
-				zval nativeHolder;
-				pt_holder_create(&nativeHolder, nativeExpr.raw(), nativeIntersected.raw(), nativeCertainty);
-				zv::Val nativeHolderValue = zv::Val::adopt(nativeHolder);
-				if (UNEXPECTED(!writeScopeTable(self, PT_MS_PROP_NATIVE_EXPRESSION_TYPES, PT_LC("nativeExpressionTypes"), conditionalExprString.get(), nativeHolderValue.raw()))) {
-					return zv::Val();
-				}
-				existing = zend_symtable_find(Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()), conditionalExprString.get());
-			}
 			zv::Val existingExpr = holderExpr(zv::Ref(existing));
 			zv::Val existingType = holderType(zv::Ref(existing));
 			if (UNEXPECTED(existingExpr.isUndef() || existingType.isUndef())) return zv::Val();
@@ -8247,6 +8226,24 @@ public:
 			if (UNEXPECTED(existingCertainty < 0)) return zv::Val();
 			zv::Val intersected = intersectTypes(existingType.raw(), type.raw());
 			if (UNEXPECTED(intersected.isUndef())) return zv::Val();
+			/* the holders narrow the native type too where the target and every
+			 * guard have equal native and PHPDoc types - to the same type, the
+			 * native type being equal to the PHPDoc type */
+			bool narrowsNative;
+			if (UNEXPECTED(!narrowsNativeTypeByHolders(conditionalExprString.get(), holders, narrowsNative))) return zv::Val();
+			if (narrowsNative) {
+				zval *nativeExisting = zend_symtable_find(Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()), conditionalExprString.get());
+				zv::Val nativeExpr = holderExpr(zv::Ref(nativeExisting));
+				if (UNEXPECTED(nativeExpr.isUndef())) return zv::Val();
+				zend_long nativeCertainty = holderCertainty(zv::Ref(nativeExisting));
+				if (UNEXPECTED(nativeCertainty < 0)) return zv::Val();
+				zval nativeHolder;
+				pt_holder_create(&nativeHolder, nativeExpr.raw(), intersected.raw(), nativeCertainty);
+				zv::Val nativeHolderValue = zv::Val::adopt(nativeHolder);
+				if (UNEXPECTED(!writeScopeTable(self, PT_MS_PROP_NATIVE_EXPRESSION_TYPES, PT_LC("nativeExpressionTypes"), conditionalExprString.get(), nativeHolderValue.raw()))) {
+					return zv::Val();
+				}
+			}
 			/* TrinaryLogic::maxMin() */
 			zend_long maxMin = ((existingCertainty | certainty) == PT_TRI_YES) ? PT_TRI_YES : (existingCertainty & certainty);
 			zval holder;

@@ -17,6 +17,9 @@ use PHPStan\Type\Type;
 final class StatementContext
 {
 
+	/**
+	 * @param array<string, MutatingScope> $gotoLabelEntryScopes
+	 */
 	private function __construct(
 		private bool $isTopLevel,
 		private int $foreachUnrollFactor = 1,
@@ -24,6 +27,7 @@ final class StatementContext
 		private ?Type $expectedReturnType = null,
 		private ?Type $nativeExpectedReturnType = null,
 		private ?ConvergedLoopHeads $loopHeads = null,
+		private array $gotoLabelEntryScopes = [],
 	)
 	{
 	}
@@ -100,7 +104,7 @@ final class StatementContext
 			return $this;
 		}
 
-		return new self($this->isTopLevel, $this->foreachUnrollFactor, false, $this->expectedReturnType, $this->nativeExpectedReturnType, $this->loopHeads);
+		return new self($this->isTopLevel, $this->foreachUnrollFactor, false, $this->expectedReturnType, $this->nativeExpectedReturnType, $this->loopHeads, $this->gotoLabelEntryScopes);
 	}
 
 	/**
@@ -114,7 +118,7 @@ final class StatementContext
 			return $this;
 		}
 
-		return new self($this->isTopLevel, $this->foreachUnrollFactor, $this->resolveTemplateArguments, $expectedReturnType, $nativeExpectedReturnType, $this->loopHeads);
+		return new self($this->isTopLevel, $this->foreachUnrollFactor, $this->resolveTemplateArguments, $expectedReturnType, $nativeExpectedReturnType, $this->loopHeads, $this->gotoLabelEntryScopes);
 	}
 
 	public function getExpectedReturnType(): ?Type
@@ -130,10 +134,37 @@ final class StatementContext
 	public function enterDeep(): self
 	{
 		if ($this->isTopLevel) {
-			return new self(false, $this->foreachUnrollFactor, $this->resolveTemplateArguments, $this->expectedReturnType, $this->nativeExpectedReturnType);
+			return new self(false, $this->foreachUnrollFactor, $this->resolveTemplateArguments, $this->expectedReturnType, $this->nativeExpectedReturnType, gotoLabelEntryScopes: $this->gotoLabelEntryScopes);
 		}
 
 		return $this;
+	}
+
+	/**
+	 * The states the gotos jumping into the statements walked with this
+	 * context reach their labels in, by label name, joined with the ones
+	 * already given. Loops drop them: PHP does not let a goto jump into one.
+	 *
+	 * @param array<string, MutatingScope> $scopes
+	 */
+	public function withGotoLabelEntryScopes(array $scopes): self
+	{
+		if ($scopes === []) {
+			return $this;
+		}
+
+		$entryScopes = $this->gotoLabelEntryScopes;
+		foreach ($scopes as $labelName => $scope) {
+			$entryScopes[$labelName] = isset($entryScopes[$labelName]) ? $entryScopes[$labelName]->mergeWith($scope) : $scope;
+		}
+
+		return new self($this->isTopLevel, $this->foreachUnrollFactor, $this->resolveTemplateArguments, $this->expectedReturnType, $this->nativeExpectedReturnType, $this->loopHeads, $entryScopes);
+	}
+
+	/** @return array<string, MutatingScope> */
+	public function getGotoLabelEntryScopes(): array
+	{
+		return $this->gotoLabelEntryScopes;
 	}
 
 	public function enterUnrolledForeach(int $totalKeys): self

@@ -1970,6 +1970,9 @@ zv::Val pt_statement_context_enter_unrolled_foreach(zval *context, zend_long tot
 zv::Val pt_statement_context_with_expected_return_type(zval *context, zval *expectedReturnType, zval *nativeExpectedReturnType);
 zv::Val pt_statement_context_get_expected_return_type(zval *context);
 zv::Val pt_statement_context_get_native_expected_return_type(zval *context);
+/* ->withGotoLabelEntryScopes($scopes) ($scopes an array) / ->getGotoLabelEntryScopes() */
+zv::Val pt_statement_context_with_goto_label_entry_scopes(zval *context, zval *scopes);
+zv::Val pt_statement_context_get_goto_label_entry_scopes(zval *context);
 
 /* ExprHandlerRegistry::resolve($expr, $container) /
  * StmtHandlerRegistry::resolve($stmt, $container): the handler or null

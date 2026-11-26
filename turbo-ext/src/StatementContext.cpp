@@ -28,8 +28,9 @@ class StatementContext
 public:
 	explicit StatementContext(zend_object *self) : self(self) {}
 
-	/* the constructor body: the promoted properties; a NULL type is null */
-	void construct(bool isTopLevel, zend_long foreachUnrollFactor, bool resolveTemplateArguments, zval *expectedReturnType, zval *nativeExpectedReturnType, zval *loopHeads)
+	/* the constructor body: the promoted properties; a NULL type is null, a
+	 * NULL map the empty array */
+	void construct(bool isTopLevel, zend_long foreachUnrollFactor, bool resolveTemplateArguments, zval *expectedReturnType, zval *nativeExpectedReturnType, zval *loopHeads, zval *gotoLabelEntryScopes)
 	{
 		writeSlot(slots::isTopLevel, isTopLevel ? IS_TRUE : IS_FALSE, 0);
 		writeSlot(slots::foreachUnrollFactor, IS_LONG, foreachUnrollFactor);
@@ -37,18 +38,29 @@ public:
 		writeObjectSlot(slots::expectedReturnType, expectedReturnType);
 		writeObjectSlot(slots::nativeExpectedReturnType, nativeExpectedReturnType);
 		writeObjectSlot(slots::loopHeads, loopHeads);
+		{
+			zval *p = slot(slots::gotoLabelEntryScopes);
+			zval old;
+			ZVAL_COPY_VALUE(&old, p);
+			if (gotoLabelEntryScopes != nullptr && Z_TYPE_P(gotoLabelEntryScopes) == IS_ARRAY) {
+				ZVAL_COPY(p, gotoLabelEntryScopes);
+			} else {
+				ZVAL_EMPTY_ARRAY(p);
+			}
+			zval_ptr_dtor(&old);
+		}
 	}
 
 	/* Mirrors createTopLevel(). */
 	static zv::Val createTopLevel(bool resolveTemplateArguments)
 	{
-		return newSelf(true, 1, resolveTemplateArguments, nullptr, nullptr, nullptr);
+		return newSelf(true, 1, resolveTemplateArguments, nullptr, nullptr, nullptr, nullptr);
 	}
 
 	/* Mirrors createDeep(). */
 	static zv::Val createDeep(bool resolveTemplateArguments)
 	{
-		return newSelf(false, 1, resolveTemplateArguments, nullptr, nullptr, nullptr);
+		return newSelf(false, 1, resolveTemplateArguments, nullptr, nullptr, nullptr, nullptr);
 	}
 
 	bool isTopLevel() const { return Z_TYPE_P(slot(slots::isTopLevel)) == IS_TRUE; }
@@ -63,7 +75,7 @@ public:
 	/* Mirrors enterLoopPass(). */
 	zv::Val enterLoopPass(zval *heads) const
 	{
-		return newSelf(false, getForeachUnrollFactor(), false, expectedReturnType(), nativeExpectedReturnType(), heads);
+		return newSelf(false, getForeachUnrollFactor(), false, expectedReturnType(), nativeExpectedReturnType(), heads, nullptr);
 	}
 
 	/* Mirrors withLoopHeads(); a NULL heads is null */
@@ -72,7 +84,7 @@ public:
 		zval *current = loopHeads();
 		if (!isTopLevel() || heads == nullptr || Z_TYPE_P(heads) != IS_OBJECT || (current != nullptr && Z_OBJ_P(current) == Z_OBJ_P(heads))) return thisValue();
 
-		return newSelf(true, getForeachUnrollFactor(), shouldResolveTemplateArguments(), expectedReturnType(), nativeExpectedReturnType(), heads);
+		return newSelf(true, getForeachUnrollFactor(), shouldResolveTemplateArguments(), expectedReturnType(), nativeExpectedReturnType(), heads, nullptr);
 	}
 
 	zend_long getForeachUnrollFactor() const { return Z_LVAL_P(slot(slots::foreachUnrollFactor)); }
@@ -89,7 +101,7 @@ public:
 	{
 		if (expectedReturnType == nullptr && nativeExpectedReturnType == nullptr) return thisValue();
 
-		return newSelf(isTopLevel(), getForeachUnrollFactor(), shouldResolveTemplateArguments(), expectedReturnType, nativeExpectedReturnType, loopHeads());
+		return newSelf(isTopLevel(), getForeachUnrollFactor(), shouldResolveTemplateArguments(), expectedReturnType, nativeExpectedReturnType, loopHeads(), gotoLabelEntryScopes());
 	}
 
 	/* Mirrors withoutTemplateArgumentResolution(). */
@@ -97,15 +109,48 @@ public:
 	{
 		if (!shouldResolveTemplateArguments()) return thisValue();
 
-		return newSelf(isTopLevel(), getForeachUnrollFactor(), false, expectedReturnType(), nativeExpectedReturnType(), loopHeads());
+		return newSelf(isTopLevel(), getForeachUnrollFactor(), false, expectedReturnType(), nativeExpectedReturnType(), loopHeads(), gotoLabelEntryScopes());
 	}
 
 	/* Mirrors enterDeep(). */
 	zv::Val enterDeep() const
 	{
-		if (isTopLevel()) return newSelf(false, getForeachUnrollFactor(), shouldResolveTemplateArguments(), expectedReturnType(), nativeExpectedReturnType(), nullptr);
+		if (isTopLevel()) return newSelf(false, getForeachUnrollFactor(), shouldResolveTemplateArguments(), expectedReturnType(), nativeExpectedReturnType(), nullptr, gotoLabelEntryScopes());
 
 		return thisValue();
+	}
+
+	/* borrowed: the array of label name => MutatingScope */
+	zval *gotoLabelEntryScopes() const { return slot(slots::gotoLabelEntryScopes); }
+
+	zv::Val getGotoLabelEntryScopes() const { return slotValue(slots::gotoLabelEntryScopes); }
+
+	/* Mirrors withGotoLabelEntryScopes(): $scopes is an array */
+	zv::Val withGotoLabelEntryScopes(zval *scopes) const
+	{
+		if (zend_hash_num_elements(Z_ARRVAL_P(scopes)) == 0) return thisValue();
+
+		zv::Val entryScopes = zv::Val::copyOf(zv::Ref(gotoLabelEntryScopes()));
+		zv::Arr merged = zv::Arr::create(0);
+		for (zv::ArrayEntry entry : zv::ArrRef(entryScopes.raw())) {
+			if (entry.stringKeyOrNull() == nullptr) continue;
+			merged.set(entry.stringKeyOrNull(), zv::Val::copyOf(entry.value().deref()));
+		}
+		for (zv::ArrayEntry entry : zv::ArrRef(scopes)) {
+			zend_string *labelName = entry.stringKeyOrNull();
+			if (UNEXPECTED(labelName == nullptr)) continue;
+			zval *existing = zend_hash_find(merged.table(), labelName);
+			if (existing == nullptr) {
+				merged.set(labelName, zv::Val::copyOf(entry.value().deref()));
+				continue;
+			}
+			zv::Val joined = pt_mutating_scope_merge_with(Z_OBJ_P(existing), entry.value().deref().raw());
+			if (UNEXPECTED(joined.isUndef())) return zv::Val();
+			merged.set(labelName, std::move(joined));
+		}
+		zv::Val mergedValue(std::move(merged));
+
+		return newSelf(isTopLevel(), getForeachUnrollFactor(), shouldResolveTemplateArguments(), expectedReturnType(), nativeExpectedReturnType(), loopHeads(), mergedValue.raw());
 	}
 
 	/* Mirrors enterUnrolledForeach(): an int overflow of the product is a
@@ -119,7 +164,7 @@ public:
 			return zv::Val();
 		}
 
-		return newSelf(isTopLevel(), product, shouldResolveTemplateArguments(), expectedReturnType(), nativeExpectedReturnType(), loopHeads());
+		return newSelf(isTopLevel(), product, shouldResolveTemplateArguments(), expectedReturnType(), nativeExpectedReturnType(), loopHeads(), nullptr);
 	}
 
 private:
@@ -195,11 +240,11 @@ private:
 	}
 
 	/* new self(...) — the class is final */
-	static zv::Val newSelf(bool isTopLevel, zend_long foreachUnrollFactor, bool resolveTemplateArguments, zval *expectedReturnType, zval *nativeExpectedReturnType, zval *loopHeads)
+	static zv::Val newSelf(bool isTopLevel, zend_long foreachUnrollFactor, bool resolveTemplateArguments, zval *expectedReturnType, zval *nativeExpectedReturnType, zval *loopHeads, zval *gotoLabelEntryScopes)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_statement_context) != SUCCESS)) return zv::Val();
-		StatementContext(Z_OBJ(object)).construct(isTopLevel, foreachUnrollFactor, resolveTemplateArguments, expectedReturnType, nativeExpectedReturnType, loopHeads);
+		StatementContext(Z_OBJ(object)).construct(isTopLevel, foreachUnrollFactor, resolveTemplateArguments, expectedReturnType, nativeExpectedReturnType, loopHeads, gotoLabelEntryScopes);
 		return zv::Val::adopt(object);
 	}
 };
@@ -339,6 +384,19 @@ zv::Val pt_statement_context_enter_unrolled_foreach(zval *context, zend_long tot
 	return pt_type_call(Z_OBJ_P(context), PT_LC("enterunrolledforeach"), 1, argv);
 }
 
+zv::Val pt_statement_context_with_goto_label_entry_scopes(zval *context, zval *scopes)
+{
+	if (isNative(context)) return StatementContext(Z_OBJ_P(context)).withGotoLabelEntryScopes(scopes);
+	zv::Args argv{scopes};
+	return pt_type_call(Z_OBJ_P(context), PT_LC("withgotolabelentryscopes"), 1, argv);
+}
+
+zv::Val pt_statement_context_get_goto_label_entry_scopes(zval *context)
+{
+	if (isNative(context)) return StatementContext(Z_OBJ_P(context)).getGotoLabelEntryScopes();
+	return pt_type_call(Z_OBJ_P(context), PT_LC("getgotolabelentryscopes"), 0, NULL);
+}
+
 /* }}} */
 
 /* {{{ engine ABI glue: parameter parsing + registration */
@@ -360,7 +418,8 @@ PT_MINIT_REGISTRATION(pt_register_statement_context)
 		zval *expectedReturnType = nullptr;
 		zval *nativeExpectedReturnType = nullptr;
 		zval *loopHeads = nullptr;
-		ZEND_PARSE_PARAMETERS_START(1, 6)
+		zval *gotoLabelEntryScopes = nullptr;
+		ZEND_PARSE_PARAMETERS_START(1, 7)
 			Z_PARAM_BOOL(isTopLevel)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_LONG(foreachUnrollFactor)
@@ -368,8 +427,9 @@ PT_MINIT_REGISTRATION(pt_register_statement_context)
 			Z_PARAM_OBJECT_OR_NULL(expectedReturnType)
 			Z_PARAM_OBJECT_OR_NULL(nativeExpectedReturnType)
 			Z_PARAM_OBJECT_OR_NULL(loopHeads)
+			Z_PARAM_ARRAY(gotoLabelEntryScopes)
 		ZEND_PARSE_PARAMETERS_END();
-		StatementContext(Z_OBJ_P(ZEND_THIS)).construct(isTopLevel, foreachUnrollFactor, resolveTemplateArguments, expectedReturnType, nativeExpectedReturnType, loopHeads);
+		StatementContext(Z_OBJ_P(ZEND_THIS)).construct(isTopLevel, foreachUnrollFactor, resolveTemplateArguments, expectedReturnType, nativeExpectedReturnType, loopHeads, gotoLabelEntryScopes);
 	});
 
 	cls.method(sigs::createTopLevel, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -447,6 +507,19 @@ PT_MINIT_REGISTRATION(pt_register_statement_context)
 		PT_RETURN_VAL(StatementContext(Z_OBJ_P(ZEND_THIS)).getNativeExpectedReturnType());
 	});
 	cls.method<&StatementContext::enterDeep>(sigs::enterDeep);
+
+	cls.method(sigs::withGotoLabelEntryScopes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *scopes;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_ARRAY(scopes)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(StatementContext(Z_OBJ_P(ZEND_THIS)).withGotoLabelEntryScopes(scopes));
+	});
+
+	cls.method(sigs::getGotoLabelEntryScopes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(StatementContext(Z_OBJ_P(ZEND_THIS)).getGotoLabelEntryScopes());
+	});
 
 	cls.method(sigs::enterUnrolledForeach, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_long totalKeys;

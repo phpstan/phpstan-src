@@ -551,30 +551,30 @@ public:
 
 		zv::Val dummyParent = pt_type_new(PT_CLASS_NOP_STMT, 0, NULL);
 		if (UNEXPECTED(dummyParent.isUndef())) return zv::Val();
+		zv::Val context = pt_statement_context_create_top_level();
+		if (UNEXPECTED(context.isUndef())) return zv::Val();
 		for (auto entry : zv::ArrRef(stmts.raw())) {
 			zend_ulong si = entry.indexKey();
 			zval *node = entry.value().raw();
-			if (alreadyTerminated) {
+			zv::Val nestedLabelNames = pt_engine_node_get_attribute(Z_OBJ_P(node), PT_LC("nestedGotoLabels"));
+			if (UNEXPECTED(nestedLabelNames.isUndef())) return zv::Val();
+			if (alreadyTerminated && nestedLabelNames.isNull()) {
 				bool keeps;
 				if (UNEXPECTED(!isEarlyBound(node, keeps))) return zv::Val();
 				if (!keeps) continue;
 			}
 
-			zv::Val nestedLabelNames = pt_engine_node_get_attribute(Z_OBJ_P(node), PT_LC("nestedBackwardGotoLabels"));
-			if (UNEXPECTED(nestedLabelNames.isUndef())) return zv::Val();
+			zv::Val stmtContext = zv::Val::copyOf(context.ref());
 			if (!nestedLabelNames.isNull()) {
-				zv::Arr bodyStmts = zv::Arr::create(1);
-				bodyStmts.push(zv::Ref(node));
-				zv::Val deep = pt_statement_context_create_deep();
-				if (UNEXPECTED(deep.isUndef())) return zv::Val();
-				GotoNameMatcher matcher = { nestedLabelNames.raw(), NULL };
-				scope = resolveBackwardGotoScope(nodeScopeResolver, dummyParent.raw(), bodyStmts.raw(), scope.raw(), storage, deep.raw(), matcher, false);
-				if (UNEXPECTED(scope.isUndef())) return zv::Val();
+				zv::Val stmtsFromHere = arraySlice(stmts.raw(), (zend_long) si);
+				zv::Val entryScopes;
+				if (UNEXPECTED(!enterNestedGotoLabels(nodeScopeResolver, dummyParent.raw(), node, stmtsFromHere.raw(), nestedLabelNames.raw(), scope, alreadyTerminated, exitPoints, storage, context.raw(), entryScopes))) return zv::Val();
+				if (alreadyTerminated) continue;
+				stmtContext = pt_statement_context_with_goto_label_entry_scopes(context.raw(), entryScopes.raw());
+				if (UNEXPECTED(stmtContext.isUndef())) return zv::Val();
 			}
 
-			zv::Val topLevel = pt_statement_context_create_top_level();
-			if (UNEXPECTED(topLevel.isUndef())) return zv::Val();
-			zv::Val statementResult = pt_node_scope_resolver_process_stmt_node(nodeScopeResolver, node, scope.raw(), storage, nodeCallback, topLevel.raw());
+			zv::Val statementResult = pt_node_scope_resolver_process_stmt_node(nodeScopeResolver, node, scope.raw(), storage, nodeCallback, stmtContext.raw());
 			if (UNEXPECTED(statementResult.isUndef())) return zv::Val();
 			scope = isrGetScope(statementResult.raw());
 			if (UNEXPECTED(scope.isUndef())) return zv::Val();
@@ -594,7 +594,7 @@ public:
 				if (UNEXPECTED(nameNode == NULL)) return zv::Val();
 				zv::Val labelName = nameToString(nameNode);
 				if (UNEXPECTED(labelName.isUndef())) return zv::Val();
-				if (UNEXPECTED(!mergeForwardGotoExitPoints(labelName.raw(), scope, alreadyTerminated, exitPoints))) return zv::Val();
+				if (UNEXPECTED(!mergeForwardGotoExitPoints(labelName.raw(), scope, alreadyTerminated, exitPoints, NULL))) return zv::Val();
 				if (alreadyTerminated) continue;
 
 				zv::Val hasBackwardGoto = pt_engine_node_get_attribute(Z_OBJ_P(node), PT_LC("hasBackwardGoto"));
@@ -604,7 +604,7 @@ public:
 					zv::Val deep = pt_statement_context_create_deep();
 					if (UNEXPECTED(deep.isUndef())) return zv::Val();
 					GotoNameMatcher matcher = { NULL, Z_TYPE_P(labelName.raw()) == IS_STRING ? Z_STR_P(labelName.raw()) : ZSTR_EMPTY_ALLOC() };
-					scope = resolveBackwardGotoScope(nodeScopeResolver, dummyParent.raw(), bodyStmts.raw(), scope.raw(), storage, deep.raw(), matcher, true);
+					scope = resolveBackwardGotoScope(nodeScopeResolver, dummyParent.raw(), bodyStmts.raw(), scope.raw(), storage, deep.raw(), matcher);
 					if (UNEXPECTED(scope.isUndef())) return zv::Val();
 				}
 			}
@@ -624,7 +624,9 @@ public:
 			zend_long nodeOffset;
 			if (UNEXPECTED(!offsetAfter(nodeIndex, nodeOffset))) return zv::Val();
 			zv::Val rest = arraySlice(nodesHeld.raw(), nodeOffset);
-			zv::Val nextStmts = getNextUnreachableStatements(rest.raw(), true);
+			zv::Val enteredLabelNames = getEnteredGotoLabelNames(exitPoints.raw(), context.raw());
+			if (UNEXPECTED(enteredLabelNames.isUndef())) return zv::Val();
+			zv::Val nextStmts = getNextUnreachableStatements(rest.raw(), true, enteredLabelNames.raw());
 			if (UNEXPECTED(nextStmts.isUndef())) return zv::Val();
 			if (UNEXPECTED(!processUnreachableStatement(nodeScopeResolver, nextStmts.raw(), scope.raw(), storage, nodeCallback))) return zv::Val();
 		}
@@ -1296,17 +1298,15 @@ private:
 	}
 
 	/* the private resolveBackwardGotoScope() */
-	zv::Val resolveBackwardGotoScope(zval *nodeScopeResolver, zval *parentNode, zval *bodyStmts, zval *scope, zval *storage, zval *context, const GotoNameMatcher &matcher, bool mergeBodyScopeEachIteration)
+	zv::Val resolveBackwardGotoScope(zval *nodeScopeResolver, zval *parentNode, zval *bodyStmts, zval *scope, zval *storage, zval *context, const GotoNameMatcher &matcher)
 	{
 		zv::Val bodyScope = zv::Val::copyOf(zv::Ref(scope));
 		zend_long count = 0;
 		zv::Val prevEntryScope = zv::Val::null();
 		do {
 			zv::Val prevScope = zv::Val::copyOf(bodyScope.ref());
-			if (mergeBodyScopeEachIteration) {
-				bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), scope);
-				if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
-			}
+			bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), scope);
+			if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 			if (!prevEntryScope.isNull()) {
 				bool equal;
 				if (UNEXPECTED(!pt_mutating_scope_equals(Z_OBJ_P(bodyScope.raw()), Z_OBJ_P(prevEntryScope.raw()), equal))) return zv::Val();
@@ -1385,10 +1385,268 @@ private:
 		return bodyScope;
 	}
 
+	/* the label a goto exit point jumps to: a string, or null for another
+	 * exit point; false = pending exception */
+	[[nodiscard]] static bool gotoExitPointLabel(zval *exitPoint, zv::Val &name)
+	{
+		zv::Val exitStmt = exitPointGetStatement(exitPoint);
+		if (UNEXPECTED(exitStmt.isUndef())) return false;
+		bool isGoto;
+		if (UNEXPECTED(!isInstance(exitStmt.raw(), PT_CLASS_GOTO_STMT, isGoto))) return false;
+		if (!isGoto) {
+			name = zv::Val::null();
+			return true;
+		}
+		zval *nameNode = nodeProperty(pt_sh_name_site, exitStmt.raw(), PT_LC("name"));
+		if (UNEXPECTED(nameNode == NULL)) return false;
+		name = nameToString(nameNode);
+		if (UNEXPECTED(name.isUndef())) return false;
+		if (!name.ref().isString()) name = zv::Val::null();
+		return true;
+	}
+
+	/* $map[$key] = isset($map[$key]) ? $map[$key]->mergeWith($scope) : $scope */
+	[[nodiscard]] static bool mergeIntoScopeMap(zv::Arr &map, zend_string *key, zval *scope)
+	{
+		zval *existing = zend_symtable_find(map.table(), key);
+		if (existing == NULL) {
+			map.set(key, zv::Val::copyOf(zv::Ref(scope)));
+			return true;
+		}
+		zv::Val joined = pt_mutating_scope_merge_with(Z_OBJ_P(existing), scope);
+		if (UNEXPECTED(joined.isUndef())) return false;
+		map.set(key, std::move(joined));
+		return true;
+	}
+
+	/* array_intersect_key($a, $b) !== [] */
+	static bool intersectsKeys(zval *a, zval *b)
+	{
+		if (Z_TYPE_P(a) != IS_ARRAY || Z_TYPE_P(b) != IS_ARRAY) return false;
+		for (zv::ArrayEntry entry : zv::ArrRef(a)) {
+			zend_string *key = entry.stringKeyOrNull();
+			if (key != NULL ? zend_symtable_exists(Z_ARRVAL_P(b), key) : zend_hash_index_exists(Z_ARRVAL_P(b), entry.indexKey())) return true;
+		}
+		return false;
+	}
+
+	/* an addref copy of a string-keyed map */
+	static zv::Arr copyScopeMap(zval *map)
+	{
+		zv::Arr copy = zv::Arr::create(0);
+		if (Z_TYPE_P(map) != IS_ARRAY) return copy;
+		for (zv::ArrayEntry entry : zv::ArrRef(map)) {
+			zend_string *key = entry.stringKeyOrNull();
+			if (key == NULL) continue;
+			copy.set(key, zv::Val::copyOf(entry.value().deref()));
+		}
+		return copy;
+	}
+
+	/* Mirrors the private getEnteredGotoLabelNames(); UNDEF = pending exception */
+	static zv::Val getEnteredGotoLabelNames(zval *exitPoints, zval *context)
+	{
+		zv::Val contextEntryScopes = pt_statement_context_get_goto_label_entry_scopes(context);
+		if (UNEXPECTED(contextEntryScopes.isUndef())) return zv::Val();
+		zv::Arr labelNames = zv::Arr::create(0);
+		if (contextEntryScopes.ref().isArray()) {
+			for (zv::ArrayEntry entry : zv::ArrRef(contextEntryScopes.raw())) {
+				zend_string *key = entry.stringKeyOrNull();
+				if (key == NULL) continue;
+				labelNames.set(key, zv::Val::boolean(true));
+			}
+		}
+		zv::Val held = zv::Val::copyOf(zv::Ref(exitPoints));
+		if (held.ref().isArray()) {
+			for (zv::ArrayEntry entry : zv::ArrRef(held.raw())) {
+				zv::Val name;
+				if (UNEXPECTED(!gotoExitPointLabel(entry.value().deref().raw(), name))) return zv::Val();
+				if (name.isNull()) continue;
+				labelNames.set(Z_STR_P(name.raw()), zv::Val::boolean(true));
+			}
+		}
+		return zv::Val(std::move(labelNames));
+	}
+
+	/* Mirrors the private equalScopeMaps(); false = pending exception */
+	[[nodiscard]] static bool equalScopeMaps(zval *a, zval *b, bool &out)
+	{
+		out = false;
+		if (zend_hash_num_elements(Z_ARRVAL_P(a)) != zend_hash_num_elements(Z_ARRVAL_P(b))) return true;
+		for (zv::ArrayEntry entry : zv::ArrRef(a)) {
+			zend_string *key = entry.stringKeyOrNull();
+			zval *other = key != NULL ? zend_symtable_find(Z_ARRVAL_P(b), key) : zend_hash_index_find(Z_ARRVAL_P(b), entry.indexKey());
+			if (other == NULL) return true;
+			bool equal;
+			if (UNEXPECTED(!pt_mutating_scope_equals(Z_OBJ_P(entry.value().deref().raw()), Z_OBJ_P(other), equal))) return false;
+			if (!equal) return true;
+		}
+		out = true;
+		return true;
+	}
+
+	/* Mirrors the private enterNestedGotoLabels(): the scope, whether the
+	 * walk is still terminated and the exit points written back, the label
+	 * entry scopes into $entryScopesOut; false = pending exception */
+	[[nodiscard]] bool enterNestedGotoLabels(zval *nodeScopeResolver, zval *parentNode, zval *stmt, zval *stmtsFromHere, zval *nestedLabelNames, zv::Val &scope, bool &alreadyTerminated, zv::Val &exitPoints, zval *storage, zval *context, zv::Val &entryScopesOut)
+	{
+		zv::Arr entryScopes = zv::Arr::create(0);
+		zv::Arr newExitPoints = zv::Arr::empty();
+		zv::Val held = zv::Val::copyOf(exitPoints.ref());
+		if (held.ref().isArray()) {
+			for (zv::ArrayEntry entry : zv::ArrRef(held.raw())) {
+				zval *exitPoint = entry.value().deref().raw();
+				zv::Val name;
+				if (UNEXPECTED(!gotoExitPointLabel(exitPoint, name))) return false;
+				if (name.isNull() || !zend_symtable_exists(Z_ARRVAL_P(nestedLabelNames), Z_STR_P(name.raw()))) {
+					newExitPoints.push(zv::Ref(exitPoint));
+					continue;
+				}
+				zv::Val exitScope = exitPointGetScope(exitPoint);
+				if (UNEXPECTED(exitScope.isUndef())) return false;
+				if (UNEXPECTED(!mergeIntoScopeMap(entryScopes, Z_STR_P(name.raw()), exitScope.raw()))) return false;
+			}
+		}
+		exitPoints = zv::Val(std::move(newExitPoints));
+
+		if (alreadyTerminated) {
+			zv::Val reachingScope = zv::Val::null();
+			zv::Val contextEntryScopes = pt_statement_context_get_goto_label_entry_scopes(context);
+			if (UNEXPECTED(contextEntryScopes.isUndef())) return false;
+			for (int pass = 0; pass < 2; pass++) {
+				zval *scopes = pass == 0 ? entryScopes.raw() : contextEntryScopes.raw();
+				if (Z_TYPE_P(scopes) != IS_ARRAY) continue;
+				for (zv::ArrayEntry entry : zv::ArrRef(scopes)) {
+					if (pass == 1) {
+						zend_string *key = entry.stringKeyOrNull();
+						if (key == NULL || !zend_symtable_exists(Z_ARRVAL_P(nestedLabelNames), key)) continue;
+					}
+					zval *labelScope = entry.value().deref().raw();
+					if (reachingScope.isNull()) {
+						reachingScope = zv::Val::copyOf(zv::Ref(labelScope));
+					} else {
+						reachingScope = pt_mutating_scope_merge_with(Z_OBJ_P(reachingScope.raw()), labelScope);
+						if (UNEXPECTED(reachingScope.isUndef())) return false;
+					}
+				}
+			}
+			if (reachingScope.isNull()) {
+				entryScopesOut = zv::Val(zv::Arr::empty());
+				return true;
+			}
+			// only the gotos reach the statement: it is walked from their states
+			scope = std::move(reachingScope);
+			alreadyTerminated = false;
+		}
+
+		zv::Val entryScopesValue(std::move(entryScopes));
+		zv::Val backwardLabelNames = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("nestedBackwardGotoLabels"));
+		if (UNEXPECTED(backwardLabelNames.isUndef())) return false;
+		if (!backwardLabelNames.isNull()) {
+			bool topLevel;
+			if (UNEXPECTED(!pt_statement_context_is_top_level(context, topLevel))) return false;
+			if (topLevel) {
+				zv::Val deep = pt_statement_context_enter_deep(context);
+				if (UNEXPECTED(deep.isUndef())) return false;
+				entryScopesValue = resolveBackwardGotoLabelEntryScopes(nodeScopeResolver, parentNode, stmtsFromHere, scope.raw(), storage, deep.raw(), backwardLabelNames.raw(), entryScopesValue.raw());
+				if (UNEXPECTED(entryScopesValue.isUndef())) return false;
+			}
+		}
+		entryScopesOut = std::move(entryScopesValue);
+		return true;
+	}
+
+	/* Mirrors the private resolveBackwardGotoLabelEntryScopes(); UNDEF =
+	 * pending exception */
+	zv::Val resolveBackwardGotoLabelEntryScopes(zval *nodeScopeResolver, zval *parentNode, zval *bodyStmts, zval *scope, zval *storage, zval *context, zval *labelNames, zval *forwardEntryScopes)
+	{
+		zv::Val entryScopes = zv::Val::copyOf(zv::Ref(forwardEntryScopes));
+		zend_long count = 0;
+		zv::Val bodyContext = pt_statement_context_without_template_argument_resolution(context);
+		if (UNEXPECTED(bodyContext.isUndef())) return zv::Val();
+		do {
+			zv::Val tempStorage = pt_expression_result_storage_duplicate(storage);
+			if (UNEXPECTED(tempStorage.isUndef())) return zv::Val();
+			zv::Val noop = pt_type_new(PT_CLASS_NOOP_NODE_CALLBACK, 0, NULL);
+			if (UNEXPECTED(noop.isUndef())) return zv::Val();
+			zv::Val passContext = pt_statement_context_with_goto_label_entry_scopes(bodyContext.raw(), entryScopes.raw());
+			if (UNEXPECTED(passContext.isUndef())) return zv::Val();
+			zv::Val bodyScopeResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, parentNode, bodyStmts, scope, tempStorage.raw(), noop.raw(), passContext.raw());
+			if (UNEXPECTED(bodyScopeResult.isUndef())) return zv::Val();
+
+			// the states only grow: what a label was entered in stays
+			zv::Arr nextEntryScopes = copyScopeMap(entryScopes.raw());
+			zv::Val resultExitPoints = isrGetExitPoints(bodyScopeResult.raw());
+			if (UNEXPECTED(resultExitPoints.isUndef())) return zv::Val();
+			if (resultExitPoints.ref().isArray()) {
+				for (zv::ArrayEntry entry : zv::ArrRef(resultExitPoints.raw())) {
+					zval *exitPoint = entry.value().deref().raw();
+					zv::Val name;
+					if (UNEXPECTED(!gotoExitPointLabel(exitPoint, name))) return zv::Val();
+					if (name.isNull() || !zend_symtable_exists(Z_ARRVAL_P(labelNames), Z_STR_P(name.raw()))) continue;
+					zv::Val exitScope = exitPointGetScope(exitPoint);
+					if (UNEXPECTED(exitScope.isUndef())) return zv::Val();
+					if (UNEXPECTED(!mergeIntoScopeMap(nextEntryScopes, Z_STR_P(name.raw()), exitScope.raw()))) return zv::Val();
+				}
+			}
+
+			bool equal;
+			if (UNEXPECTED(!equalScopeMaps(nextEntryScopes.raw(), entryScopes.raw(), equal))) return zv::Val();
+			if (equal) break;
+
+			if (count >= PT_SH_GENERALIZE_AFTER_ITERATION_LIMIT) {
+				zv::Val nextHeld(std::move(nextEntryScopes));
+				nextEntryScopes = zv::Arr::create(0);
+				for (zv::ArrayEntry entry : zv::ArrRef(nextHeld.raw())) {
+					zend_string *labelName = entry.stringKeyOrNull();
+					if (labelName == NULL) continue;
+					zval *nextEntryScope = entry.value().deref().raw();
+					zval *previous = zend_symtable_find(Z_ARRVAL_P(entryScopes.raw()), labelName);
+					if (previous == NULL) {
+						nextEntryScopes.set(labelName, zv::Val::copyOf(zv::Ref(nextEntryScope)));
+						continue;
+					}
+					zval *forward = zend_symtable_find(Z_ARRVAL_P(forwardEntryScopes), labelName);
+					zv::Val generalized = pt_mutating_scope_generalize_with_names(Z_OBJ_P(previous), Z_OBJ_P(nextEntryScope), NULL, forward != NULL ? Z_OBJ_P(forward) : NULL);
+					if (UNEXPECTED(generalized.isUndef())) return zv::Val();
+					nextEntryScopes.set(labelName, std::move(generalized));
+				}
+			}
+			entryScopes = zv::Val(std::move(nextEntryScopes));
+			count++;
+		} while (count < PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT);
+
+		if (count >= PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT) {
+			// the limit is only a safety net - states still changing after it
+			// are not a fixpoint, so no variable keeps a type
+			zv::Arr forgotten = zv::Arr::create(0);
+			for (zv::ArrayEntry entry : zv::ArrRef(entryScopes.raw())) {
+				zend_string *labelName = entry.stringKeyOrNull();
+				if (labelName == NULL) continue;
+				zv::Val forgottenScope = pt_mutating_scope_forget_loop_written_variables(Z_OBJ_P(entry.value().deref().raw()), NULL);
+				if (UNEXPECTED(forgottenScope.isUndef())) return zv::Val();
+				forgotten.set(labelName, std::move(forgottenScope));
+			}
+			entryScopes = zv::Val(std::move(forgotten));
+		}
+
+		return entryScopes;
+	}
+
 	/* the private mergeForwardGotoExitPoints(): the three results written
 	 * through the out parameters */
-	[[nodiscard]] static bool mergeForwardGotoExitPoints(zval *labelName, zv::Val &scope, bool &alreadyTerminated, zv::Val &exitPoints)
+	[[nodiscard]] static bool mergeForwardGotoExitPoints(zval *labelName, zv::Val &scope, bool &alreadyTerminated, zv::Val &exitPoints, zval *entryScope)
 	{
+		if (entryScope != NULL) {
+			// a goto from outside the statement list jumps here
+			if (alreadyTerminated) {
+				scope = zv::Val::copyOf(zv::Ref(entryScope));
+			} else {
+				scope = pt_mutating_scope_merge_with(Z_OBJ_P(scope.raw()), entryScope);
+				if (UNEXPECTED(scope.isUndef())) return false;
+			}
+			alreadyTerminated = false;
+		}
 		zv::Arr newExitPoints = zv::Arr::empty();
 		zv::Val held = zv::Val::copyOf(exitPoints.ref());
 		if (held.ref().isArray()) {
@@ -1451,7 +1709,7 @@ private:
 	}
 
 	/* the private getNextUnreachableStatements() */
-	static zv::Val getNextUnreachableStatements(zval *nodes, bool earlyBinding)
+	static zv::Val getNextUnreachableStatements(zval *nodes, bool earlyBinding, zval *enteredLabelNames)
 	{
 		zv::Arr stmts = zv::Arr::empty();
 		bool isPassedUnreachableStatement = false;
@@ -1460,6 +1718,11 @@ private:
 			bool is;
 			if (UNEXPECTED(!isInstance(node, PT_CLASS_LABEL_STMT, is))) return zv::Val();
 			if (is) break;
+			if (Z_TYPE_P(node) == IS_OBJECT) {
+				zv::Val nestedLabelNames = pt_engine_node_get_attribute(Z_OBJ_P(node), PT_LC("nestedGotoLabels"));
+				if (UNEXPECTED(nestedLabelNames.isUndef())) return zv::Val();
+				if (nestedLabelNames.ref().isArray() && intersectsKeys(nestedLabelNames.raw(), enteredLabelNames)) break;
+			}
 			if (earlyBinding) {
 				bool early = false;
 				for (int classIdx : { PT_CLASS_FUNCTION_STMT, PT_CLASS_CLASS_LIKE_STMT, PT_CLASS_HALT_COMPILER }) {
@@ -1496,8 +1759,9 @@ private:
 			return false;
 		}
 		zend_object *stateObject = Z_OBJ_P(state);
-		zval *stateScope = OBJ_PROP_NUM(stateObject, stateSlots::scope);
-		if (Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated)) == IS_TRUE) {
+		zv::Val nestedLabelNames = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("nestedGotoLabels"));
+		if (UNEXPECTED(nestedLabelNames.isUndef())) return false;
+		if (Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated)) == IS_TRUE && nestedLabelNames.isNull()) {
 			bool keeps;
 			if (UNEXPECTED(!isEarlyBound(stmt, keeps))) return false;
 			if (!keeps) return true;
@@ -1505,24 +1769,23 @@ private:
 
 		bool isLast = i == (zend_long) zend_hash_num_elements(Z_ARRVAL_P(stmts)) - 1;
 
-		zv::Val nestedLabelNames = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("nestedBackwardGotoLabels"));
-		if (UNEXPECTED(nestedLabelNames.isUndef())) return false;
+		zv::Val stmtContext = zv::Val::copyOf(zv::Ref(context));
 		if (!nestedLabelNames.isNull()) {
-			bool topLevel;
-			if (UNEXPECTED(!pt_statement_context_is_top_level(context, topLevel))) return false;
-			if (topLevel) {
-				zv::Arr bodyStmts = zv::Arr::create(1);
-				bodyStmts.push(zv::Ref(stmt));
-				zv::Val deep = pt_statement_context_enter_deep(context);
-				if (UNEXPECTED(deep.isUndef())) return false;
-				GotoNameMatcher matcher = { nestedLabelNames.raw(), NULL };
-				zv::Val resolved = resolveBackwardGotoScope(nodeScopeResolver, parentNode, bodyStmts.raw(), stateScope, storage, deep.raw(), matcher, false);
-				if (UNEXPECTED(resolved.isUndef())) return false;
-				zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::scope)).assign(std::move(resolved));
-			}
+			zv::Val stmtsFromHere = arraySlice(stmts, i);
+			zv::Val scope = zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::scope)));
+			bool alreadyTerminated = Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated)) == IS_TRUE;
+			zv::Val exitPoints = zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::exitPoints)));
+			zv::Val entryScopes;
+			if (UNEXPECTED(!enterNestedGotoLabels(nodeScopeResolver, parentNode, stmt, stmtsFromHere.raw(), nestedLabelNames.raw(), scope, alreadyTerminated, exitPoints, storage, context, entryScopes))) return false;
+			zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::scope)).assign(std::move(scope));
+			ZVAL_BOOL(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated), alreadyTerminated);
+			zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::exitPoints)).assign(std::move(exitPoints));
+			if (alreadyTerminated) return true;
+			stmtContext = pt_statement_context_with_goto_label_entry_scopes(context, entryScopes.raw());
+			if (UNEXPECTED(stmtContext.isUndef())) return false;
 		}
 
-		zv::Val statementResult = pt_node_scope_resolver_process_stmt_node(nodeScopeResolver, stmt, OBJ_PROP_NUM(stateObject, stateSlots::scope), storage, nodeCallback, context);
+		zv::Val statementResult = pt_node_scope_resolver_process_stmt_node(nodeScopeResolver, stmt, OBJ_PROP_NUM(stateObject, stateSlots::scope), storage, nodeCallback, stmtContext.raw());
 		if (UNEXPECTED(statementResult.isUndef())) return false;
 		zv::Val variableFlow = isrGetVariableFlow(statementResult.raw());
 		if (UNEXPECTED(variableFlow.isUndef())) return false;
@@ -1557,7 +1820,10 @@ private:
 			zv::Val scope = zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::scope)));
 			bool alreadyTerminated = Z_TYPE_P(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated)) == IS_TRUE;
 			zv::Val exitPoints = zv::Val::copyOf(zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::exitPoints)));
-			if (UNEXPECTED(!mergeForwardGotoExitPoints(labelName.raw(), scope, alreadyTerminated, exitPoints))) return false;
+			zv::Val contextEntryScopes = pt_statement_context_get_goto_label_entry_scopes(context);
+			if (UNEXPECTED(contextEntryScopes.isUndef())) return false;
+			zval *entryScope = contextEntryScopes.ref().isArray() && labelName.ref().isString() ? zend_symtable_find(Z_ARRVAL_P(contextEntryScopes.raw()), Z_STR_P(labelName.raw())) : NULL;
+			if (UNEXPECTED(!mergeForwardGotoExitPoints(labelName.raw(), scope, alreadyTerminated, exitPoints, entryScope))) return false;
 			zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::scope)).assign(std::move(scope));
 			ZVAL_BOOL(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated), alreadyTerminated);
 			zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::exitPoints)).assign(std::move(exitPoints));
@@ -1574,7 +1840,7 @@ private:
 					zv::Val deep = pt_statement_context_enter_deep(context);
 					if (UNEXPECTED(deep.isUndef())) return false;
 					GotoNameMatcher matcher = { NULL, Z_TYPE_P(labelName.raw()) == IS_STRING ? Z_STR_P(labelName.raw()) : ZSTR_EMPTY_ALLOC() };
-					zv::Val resolved = resolveBackwardGotoScope(nodeScopeResolver, parentNode, bodyStmts.raw(), OBJ_PROP_NUM(stateObject, stateSlots::scope), storage, deep.raw(), matcher, true);
+					zv::Val resolved = resolveBackwardGotoScope(nodeScopeResolver, parentNode, bodyStmts.raw(), OBJ_PROP_NUM(stateObject, stateSlots::scope), storage, deep.raw(), matcher);
 					if (UNEXPECTED(resolved.isUndef())) return false;
 					zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::scope)).assign(std::move(resolved));
 				}
@@ -1602,7 +1868,9 @@ private:
 		zv::Val rest = arraySlice(stmts, i + 1);
 		bool earlyBinding;
 		if (UNEXPECTED(!isInstance(parentNode, PT_CLASS_NAMESPACE_STMT, earlyBinding))) return false;
-		zv::Val nextStmts = getNextUnreachableStatements(rest.raw(), earlyBinding);
+		zv::Val enteredLabelNames = getEnteredGotoLabelNames(OBJ_PROP_NUM(stateObject, stateSlots::exitPoints), context);
+		if (UNEXPECTED(enteredLabelNames.isUndef())) return false;
+		zv::Val nextStmts = getNextUnreachableStatements(rest.raw(), earlyBinding, enteredLabelNames.raw());
 		if (UNEXPECTED(nextStmts.isUndef())) return false;
 		return processUnreachableStatement(nodeScopeResolver, nextStmts.raw(), OBJ_PROP_NUM(stateObject, stateSlots::scope), storage, nodeCallback);
 	}
@@ -1755,9 +2023,15 @@ private:
 			ZVAL_UNDEF(snapshot.raw());
 			bool isLabel;
 			if (UNEXPECTED(!isInstance(entry.value().deref().raw(), PT_CLASS_LABEL_STMT, isLabel))) break;
+			if (!isLabel) {
+				zv::Val nested = pt_engine_node_get_attribute(Z_OBJ_P(entry.value().deref().raw()), PT_LC("nestedGotoLabels"));
+				if (UNEXPECTED(nested.isUndef())) break;
+				isLabel = !nested.isNull();
+			}
 			if (isLabel) {
-				// the label drops the gotos landing on it from the exit
-				// points: the snapshots so far keep the lists as they were
+				// the label drops the gotos landing on it (or on the labels
+				// nested in the statement) from the exit points: the
+				// snapshots so far keep the lists as they were
 				state = cloneObject(state.raw());
 				if (UNEXPECTED(state.isUndef())) break;
 			}
@@ -3125,7 +3399,7 @@ private:
 			bool isLabel;
 			if (UNEXPECTED(!isInstance(stmt, PT_CLASS_LABEL_STMT, isLabel))) return false;
 			if (!isLabel) {
-				zv::Val nested = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("nestedBackwardGotoLabels"));
+				zv::Val nested = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("nestedGotoLabels"));
 				if (UNEXPECTED(nested.isUndef())) return false;
 				if (nested.isNull()) continue;
 			}

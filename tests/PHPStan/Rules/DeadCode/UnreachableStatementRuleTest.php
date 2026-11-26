@@ -453,4 +453,15 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testGotoIntoNestedBlock(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/goto-into-nested-block.php'], [
+			[
+				'Unreachable statement - code above always terminates.',
+				18,
+			],
+		]);
+	}
+
 }

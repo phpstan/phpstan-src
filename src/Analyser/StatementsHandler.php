@@ -43,6 +43,7 @@ use PHPStan\Type\UnionType;
 use function array_column;
 use function array_fill_keys;
 use function array_flip;
+use function array_intersect_key;
 use function array_keys;
 use function array_merge;
 use function array_slice;
@@ -124,26 +125,34 @@ final class StatementsHandler
 		}
 
 		$dummyParent = new Node\Stmt\Nop();
+		$context = StatementContext::createTopLevel();
 		foreach ($stmts as $si => $node) {
-			if ($alreadyTerminated && !($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\Label)) {
+			$nestedLabelNames = $node->getAttribute(GotoLabelVisitor::NESTED_GOTO_LABELS_ATTRIBUTE);
+			if ($alreadyTerminated && $nestedLabelNames === null && !($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\Label)) {
 				continue;
 			}
 
-			$nestedLabelNames = $node->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
+			$stmtContext = $context;
 			if ($nestedLabelNames !== null) {
-				$scope = $this->resolveBackwardGotoScope(
+				[$scope, $alreadyTerminated, $exitPoints, $entryScopes] = $this->enterNestedGotoLabels(
 					$nodeScopeResolver,
 					$dummyParent,
-					[$node],
+					$node,
+					array_slice($stmts, $si),
+					$nestedLabelNames,
 					$scope,
+					$alreadyTerminated,
+					$exitPoints,
 					$expressionResultStorage,
-					StatementContext::createDeep(),
-					static fn (string $name): bool => isset($nestedLabelNames[$name]),
-					false,
+					$context,
 				);
+				if ($alreadyTerminated) {
+					continue;
+				}
+				$stmtContext = $context->withGotoLabelEntryScopes($entryScopes);
 			}
 
-			$statementResult = $nodeScopeResolver->processStmtNode($node, $scope, $expressionResultStorage, $nodeCallback, StatementContext::createTopLevel());
+			$statementResult = $nodeScopeResolver->processStmtNode($node, $scope, $expressionResultStorage, $nodeCallback, $stmtContext);
 			$scope = $statementResult->getScope();
 			$statementDependencies = $statementResult->getDependencies();
 			if ($statementDependencies !== null) {
@@ -158,6 +167,7 @@ final class StatementsHandler
 					$scope,
 					$alreadyTerminated,
 					$exitPoints,
+					null,
 				);
 
 				if ($alreadyTerminated) {
@@ -173,7 +183,6 @@ final class StatementsHandler
 						$expressionResultStorage,
 						StatementContext::createDeep(),
 						static fn (string $name): bool => $name === $labelName,
-						true,
 					);
 				}
 			}
@@ -185,7 +194,7 @@ final class StatementsHandler
 			}
 
 			$alreadyTerminated = true;
-			$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $stmtToNodeIndex[$si] + 1), true);
+			$nextStmts = $this->getNextUnreachableStatements(array_slice($nodes, $stmtToNodeIndex[$si] + 1), true, $this->getEnteredGotoLabelNames($exitPoints, $context));
 			$this->processUnreachableStatement($nodeScopeResolver, $nextStmts, $scope, $expressionResultStorage, $nodeCallback);
 		}
 
@@ -204,7 +213,6 @@ final class StatementsHandler
 		ExpressionResultStorage $storage,
 		StatementContext $context,
 		Closure $gotoNameMatcher,
-		bool $mergeBodyScopeEachIteration,
 	): MutatingScope
 	{
 		$bodyScope = $scope;
@@ -212,9 +220,7 @@ final class StatementsHandler
 		$prevEntryScope = null;
 		do {
 			$prevScope = $bodyScope;
-			if ($mergeBodyScopeEachIteration) {
-				$bodyScope = $bodyScope->mergeWith($scope);
-			}
+			$bodyScope = $bodyScope->mergeWith($scope);
 			if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 				// walking is deterministic in the entry scope - an unchanged entry
 				// reproduces the previous pass's exit, so the verification walk is skipped
@@ -266,6 +272,178 @@ final class StatementsHandler
 	}
 
 	/**
+	 * Before a statement with labels nested in it: the gotos of the statements
+	 * walked so far that jump to them leave the exit points, and together with
+	 * the gotos from the statement and the ones after it (resolved to a
+	 * fixpoint at the top level) give the states the labels are entered in.
+	 * A statement after one that always terminates is reached through them.
+	 *
+	 * @param Node\Stmt[] $stmtsFromHere the statement and the ones after it
+	 * @param array<string, true> $nestedLabelNames
+	 * @param InternalStatementExitPoint[] $exitPoints
+	 * @return array{MutatingScope, bool, list<InternalStatementExitPoint>, array<string, MutatingScope>}
+	 */
+	private function enterNestedGotoLabels(
+		NodeScopeResolver $nodeScopeResolver,
+		Node $parentNode,
+		Node\Stmt $stmt,
+		array $stmtsFromHere,
+		array $nestedLabelNames,
+		MutatingScope $scope,
+		bool $alreadyTerminated,
+		array $exitPoints,
+		ExpressionResultStorage $storage,
+		StatementContext $context,
+	): array
+	{
+		$entryScopes = [];
+		$newExitPoints = [];
+		foreach ($exitPoints as $exitPoint) {
+			$exitStmt = $exitPoint->getStatement();
+			if (!$exitStmt instanceof Goto_ || !isset($nestedLabelNames[$exitStmt->name->toString()])) {
+				$newExitPoints[] = $exitPoint;
+				continue;
+			}
+			$labelName = $exitStmt->name->toString();
+			$entryScopes[$labelName] = isset($entryScopes[$labelName]) ? $entryScopes[$labelName]->mergeWith($exitPoint->getScope()) : $exitPoint->getScope();
+		}
+
+		if ($alreadyTerminated) {
+			$reachingScope = null;
+			foreach ([$entryScopes, array_intersect_key($context->getGotoLabelEntryScopes(), $nestedLabelNames)] as $scopes) {
+				foreach ($scopes as $labelScope) {
+					$reachingScope = $reachingScope === null ? $labelScope : $reachingScope->mergeWith($labelScope);
+				}
+			}
+			if ($reachingScope === null) {
+				return [$scope, true, $newExitPoints, []];
+			}
+			// only the gotos reach the statement: it is walked from their states
+			$scope = $reachingScope;
+			$alreadyTerminated = false;
+		}
+
+		$backwardLabelNames = $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
+		if ($backwardLabelNames !== null && $context->isTopLevel()) {
+			$entryScopes = $this->resolveBackwardGotoLabelEntryScopes($nodeScopeResolver, $parentNode, $stmtsFromHere, $scope, $storage, $context->enterDeep(), $backwardLabelNames, $entryScopes);
+		}
+
+		return [$scope, $alreadyTerminated, $newExitPoints, $entryScopes];
+	}
+
+	/**
+	 * The states the labels nested in the first of $bodyStmts are entered in
+	 * when gotos from these statements jump back to them, joined with the
+	 * ones the gotos before them reach the labels in: walks the statements
+	 * until the states stop changing, widened like a loop's.
+	 *
+	 * @param Node\Stmt[] $bodyStmts
+	 * @param array<string, true> $labelNames
+	 * @param array<string, MutatingScope> $forwardEntryScopes
+	 * @return array<string, MutatingScope>
+	 */
+	private function resolveBackwardGotoLabelEntryScopes(
+		NodeScopeResolver $nodeScopeResolver,
+		Node $parentNode,
+		array $bodyStmts,
+		MutatingScope $scope,
+		ExpressionResultStorage $storage,
+		StatementContext $context,
+		array $labelNames,
+		array $forwardEntryScopes,
+	): array
+	{
+		$entryScopes = $forwardEntryScopes;
+		$count = 0;
+		do {
+			$bodyScopeResult = $nodeScopeResolver->processStmtNodesInternal(
+				$parentNode,
+				$bodyStmts,
+				$scope,
+				$storage->duplicate(),
+				new NoopNodeCallback(),
+				$context->withoutTemplateArgumentResolution()->withGotoLabelEntryScopes($entryScopes),
+			);
+
+			// the states only grow: what a label was entered in stays
+			$nextEntryScopes = $entryScopes;
+			foreach ($bodyScopeResult->getExitPoints() as $exitPoint) {
+				$exitStmt = $exitPoint->getStatement();
+				if (!$exitStmt instanceof Goto_ || !isset($labelNames[$exitStmt->name->toString()])) {
+					continue;
+				}
+				$labelName = $exitStmt->name->toString();
+				$nextEntryScopes[$labelName] = isset($nextEntryScopes[$labelName]) ? $nextEntryScopes[$labelName]->mergeWith($exitPoint->getScope()) : $exitPoint->getScope();
+			}
+
+			if (self::equalScopeMaps($nextEntryScopes, $entryScopes)) {
+				break;
+			}
+
+			if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
+				foreach ($nextEntryScopes as $labelName => $nextEntryScope) {
+					if (!isset($entryScopes[$labelName])) {
+						continue;
+					}
+					$nextEntryScopes[$labelName] = $entryScopes[$labelName]->generalizeWith($nextEntryScope, null, $forwardEntryScopes[$labelName] ?? null);
+				}
+			}
+			$entryScopes = $nextEntryScopes;
+			$count++;
+		} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+
+		if ($count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS) {
+			// the limit is only a safety net - states still changing after it
+			// are not a fixpoint, so no variable keeps a type
+			foreach ($entryScopes as $labelName => $entryScope) {
+				$entryScopes[$labelName] = $entryScope->forgetLoopWrittenVariables(null);
+			}
+		}
+
+		return $entryScopes;
+	}
+
+	/**
+	 * @param array<string, MutatingScope> $a
+	 * @param array<string, MutatingScope> $b
+	 */
+	private static function equalScopeMaps(array $a, array $b): bool
+	{
+		if (count($a) !== count($b)) {
+			return false;
+		}
+		foreach ($a as $key => $scope) {
+			if (!isset($b[$key]) || !$scope->equals($b[$key])) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * The labels the walk can still reach by a goto: the ones the pending
+	 * exit points jump to and the ones gotos from outside the statement list
+	 * jump into.
+	 *
+	 * @param InternalStatementExitPoint[] $exitPoints
+	 * @return array<string, true>
+	 */
+	private function getEnteredGotoLabelNames(array $exitPoints, StatementContext $context): array
+	{
+		$labelNames = array_fill_keys(array_keys($context->getGotoLabelEntryScopes()), true);
+		foreach ($exitPoints as $exitPoint) {
+			$exitStmt = $exitPoint->getStatement();
+			if (!$exitStmt instanceof Goto_) {
+				continue;
+			}
+			$labelNames[$exitStmt->name->toString()] = true;
+		}
+
+		return $labelNames;
+	}
+
+	/**
 	 * @param InternalStatementExitPoint[] $exitPoints
 	 * @return array{MutatingScope, bool, list<InternalStatementExitPoint>}
 	 */
@@ -274,8 +452,14 @@ final class StatementsHandler
 		MutatingScope $scope,
 		bool $alreadyTerminated,
 		array $exitPoints,
+		?MutatingScope $entryScope,
 	): array
 	{
+		if ($entryScope !== null) {
+			// a goto from outside the statement list jumps here
+			$scope = $alreadyTerminated ? $entryScope : $scope->mergeWith($entryScope);
+			$alreadyTerminated = false;
+		}
 		$newExitPoints = [];
 		foreach ($exitPoints as $exitPoint) {
 			$exitStmt = $exitPoint->getStatement();
@@ -325,14 +509,19 @@ final class StatementsHandler
 
 	/**
 	 * @param array<Node> $nodes
+	 * @param array<string, true> $enteredLabelNames labels a goto jumps to from before the nodes or outside them
 	 * @return list<Node\Stmt>
 	 */
-	private function getNextUnreachableStatements(array $nodes, bool $earlyBinding): array
+	private function getNextUnreachableStatements(array $nodes, bool $earlyBinding, array $enteredLabelNames): array
 	{
 		$stmts = [];
 		$isPassedUnreachableStatement = false;
 		foreach ($nodes as $node) {
 			if ($node instanceof Node\Stmt\Label) {
+				break;
+			}
+			$nestedLabelNames = $node->getAttribute(GotoLabelVisitor::NESTED_GOTO_LABELS_ATTRIBUTE);
+			if ($nestedLabelNames !== null && array_intersect_key($nestedLabelNames, $enteredLabelNames) !== []) {
 				break;
 			}
 			if ($earlyBinding && ($node instanceof Node\Stmt\Function_ || $node instanceof Node\Stmt\ClassLike || $node instanceof Node\Stmt\HaltCompiler)) {
@@ -641,24 +830,31 @@ final class StatementsHandler
 		bool $shouldCheckLastStatement,
 	): void
 	{
-		if ($state->alreadyTerminated && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike || $stmt instanceof Node\Stmt\Label)) {
+		$nestedLabelNames = $stmt->getAttribute(GotoLabelVisitor::NESTED_GOTO_LABELS_ATTRIBUTE);
+		if ($state->alreadyTerminated && $nestedLabelNames === null && !($stmt instanceof Node\Stmt\Function_ || $stmt instanceof Node\Stmt\ClassLike || $stmt instanceof Node\Stmt\Label)) {
 			return;
 		}
 
 		$isLast = $i === count($stmts) - 1;
 
-		$nestedLabelNames = $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE);
-		if ($nestedLabelNames !== null && $context->isTopLevel()) {
-			$state->scope = $this->resolveBackwardGotoScope(
+		$stmtContext = $context;
+		if ($nestedLabelNames !== null) {
+			[$state->scope, $state->alreadyTerminated, $state->exitPoints, $entryScopes] = $this->enterNestedGotoLabels(
 				$nodeScopeResolver,
 				$parentNode,
-				[$stmt],
+				$stmt,
+				array_slice($stmts, $i),
+				$nestedLabelNames,
 				$state->scope,
+				$state->alreadyTerminated,
+				$state->exitPoints,
 				$storage,
-				$context->enterDeep(),
-				static fn (string $name): bool => isset($nestedLabelNames[$name]),
-				false,
+				$context,
 			);
+			if ($state->alreadyTerminated) {
+				return;
+			}
+			$stmtContext = $context->withGotoLabelEntryScopes($entryScopes);
 		}
 
 		$statementResult = $nodeScopeResolver->processStmtNode(
@@ -666,7 +862,7 @@ final class StatementsHandler
 			$state->scope,
 			$storage,
 			$nodeCallback,
-			$context,
+			$stmtContext,
 		);
 		$state->variableFlows[$i] = $statementResult->getVariableFlow();
 		$state->scope = $statementResult->getScope();
@@ -684,6 +880,7 @@ final class StatementsHandler
 				$state->scope,
 				$state->alreadyTerminated,
 				$state->exitPoints,
+				$context->getGotoLabelEntryScopes()[$labelName] ?? null,
 			);
 
 			if ($state->alreadyTerminated) {
@@ -699,7 +896,6 @@ final class StatementsHandler
 					$storage,
 					$context->enterDeep(),
 					static fn (string $name): bool => $name === $labelName,
-					true,
 				);
 			}
 		}
@@ -751,7 +947,7 @@ final class StatementsHandler
 		}
 
 		$state->alreadyTerminated = true;
-		$nextStmts = $this->getNextUnreachableStatements(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_);
+		$nextStmts = $this->getNextUnreachableStatements(array_slice($stmts, $i + 1), $parentNode instanceof Node\Stmt\Namespace_, $this->getEnteredGotoLabelNames($state->exitPoints, $context));
 		$this->processUnreachableStatement($nodeScopeResolver, $nextStmts, $state->scope, $storage, $nodeCallback);
 	}
 
@@ -819,9 +1015,10 @@ final class StatementsHandler
 		try {
 			foreach ($stmts as $i => $stmt) {
 				$entries[$i] = [$this->snapshotWalkState($state), $recording->count()];
-				if ($stmt instanceof Node\Stmt\Label) {
-					// the label drops the gotos landing on it from the exit
-					// points: the snapshots so far keep the lists as they were
+				if ($stmt instanceof Node\Stmt\Label || $stmt->getAttribute(GotoLabelVisitor::NESTED_GOTO_LABELS_ATTRIBUTE) !== null) {
+					// the label drops the gotos landing on it (or on the labels
+					// nested in the statement) from the exit points: the
+					// snapshots so far keep the lists as they were
 					$state = clone $state;
 				}
 				$this->processStatementStep($nodeScopeResolver, $parentNode, $stmts, $i, $stmt, $state, $storage, $recording, $observationContext, true);
@@ -1722,7 +1919,7 @@ final class StatementsHandler
 	private function containsLabels(array $stmts): bool
 	{
 		foreach ($stmts as $stmt) {
-			if (!$stmt instanceof Node\Stmt\Label && $stmt->getAttribute(GotoLabelVisitor::NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE) === null) {
+			if (!$stmt instanceof Node\Stmt\Label && $stmt->getAttribute(GotoLabelVisitor::NESTED_GOTO_LABELS_ATTRIBUTE) === null) {
 				continue;
 			}
 

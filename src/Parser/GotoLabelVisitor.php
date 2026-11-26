@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Goto_;
 use PhpParser\NodeVisitorAbstract;
 use PHPStan\DependencyInjection\AutowiredService;
+use function array_diff_key;
 use function array_intersect_key;
 use function array_pop;
 use function count;
@@ -19,7 +20,14 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 
 	public const HAS_BACKWARD_GOTO_ATTRIBUTE = 'hasBackwardGoto';
 
+	/**
+	 * Labels inside the statement that a goto in it or in a later statement
+	 * of the list jumps to, where no statement list inside it holds both.
+	 */
 	public const NESTED_BACKWARD_GOTO_LABELS_ATTRIBUTE = 'nestedBackwardGotoLabels';
+
+	/** Labels inside the statement (not the statement itself), which a goto may jump into. */
+	public const NESTED_GOTO_LABELS_ATTRIBUTE = 'nestedGotoLabels';
 
 	public const GOTO_LABEL_UNDEFINED_ATTRIBUTE = 'gotoLabelUndefined';
 
@@ -111,38 +119,37 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 			$this->processStatementList($stmts);
 		}
 
+		// the gotos of the subtree whose label is not in the same statement
+		// list (the list resolves the others)
 		$labels = [];
 		$gotos = [];
+		$listLabels = [];
+		$listGotos = [];
+		$listName = $node instanceof Node\PropertyHook ? 'body' : 'stmts';
 		$childIds = [];
 		foreach ($node->getSubNodeNames() as $name) {
 			$sub = $node->{$name};
-			if ($sub instanceof Node) {
-				if (!$this->isScopeBoundary($sub)) {
-					$childId = spl_object_id($sub);
-					if (isset($this->subtreeData[$childId])) {
-						$labels += $this->subtreeData[$childId]['labels'];
-						$gotos += $this->subtreeData[$childId]['gotos'];
-						$childIds[] = $childId;
-					}
+			$isList = $stmts !== null && $name === $listName;
+			foreach ($sub instanceof Node ? [$sub] : (is_array($sub) ? $sub : []) as $subItem) {
+				if (!$subItem instanceof Node || $this->isScopeBoundary($subItem)) {
+					continue;
 				}
-			} elseif (is_array($sub)) {
-				foreach ($sub as $subItem) {
-					if (!$subItem instanceof Node) {
-						continue;
-					}
-					if ($this->isScopeBoundary($subItem)) {
-						continue;
-					}
-					$childId = spl_object_id($subItem);
-					if (!isset($this->subtreeData[$childId])) {
-						continue;
-					}
+				$childId = spl_object_id($subItem);
+				if (!isset($this->subtreeData[$childId])) {
+					continue;
+				}
+				if ($isList) {
+					$listLabels += $this->subtreeData[$childId]['labels'];
+					$listGotos += $this->subtreeData[$childId]['gotos'];
+				} else {
 					$labels += $this->subtreeData[$childId]['labels'];
 					$gotos += $this->subtreeData[$childId]['gotos'];
-					$childIds[] = $childId;
 				}
+				$childIds[] = $childId;
 			}
 		}
+		$labels += $listLabels;
+		$gotos += array_diff_key($listGotos, $listLabels);
 
 		foreach ($childIds as $childId) {
 			unset($this->subtreeData[$childId]);
@@ -187,19 +194,25 @@ final class GotoLabelVisitor extends NodeVisitorAbstract
 			}
 		}
 
-		foreach ($stmts as $s) {
+		// the gotos of each statement and of every statement after it
+		$gotosFrom = [];
+		$gotos = [];
+		for ($j = $stmtCount - 1; $j >= 0; $j--) {
+			$gotos += $this->subtreeData[spl_object_id($stmts[$j])]['gotos'] ?? [];
+			$gotosFrom[$j] = $gotos;
+		}
+
+		foreach ($stmts as $idx => $s) {
 			if ($s instanceof Node\Stmt\Label) {
 				continue;
 			}
-			$childId = spl_object_id($s);
-			if (!isset($this->subtreeData[$childId])) {
+			$labels = $this->subtreeData[spl_object_id($s)]['labels'] ?? [];
+			if ($labels === []) {
 				continue;
 			}
-			$childData = $this->subtreeData[$childId];
-			if ($childData['labels'] === [] || $childData['gotos'] === []) {
-				continue;
-			}
-			$matchedLabels = array_intersect_key($childData['gotos'], $childData['labels']);
+
+			$s->setAttribute(self::NESTED_GOTO_LABELS_ATTRIBUTE, $labels);
+			$matchedLabels = array_intersect_key($gotosFrom[$idx], $labels);
 			if ($matchedLabels === []) {
 				continue;
 			}

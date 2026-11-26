@@ -625,6 +625,8 @@ PT_MINIT_REGISTRATION(pt_register_side_effects)
 	cls.publicClassConstantString("READS_GLOBAL_STAT_CACHE", "reads-global.stat-cache");
 	cls.publicClassConstantString("WRITES_GLOBAL_MBSTRING", "writes-global.mbstring");
 	cls.publicClassConstantString("READS_GLOBAL_MBSTRING", "reads-global.mbstring");
+	cls.publicClassConstantString("WRITES_GLOBAL_SESSION", "writes-global.session");
+	cls.publicClassConstantString("READS_GLOBAL_SESSION", "reads-global.session");
 	cls.publicClassConstantString("WRITES_GLOBAL_ERROR", "writes-global.error");
 	cls.publicClassConstantString("WRITES_GLOBAL_ERROR_JSON", "writes-global.error.json");
 	cls.publicClassConstantString("READS_GLOBAL_ERROR_JSON", "reads-global.error.json");

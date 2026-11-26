@@ -1342,4 +1342,9 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/minmax-nan.php'], []);
 	}
 
+	public function testSessionLifecycle(): void
+	{
+		$this->analyse([__DIR__ . '/data/session-lifecycle.php'], []);
+	}
+
 }

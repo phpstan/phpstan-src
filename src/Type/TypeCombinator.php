@@ -332,14 +332,19 @@ final class TypeCombinator
 			// `array`. Whether the two operands happen to be the same object
 			// must not decide the result.
 			//
-			// Non-array operands keep taking the general path. It is lossless
-			// for them, and it has to stay in charge because `equals()` is
-			// weaker than interchangeability for some types: a benevolent
+			// Equal non-array operands are not decided by equals(): it is weaker
+			// than interchangeability for some types - a benevolent
 			// `(int|string)` equals a plain `int|string` and `Foo=final` equals
-			// `Foo`, and there the general path deliberately yields the wider
-			// operand rather than whichever one was passed first.
+			// `Foo` - so they are left to findAbsorbingOperand() and the rules,
+			// which keep the wider operand rather than whichever one was passed first.
 			if ($a === $b || ($a->equals($b) && $a->isArray()->yes())) {
 				return $a;
+			}
+
+			// union(A, B) = A when A holds B, as `float|int` holds `0`
+			$absorbing = self::findAbsorbingOperand($a, $b);
+			if ($absorbing !== null) {
+				return $absorbing;
 			}
 		}
 
@@ -503,6 +508,56 @@ final class TypeCombinator
 		}
 
 		return new UnionType($types, true);
+	}
+
+	/**
+	 * The operand the union of two is, when one holds the other: the one that
+	 * holds the other and is not held by it, and of two holding each other the
+	 * later one, as SingleValueUnionRule and SubsumptionUnionRule keep it, unless
+	 * tryUnion() merges them into another type or they are two values, as -0.0
+	 * and 0.0. Null when neither holds the
+	 * other, when one is of no kinds (never) or an unresolved template argument,
+	 * which only addMarker() merges, and when either may be an array: the array
+	 * rules rebuild arrays even from a supertype and its subtype, as the shapes
+	 * of `array{a: int}|array{a: int, b?: int}` merge.
+	 */
+	private static function findAbsorbingOperand(Type $a, Type $b): ?Type
+	{
+		$aKinds = $a->getKindMask();
+		$bKinds = $b->getKindMask();
+		if (
+			($aKinds & $bKinds) === 0
+			|| (($aKinds | $bKinds) & TypeKind::ARRAY) !== 0
+			|| $a instanceof UnresolvedTemplateArgumentType
+			|| $b instanceof UnresolvedTemplateArgumentType
+		) {
+			return null;
+		}
+
+		$aHoldsB = $a->isSuperTypeOf($b)->yes();
+		$bHoldsA = $b->isSuperTypeOf($a)->yes();
+		if ($aHoldsB !== $bHoldsA) {
+			return $aHoldsB ? $a : $b;
+		}
+		if (
+			!$aHoldsB
+			// a benevolent union is flattened and wrapped again by the general path
+			|| $a instanceof UnionType
+			|| $b instanceof UnionType
+			|| $a->tryUnion($b) !== null
+			|| $b->tryUnion($a) !== null
+		) {
+			return null;
+		}
+
+		// two values SingleValueUnionRule keeps apart, as -0.0 and 0.0
+		$aKey = SingleValueUnionRule::getValueKey($a);
+		$bKey = SingleValueUnionRule::getValueKey($b);
+		if ($aKey !== null && $bKey !== null && $aKey !== $bKey) {
+			return null;
+		}
+
+		return $b;
 	}
 
 	/**

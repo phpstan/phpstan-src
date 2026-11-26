@@ -239,6 +239,7 @@ final class ForeachHandler implements StmtHandler
 						$bodyScope = $loopEntryScope;
 					}
 				}
+				$writtenVariableNames = null;
 				$count = 0;
 				$prevEntryScope = null;
 				// each pass after the first re-walks only the statements whose
@@ -291,11 +292,17 @@ final class ForeachHandler implements StmtHandler
 					}
 
 					if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-						$bodyScope = $prevScope->generalizeWith($bodyScope, LoopWrittenVariableNames::collect($stmt, $bodyScopeResult->getVariableFlow()));
+						$writtenVariableNames = LoopWrittenVariableNames::collect($stmt, $bodyScopeResult->getVariableFlow());
+						$bodyScope = $prevScope->generalizeWith($bodyScope, $writtenVariableNames, $loopEntryScope);
 					}
 					$count++;
 				} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
 				$iterationLimitReached = $count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS;
+				if ($iterationLimitReached) {
+					// the limit is only a safety net - a scope still changing after it
+					// is not a fixpoint, so nothing the loop writes keeps a type
+					$bodyScope = $bodyScope->forgetLoopWrittenVariables($writtenVariableNames);
+				}
 			}
 		}
 
@@ -311,8 +318,7 @@ final class ForeachHandler implements StmtHandler
 		$storage = $originalStorage;
 		$bodyScope = $this->enterForeach($nodeScopeResolver, $bodyScope, $storage, $originalScope, $stmt, $foreachIterateeType, $foreachNativeIterateeType, $nodeCallback);
 		if (
-			$replayBodyRecording !== null && $replayPassStorage !== null
-			&& $replayPassResult !== null && $replayEntryScope !== null
+			$replayBodyRecording !== null
 			&& $finalEntryScope->equals($replayEntryScope)
 		) {
 			// the final walk would repeat the recorded fixpoint pass exactly

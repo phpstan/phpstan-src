@@ -231,6 +231,7 @@ public:
 				if (UNEXPECTED(loopEntryScope.isUndef())) return zv::Val();
 				if (Z_OBJ_P(loopEntryScope.raw()) != Z_OBJ_P(initScope.raw())) bodyScope = zv::Val::copyOf(loopEntryScope.ref());
 			}
+			zv::Val writtenVariableNames;
 			zend_long count = 0;
 			// each pass after the first re-walks only the statements whose
 			// entry state differs from the previous pass's (StatementsHandler::processLoopPassStmtNodes())
@@ -329,12 +330,15 @@ public:
 				if (count >= PT_LH_GENERALIZE_AFTER_ITERATION_LIMIT) {
 					zv::Val passFlow = pt_variable_flow_sequence_list(passFlows.table());
 					if (UNEXPECTED(passFlow.isUndef())) return zv::Val();
-					bodyScope = ptlh::generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow.raw());
+					bodyScope = ptlh::generalizeWithWrittenNames(prevScope.raw(), bodyScope.raw(), stmt, passFlow.raw(), loopEntryScope.raw(), writtenVariableNames);
 					if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 				}
 				count++;
 			} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
 			iterationLimitReached = count >= PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT;
+			/* the limit is only a safety net (PHP twin) */
+			bodyScope = ptlh::forgetIfLimitReached(std::move(bodyScope), count, writtenVariableNames);
+			if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 		}
 
 		zval *storage = originalStorage;
@@ -427,8 +431,7 @@ public:
 				loopScope = zv::Val::copyOf(zv::Ref(resultScope));
 			}
 		}
-		finalScope = pt_mutating_scope_generalize_with(Z_OBJ_P(finalScope.raw()), Z_OBJ_P(loopScope.raw()));
-		if (UNEXPECTED(finalScope.isUndef())) return zv::Val();
+		finalScope = zv::Val::copyOf(loopScope.ref());
 
 		if (lastCondExpr != NULL) {
 			// the loop condition narrows the post-loop scope to its falsey branch,

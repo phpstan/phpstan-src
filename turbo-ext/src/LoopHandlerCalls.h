@@ -22,7 +22,7 @@
 #include "StmtHandlerCalls.h"
 
 /* NodeScopeResolver::LOOP_SCOPE_ITERATIONS / ::GENERALIZE_AFTER_ITERATION */
-#define PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT 3
+#define PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT 10
 #define PT_LH_GENERALIZE_AFTER_ITERATION_LIMIT 1
 
 namespace ptlh {
@@ -54,12 +54,29 @@ inline zv::Val containerGetByType(zval *container, zend_string *className)
 
 /* }}} */
 
+/* $writtenVariableNames = LoopWrittenVariableNames::collect($stmt, $passFlow);
+ * $prevScope->generalizeWith($bodyScope, $writtenVariableNames, $loopEntryScope) */
+inline zv::Val generalizeWithWrittenNames(zval *prevScope, zval *bodyScope, zval *stmt, zval *passFlow, zval *loopEntryScope, zv::Val &writtenVariableNames)
+{
+	writtenVariableNames = loopWrittenVariableNames(stmt, passFlow);
+	if (UNEXPECTED(writtenVariableNames.isUndef())) return zv::Val();
+	return pt_mutating_scope_generalize_with_names(Z_OBJ_P(prevScope), Z_OBJ_P(bodyScope), writtenVariableNames.raw(), Z_OBJ_P(loopEntryScope));
+}
+
 /* $prevScope->generalizeWith($bodyScope, LoopWrittenVariableNames::collect($stmt, $passFlow)) */
 inline zv::Val generalizeWithWrittenNames(zval *prevScope, zval *bodyScope, zval *stmt, zval *passFlow)
 {
 	zv::Val names = loopWrittenVariableNames(stmt, passFlow);
 	if (UNEXPECTED(names.isUndef())) return zv::Val();
 	return pt_mutating_scope_generalize_with_names(Z_OBJ_P(prevScope), Z_OBJ_P(bodyScope), names.raw());
+}
+
+/* if ($count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS) $bodyScope = $bodyScope->forgetLoopWrittenVariables($writtenVariableNames):
+ * a scope still changing after the limit is not a fixpoint; UNDEF = pending exception */
+inline zv::Val forgetIfLimitReached(zv::Val bodyScope, zend_long count, zv::Val &writtenVariableNames)
+{
+	if (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT) return bodyScope;
+	return pt_mutating_scope_forget_loop_written_variables(Z_OBJ_P(bodyScope.raw()), writtenVariableNames.isUndef() ? NULL : writtenVariableNames.raw());
 }
 
 /* new NoopNodeCallback() / new RecordingNodeCallback() */

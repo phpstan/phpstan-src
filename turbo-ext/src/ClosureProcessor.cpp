@@ -44,7 +44,7 @@ namespace {
 
 /* NodeScopeResolver::GENERALIZE_AFTER_ITERATION / ::LOOP_SCOPE_ITERATIONS */
 constexpr zend_long PT_CP_GENERALIZE_AFTER_ITERATION_LIMIT = 1;
-constexpr zend_long PT_CP_LOOP_SCOPE_ITERATIONS_LIMIT = 3;
+constexpr zend_long PT_CP_LOOP_SCOPE_ITERATIONS_LIMIT = 10;
 
 /* the attribute names (ClosureArgVisitor::ATTRIBUTE_NAME,
  * ArrowFunctionArgVisitor::ATTRIBUTE_NAME,

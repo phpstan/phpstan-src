@@ -81,6 +81,7 @@ use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatRangeType;
+use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -4971,17 +4972,43 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	}
 
 	/**
+	 * Gives up on a loop whose scope did not converge within
+	 * NodeScopeResolver::LOOP_SCOPE_ITERATIONS passes: every variable the loop
+	 * can write becomes mixed, which no further pass could widen, so the loop's
+	 * head is a fixpoint even though it was not reached.
+	 *
+	 * @param array<string, true>|null $writtenVariableNames null when the loop can write variables whose names are not known
+	 */
+	public function forgetLoopWrittenVariables(?array $writtenVariableNames): self
+	{
+		$scope = $this;
+		foreach ($this->expressionTypes as $expressionTypeHolder) {
+			$expr = $expressionTypeHolder->getExpr();
+			if (!$expr instanceof Variable || !is_string($expr->name) || $expr->name === 'this') {
+				continue;
+			}
+			if ($writtenVariableNames !== null && !isset($writtenVariableNames[$expr->name])) {
+				continue;
+			}
+
+			$scope = $scope->assignVariable($expr->name, new MixedType(), new MixedType(), $expressionTypeHolder->getCertainty());
+		}
+
+		return $scope;
+	}
+
+	/**
 	 * @param array<string, true>|null $writableVariableNames variables the loop can write, null when unknown
 	 */
-	public function generalizeWith(self $otherScope, ?array $writableVariableNames = null): self
+	public function generalizeWith(self $otherScope, ?array $writableVariableNames = null, ?self $loopEntryScope = null): self
 	{
-		return $this->generalizeWithVariableState($otherScope, $writableVariableNames)->addTemplateArgumentConstraints($otherScope->getTemplateArgumentConstraints());
+		return $this->generalizeWithVariableState($otherScope, $writableVariableNames, $loopEntryScope)->addTemplateArgumentConstraints($otherScope->getTemplateArgumentConstraints());
 	}
 
 	/**
 	 * @param array<string, true>|null $writableVariableNames
 	 */
-	private function generalizeWithVariableState(self $otherScope, ?array $writableVariableNames): self
+	private function generalizeWithVariableState(self $otherScope, ?array $writableVariableNames, ?self $loopEntryScope): self
 	{
 		if ($writableVariableNames !== null) {
 			// a reference created before the loop lets the loop write a variable it does not name
@@ -5006,11 +5033,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$this->expressionTypes,
 			$otherScope->expressionTypes,
 			$writableVariableNames,
+			$loopEntryScope !== null ? $loopEntryScope->expressionTypes : [],
 		);
 		$nativeTypes = $this->generalizeVariableTypeHolders(
 			$this->nativeExpressionTypes,
 			$otherScope->nativeExpressionTypes,
 			$writableVariableNames,
+			$loopEntryScope !== null ? $loopEntryScope->nativeExpressionTypes : [],
 		);
 
 		return $this->scopeFactory->create(
@@ -5020,7 +5049,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$this->getNamespace(),
 			$variableTypeHolders,
 			$nativeTypes,
-			self::withoutWidenedConditionalExpressions($this->conditionalExpressions, $this->expressionTypes, $variableTypeHolders),
+			self::withoutWidenedConditionalExpressions($otherScope->conditionalExpressions, $otherScope->expressionTypes, $variableTypeHolders),
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
@@ -5037,10 +5066,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	/**
 	 * Widening replaces a variable's type with a coarser one meant to cover the
-	 * passes not walked yet. A holder targeting it was derived from the type before
-	 * widening, and applying it would narrow the variable back for the states its
-	 * guards match - so holders of widened targets are dropped; the next pass
-	 * derives them again if they still hold.
+	 * passes not walked yet. The holders come from the new pass's state: one the
+	 * previous pass derived may no longer hold, and kept here it would narrow the
+	 * next pass's entry by itself, never contradicted again. A holder targeting a
+	 * widened variable was derived from the type before widening, and applying it
+	 * would narrow the variable back for the states its guards match - so holders
+	 * of widened targets are dropped; the next pass derives them again if they
+	 * still hold.
 	 *
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, ExpressionTypeHolder> $expressionTypes
@@ -5066,12 +5098,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 * @param array<string, ExpressionTypeHolder> $variableTypeHolders
 	 * @param array<string, ExpressionTypeHolder> $otherVariableTypeHolders
 	 * @param array<string, true>|null $writableVariableNames
+	 * @param array<string, ExpressionTypeHolder> $entryVariableTypeHolders
 	 * @return array<string, ExpressionTypeHolder>
 	 */
 	private function generalizeVariableTypeHolders(
 		array $variableTypeHolders,
 		array $otherVariableTypeHolders,
 		?array $writableVariableNames,
+		array $entryVariableTypeHolders,
 	): array
 	{
 		uksort($variableTypeHolders, static fn (string $exprA, string $exprB): int => strlen($exprA) <=> strlen($exprB));
@@ -5104,7 +5138,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				// the loop does not write this variable, its types differ between passes only by narrowing
 				$generalizedType = TypeCombinator::union($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType());
 			} else {
-				$generalizedType = $this->generalizeType($variableTypeHolder->getType(), $otherVariableTypeHolders[$variableExprString]->getType(), 0);
+				$generalizedType = $this->generalizeType(
+					$variableTypeHolder->getType(),
+					$otherVariableTypeHolders[$variableExprString]->getType(),
+					0,
+					isset($entryVariableTypeHolders[$variableExprString]) ? $entryVariableTypeHolders[$variableExprString]->getType() : null,
+				);
 			}
 			if (
 				!$generalizedType->equals($variableTypeHolder->getType())
@@ -5146,7 +5185,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		return $types;
 	}
 
-	private function generalizeType(Type $a, Type $b, int $depth): Type
+	/**
+	 * @param Type|null $entryType the type at the loop's entry: a number bound
+	 *                             only moves when it leaves the loop head, the
+	 *                             previous pass joined with the entry, so a value
+	 *                             reset to its initial one does not open the bound
+	 */
+	private function generalizeType(Type $a, Type $b, int $depth, ?Type $entryType = null): Type
 	{
 		if ($a->equals($b)) {
 			return $a;
@@ -5212,6 +5257,40 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				}
 
 				$otherTypes[] = $type;
+			}
+		}
+
+		// a value the previous pass already widened is compared with the new
+		// pass's constants as a whole, so a literal set cannot keep growing
+		// next to the general type each pass
+		if (count($constantArrays['a']) === 0 && count($generalArrays['a']) > 0) {
+			$generalArrays['b'] = [...$generalArrays['b'], ...$constantArrays['b']];
+			$constantArrays['b'] = [];
+		}
+		if (count($constantIntegers['a']) === 0 && count($integerRanges['a']) > 0) {
+			$integerRanges['b'] = [...$integerRanges['b'], ...$constantIntegers['b']];
+			$constantIntegers['b'] = [];
+		}
+
+		$entryIntegerMin = PHP_INT_MAX;
+		$entryIntegerMax = PHP_INT_MIN;
+		$entryFloatMin = INF;
+		$entryFloatMax = -INF;
+		if ($entryType !== null) {
+			foreach ($this->flattenUnionForGeneralization($entryType) as $type) {
+				if ($type instanceof ConstantIntegerType) {
+					$entryIntegerMin = min($entryIntegerMin, $type->getValue());
+					$entryIntegerMax = max($entryIntegerMax, $type->getValue());
+				} elseif ($type instanceof IntegerRangeType) {
+					$entryIntegerMin = min($entryIntegerMin, $type->getMin() ?? PHP_INT_MIN);
+					$entryIntegerMax = max($entryIntegerMax, $type->getMax() ?? PHP_INT_MAX);
+				} elseif ($type instanceof ConstantFloatType && !is_nan($type->getValue())) {
+					$entryFloatMin = min($entryFloatMin, $type->getValue());
+					$entryFloatMax = max($entryFloatMax, $type->getValue());
+				} elseif ($type instanceof FloatRangeType) {
+					$entryFloatMin = min($entryFloatMin, $type->getMin());
+					$entryFloatMax = max($entryFloatMax, $type->getMax());
+				}
 			}
 		}
 
@@ -5397,7 +5476,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			if (count($constantFloats['b']) === 0) {
 				$resultTypes[] = TypeCombinator::union(...$constantFloats['a']);
 			} else {
-				$resultTypes[] = $this->generalizeConstantFloats($constantFloats['a'], $constantFloats['b']);
+				$resultTypes[] = $this->generalizeConstantFloats($constantFloats['a'], $constantFloats['b'], $entryFloatMin, $entryFloatMax);
 			}
 		} elseif (count($constantFloats['b']) > 0) {
 			$resultTypes[] = TypeCombinator::union(...$constantFloats['b']);
@@ -5439,12 +5518,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 						$newMin = $int->getValue();
 					}
 
-					if ($newMax > $max && $newMin < $min) {
-						$resultTypes[] = IntegerRangeType::fromInterval($newMin, $newMax);
-					} elseif ($newMax > $max) {
-						$resultTypes[] = IntegerRangeType::fromInterval($min, null);
-					} elseif ($newMin < $min) {
-						$resultTypes[] = IntegerRangeType::fromInterval(null, $max);
+					$gotGreater = $newMax > max($max, $entryIntegerMax);
+					$gotSmaller = $newMin < min($min, $entryIntegerMin);
+					if ($gotGreater && $gotSmaller) {
+						$resultTypes[] = new IntegerType();
+					} elseif ($gotGreater) {
+						$resultTypes[] = IntegerRangeType::fromInterval($newMin, null);
+					} elseif ($gotSmaller) {
+						$resultTypes[] = IntegerRangeType::fromInterval(null, $newMax);
 					} else {
 						$resultTypes[] = TypeCombinator::union($constantIntegersA, $constantIntegersB);
 					}
@@ -5491,15 +5572,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 					$newMin = $min;
 					$newMax = $max;
 					foreach ($integerRanges['b'] as $range) {
-						if ($range->getMin() === null) {
-							$rangeMin = PHP_INT_MIN;
+						if ($range instanceof ConstantIntegerType) {
+							$rangeMin = $range->getValue();
+							$rangeMax = $range->getValue();
 						} else {
-							$rangeMin = $range->getMin();
-						}
-						if ($range->getMax() === null) {
-							$rangeMax = PHP_INT_MAX;
-						} else {
-							$rangeMax = $range->getMax();
+							$rangeMin = $range->getMin() ?? PHP_INT_MIN;
+							$rangeMax = $range->getMax() ?? PHP_INT_MAX;
 						}
 
 						if ($rangeMax > $newMax) {
@@ -5512,15 +5590,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 						$newMin = $rangeMin;
 					}
 
-					$gotGreater = $newMax > $max;
-					$gotSmaller = $newMin < $min;
+					$gotGreater = $newMax > max($max, $entryIntegerMax);
+					$gotSmaller = $newMin < min($min, $entryIntegerMin);
 
-					if ($min === PHP_INT_MIN) {
-						$min = null;
-					}
-					if ($max === PHP_INT_MAX) {
-						$max = null;
-					}
 					if ($newMin === PHP_INT_MIN) {
 						$newMin = null;
 					}
@@ -5529,11 +5601,11 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 					}
 
 					if ($gotGreater && $gotSmaller) {
-						$resultTypes[] = IntegerRangeType::fromInterval($newMin, $newMax);
+						$resultTypes[] = new IntegerType();
 					} elseif ($gotGreater) {
-						$resultTypes[] = IntegerRangeType::fromInterval($min, null);
+						$resultTypes[] = IntegerRangeType::fromInterval($newMin, null);
 					} elseif ($gotSmaller) {
-						$resultTypes[] = IntegerRangeType::fromInterval(null, $max);
+						$resultTypes[] = IntegerRangeType::fromInterval(null, $newMax);
 					} else {
 						$resultTypes[] = TypeCombinator::union($integerRangesA, $integerRangesB);
 					}
@@ -5570,15 +5642,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 						$newMax = max($newMax, $range->getMax());
 					}
 
-					$gotGreater = $newMax > $max;
-					$gotSmaller = $newMin < $min;
+					$gotGreater = $newMax > max($max, $entryFloatMax);
+					$gotSmaller = $newMin < min($min, $entryFloatMin);
 
 					if ($gotGreater && $gotSmaller) {
-						$resultTypes[] = FloatRangeType::fromInterval($newMin, $newMax);
+						$resultTypes[] = new FloatType();
 					} elseif ($gotGreater) {
-						$resultTypes[] = FloatRangeType::fromInterval($min, INF);
+						$resultTypes[] = FloatRangeType::fromInterval($newMin, INF);
 					} elseif ($gotSmaller) {
-						$resultTypes[] = FloatRangeType::fromInterval(-INF, $max);
+						$resultTypes[] = FloatRangeType::fromInterval(-INF, $newMax);
 					} else {
 						$resultTypes[] = TypeCombinator::union($floatRangesA, $floatRangesB);
 					}
@@ -5612,7 +5684,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 * @param non-empty-list<ConstantFloatType> $a
 	 * @param non-empty-list<ConstantFloatType> $b
 	 */
-	private function generalizeConstantFloats(array $a, array $b): Type
+	private function generalizeConstantFloats(array $a, array $b, float $entryMin, float $entryMax): Type
 	{
 		$constantFloatsA = TypeCombinator::union(...$a);
 		$constantFloatsB = TypeCombinator::union(...$b);
@@ -5655,14 +5727,14 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				$newMax = max($newMax, $float->getValue());
 			}
 
-			$gotGreater = $newMax > $max;
-			$gotSmaller = $newMin < $min;
+			$gotGreater = $newMax > max($max, $entryMax);
+			$gotSmaller = $newMin < min($min, $entryMin);
 			if ($gotGreater && $gotSmaller) {
-				$result = FloatRangeType::fromInterval($newMin, $newMax);
+				$result = new FloatType();
 			} elseif ($gotGreater) {
-				$result = FloatRangeType::fromInterval($min, INF);
+				$result = FloatRangeType::fromInterval($newMin, INF);
 			} elseif ($gotSmaller) {
-				$result = FloatRangeType::fromInterval(-INF, $max);
+				$result = FloatRangeType::fromInterval(-INF, $newMax);
 			} else {
 				$result = TypeCombinator::union(...$orderedA, ...$orderedB);
 			}

@@ -1699,6 +1699,20 @@ public:
 		return holderType(zv::Ref(holder));
 	}
 
+	static zv::Val newIntegerType()
+	{
+		zval integer;
+		if (UNEXPECTED(!pt_integer_type_new(&integer))) return zv::Val();
+		return zv::Val::adopt(integer);
+	}
+
+	static zv::Val newFloatType()
+	{
+		zval floatType;
+		if (UNEXPECTED(!pt_float_type_new(&floatType))) return zv::Val();
+		return zv::Val::adopt(floatType);
+	}
+
 	static zv::Val newMixedType(bool isExplicitMixed)
 	{
 		zval mixed;
@@ -9314,9 +9328,9 @@ public:
 	}
 
 	/* (twin 4893) */
-	zv::Val generalizeWith(zend_object *otherScope, HashTable *writableVariableNames)
+	zv::Val generalizeWith(zend_object *otherScope, HashTable *writableVariableNames, zend_object *loopEntryScope = NULL)
 	{
-		zv::Val generalized = generalizeWithVariableState(otherScope, writableVariableNames);
+		zv::Val generalized = generalizeWithVariableState(otherScope, writableVariableNames, loopEntryScope);
 		if (UNEXPECTED(generalized.isUndef())) return zv::Val();
 		zend_object *generalizedObject = requireObject(generalized, "addTemplateArgumentConstraints");
 		if (UNEXPECTED(generalizedObject == NULL)) return zv::Val();
@@ -9325,8 +9339,43 @@ public:
 		return pt_mutating_scope_add_template_argument_constraints(generalizedObject, constraints.raw());
 	}
 
+	/* (twin forgetLoopWrittenVariables()) — every variable a loop that did
+	 * not converge can write becomes mixed; writtenVariableNames NULL = the
+	 * loop can write variables whose names are not known */
+	zv::Val forgetLoopWrittenVariables(HashTable *writtenVariableNames)
+	{
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes"))) return zv::Val();
+		/* foreach ($this->expressionTypes ...) iterates a snapshot */
+		zv::Val table = zv::Val::copyOf(slot(PT_MS_PROP_EXPRESSION_TYPES));
+		zv::Val scope = zv::Val::copyOf(zv::Ref(thisZval()));
+		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
+		if (UNEXPECTED(variableCe == NULL)) return zv::Val();
+		for (auto entry : zv::TableRef(Z_ARRVAL_P(table.raw()))) {
+			zv::Val expr = holderExpr(entry.value());
+			if (UNEXPECTED(expr.isUndef())) return zv::Val();
+			if (!expr.ref().isObject() || !instanceof_function(expr.ref().asObject()->ce, variableCe)) continue;
+			zv::Ref name = nodeProp(expr.ref().asObject(), PT_LC("name"));
+			if (UNEXPECTED(name.raw() == NULL)) return zv::Val();
+			name = name.deref();
+			if (!name.isString() || zend_string_equals_literal(name.asString(), "this")) continue;
+			if (writtenVariableNames != NULL && zend_symtable_find(writtenVariableNames, name.asString()) == NULL) continue;
+			zend_long certainty = holderCertainty(entry.value());
+			if (UNEXPECTED(certainty < 0)) return zv::Val();
+			zv::Val mixed = newMixedType(false);
+			if (UNEXPECTED(mixed.isUndef())) return zv::Val();
+			zv::Val nativeMixed = newMixedType(false);
+			if (UNEXPECTED(nativeMixed.isUndef())) return zv::Val();
+			zend_object *scopeObject = requireObject(scope, "assignVariable");
+			if (UNEXPECTED(scopeObject == NULL)) return zv::Val();
+			zv::Val next = pt_mutating_scope_assign_variable(scopeObject, name.asString(), mixed.raw(), nativeMixed.raw(), pt_trinary_singleton(certainty));
+			if (UNEXPECTED(next.isUndef())) return zv::Val();
+			scope = std::move(next);
+		}
+		return scope;
+	}
+
 	/* private (twin 4901) */
-	zv::Val generalizeWithVariableState(zend_object *otherScope, HashTable *writableVariableNames)
+	zv::Val generalizeWithVariableState(zend_object *otherScope, HashTable *writableVariableNames, zend_object *loopEntryScope)
 	{
 		HashTable *otherExpressionTypes = otherTable(otherScope, PT_MS_PROP_EXPRESSION_TYPES, PT_LC("expressionTypes"));
 		if (UNEXPECTED(otherExpressionTypes == NULL || !requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes"))) return zv::Val();
@@ -9373,15 +9422,25 @@ public:
 		}
 
 		HashTable *writableTable = writableVariableNames == NULL ? NULL : writable.table();
-		zv::Val variableTypeHolders = generalizeVariableTypeHolders(ourExpressionTypes, otherExpressionTypes, writableTable);
+		HashTable *entryExpressionTypes = NULL;
+		HashTable *entryNativeTypes = NULL;
+		if (loopEntryScope != NULL) {
+			entryExpressionTypes = otherTable(loopEntryScope, PT_MS_PROP_EXPRESSION_TYPES, PT_LC("expressionTypes"));
+			if (UNEXPECTED(entryExpressionTypes == NULL)) return zv::Val();
+			entryNativeTypes = otherTable(loopEntryScope, PT_MS_PROP_NATIVE_EXPRESSION_TYPES, PT_LC("nativeExpressionTypes"));
+			if (UNEXPECTED(entryNativeTypes == NULL)) return zv::Val();
+		}
+		zv::Val variableTypeHolders = generalizeVariableTypeHolders(ourExpressionTypes, otherExpressionTypes, writableTable, entryExpressionTypes);
 		if (UNEXPECTED(variableTypeHolders.isUndef())) return zv::Val();
 		HashTable *otherNativeTypes = otherTable(otherScope, PT_MS_PROP_NATIVE_EXPRESSION_TYPES, PT_LC("nativeExpressionTypes"));
 		if (UNEXPECTED(otherNativeTypes == NULL || !requireSlot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES, "nativeExpressionTypes"))) return zv::Val();
-		zv::Val nativeTypes = generalizeVariableTypeHolders(Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()), otherNativeTypes, writableTable);
+		zv::Val nativeTypes = generalizeVariableTypeHolders(Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()), otherNativeTypes, writableTable, entryNativeTypes);
 		if (UNEXPECTED(nativeTypes.isUndef())) return zv::Val();
 
-		if (UNEXPECTED(!requireSlot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS, "conditionalExpressions"))) return zv::Val();
-		zv::Val conditionalExpressions = withoutWidenedConditionalExpressions(Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()), ourExpressionTypes, Z_ARRVAL_P(variableTypeHolders.raw()));
+		/* the holders of the new pass's state, as the twin */
+		HashTable *otherConditionalExpressions = otherTable(otherScope, PT_MS_PROP_CONDITIONAL_EXPRESSIONS, PT_LC("conditionalExpressions"));
+		if (UNEXPECTED(otherConditionalExpressions == NULL)) return zv::Val();
+		zv::Val conditionalExpressions = withoutWidenedConditionalExpressions(otherConditionalExpressions, otherExpressionTypes, Z_ARRVAL_P(variableTypeHolders.raw()));
 		if (UNEXPECTED(conditionalExpressions.isUndef())) return zv::Val();
 
 		CreateArgs a;
@@ -9431,7 +9490,7 @@ public:
 	}
 
 	/* private (twin 4961) */
-	zv::Val generalizeVariableTypeHolders(HashTable *variableTypeHolders, HashTable *otherVariableTypeHolders, HashTable *writableVariableNames)
+	zv::Val generalizeVariableTypeHolders(HashTable *variableTypeHolders, HashTable *otherVariableTypeHolders, HashTable *writableVariableNames, HashTable *entryVariableTypeHolders)
 	{
 		/* uksort(fn ($a, $b) => strlen($a) <=> strlen($b)) — PHP's sort is
 		 * stable, so equal lengths keep their insertion order */
@@ -9522,9 +9581,17 @@ public:
 			if (UNEXPECTED(ourType.isUndef() || theirType.isUndef())) return zv::Val();
 			/* the loop does not write this variable, its types differ between
 			 * passes only by narrowing */
+			zv::Val entryType;
+			if (!byNarrowingOnly && entryVariableTypeHolders != NULL) {
+				zval *entryHolder = pt_ht_find(entryVariableTypeHolders, entry.key, entry.index);
+				if (entryHolder != NULL && Z_TYPE_P(entryHolder) != IS_NULL) {
+					entryType = holderType(zv::Ref(entryHolder));
+					if (UNEXPECTED(entryType.isUndef())) return zv::Val();
+				}
+			}
 			zv::Val generalizedType = byNarrowingOnly
 				? unionTypes(ourType.raw(), theirType.raw())
-				: generalizeType(ourType.raw(), theirType.raw(), 0);
+				: generalizeType(ourType.raw(), theirType.raw(), 0, entryType.isUndef() ? NULL : entryType.raw());
 			if (UNEXPECTED(generalizedType.isUndef())) return zv::Val();
 			bool equal;
 			if (UNEXPECTED(!typeEquals(generalizedType.raw(), ourType.raw(), equal))) return zv::Val();
@@ -9545,7 +9612,7 @@ public:
 	 * into (the twin's `['a' => [], 'b' => []]`) */
 	/* private (twin generalizeConstantFloats()) — constant floats widen
 	 * like constant integers, NAN set aside; UNDEF = pending exception */
-	zv::Val generalizeConstantFloats(HashTable *a, HashTable *b)
+	zv::Val generalizeConstantFloats(HashTable *a, HashTable *b, double entryMin, double entryMax)
 	{
 		zv::Val constantFloatsA = unionOfList(a);
 		if (UNEXPECTED(constantFloatsA.isUndef())) return zv::Val();
@@ -9589,14 +9656,14 @@ public:
 				if (value > newMax) newMax = value;
 			}
 
-			bool gotGreater = newMax > max;
-			bool gotSmaller = newMin < min;
+			bool gotGreater = newMax > std::max(max, entryMax);
+			bool gotSmaller = newMin < std::min(min, entryMin);
 			if (gotGreater && gotSmaller) {
-				result = pt_float_range_from_interval(newMin, newMax);
+				result = newFloatType();
 			} else if (gotGreater) {
-				result = pt_float_range_from_interval(min, HUGE_VAL);
+				result = pt_float_range_from_interval(newMin, HUGE_VAL);
 			} else if (gotSmaller) {
-				result = pt_float_range_from_interval(-HUGE_VAL, max);
+				result = pt_float_range_from_interval(-HUGE_VAL, newMax);
 			} else {
 				result = unionOfLists(ordered[0].table(), ordered[1].table());
 			}
@@ -9673,7 +9740,9 @@ public:
 	}
 
 	/* private (twin 5011) */
-	zv::Val generalizeType(zval *a, zval *b, zend_long depth)
+	/* $entryType: the type at the loop's entry, NULL for none — a number
+	 * bound only moves when it leaves the loop head (see the twin) */
+	zv::Val generalizeType(zval *a, zval *b, zend_long depth, zval *entryType = NULL)
 	{
 		bool equal;
 		if (UNEXPECTED(!typeEquals(a, b, equal))) return zv::Val();
@@ -9735,6 +9804,52 @@ public:
 				}
 
 				otherTypes.push(type);
+			}
+		}
+
+		/* a value the previous pass already widened is compared with the new
+		 * pass's constants as a whole, so a literal set cannot keep growing
+		 * next to the general type each pass */
+		if (constantArrays.count(0) == 0 && generalArrays.count(0) > 0) {
+			for (auto entry : zv::TableRef(constantArrays.table(1))) generalArrays.list[1].push(entry.value().deref());
+			constantArrays.list[1] = zv::Arr::create(0);
+		}
+		if (constantIntegers.count(0) == 0 && integerRanges.count(0) > 0) {
+			for (auto entry : zv::TableRef(constantIntegers.table(1))) integerRanges.list[1].push(entry.value().deref());
+			constantIntegers.list[1] = zv::Arr::create(0);
+		}
+
+		zend_long entryIntegerMin = ZEND_LONG_MAX, entryIntegerMax = ZEND_LONG_MIN;
+		double entryFloatMin = HUGE_VAL, entryFloatMax = -HUGE_VAL;
+		if (entryType != NULL) {
+			zv::Arr entryFlattened = zv::Arr::create(4);
+			if (UNEXPECTED(!flattenUnionForGeneralization(entryType, entryFlattened))) return zv::Val();
+			for (auto entry : zv::TableRef(entryFlattened.table())) {
+				zv::Ref type = entry.value().deref();
+				if (!type.isObject()) continue;
+				zend_class_entry *ce = type.asObject()->ce;
+				if (instanceof_function(ce, pt_ce_constant_integer_type)) {
+					zend_long value;
+					if (UNEXPECTED(!pt_constant_integer_get_value(type.asObject(), value))) return zv::Val();
+					entryIntegerMin = std::min(entryIntegerMin, value);
+					entryIntegerMax = std::max(entryIntegerMax, value);
+				} else if (instanceof_function(ce, pt_ce_integer_range_type)) {
+					zend_long rangeMin, rangeMax;
+					if (UNEXPECTED(!rangeBounds(type.asObject(), rangeMin, rangeMax))) return zv::Val();
+					entryIntegerMin = std::min(entryIntegerMin, rangeMin);
+					entryIntegerMax = std::max(entryIntegerMax, rangeMax);
+				} else if (instanceof_function(ce, pt_ce_constant_float_type)) {
+					double value;
+					if (UNEXPECTED(!pt_constant_float_get_value(type.asObject(), value))) return zv::Val();
+					if (std::isnan(value)) continue;
+					entryFloatMin = std::min(entryFloatMin, value);
+					entryFloatMax = std::max(entryFloatMax, value);
+				} else if (instanceof_function(ce, pt_ce_float_range_type)) {
+					double rangeMin, rangeMax;
+					if (UNEXPECTED(!pt_float_range_bounds(type.asObject(), rangeMin, rangeMax))) return zv::Val();
+					entryFloatMin = std::min(entryFloatMin, rangeMin);
+					entryFloatMax = std::max(entryFloatMax, rangeMax);
+				}
 			}
 		}
 
@@ -10024,7 +10139,7 @@ public:
 		if (constantFloats.count(0) > 0) {
 			zv::Val united = constantFloats.count(1) == 0
 				? unionOfList(constantFloats.table(0))
-				: generalizeConstantFloats(constantFloats.table(0), constantFloats.table(1));
+				: generalizeConstantFloats(constantFloats.table(0), constantFloats.table(1), entryFloatMin, entryFloatMax);
 			if (UNEXPECTED(united.isUndef())) return zv::Val();
 			resultTypes.push(std::move(united));
 		} else if (constantFloats.count(1) > 0) {
@@ -10073,16 +10188,18 @@ public:
 						newMin = value;
 					}
 
-					if (newMax > max && newMin < min) {
-						zv::Val range = pt_integer_range_from_interval(phpstanturbo::NullableLong::of(newMin), phpstanturbo::NullableLong::of(newMax), 0);
+					bool gotGreater = newMax > std::max(max, entryIntegerMax);
+					bool gotSmaller = newMin < std::min(min, entryIntegerMin);
+					if (gotGreater && gotSmaller) {
+						zv::Val integer = newIntegerType();
+						if (UNEXPECTED(integer.isUndef())) return zv::Val();
+						resultTypes.push(std::move(integer));
+					} else if (gotGreater) {
+						zv::Val range = pt_integer_range_from_interval(phpstanturbo::NullableLong::of(newMin), phpstanturbo::NullableLong::null(), 0);
 						if (UNEXPECTED(range.isUndef())) return zv::Val();
 						resultTypes.push(std::move(range));
-					} else if (newMax > max) {
-						zv::Val range = pt_integer_range_from_interval(phpstanturbo::NullableLong::of(min), phpstanturbo::NullableLong::null(), 0);
-						if (UNEXPECTED(range.isUndef())) return zv::Val();
-						resultTypes.push(std::move(range));
-					} else if (newMin < min) {
-						zv::Val range = pt_integer_range_from_interval(phpstanturbo::NullableLong::null(), phpstanturbo::NullableLong::of(max), 0);
+					} else if (gotSmaller) {
+						zv::Val range = pt_integer_range_from_interval(phpstanturbo::NullableLong::null(), phpstanturbo::NullableLong::of(newMax), 0);
 						if (UNEXPECTED(range.isUndef())) return zv::Val();
 						resultTypes.push(std::move(range));
 					} else {
@@ -10130,7 +10247,13 @@ public:
 					zend_long newMin = min, newMax = max;
 					for (auto rangeEntry : zv::TableRef(integerRanges.table(1))) {
 						zend_long rangeMin, rangeMax;
-						if (UNEXPECTED(!rangeBounds(rangeEntry.value().deref().asObject(), rangeMin, rangeMax))) return zv::Val();
+						zend_object *rangeObject = rangeEntry.value().deref().asObject();
+						if (instanceof_function(rangeObject->ce, pt_ce_constant_integer_type)) {
+							if (UNEXPECTED(!pt_constant_integer_get_value(rangeObject, rangeMin))) return zv::Val();
+							rangeMax = rangeMin;
+						} else if (UNEXPECTED(!rangeBounds(rangeObject, rangeMin, rangeMax))) {
+							return zv::Val();
+						}
 						if (rangeMax > newMax) {
 							newMax = rangeMax;
 						}
@@ -10138,20 +10261,18 @@ public:
 						newMin = rangeMin;
 					}
 
-					bool gotGreater = newMax > max;
-					bool gotSmaller = newMin < min;
-					phpstanturbo::NullableLong minValue = min == ZEND_LONG_MIN ? phpstanturbo::NullableLong::null() : phpstanturbo::NullableLong::of(min);
-					phpstanturbo::NullableLong maxValue = max == ZEND_LONG_MAX ? phpstanturbo::NullableLong::null() : phpstanturbo::NullableLong::of(max);
+					bool gotGreater = newMax > std::max(max, entryIntegerMax);
+					bool gotSmaller = newMin < std::min(min, entryIntegerMin);
 					phpstanturbo::NullableLong newMinValue = newMin == ZEND_LONG_MIN ? phpstanturbo::NullableLong::null() : phpstanturbo::NullableLong::of(newMin);
 					phpstanturbo::NullableLong newMaxValue = newMax == ZEND_LONG_MAX ? phpstanturbo::NullableLong::null() : phpstanturbo::NullableLong::of(newMax);
 
 					zv::Val result;
 					if (gotGreater && gotSmaller) {
-						result = pt_integer_range_from_interval(newMinValue, newMaxValue, 0);
+						result = newIntegerType();
 					} else if (gotGreater) {
-						result = pt_integer_range_from_interval(minValue, phpstanturbo::NullableLong::null(), 0);
+						result = pt_integer_range_from_interval(newMinValue, phpstanturbo::NullableLong::null(), 0);
 					} else if (gotSmaller) {
-						result = pt_integer_range_from_interval(phpstanturbo::NullableLong::null(), maxValue, 0);
+						result = pt_integer_range_from_interval(phpstanturbo::NullableLong::null(), newMaxValue, 0);
 					} else {
 						result = unionTypes(integerRangesA.raw(), integerRangesB.raw());
 					}
@@ -10198,16 +10319,16 @@ public:
 						if (rangeMax > newMax) newMax = rangeMax;
 					}
 
-					bool gotGreater = newMax > max;
-					bool gotSmaller = newMin < min;
+					bool gotGreater = newMax > std::max(max, entryFloatMax);
+					bool gotSmaller = newMin < std::min(min, entryFloatMin);
 
 					zv::Val result;
 					if (gotGreater && gotSmaller) {
-						result = pt_float_range_from_interval(newMin, newMax);
+						result = newFloatType();
 					} else if (gotGreater) {
-						result = pt_float_range_from_interval(min, HUGE_VAL);
+						result = pt_float_range_from_interval(newMin, HUGE_VAL);
 					} else if (gotSmaller) {
-						result = pt_float_range_from_interval(-HUGE_VAL, max);
+						result = pt_float_range_from_interval(-HUGE_VAL, newMax);
 					} else {
 						result = unionTypes(floatRangesA.raw(), floatRangesB.raw());
 					}
@@ -13664,12 +13785,22 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.method(sigs::generalizeWith, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *otherScope;
 		HashTable *writableVariableNames = NULL;
-		ZEND_PARSE_PARAMETERS_START(1, 2)
+		zval *loopEntryScope = NULL;
+		ZEND_PARSE_PARAMETERS_START(1, 3)
 			Z_PARAM_OBJECT_OF_CLASS(otherScope, pt_ce_mutating_scope)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_ARRAY_HT_OR_NULL(writableVariableNames)
+			Z_PARAM_OBJECT_OF_CLASS_OR_NULL(loopEntryScope, pt_ce_mutating_scope)
 		ZEND_PARSE_PARAMETERS_END();
-		PT_RETURN_VAL(PT_THIS.generalizeWith(Z_OBJ_P(otherScope), writableVariableNames));
+		PT_RETURN_VAL(PT_THIS.generalizeWith(Z_OBJ_P(otherScope), writableVariableNames, loopEntryScope != NULL ? Z_OBJ_P(loopEntryScope) : NULL));
+	});
+
+	cls.method(sigs::forgetLoopWrittenVariables, [](INTERNAL_FUNCTION_PARAMETERS) {
+		HashTable *writtenVariableNames = NULL;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_ARRAY_HT_OR_NULL(writtenVariableNames)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(PT_THIS.forgetLoopWrittenVariables(writtenVariableNames));
 	});
 
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
@@ -13982,20 +14113,40 @@ zv::Val pt_mutating_scope_with_anonymous_function_reflection(zend_object *scope,
  * ...): the native body for exactly a MutatingScope, the method through the
  * class entry for anything else (every argument borrowed) */
 
-zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object *otherScope, zval *writableVariableNames)
+zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object *otherScope, zval *writableVariableNames, zend_object *loopEntryScope)
 {
 	if (writableVariableNames != NULL && Z_TYPE_P(writableVariableNames) == IS_NULL) writableVariableNames = NULL;
-	if (PT_MS_INHERITS(scope, "generalizewith") && EXPECTED(otherScope->ce == pt_ce_mutating_scope || instanceof_function(otherScope->ce, pt_ce_mutating_scope)) && EXPECTED(writableVariableNames == NULL || Z_TYPE_P(writableVariableNames) == IS_ARRAY)) {
-		return MutatingScope(scope).generalizeWith(otherScope, writableVariableNames != NULL ? Z_ARRVAL_P(writableVariableNames) : NULL);
+	if (PT_MS_INHERITS(scope, "generalizewith") && EXPECTED(otherScope->ce == pt_ce_mutating_scope || instanceof_function(otherScope->ce, pt_ce_mutating_scope)) && EXPECTED(loopEntryScope == NULL || instanceof_function(loopEntryScope->ce, pt_ce_mutating_scope)) && EXPECTED(writableVariableNames == NULL || Z_TYPE_P(writableVariableNames) == IS_ARRAY)) {
+		return MutatingScope(scope).generalizeWith(otherScope, writableVariableNames != NULL ? Z_ARRVAL_P(writableVariableNames) : NULL, loopEntryScope);
 	}
-	zval argv[2];
+	zval argv[3];
 	ZVAL_OBJ(&argv[0], otherScope);
 	if (writableVariableNames != NULL) {
 		ZVAL_COPY_VALUE(&argv[1], writableVariableNames);
 	} else {
 		ZVAL_NULL(&argv[1]);
 	}
-	return pt_type_call(scope, PT_LC("generalizewith"), 2, argv);
+	if (loopEntryScope != NULL) {
+		ZVAL_OBJ(&argv[2], loopEntryScope);
+	} else {
+		ZVAL_NULL(&argv[2]);
+	}
+	return pt_type_call(scope, PT_LC("generalizewith"), 3, argv);
+}
+
+zv::Val pt_mutating_scope_forget_loop_written_variables(zend_object *scope, zval *writtenVariableNames)
+{
+	if (writtenVariableNames != NULL && Z_TYPE_P(writtenVariableNames) == IS_NULL) writtenVariableNames = NULL;
+	if (PT_MS_INHERITS(scope, "forgetloopwrittenvariables") && EXPECTED(writtenVariableNames == NULL || Z_TYPE_P(writtenVariableNames) == IS_ARRAY)) {
+		return MutatingScope(scope).forgetLoopWrittenVariables(writtenVariableNames != NULL ? Z_ARRVAL_P(writtenVariableNames) : NULL);
+	}
+	zval argv[1];
+	if (writtenVariableNames != NULL) {
+		ZVAL_COPY_VALUE(&argv[0], writtenVariableNames);
+	} else {
+		ZVAL_NULL(&argv[0]);
+	}
+	return pt_type_call(scope, PT_LC("forgetloopwrittenvariables"), 1, argv);
 }
 
 zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef)

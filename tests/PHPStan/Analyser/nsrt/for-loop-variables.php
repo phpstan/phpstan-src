@@ -48,7 +48,7 @@ function () {
 		assertType('int<0, 9>', $i);
 	}
 
-	assertType('int<0, max>', $i);
+	assertType('int<0, 10>', $i);
 
 	assertType('LoopVariables\Bar|LoopVariables\Foo|LoopVariables\Lorem', $foo);
 

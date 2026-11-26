@@ -20,7 +20,7 @@ function doesNotWork(): void
 	// fixed: they stay `int<0, 4>`, and the middle key keeps the loop's
 	// `int<0, 8>` bound now that widening no longer expands optional-key
 	// shapes into every variant before merging them back.
-	assertType('non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, non-empty-array{3?: array{abc: int<0, 4>, def?: int<0, 4>, ghi?: int<0, 4>}, 1?: array{abc: int<0, 4>, def?: int<0, 4>, ghi?: int<0, 4>}, 2?: array{abc: int<0, 4>, def?: int<0, 4>, ghi?: int<0, 4>}, 4?: array{abc: int<0, 4>, def?: int<0, 4>, ghi?: int<0, 4>}, 5?: array{abc: int<0, 4>, def?: int<0, 4>, ghi?: int<0, 4>}, 6?: array{abc: int<0, 4>, def?: int<0, 4>, ghi?: int<0, 4>}, 7?: array{abc: int<0, 4>, def?: int<0, 4>, ghi?: int<0, 4>}, 8?: array{abc: int<0, 4>, def?: int<0, 4>, ghi?: int<0, 4>}, 9?: array{abc: int<0, 4>, def?: int<0, 4>, ghi?: int<0, 4>}}>>', $final);
+	assertType("non-empty-array<int<0, 4>, non-empty-array<int<0, 8>, non-empty-array{3?: non-empty-array<'abc'|'def'|'ghi', int<0, 4>>&hasOffsetValue('abc', int<0, 4>), 1?: non-empty-array<'abc'|'def'|'ghi', int<0, 4>>&hasOffsetValue('abc', int<0, 4>), 2?: non-empty-array<'abc'|'def'|'ghi', int<0, 4>>&hasOffsetValue('abc', int<0, 4>), 4?: non-empty-array<'abc'|'def'|'ghi', int<0, 4>>&hasOffsetValue('abc', int<0, 4>), 5?: non-empty-array<'abc'|'def'|'ghi', int<0, 4>>&hasOffsetValue('abc', int<0, 4>), 6?: non-empty-array<'abc'|'def'|'ghi', int<0, 4>>&hasOffsetValue('abc', int<0, 4>), 7?: non-empty-array<'abc'|'def'|'ghi', int<0, 4>>&hasOffsetValue('abc', int<0, 4>), 8?: non-empty-array<'abc'|'def'|'ghi', int<0, 4>>&hasOffsetValue('abc', int<0, 4>), 9?: non-empty-array<'abc'|'def'|'ghi', int<0, 4>>&hasOffsetValue('abc', int<0, 4>)}>>", $final);
 }
 
 function thisWorks(): void

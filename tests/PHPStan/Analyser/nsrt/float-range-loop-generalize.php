@@ -37,7 +37,7 @@ function walk(float $step): float
 	for ($x = 0.0; $x < 10; $x += $step) {
 		assertType('float<0.0, 9.999999999999998>', $x);
 	}
-	assertType('float<10.0, max>', $x);
+	assertType('float<10.0, 10.999999999999998>', $x);
 
 	return $x;
 }
@@ -48,7 +48,7 @@ function walkInt(int $step): int
 	for ($x = 0; $x < 10; $x += $step) {
 		assertType('int<0, 9>', $x);
 	}
-	assertType('int<10, max>', $x);
+	assertType('10', $x);
 
 	return $x;
 }

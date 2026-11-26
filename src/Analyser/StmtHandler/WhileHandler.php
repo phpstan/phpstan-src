@@ -108,6 +108,7 @@ final class WhileHandler implements StmtHandler
 					$bodyScope = $loopEntryScope;
 				}
 			}
+			$writtenVariableNames = null;
 			$count = 0;
 			$bodyIsReplayable = !$context->isTopLevel() || $nodeScopeResolver->isReplayableConvergenceBody($stmt, $stmt->stmts);
 			do {
@@ -160,14 +161,17 @@ final class WhileHandler implements StmtHandler
 				}
 
 				if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-					$bodyScope = $prevScope->generalizeWith(
-						$bodyScope,
-						LoopWrittenVariableNames::collect($stmt, VariableFlow::sequence($passCondResult->getVariableFlow(), $bodyScopeResult->getVariableFlow())),
-					);
+					$writtenVariableNames = LoopWrittenVariableNames::collect($stmt, VariableFlow::sequence($passCondResult->getVariableFlow(), $bodyScopeResult->getVariableFlow()));
+					$bodyScope = $prevScope->generalizeWith($bodyScope, $writtenVariableNames, $loopEntryScope);
 				}
 				$count++;
 			} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
 			$iterationLimitReached = $count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS;
+			if ($iterationLimitReached) {
+				// the limit is only a safety net - a scope still changing after it
+				// is not a fixpoint, so nothing the loop writes keeps a type
+				$bodyScope = $bodyScope->forgetLoopWrittenVariables($writtenVariableNames);
+			}
 		}
 
 		if (!$entryConverged) {
@@ -181,9 +185,7 @@ final class WhileHandler implements StmtHandler
 		$bodyScopeMaybeRan = $bodyScope;
 		$storage = $originalStorage;
 		if (
-			$replayCondRecording !== null && $replayBodyRecording !== null
-			&& $replayPassStorage !== null && $replayPassResult !== null
-			&& $replayCondResult !== null
+			$replayCondRecording !== null
 			&& $bodyScope->equals($prevEntryScope)
 		) {
 			// the final walk would repeat the recorded fixpoint pass exactly

@@ -5494,15 +5494,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 					if ($max === PHP_INT_MAX) {
 						$max = null;
 					}
-					if ($newMin === PHP_INT_MIN) {
-						$newMin = null;
-					}
-					if ($newMax === PHP_INT_MAX) {
-						$newMax = null;
-					}
-
+					// both bounds moved again after the constants of the first
+					// pass became a range, so they keep moving - unlike the
+					// constants, where a value reset in the loop body moves the
+					// minimum once (bug-12163)
 					if ($gotGreater && $gotSmaller) {
-						$resultTypes[] = IntegerRangeType::fromInterval($newMin, $newMax);
+						$resultTypes[] = IntegerRangeType::fromInterval(null, null);
 					} elseif ($gotGreater) {
 						$resultTypes[] = IntegerRangeType::fromInterval($min, null);
 					} elseif ($gotSmaller) {
@@ -5546,8 +5543,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 					$gotGreater = $newMax > $max;
 					$gotSmaller = $newMin < $min;
 
+					// see the integer ranges above
 					if ($gotGreater && $gotSmaller) {
-						$resultTypes[] = FloatRangeType::fromInterval($newMin, $newMax);
+						$resultTypes[] = FloatRangeType::fromInterval(-INF, INF);
 					} elseif ($gotGreater) {
 						$resultTypes[] = FloatRangeType::fromInterval($min, INF);
 					} elseif ($gotSmaller) {

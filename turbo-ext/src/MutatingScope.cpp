@@ -10104,12 +10104,11 @@ public:
 					bool gotSmaller = newMin < min;
 					phpstanturbo::NullableLong minValue = min == ZEND_LONG_MIN ? phpstanturbo::NullableLong::null() : phpstanturbo::NullableLong::of(min);
 					phpstanturbo::NullableLong maxValue = max == ZEND_LONG_MAX ? phpstanturbo::NullableLong::null() : phpstanturbo::NullableLong::of(max);
-					phpstanturbo::NullableLong newMinValue = newMin == ZEND_LONG_MIN ? phpstanturbo::NullableLong::null() : phpstanturbo::NullableLong::of(newMin);
-					phpstanturbo::NullableLong newMaxValue = newMax == ZEND_LONG_MAX ? phpstanturbo::NullableLong::null() : phpstanturbo::NullableLong::of(newMax);
 
+					/* both bounds moved again after the first pass, see the twin */
 					zv::Val result;
 					if (gotGreater && gotSmaller) {
-						result = pt_integer_range_from_interval(newMinValue, newMaxValue, 0);
+						result = pt_integer_range_from_interval(phpstanturbo::NullableLong::null(), phpstanturbo::NullableLong::null(), 0);
 					} else if (gotGreater) {
 						result = pt_integer_range_from_interval(minValue, phpstanturbo::NullableLong::null(), 0);
 					} else if (gotSmaller) {
@@ -10165,7 +10164,7 @@ public:
 
 					zv::Val result;
 					if (gotGreater && gotSmaller) {
-						result = pt_float_range_from_interval(newMin, newMax);
+						result = pt_float_range_from_interval(-HUGE_VAL, HUGE_VAL);
 					} else if (gotGreater) {
 						result = pt_float_range_from_interval(min, HUGE_VAL);
 					} else if (gotSmaller) {

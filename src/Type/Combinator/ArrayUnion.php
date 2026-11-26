@@ -493,25 +493,32 @@ final class ArrayUnion
 			$visitedHashes[$x] = $hashes;
 		}
 
-		// the shapes with unsealed extras, which tryUnion() leaves alone
-		$indices = array_keys($shapes);
+		// the shapes with unsealed extras, which tryUnion() leaves alone, merge
+		// in pairs of which one at least is unsealed
+		$withExtras = [];
+		$hasUnsealed = false;
+		foreach ($shapes as $i => $shape) {
+			if ($shape->getUnsealedTypes() === null) {
+				continue;
+			}
+			$withExtras[$i] = $shape->isUnsealed()->yes();
+			$hasUnsealed = $hasUnsealed || $withExtras[$i];
+		}
+		$indices = $hasUnsealed ? array_keys($withExtras) : [];
 		$indicesCount = count($indices);
 		for ($ii = 0; $ii < $indicesCount - 1; $ii++) {
 			$i = $indices[$ii];
-			if (!array_key_exists($i, $shapes) || $shapes[$i]->getUnsealedTypes() === null) {
+			if (!array_key_exists($i, $shapes)) {
 				continue;
 			}
 			for ($jj = $ii + 1; $jj < $indicesCount; $jj++) {
 				$j = $indices[$jj];
-				if (
-					!array_key_exists($j, $shapes)
-					|| $shapes[$j]->getUnsealedTypes() === null
-					|| (!$shapes[$i]->isUnsealed()->yes() && !$shapes[$j]->isUnsealed()->yes())
-				) {
+				if (!array_key_exists($j, $shapes) || (!$withExtras[$i] && !$withExtras[$j])) {
 					continue;
 				}
 				if ($shapes[$j]->isKeysSupersetOf($shapes[$i])) {
 					$shapes[$j] = $shapes[$j]->mergeWith($shapes[$i]);
+					$withExtras[$j] = $shapes[$j]->getUnsealedTypes() !== null && $shapes[$j]->isUnsealed()->yes();
 					$positions[$j] = $positions[$i];
 					unset($shapes[$i]);
 					continue 2;
@@ -521,6 +528,7 @@ final class ArrayUnion
 				}
 
 				$shapes[$i] = $shapes[$i]->mergeWith($shapes[$j]);
+				$withExtras[$i] = $shapes[$i]->getUnsealedTypes() !== null && $shapes[$i]->isUnsealed()->yes();
 				unset($shapes[$j]);
 			}
 		}

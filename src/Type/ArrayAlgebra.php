@@ -8,6 +8,7 @@ use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
+use PHPStan\Type\Combinator\SingleValueUnionRule;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Generic\TemplateType;
@@ -425,6 +426,8 @@ final class ArrayAlgebra
 		$differingKeys = 0;
 		// a key of $bigger only it requires keeps it from holding $smaller
 		$biggerRequiresOtherKey = false;
+		// two different single values at a key keep either from holding the other
+		$hasDifferentValues = false;
 		foreach ($bigger->getKeyTypes() as $i => $keyType) {
 			$j = $smallerKeys[$keyType->getValue()] ?? null;
 			if ($j === null) {
@@ -440,6 +443,13 @@ final class ArrayAlgebra
 				continue;
 			}
 			$differingKeys++;
+			// a union is not a single value, and asking would visit its members
+			if ($hasDifferentValues || $biggerValueTypes[$i] instanceof UnionType || $smallerValueTypes[$j] instanceof UnionType) {
+				continue;
+			}
+			$biggerValueKey = SingleValueUnionRule::getValueKey($biggerValueTypes[$i]);
+			$smallerValueKey = $biggerValueKey !== null ? SingleValueUnionRule::getValueKey($smallerValueTypes[$j]) : null;
+			$hasDifferentValues = $smallerValueKey !== null && $biggerValueKey !== $smallerValueKey;
 		}
 		if ($matchedKeys !== count($smallerKeys)) {
 			return null;
@@ -457,6 +467,9 @@ final class ArrayAlgebra
 			return $bigger->mergeWith($smaller);
 		}
 
+		if ($hasDifferentValues) {
+			return null;
+		}
 		if (!$biggerRequiresOtherKey && $bigger->isSuperTypeOf($smaller)->yes()) {
 			return $bigger;
 		}

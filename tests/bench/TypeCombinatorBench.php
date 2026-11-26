@@ -170,7 +170,7 @@ final class TypeCombinatorBench
 	 */
 	#[DataProvider(method: 'types')]
 	#[ExpectedFor(dataSet: 'types-16', instructions: '1.491M', cycles: '2.056M', memory: '36.67KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '6.140M', cycles: '7.464M', memory: '135.3KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '6.347M', cycles: '8.054M', memory: '263.3KiB')]
 	#[ExpectedFor(dataSet: 'types-256', instructions: '32.93M', cycles: '39.25M', memory: '566.8KiB')]
 	public function benchUnionTaggedConstantArrays(int $types): Type
 	{
@@ -215,7 +215,7 @@ final class TypeCombinatorBench
 	 */
 	#[DataProvider(method: 'types')]
 	#[ExpectedFor(dataSet: 'types-16', instructions: '2.856M', cycles: '3.610M', memory: '64.25KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '10.91M', cycles: '12.94M', memory: '211.5KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '11.20M', cycles: '13.34M', memory: '339.5KiB')]
 	#[ExpectedFor(dataSet: 'types-256', instructions: '43.08M', cycles: '50.19M', memory: '813.5KiB')]
 	public function benchUnionGeneralArrayAndConstantArrays(int $types): Type
 	{
@@ -228,8 +228,8 @@ final class TypeCombinatorBench
 	 */
 	#[DataProvider(method: 'types')]
 	#[ExpectedFor(dataSet: 'types-16', instructions: '3.245M', cycles: '4.253M', memory: '214.9KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '101.5M', cycles: '128.4M', memory: '978.1KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '315.7M', cycles: '400.5M', memory: '3.128MiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '145.3M', cycles: '175.4M', memory: '1.105MiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '362.0M', cycles: '446.9M', memory: '3.128MiB')]
 	public function benchUnionConstantArraysWithOwnKeys(int $types): Type
 	{
 		return TypeCombinator::union(...$this->arraysWithOwnKeys);

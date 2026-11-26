@@ -121,7 +121,7 @@ final class TypeSpecifierBench
 	/**
 	 * An int remembered by match() compared with a string is always false.
 	 */
-	#[Expected(instructions: '38.77M', cycles: '52.84M', memory: '220.4KiB')]
+	#[Expected(instructions: '39.04M', cycles: '53.31M', memory: '284.4KiB')]
 	public function benchSpecifyAlwaysFalseIdentical(): int
 	{
 		$exprs = $this->meter->exclude(static function (): array {

@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 49.05M
- * cycles: 71.92M
- * memory: 303.2KiB
+ * instructions: 46.28M
+ * cycles: 67.75M
+ * memory: 239.6KiB
  */
 
 namespace MethodExistsLoopRepro;

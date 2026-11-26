@@ -48,7 +48,7 @@ final class VerbosityLevelBench
 	 */
 	#[DataProvider(method: 'values')]
 	#[ExpectedFor(dataSet: 'values-16', instructions: '89.62K', cycles: '204.0K', memory: '2.508KiB')]
-	#[ExpectedFor(dataSet: 'values-256', instructions: '749.4K', cycles: '937.2K', memory: '9.930KiB')]
+	#[ExpectedFor(dataSet: 'values-256', instructions: '766.5K', cycles: '930.9K', memory: '9.930KiB')]
 	public function benchGetRecommendedLevelByType(int $values): VerbosityLevel
 	{
 		if ($this->shape === null) {

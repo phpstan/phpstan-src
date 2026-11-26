@@ -21,6 +21,7 @@ use PHPStan\Type\Combinator\NumberUnionRule;
 use PHPStan\Type\Combinator\OffsetValueLimitIntersectRule;
 use PHPStan\Type\Combinator\PeelUnionRemoveRule;
 use PHPStan\Type\Combinator\RemoveRule;
+use PHPStan\Type\Combinator\ShapeRemoveRule;
 use PHPStan\Type\Combinator\ShapeUnionRule;
 use PHPStan\Type\Combinator\SingleValueUnionRule;
 use PHPStan\Type\Combinator\StringUnionRule;
@@ -132,6 +133,7 @@ final class TypeCombinator
 		return [
 			new SubsumptionRemoveRule(),
 			new SubtractedMixedRemoveRule(),
+			new ShapeRemoveRule(),
 			new TypeRemoveRule(),
 			new FiniteTypesRemoveRule(),
 		];

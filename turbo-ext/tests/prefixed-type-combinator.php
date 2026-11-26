@@ -36,6 +36,7 @@ return static function (array $manifest, array $classMap): array {
 		'PHPStan\\Type\\Combinator\\FiniteTypesRemoveRule' => $root . '/src/Type/Combinator/FiniteTypesRemoveRule.php',
 		'PHPStan\\Type\\Combinator\\MixedUnionRemoveRule' => $root . '/src/Type/Combinator/MixedUnionRemoveRule.php',
 		'PHPStan\\Type\\Combinator\\PeelUnionRemoveRule' => $root . '/src/Type/Combinator/PeelUnionRemoveRule.php',
+		'PHPStan\\Type\\Combinator\\ShapeRemoveRule' => $root . '/src/Type/Combinator/ShapeRemoveRule.php',
 		'PHPStan\\Type\\Combinator\\SubsumptionRemoveRule' => $root . '/src/Type/Combinator/SubsumptionRemoveRule.php',
 		'PHPStan\\Type\\Combinator\\SubtractedMixedRemoveRule' => $root . '/src/Type/Combinator/SubtractedMixedRemoveRule.php',
 		'PHPStan\\Type\\Combinator\\TypeRemoveRule' => $root . '/src/Type/Combinator/TypeRemoveRule.php',

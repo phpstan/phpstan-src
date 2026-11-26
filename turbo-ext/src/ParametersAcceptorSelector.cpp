@@ -340,13 +340,22 @@ zv::Val genericResolve(zval *types, zval *acceptor)
 	return pt_call_static_cached(pt_pas_generic_resolve_site, PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER, PT_LC("resolve"), 2, argv);
 }
 
-/* ArrayMapCallbackParameterTypes::addPaddingNull($valueTypes, $arrayTypes) */
-pt_method_site pt_pas_add_padding_null_site;
+/* ArrayMapCallbackParameterTypes::addPaddingNullToArgs($valueTypes, null, $argTypes, $unpacked)[0] */
+pt_method_site pt_pas_add_padding_null_to_args_site;
 
-zv::Val addPaddingNull(zval *valueTypes, zval *arrayTypes)
+zv::Val addPaddingNullToArgs(zval *valueTypes, zval *argTypes, zval *unpacked)
 {
-	zv::Args argv{valueTypes, arrayTypes};
-	return pt_call_static_cached(pt_pas_add_padding_null_site, PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES, PT_LC("addpaddingnull"), 2, argv);
+	zval restValueType;
+	ZVAL_NULL(&restValueType);
+	zv::Args argv{valueTypes, &restValueType, argTypes, unpacked};
+	zv::Val padded = pt_call_static_cached(pt_pas_add_padding_null_to_args_site, PT_CLASS_ARRAY_MAP_CALLBACK_PARAMETER_TYPES, PT_LC("addpaddingnulltoargs"), 4, argv);
+	if (UNEXPECTED(padded.isUndef())) return zv::Val();
+	zval *values = Z_TYPE_P(padded.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(padded.raw()), 0) : NULL;
+	if (UNEXPECTED(values == NULL)) {
+		zend_throw_error(NULL, "ArrayMapCallbackParameterTypes::addPaddingNullToArgs() did not return a pair");
+		return zv::Val();
+	}
+	return zv::Val::copyOf(zv::Ref(values));
 }
 
 /* UnpackedArgumentTypes::expand($argTypes, $unpacked) */
@@ -2040,6 +2049,7 @@ private:
 	 * number of arrays is not known; UNDEF = pending exception */
 	static zv::Val arrayMapCallbackParameters(zv::Val argTypes, zval *unpacked, bool hasUnpacked, const Getters &getters)
 	{
+		zv::Val arrayTypes = zv::Val::copyOf(argTypes.ref());
 		if (hasUnpacked) {
 			zv::Val expanded = expandUnpacked(argTypes.raw(), unpacked);
 			if (UNEXPECTED(expanded.isUndef() || !requireArray(expanded.raw(), "list()"))) return zv::Val();
@@ -2051,17 +2061,17 @@ private:
 				return zv::Val();
 			}
 			if (Z_TYPE_P(restType) != IS_NULL) return zv::Val::null();
-			argTypes = zv::Val::copyOf(zv::Ref(types));
+			arrayTypes = zv::Val::copyOf(zv::Ref(types));
 		}
-		if (UNEXPECTED(!requireArray(argTypes.raw(), "foreach() argument"))) return zv::Val();
+		if (UNEXPECTED(!requireArray(arrayTypes.raw(), "foreach() argument"))) return zv::Val();
 		zv::Arr valueTypes = zv::Arr::empty();
-		for (zv::ArrayEntry entry : zv::ArrRef(argTypes.raw())) {
+		for (zv::ArrayEntry entry : zv::ArrRef(arrayTypes.raw())) {
 			zv::Val valueType = getters.iterableValueType(entry.value().deref().raw());
 			if (UNEXPECTED(valueType.isUndef())) return zv::Val();
 			valueTypes.push(std::move(valueType));
 		}
 
-		zv::Val paddedValueTypes = addPaddingNull(valueTypes.raw(), argTypes.raw());
+		zv::Val paddedValueTypes = addPaddingNullToArgs(valueTypes.raw(), argTypes.raw(), unpacked);
 		if (UNEXPECTED(paddedValueTypes.isUndef() || !requireArray(paddedValueTypes.raw(), "foreach() argument"))) return zv::Val();
 		zv::Arr callbackParameters = zv::Arr::empty();
 		for (zv::ArrayEntry entry : zv::ArrRef(paddedValueTypes.raw())) {

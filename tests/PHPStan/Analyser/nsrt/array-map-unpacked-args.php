@@ -177,4 +177,30 @@ class Foo
 		})(...$unsealed);
 	}
 
+	/**
+	 * @param array{0: array{1, 2}, 1?: array{3}, 2?: array{4, 5}} $r3
+	 * @param array{array{1}, array{2, 3}}|array{array{4, 5}, array{6}} $crossed
+	 * @param list<array{1, 2}|array{3}> $arrays
+	 */
+	public function arraysOfDifferentLengths(array $r3, array $crossed, array $arrays): void
+	{
+		array_map(function ($a, $b) {
+			assertType('1|2|3|4|5|null', $a);
+			assertType('1|2|3|4|5|null', $b);
+		}, ...$r3);
+
+		array_map(function ($a, $b) {
+			assertType('1|4|5|null', $a);
+			assertType('2|3|6|null', $b);
+		}, ...$crossed);
+
+		array_map(function ($a, $b) {
+			assertType('1|2', $a);
+			assertType('1|2|3|null', $b);
+		}, [1, 2], ...$arrays);
+
+		assertType('non-empty-list<array{1|4|5|null, 2|3|6|null}>', array_map(null, ...$crossed));
+		assertType('non-empty-list<array{1|4|5|null, 2|3|6|null}>', array_map(fn ($a, $b) => [$a, $b], ...$crossed));
+	}
+
 }

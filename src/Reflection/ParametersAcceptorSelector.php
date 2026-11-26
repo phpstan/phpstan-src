@@ -1395,20 +1395,21 @@ final class ParametersAcceptorSelector
 	 */
 	private static function createArrayMapCallbackParameters(array $argTypes, array $unpacked, Closure $iterableValueTypeGetter): ?array
 	{
+		$arrayTypes = $argTypes;
 		if (in_array(true, $unpacked, true)) {
-			[$argTypes, $restType] = UnpackedArgumentTypes::expand($argTypes, $unpacked);
+			[$arrayTypes, $restType] = UnpackedArgumentTypes::expand($argTypes, $unpacked);
 			if ($restType !== null) {
 				return null;
 			}
 		}
 
 		$valueTypes = [];
-		foreach ($argTypes as $argType) {
-			$valueTypes[] = ($iterableValueTypeGetter)($argType);
+		foreach ($arrayTypes as $arrayType) {
+			$valueTypes[] = ($iterableValueTypeGetter)($arrayType);
 		}
 
 		$parameters = [];
-		foreach (ArrayMapCallbackParameterTypes::addPaddingNull($valueTypes, $argTypes) as $valueType) {
+		foreach (ArrayMapCallbackParameterTypes::addPaddingNullToArgs($valueTypes, null, $argTypes, $unpacked)[0] as $valueType) {
 			$parameters[] = new DummyParameter('item', $valueType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 		}
 

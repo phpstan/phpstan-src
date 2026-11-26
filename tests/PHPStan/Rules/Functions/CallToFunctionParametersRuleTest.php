@@ -27,6 +27,8 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 
 	private bool $checkImplicitMixed = false;
 
+	private bool $checkUnionTypes = true;
+
 	protected function getRule(): Rule
 	{
 		$broker = self::createReflectionProvider();
@@ -37,7 +39,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 					$broker,
 					checkNullables: $this->checkNullables,
 					checkThisOnly: false,
-					checkUnionTypes: true,
+					checkUnionTypes: $this->checkUnionTypes,
 					checkExplicitMixed: $this->checkExplicitMixed,
 					checkImplicitMixed: $this->checkImplicitMixed,
 					checkBenevolentUnionTypes: false,
@@ -3673,6 +3675,14 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				9,
 			],
 		]);
+	}
+
+	public function testBug15843(): void
+	{
+		$this->checkUnionTypes = false;
+		$this->checkExplicitMixed = true;
+		$this->checkImplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-15843.php'], []);
 	}
 
 	public function testFloatConstantLoopGeneralize(): void

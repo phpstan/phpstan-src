@@ -53,6 +53,64 @@ class Foo
 		}
 	}
 
+	/** they can run a user session handler, but also write global state */
+	public function sessionLifecycleWritesGlobalState(): void
+	{
+		if (session_status() === PHP_SESSION_NONE) {
+			assertType('1', session_status());
+			session_start();
+			assertType('0|1|2', session_status());
+		}
+		if (session_id() === '') {
+			session_start();
+			assertType('string|false', session_id());
+		}
+		if (session_status() === PHP_SESSION_ACTIVE) {
+			assertType('2', session_status());
+			session_write_close();
+			assertType('0|1|2', session_status());
+		}
+		if (session_status() === PHP_SESSION_ACTIVE) {
+			session_commit();
+			assertType('0|1|2', session_status());
+		}
+		if (session_status() === PHP_SESSION_ACTIVE) {
+			session_abort();
+			assertType('0|1|2', session_status());
+		}
+		if (session_status() === PHP_SESSION_ACTIVE) {
+			session_destroy();
+			assertType('0|1|2', session_status());
+		}
+		if (session_id() === 'a') {
+			session_destroy();
+			assertType('string|false', session_id());
+		}
+		if (session_id() === 'a') {
+			session_regenerate_id();
+			assertType('string|false', session_id());
+		}
+	}
+
+	/** they write only the session state */
+	public function sessionLifecycleKeepsOtherGlobalState(string $file): void
+	{
+		if (!isset($_POST['token']) || !is_string($_POST['token'])) {
+			return;
+		}
+		if (ini_get('x') === false) {
+			return;
+		}
+		if (!is_file($file)) {
+			return;
+		}
+
+		session_start();
+		assertType('string', $_POST['token']);
+		assertType('string', ini_get('x'));
+		assertType('true', is_file($file));
+	}
+
 	/**
 	 * @param resource $handle
 	 */

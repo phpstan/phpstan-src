@@ -63,6 +63,13 @@ final class SideEffects
 	public const READS_GLOBAL_MBSTRING = 'reads-global.mbstring';
 
 	/**
+	 * The state of the session, its status and id, which session_start() and
+	 * the other session lifecycle calls change.
+	 */
+	public const WRITES_GLOBAL_SESSION = 'writes-global.session';
+	public const READS_GLOBAL_SESSION = 'reads-global.session';
+
+	/**
 	 * The last error of an extension, which its error getters read. Writing it
 	 * is allowed in pure functions and makes a call on its own line useful.
 	 */

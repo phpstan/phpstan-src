@@ -686,12 +686,14 @@ public:
 		}
 
 		if (!finallyScope.isNull()) {
+			bool normalCompletionTerminates = alwaysTerminating;
 			zv::Val originalFinallyScope = zv::Val::copyOf(finallyScope.ref());
 			zv::Val finallyResult;
+			zv::Val finallyHold, finallyStmtsHold;
 			{
 				zval *finallyNow = ptsh::readNodeProperty(pt_tch_finally_site, stmt, PT_LC("finally"));
 				if (UNEXPECTED(finallyNow == NULL)) return zv::Val();
-				zv::Val finallyHold = zv::Val::copyOf(zv::Ref(finallyNow));
+				finallyHold = zv::Val::copyOf(zv::Ref(finallyNow));
 				if (UNEXPECTED(Z_TYPE_P(finallyHold.raw()) != IS_OBJECT)) {
 					/* the twin reads null stmts with a warning and hands the
 					 * non-node on as the parent */
@@ -703,7 +705,7 @@ public:
 				}
 				zval *finallyStmts = ptsh::readNodeProperty(pt_tch_finally_stmts_site, finallyHold.raw(), PT_LC("stmts"));
 				if (UNEXPECTED(finallyStmts == NULL)) return zv::Val();
-				zv::Val finallyStmtsHold = zv::Val::copyOf(zv::Ref(finallyStmts));
+				finallyStmtsHold = zv::Val::copyOf(zv::Ref(finallyStmts));
 				finallyResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, finallyHold.raw(), finallyStmtsHold.raw(), finallyScope.raw(), storage, nodeCallback, context);
 				if (UNEXPECTED(finallyResult.isUndef())) return zv::Val();
 				if (UNEXPECTED(!pushStatementDependencies(dependencies, finallyResult.raw()))) return zv::Val();
@@ -739,9 +741,38 @@ public:
 			}
 			blockScopes.push(zv::Val::copyOf(finallyScope.ref()));
 			if (!finallyAlwaysTerminating) {
-				zv::Val processed = pt_mutating_scope_process_finally_scope(Z_OBJ_P(finalScope.raw()), Z_OBJ_P(finallyScope.raw()), Z_OBJ_P(originalFinallyScope.raw()));
-				if (UNEXPECTED(processed.isUndef())) return zv::Val();
-				finalScope = std::move(processed);
+				zv::Val normalCompletionScope;
+				bool equals = true;
+				if (!normalCompletionTerminates && UNEXPECTED(!pt_mutating_scope_equals(Z_OBJ_P(finalScope.raw()), Z_OBJ_P(originalFinallyScope.raw()), equals))) return zv::Val();
+				if (!normalCompletionTerminates && !equals) {
+					// the finally block walked above starts from every way into
+					// it; the statement after the try-catch is reached only
+					// through the normal completion, so it continues from the
+					// finally block walked from that state alone
+					zv::Val normalStorage = pt_expression_result_storage_duplicate(storage);
+					if (UNEXPECTED(normalStorage.isUndef())) return zv::Val();
+					zv::Val noop = ptlh::newNoopNodeCallback();
+					if (UNEXPECTED(noop.isUndef())) return zv::Val();
+					zv::Val normalContext = pt_statement_context_without_template_argument_resolution(context);
+					if (UNEXPECTED(normalContext.isUndef())) return zv::Val();
+					zv::Val normalResult = pt_node_scope_resolver_process_stmt_nodes_internal(nodeScopeResolver, finallyHold.raw(), finallyStmtsHold.raw(), finalScope.raw(), normalStorage.raw(), noop.raw(), normalContext.raw());
+					if (UNEXPECTED(normalResult.isUndef())) return zv::Val();
+					bool normalAlwaysTerminating;
+					if (UNEXPECTED(!pt_internal_statement_result_is_always_terminating(normalResult.raw(), normalAlwaysTerminating))) return zv::Val();
+					if (!normalAlwaysTerminating) {
+						zv::Val hold;
+						zval *resultScope = pt_internal_statement_result_scope(normalResult.raw(), hold);
+						if (UNEXPECTED(resultScope == NULL)) return zv::Val();
+						normalCompletionScope = zv::Val::copyOf(zv::Ref(resultScope));
+					}
+				}
+				if (!normalCompletionScope.isUndef()) {
+					finalScope = std::move(normalCompletionScope);
+				} else {
+					zv::Val processed = pt_mutating_scope_process_finally_scope(Z_OBJ_P(finalScope.raw()), Z_OBJ_P(finallyScope.raw()), Z_OBJ_P(originalFinallyScope.raw()));
+					if (UNEXPECTED(processed.isUndef())) return zv::Val();
+					finalScope = std::move(processed);
+				}
 
 				// the finally block runs after the exit point, so its changes are
 				// part of the state the exit point leaves the try-catch with

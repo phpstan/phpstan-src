@@ -14,6 +14,7 @@ use PHPStan\Analyser\InternalStatementResult;
 use PHPStan\Analyser\InternalThrowPoint;
 use PHPStan\Analyser\MutatingScope;
 use PHPStan\Analyser\NodeScopeResolver;
+use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StatementsHandler;
 use PHPStan\Analyser\StmtHandler;
@@ -317,6 +318,7 @@ final class TryCatchHandler implements StmtHandler
 		}
 
 		if ($finallyScope !== null) {
+			$normalCompletionTerminates = $alwaysTerminating;
 			$originalFinallyScope = $finallyScope;
 			$finallyResult = $nodeScopeResolver->processStmtNodesInternal($stmt->finally, $stmt->finally->stmts, $finallyScope, $storage, $nodeCallback, $context);
 			$dependencies[] = $finallyResult->getDependencies();
@@ -327,8 +329,19 @@ final class TryCatchHandler implements StmtHandler
 			$impurePoints = array_merge($impurePoints, $finallyResult->getImpurePoints());
 			$finallyScope = $finallyResult->getScope();
 			$blockScopes[] = $finallyScope;
-			$finalScope = $finallyResult->isAlwaysTerminating() ? $finalScope : $finalScope->processFinallyScope($finallyScope, $originalFinallyScope);
 			if (!$finallyResult->isAlwaysTerminating()) {
+				$normalCompletionResult = null;
+				if (!$normalCompletionTerminates && !$finalScope->equals($originalFinallyScope)) {
+					// the finally block walked above starts from every way into
+					// it; the statement after the try-catch is reached only
+					// through the normal completion, so it continues from the
+					// finally block walked from that state alone
+					$normalCompletionResult = $nodeScopeResolver->processStmtNodesInternal($stmt->finally, $stmt->finally->stmts, $finalScope, $storage->duplicate(), new NoopNodeCallback(), $context->withoutTemplateArgumentResolution());
+				}
+				$finalScope = $normalCompletionResult !== null && !$normalCompletionResult->isAlwaysTerminating()
+					? $normalCompletionResult->getScope()
+					: $finalScope->processFinallyScope($finallyScope, $originalFinallyScope);
+
 				// the finally block runs after the exit point, so its changes are
 				// part of the state the exit point leaves the try-catch with
 				$exitPointsAfterFinally = [];

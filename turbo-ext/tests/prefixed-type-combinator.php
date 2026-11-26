@@ -24,6 +24,18 @@ return static function (array $manifest, array $classMap): array {
 		'PHPStan\\Type\\SubtractionAlgebra' => $root . '/src/Type/SubtractionAlgebra.php',
 		'PHPStan\\Type\\ArrayAlgebra' => $root . '/src/Type/ArrayAlgebra.php',
 		'PHPStan\\Type\\IntersectionAlgebra' => $root . '/src/Type/IntersectionAlgebra.php',
+		'PHPStan\\Type\\Combinator\\UnionRule' => $root . '/src/Type/Combinator/UnionRule.php',
+		'PHPStan\\Type\\Combinator\\AbsorbedArrayUnionRule' => $root . '/src/Type/Combinator/AbsorbedArrayUnionRule.php',
+		'PHPStan\\Type\\Combinator\\ArrayUnion' => $root . '/src/Type/Combinator/ArrayUnion.php',
+		'PHPStan\\Type\\Combinator\\BooleanUnionRule' => $root . '/src/Type/Combinator/BooleanUnionRule.php',
+		'PHPStan\\Type\\Combinator\\FoldedShapeUnionRule' => $root . '/src/Type/Combinator/FoldedShapeUnionRule.php',
+		'PHPStan\\Type\\Combinator\\GeneralArrayUnionRule' => $root . '/src/Type/Combinator/GeneralArrayUnionRule.php',
+		'PHPStan\\Type\\Combinator\\IterableUnionRule' => $root . '/src/Type/Combinator/IterableUnionRule.php',
+		'PHPStan\\Type\\Combinator\\NumberUnionRule' => $root . '/src/Type/Combinator/NumberUnionRule.php',
+		'PHPStan\\Type\\Combinator\\ShapeUnionRule' => $root . '/src/Type/Combinator/ShapeUnionRule.php',
+		'PHPStan\\Type\\Combinator\\SingleValueUnionRule' => $root . '/src/Type/Combinator/SingleValueUnionRule.php',
+		'PHPStan\\Type\\Combinator\\StringUnionRule' => $root . '/src/Type/Combinator/StringUnionRule.php',
+		'PHPStan\\Type\\Combinator\\SubsumptionUnionRule' => $root . '/src/Type/Combinator/SubsumptionUnionRule.php',
 	];
 	if (class_exists('PHPStanTurbo\\TypeCombinator', false)) {
 		$classMap['typeCombinator'] = 'PHPStanTurbo\\TypeCombinator';

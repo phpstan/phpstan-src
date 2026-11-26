@@ -149,10 +149,13 @@ final class ArrayAlgebra
 		$biggerValueTypes = $bigger->getValueTypes();
 		$matchedKeys = 0;
 		$differingKeys = 0;
+		// a key of $bigger only it requires keeps it from holding $smaller
+		$biggerRequiresOtherKey = false;
 		foreach ($bigger->getKeyTypes() as $i => $keyType) {
 			$j = $smallerKeys[$keyType->getValue()] ?? null;
 			if ($j === null) {
 				$differingKeys++;
+				$biggerRequiresOtherKey = $biggerRequiresOtherKey || !$bigger->isOptionalKey($i);
 				continue;
 			}
 			$matchedKeys++;
@@ -180,7 +183,7 @@ final class ArrayAlgebra
 			return $bigger->mergeWith($smaller);
 		}
 
-		if ($bigger->isSuperTypeOf($smaller)->yes()) {
+		if (!$biggerRequiresOtherKey && $bigger->isSuperTypeOf($smaller)->yes()) {
 			return $bigger;
 		}
 		if ($matchedKeys === count($bigger->getKeyTypes()) && $smaller->isSuperTypeOf($bigger)->yes()) {

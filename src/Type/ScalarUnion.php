@@ -25,20 +25,16 @@ final class ScalarUnion
 	 * overlapping intervals of which at least one is a range become one range,
 	 * constants that meet no range stay constants, as 1|2|3 does.
 	 *
-	 * @param list<Type> $types
+	 * @param list<array{Type, NumberSet}> $members each member with its toExactNumberSet()
 	 * @return array{list<Type>, list<Type>} the ranges, then the constants left in the order they came
 	 */
-	public static function unionNumbers(array $types): array
+	public static function unionNumbers(array $members): array
 	{
 		$integers = [];
 		$floats = [];
 		$nans = [];
 		$nanAbsorbed = false;
-		foreach ($types as $index => $type) {
-			$numbers = $type->toExactNumberSet();
-			if ($numbers === null) {
-				continue;
-			}
+		foreach ($members as $index => [$type, $numbers]) {
 			foreach ($numbers->getIntegerIntervals() as [$min, $max]) {
 				$integers[] = [$min, $max, $type, $index];
 			}
@@ -106,6 +102,22 @@ final class ScalarUnion
 	{
 		if ($items === []) {
 			return [[], []];
+		}
+
+		// A range repeated adds nothing: sorted after the first one of its
+		// bounds, it never takes that one's place. A constant stays, both
+		// zeros being one ordinal but two constants.
+		$seenBounds = [];
+		foreach ($items as $k => $item) {
+			if ($item[0] !== null && $item[0] === $item[1]) {
+				continue;
+			}
+			$bounds = ($item[0] ?? 'min') . ':' . ($item[1] ?? 'max');
+			if (isset($seenBounds[$bounds])) {
+				unset($items[$k]);
+				continue;
+			}
+			$seenBounds[$bounds] = true;
 		}
 
 		usort($items, static fn (array $a, array $b): int => self::compareBound($a[0], $b[0]) ?: $a[3] <=> $b[3]);
@@ -215,11 +227,21 @@ final class ScalarUnion
 			$constants[] = $constant;
 		}
 
-		for ($i = 0; $i < count($items); $i++) {
-			for ($j = $i + 1; $j < count($items); $j++) {
+		$count = count($items);
+		for ($i = 0; $i < $count; $i++) {
+			if (!isset($items[$i])) {
+				continue;
+			}
+			for ($j = $i + 1; $j < $count; $j++) {
+				if (!isset($items[$j])) {
+					continue;
+				}
 				$union = $items[$i][0] | $items[$j][0];
 				if ($union === $items[$i][0] && !$items[$i][2]) {
-					$merged = $items[$i];
+					// the member at $i takes the other in, and the members
+					// before $j were already paired with it
+					unset($items[$j]);
+					continue;
 				} elseif ($union === $items[$j][0] && !$items[$j][2]) {
 					$merged = $items[$j];
 				} else {
@@ -237,7 +259,6 @@ final class ScalarUnion
 
 				$items[$i] = $merged;
 				unset($items[$j]);
-				$items = self::values($items);
 				// the merged member may now merge with one before it
 				$i = -1;
 				break;

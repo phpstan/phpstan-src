@@ -2,47 +2,44 @@
 
 namespace PHPStan\Type;
 
-use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryType;
-use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
 use PHPStan\Type\Accessory\OversizedArrayType;
+use PHPStan\Type\Combinator\AbsorbedArrayUnionRule;
+use PHPStan\Type\Combinator\BooleanUnionRule;
+use PHPStan\Type\Combinator\FoldedShapeUnionRule;
+use PHPStan\Type\Combinator\GeneralArrayUnionRule;
+use PHPStan\Type\Combinator\IterableUnionRule;
+use PHPStan\Type\Combinator\NumberUnionRule;
+use PHPStan\Type\Combinator\ShapeUnionRule;
+use PHPStan\Type\Combinator\SingleValueUnionRule;
+use PHPStan\Type\Combinator\StringUnionRule;
+use PHPStan\Type\Combinator\SubsumptionUnionRule;
+use PHPStan\Type\Combinator\UnionRule;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
-use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
-use PHPStan\Type\Generic\TemplateArrayType;
 use PHPStan\Type\Generic\TemplateBenevolentUnionType;
 use PHPStan\Type\Generic\TemplateMixedType;
 use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeFactory;
 use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
-use function array_fill;
-use function array_filter;
 use function array_key_exists;
-use function array_key_first;
 use function array_keys;
 use function array_merge;
-use function array_push;
 use function array_slice;
 use function array_splice;
 use function array_values;
 use function count;
-use function crc32;
 use function get_class;
 use function implode;
-use function in_array;
-use function ksort;
-use function serialize;
 use function spl_object_id;
-use function sprintf;
 use function usort;
 
 /**
@@ -52,11 +49,11 @@ use function usort;
 final class TypeCombinator
 {
 
-	/**
-	 * Up to this many members of the one union doUnion() flattens, finding out whether two of
-	 * them were already compared by scanning it costs less than indexing it.
-	 */
-	private const ALREADY_NORMALIZED_SCAN_LIMIT = 4;
+	/** @var list<UnionRule>|null */
+	private static ?array $unionRules = null;
+
+	/** @var list<UnionRule>|null */
+	private static ?array $widenRules = null;
 
 	/**
 	 * Turned on by TurboExtensionEnabler when the native extension is active, so that
@@ -299,16 +296,53 @@ final class TypeCombinator
 			return $type;
 		}
 
-		// as union() merges them, with the shapes generalized before their
-		// common accessory types go back on
-		$widenedArrayTypes = self::processArrayTypes($arrayTypes, true);
+		$types = [...$otherTypes, ...$arrayTypes];
+		foreach (self::$widenRules ??= self::createWidenRules() as $rule) {
+			$types = $rule->apply($types, []);
+		}
 
-		$widened = self::union(...$otherTypes, ...$widenedArrayTypes);
+		$widened = self::union(...$types);
 		if ($type instanceof BenevolentUnionType) {
 			return TypeUtils::toBenevolentUnion($widened);
 		}
 
 		return $widened;
+	}
+
+	/**
+	 * The rules union() runs, in this order: the scalars merge kind by kind,
+	 * the arrays merge with each other, and then any member holding another
+	 * takes its place.
+	 *
+	 * @return list<UnionRule>
+	 */
+	private static function createUnionRules(): array
+	{
+		return [
+			new SingleValueUnionRule(),
+			new NumberUnionRule(),
+			new StringUnionRule(),
+			new BooleanUnionRule(),
+			new IterableUnionRule(),
+			new AbsorbedArrayUnionRule(),
+			new ShapeUnionRule(),
+			new GeneralArrayUnionRule(),
+			new SubsumptionUnionRule(),
+		];
+	}
+
+	/**
+	 * The rules widen() runs on the members before union() runs its own: they
+	 * give up precision to keep big joins of arrays small.
+	 *
+	 * @return list<UnionRule>
+	 */
+	private static function createWidenRules(): array
+	{
+		return [
+			new GeneralArrayUnionRule(),
+			new FoldedShapeUnionRule(),
+		];
 	}
 
 	public static function union(Type ...$types): Type
@@ -495,299 +529,19 @@ final class TypeCombinator
 			return $types[0];
 		}
 
-		$arrayTypes = [];
-		$scalarTypes = [];
-		$hasGenericBooleanType = false;
-		$enumCaseTypes = [];
-		$numberTypes = [];
-		$stringRefinements = [];
-		// the merged numbers and strings take the place of the first of them: of two
-		// members each holding the other, the pairwise comparison keeps the later one
-		$firstNumberIndex = null;
-		$firstStringIndex = null;
-		for ($i = 0; $i < $typesCount; $i++) {
-			// ints, floats and the refinements of string are merged kind by kind
-			if ($types[$i]->toExactNumberSet() !== null) {
-				$firstNumberIndex ??= $i;
-				$numberTypes[] = $types[$i];
-				unset($types[$i]);
+		// the kinds of the members, never - of no values - overlapping every kind
+		$kindMask = 0;
+		foreach ($types as $type) {
+			$memberKindMask = $type->getKindMask();
+			$kindMask |= $memberKindMask === 0 ? TypeKind::ALL : $memberKindMask;
+		}
+		foreach (self::$unionRules ??= self::createUnionRules() as $rule) {
+			if (($rule->getKindMask() & $kindMask) === 0) {
 				continue;
 			}
-			if ($types[$i]->getStringRefinement() !== null) {
-				$firstStringIndex ??= $i;
-				$stringRefinements[] = $types[$i];
-				unset($types[$i]);
-				continue;
-			}
-
-			if ($types[$i]->isConstantScalarValue()->yes()) {
-				$type = $types[$i];
-				$scalarTypes[get_class($type)][$type->describe(VerbosityLevel::cache())] = $type;
-				unset($types[$i]);
-				continue;
-			}
-
-			// only a type containing every value of bool (not T of bool) absorbs both constants
-			if ($types[$i]->isBoolean()->yes()) {
-				$hasGenericBooleanType = $hasGenericBooleanType || $types[$i]->isSuperTypeOf(new BooleanType())->yes();
-			} else {
-				$enumCase = $types[$i]->getEnumCaseObject();
-				if ($enumCase !== null) {
-					$enumCaseTypes[$types[$i]->describe(VerbosityLevel::cache())] = $types[$i];
-
-					unset($types[$i]);
-					continue;
-				}
-			}
-
-			// a late-resolvable type, such as a conditional type, stays as it is until it resolves:
-			// merged with the other arrays, it would lose its condition and its accessory types
-			if (!$types[$i]->isArray()->yes() || $types[$i] instanceof LateResolvableType) {
-				continue;
-			}
-
-			$arrayTypes[] = $types[$i];
-			unset($types[$i]);
+			$types = $rule->apply($types, $alreadyNormalized);
 		}
-
-		$enumCaseTypes = array_values($enumCaseTypes);
-		// before the strings are merged, which leaves their constants unkeyed
-		if (isset($scalarTypes[IntersectionType::class])) {
-			$scalarTypes[IntersectionType::class] = self::reduceRefinedConstantScalars($scalarTypes[IntersectionType::class], $scalarTypes);
-		}
-		[$numberRanges, $numberConstants] = ScalarUnion::unionNumbers($numberTypes);
-		[$stringTypes, $constantStrings] = ScalarUnion::unionStrings($stringRefinements, array_values($scalarTypes[ConstantStringType::class] ?? []));
-		if ($constantStrings === []) {
-			unset($scalarTypes[ConstantStringType::class]);
-		} else {
-			$scalarTypes[ConstantStringType::class] = $constantStrings;
-		}
-		$orderedTypes = [];
-		for ($i = 0; $i < $typesCount; $i++) {
-			if (isset($types[$i])) {
-				$orderedTypes[] = $types[$i];
-			} elseif ($i === $firstNumberIndex) {
-				array_push($orderedTypes, ...$numberRanges);
-			} elseif ($i === $firstStringIndex) {
-				array_push($orderedTypes, ...$stringTypes);
-			}
-		}
-		$types = $orderedTypes;
-		$typesCount = count($types);
-
-		if ($numberConstants !== []) {
-			$scalarTypes[ConstantIntegerType::class] = $numberConstants;
-		}
-		foreach ($scalarTypes as $classType => $scalarTypeItems) {
-			if ($classType === ConstantBooleanType::class && $hasGenericBooleanType) {
-				unset($scalarTypes[$classType]);
-				continue;
-			}
-			if ($classType === ConstantBooleanType::class && count($scalarTypeItems) === 2) {
-				$types[] = new BooleanType();
-				$typesCount++;
-				unset($scalarTypes[$classType]);
-				continue;
-			}
-
-			$scalarTypeItems = array_values($scalarTypeItems);
-			$scalarTypeItemsCount = count($scalarTypeItems);
-			for ($i = 0; $i < $typesCount; $i++) {
-				for ($j = 0; $j < $scalarTypeItemsCount; $j++) {
-					$compareResult = self::compareTypesInUnion($types[$i], $scalarTypeItems[$j]);
-					if ($compareResult === null) {
-						continue;
-					}
-
-					[$a, $b] = $compareResult;
-					if ($a !== null) {
-						$types[$i] = $a;
-						array_splice($scalarTypeItems, $j, 1);
-						$scalarTypeItemsCount--;
-						$j = -1;
-						continue 1;
-					}
-					if ($b !== null) {
-						$scalarTypeItems[$j] = $b;
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
-				}
-			}
-
-			$scalarTypes[$classType] = $scalarTypeItems;
-		}
-
-		if (count($types) > 16) {
-			$newTypes = [];
-			foreach ($types as $type) {
-				$newTypes[$type->describe(VerbosityLevel::cache())] = $type;
-			}
-			$types = array_values($newTypes);
-		}
-
-		// Exact absorption first: an array another member holds, such as
-		// array<int> in iterable<int>, is dropped before processArrayTypes()
-		// widens the arrays into one another, which would lose the rest of them.
-		if ($arrayTypes !== [] && $types !== []) {
-			$remainingArrayTypes = [];
-			foreach ($arrayTypes as $arrayType) {
-				foreach ($types as $type) {
-					if (
-						!TypeKind::areDisjoint($type->getKindMask(), $arrayType->getKindMask())
-						&& $type->isSuperTypeOf($arrayType)->yes()
-					) {
-						continue 2;
-					}
-				}
-				$remainingArrayTypes[] = $arrayType;
-			}
-			$arrayTypes = $remainingArrayTypes;
-		}
-
-		// compareTypesInUnion() leaves a pair of constant arrays as it is unless
-		// both are intersections, so such pairs are skipped without calling it. A
-		// bare ConstantArrayType is the only type whose getConstantArrays() is
-		// itself. Every array went to processArrayTypes(), so only its results
-		// can be such.
-		$processedArrayTypes = self::processArrayTypes($arrayTypes);
-		$isPlainConstantArray = null;
-		if (count($processedArrayTypes) > 1) {
-			$isPlainConstantArray = array_fill(0, count($types), false);
-			foreach ($processedArrayTypes as $processedArrayType) {
-				$isPlainConstantArray[] = $processedArrayType->getConstantArrays() === [$processedArrayType];
-			}
-		}
-		$types = array_merge(
-			$types,
-			$processedArrayTypes,
-		);
-		$typesCount = count($types);
-
-		// $alreadyNormalized keeps the members alive, so their object ids stay
-		// unique while this lookup refers to them
-		$normalizedGroupsByType = [];
-		$normalizedTwice = [];
-		// a single flattened union of a few members, as in most unions, is cheaper to scan - without
-		// new local variables, which every call of this method initializes
-		$scanAlreadyNormalized = $alreadyNormalizedCounter === 1 && count($alreadyNormalized[0]) <= self::ALREADY_NORMALIZED_SCAN_LIMIT;
-		if ($typesCount > 1 && !$scanAlreadyNormalized) {
-			foreach ($alreadyNormalized as $group => $normalizedTypes) {
-				foreach ($normalizedTypes as $normalizedType) {
-					$normalizedTypeId = spl_object_id($normalizedType);
-					if (isset($normalizedGroupsByType[$normalizedTypeId][$group])) {
-						$normalizedTwice[$normalizedTypeId] = true;
-						continue;
-					}
-					$normalizedGroupsByType[$normalizedTypeId][$group] = $group;
-				}
-			}
-		}
-
-		// transform A | A to A
-		// transform A | never to A
-		for ($i = 0; $i < $typesCount; $i++) {
-			if ($scanAlreadyNormalized) {
-				// null for a type not in the flattened union, which skips the scan of its pairs below
-				$iGroups = in_array($types[$i], $alreadyNormalized[0], true) ? [] : null;
-			} else {
-				$iGroups = $normalizedGroupsByType[spl_object_id($types[$i])] ?? null;
-			}
-			for ($j = $i + 1; $j < $typesCount; $j++) {
-				if ($isPlainConstantArray !== null && $isPlainConstantArray[$i] && $isPlainConstantArray[$j]) {
-					continue;
-				}
-				if ($iGroups !== null) {
-					if ($scanAlreadyNormalized) {
-						// what isAlreadyNormalized() answers: $types[$j] is another member of
-						// the flattened union, which holds $types[$i]
-						$normalizedTypes = $alreadyNormalized[0];
-						if (
-							$types[$i] !== $types[$j]
-								? in_array($types[$j], $normalizedTypes, true)
-								: count(array_keys($normalizedTypes, $types[$j], true)) > 1
-						) {
-							continue;
-						}
-					} elseif (self::isAlreadyNormalized($iGroups, $normalizedGroupsByType, $normalizedTwice, $types[$i], $types[$j])) {
-						continue;
-					}
-				}
-				$compareResult = self::compareTypesInUnion($types[$i], $types[$j]);
-				if ($compareResult === null) {
-					continue;
-				}
-
-				[$a, $b] = $compareResult;
-				if ($a !== null) {
-					$types[$i] = $a;
-					$iGroups = $scanAlreadyNormalized
-						? (in_array($a, $alreadyNormalized[0], true) ? [] : null)
-						: ($normalizedGroupsByType[spl_object_id($a)] ?? null);
-					if ($isPlainConstantArray !== null) {
-						$isPlainConstantArray[$i] = $a->getConstantArrays() === [$a];
-						array_splice($isPlainConstantArray, $j, 1);
-					}
-					array_splice($types, $j--, 1);
-					$typesCount--;
-					continue 1;
-				}
-				if ($b === null) {
-					continue;
-				}
-
-				$types[$j] = $b;
-				if ($isPlainConstantArray !== null) {
-					$isPlainConstantArray[$j] = $b->getConstantArrays() === [$b];
-					array_splice($isPlainConstantArray, $i, 1);
-				}
-				array_splice($types, $i--, 1);
-				$typesCount--;
-				continue 2;
-			}
-		}
-
-		$enumCasesCount = count($enumCaseTypes);
-		for ($i = 0; $i < $typesCount; $i++) {
-			for ($j = 0; $j < $enumCasesCount; $j++) {
-				$compareResult = self::compareTypesInUnion($types[$i], $enumCaseTypes[$j]);
-				if ($compareResult === null) {
-					continue;
-				}
-
-				[$a, $b] = $compareResult;
-				if ($a !== null) {
-					$types[$i] = $a;
-					array_splice($enumCaseTypes, $j--, 1);
-					$enumCasesCount--;
-					continue 1;
-				}
-				if ($b !== null) {
-					$enumCaseTypes[$j] = $b;
-					array_splice($types, $i--, 1);
-					$typesCount--;
-					continue 2;
-				}
-			}
-		}
-
-		foreach ($enumCaseTypes as $enumCaseType) {
-			$types[] = $enumCaseType;
-			$typesCount++;
-		}
-
-		foreach ($scalarTypes as $scalarTypeItems) {
-			foreach ($scalarTypeItems as $scalarType) {
-				$types[] = $scalarType;
-				$typesCount++;
-			}
-		}
-
-		if ($typesCount === 0) {
-			return new NeverType();
-		}
-		if ($typesCount === 1) {
+		if (count($types) === 1) {
 			return $types[0];
 		}
 
@@ -812,11 +566,11 @@ final class TypeCombinator
 			}
 
 			if ($allBenevolent) {
-				return new BenevolentUnionType(array_values($types), true);
+				return new BenevolentUnionType($types, true);
 			}
 		}
 
-		return new UnionType(array_values($types), true);
+		return new UnionType($types, true);
 	}
 
 	/**
@@ -877,373 +631,6 @@ final class TypeCombinator
 		}
 
 		return new UnionType($members, true);
-	}
-
-	/**
-	 * Whether $a and $b are members of one union that was flattened into this
-	 * one - such members were already compared against each other.
-	 *
-	 * @param array<int, int> $aGroups the groups of $a in $normalizedGroupsByType
-	 * @param array<int, array<int, int>> $normalizedGroupsByType member object id => (index of a flattened union holding it => the same index)
-	 * @param array<int, true> $normalizedTwice member object ids a flattened union held twice
-	 */
-	private static function isAlreadyNormalized(array $aGroups, array $normalizedGroupsByType, array $normalizedTwice, Type $a, Type $b): bool
-	{
-		if ($a === $b) {
-			return isset($normalizedTwice[spl_object_id($a)]);
-		}
-
-		$bGroups = $normalizedGroupsByType[spl_object_id($b)] ?? null;
-		if ($bGroups === null) {
-			return false;
-		}
-
-		foreach ($aGroups as $group) {
-			if (isset($bGroups[$group])) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Scalar buckets are compared only against the non-scalar union members, which
-	 * is correct for plain constants (distinct values are disjoint) but not for
-	 * constants refined by another type ('Foo'&hasMethod(bar)). Those are absorbed
-	 * here by the plain constant of the same value, or by a less refined
-	 * intersection of the same value. Values never need to be compared across.
-	 *
-	 * @param array<string, Type> $intersections
-	 * @param array<string, array<string, Type>> $scalarTypes
-	 * @return array<string, Type>
-	 */
-	private static function reduceRefinedConstantScalars(array $intersections, array $scalarTypes): array
-	{
-		$byValue = [];
-		foreach ($intersections as $key => $intersection) {
-			$constants = $intersection->getConstantScalarTypes();
-			if (count($constants) !== 1) {
-				continue;
-			}
-			$valueKey = $constants[0]->describe(VerbosityLevel::cache());
-			$plain = $scalarTypes[get_class($constants[0])][$valueKey] ?? null;
-			if ($plain !== null && $plain->isSuperTypeOf($intersection)->yes()) {
-				unset($intersections[$key]);
-				continue;
-			}
-			$byValue[get_class($constants[0])][$valueKey][] = $key;
-		}
-
-		foreach ($byValue as $valueKeys) {
-			foreach ($valueKeys as $keys) {
-				$keysCount = count($keys);
-				for ($i = 0; $i < $keysCount; $i++) {
-					for ($j = 0; $j < $keysCount; $j++) {
-						if ($i === $j || !isset($intersections[$keys[$i]], $intersections[$keys[$j]])) {
-							continue;
-						}
-						if (!$intersections[$keys[$i]]->isSuperTypeOf($intersections[$keys[$j]])->yes()) {
-							continue;
-						}
-						unset($intersections[$keys[$j]]);
-					}
-				}
-			}
-		}
-
-		return $intersections;
-	}
-
-	/**
-	 * @return array{Type, null}|array{null, Type}|null
-	 */
-	private static function compareTypesInUnion(Type $a, Type $b): ?array
-	{
-		// values of different kinds never merge into one member
-		if (TypeKind::areDisjoint($a->getKindMask(), $b->getKindMask())) {
-			return null;
-		}
-
-		if ($a->isConstantArray()->yes() && $b->isConstantArray()->yes()) {
-			return null;
-		}
-
-		// simplify string[] | int[] to (string|int)[]
-		if ($a instanceof IterableType && $b instanceof IterableType) {
-			return [
-				new IterableType(
-					self::union($a->getIterableKeyType(), $b->getIterableKeyType()),
-					self::union($a->getIterableValueType(), $b->getIterableValueType()),
-				),
-				null,
-			];
-		}
-
-		$union = $a->tryUnion($b);
-		if ($union !== null) {
-			return [$union, null];
-		}
-
-		$union = $b->tryUnion($a);
-		if ($union !== null) {
-			return [null, $union];
-		}
-
-		if ($b->isSuperTypeOf($a)->yes()) {
-			return [null, $b];
-		}
-
-		if ($a->isSuperTypeOf($b)->yes()) {
-			return [$a, null];
-		}
-
-		return null;
-	}
-
-	/**
-	 * @param Type[] $arrayTypes
-	 * @return list<Type>
-	 */
-	private static function processArrayAccessoryTypes(array $arrayTypes): array
-	{
-		$isIterableAtLeastOnce = [];
-		$accessoryTypes = [];
-		foreach ($arrayTypes as $i => $arrayType) {
-			$isIterableAtLeastOnce[] = $arrayType->isIterableAtLeastOnce();
-
-			if ($arrayType instanceof IntersectionType) {
-				// asked once: the same for every hasOffset() member, and an
-				// intersection computes it from all of its members
-				$iterableValueType = null;
-				foreach ($arrayType->getTypes() as $innerType) {
-					if ($innerType instanceof TemplateType) {
-						break;
-					}
-					if (!($innerType instanceof AccessoryType) && !($innerType instanceof CallableType)) {
-						continue;
-					}
-					if ($innerType instanceof HasOffsetType) {
-						$iterableValueType ??= $arrayType->getIterableValueType();
-						$innerType = new HasOffsetValueType($innerType->getOffsetType(), $iterableValueType);
-					}
-					if ($innerType instanceof HasOffsetValueType) {
-						$accessoryTypes[sprintf('hasOffsetValue(%s)', $innerType->getOffsetType()->describe(VerbosityLevel::cache()))][$i] = $innerType;
-						continue;
-					}
-
-					$accessoryTypes[$innerType->describe(VerbosityLevel::cache())][$i] = $innerType;
-				}
-			}
-
-			if (!$arrayType->isConstantArray()->yes()) {
-				continue;
-			}
-			$constantArrays = $arrayType->getConstantArrays();
-
-			foreach ($constantArrays as $constantArray) {
-				if ($constantArray->isList()->yes()) {
-					$list = new AccessoryArrayListType();
-					$accessoryTypes[$list->describe(VerbosityLevel::cache())][$i] = $list;
-				}
-
-				if (!$constantArray->isIterableAtLeastOnce()->yes()) {
-					continue;
-				}
-
-				$nonEmpty = new NonEmptyArrayType();
-				$accessoryTypes[$nonEmpty->describe(VerbosityLevel::cache())][$i] = $nonEmpty;
-			}
-		}
-
-		$commonAccessoryTypes = [];
-		$arrayTypeCount = count($arrayTypes);
-		foreach ($accessoryTypes as $accessoryType) {
-			if (count($accessoryType) !== $arrayTypeCount) {
-				$firstKey = array_key_first($accessoryType);
-				if ($accessoryType[$firstKey] instanceof OversizedArrayType) {
-					$commonAccessoryTypes[] = $accessoryType[$firstKey];
-				}
-				continue;
-			}
-
-			if ($accessoryType[0] instanceof HasOffsetValueType) {
-				$commonAccessoryTypes[] = self::union(...$accessoryType);
-				continue;
-			}
-
-			$commonAccessoryTypes[] = $accessoryType[0];
-		}
-
-		if (TrinaryLogic::createYes()->and(...$isIterableAtLeastOnce)->yes()) {
-			$commonAccessoryTypes[] = new NonEmptyArrayType();
-		}
-
-		return $commonAccessoryTypes;
-	}
-
-	/**
-	 * @param Type[] $arrayTypes
-	 */
-	private static function findEmptyArrayNextToOversizedArray(array $arrayTypes): ?Type
-	{
-		if (count($arrayTypes) < 2) {
-			return null;
-		}
-
-		$emptyArray = null;
-		$hasOversizedArray = false;
-		foreach ($arrayTypes as $arrayType) {
-			if ($arrayType->isOversizedArray()->yes()) {
-				$hasOversizedArray = true;
-			} elseif ($emptyArray === null && $arrayType->isConstantArray()->yes() && $arrayType->isIterableAtLeastOnce()->no()) {
-				$emptyArray = $arrayType;
-			}
-		}
-
-		return $hasOversizedArray ? $emptyArray : null;
-	}
-
-	/**
-	 * @param list<Type> $arrayTypes
-	 * @return Type[]
-	 */
-	private static function processArrayTypes(array $arrayTypes, bool $widen = false): array
-	{
-		if ($arrayTypes === []) {
-			return [];
-		}
-
-		$emptyArray = self::findEmptyArrayNextToOversizedArray($arrayTypes);
-		if ($emptyArray !== null) {
-			// like reduceArrays() does when it generalizes to an oversized array:
-			// folded into it, the empty array would be lost to the oversized
-			// accessory, which accepts only arrays that hold something
-			$otherArrayTypes = [];
-			foreach ($arrayTypes as $arrayType) {
-				if ($arrayType->isConstantArray()->yes() && $arrayType->isIterableAtLeastOnce()->no()) {
-					continue;
-				}
-				$otherArrayTypes[] = $arrayType;
-			}
-
-			return [$emptyArray, ...self::processArrayTypes($otherArrayTypes, $widen)];
-		}
-
-		$accessoryTypes = self::processArrayAccessoryTypes($arrayTypes);
-
-		if (count($arrayTypes) === 1 && !$widen) {
-			return [
-				self::intersect(...$arrayTypes, ...$accessoryTypes),
-			];
-		}
-
-		$keyTypesForGeneralArray = [];
-		$valueTypesForGeneralArray = [];
-		$generalArrayOccurred = false;
-		$seenConstantKeyTypes = [];
-
-		foreach ($arrayTypes as $arrayType) {
-			$constantArrays = $arrayType->getConstantArrays();
-			$isConstantArray = $constantArrays !== [];
-
-			if (!$isConstantArray) {
-				foreach ($arrayType->getArrays() as $type) {
-					$keyTypesForGeneralArray[] = $type->getIterableKeyType();
-					$valueTypesForGeneralArray[] = $type->getItemType();
-					$generalArrayOccurred = true;
-				}
-				continue;
-			}
-
-			foreach ($constantArrays as $constantArray) {
-				$valueTypes = $constantArray->getValueTypes();
-				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
-					$valueTypesForGeneralArray[] = $valueTypes[$i];
-
-					$keyTypeValue = $keyType->getValue();
-					if (array_key_exists($keyTypeValue, $seenConstantKeyTypes)) {
-						continue;
-					}
-					$seenConstantKeyTypes[$keyTypeValue] = true;
-					$keyTypesForGeneralArray[] = $keyType;
-				}
-			}
-		}
-
-		if ($generalArrayOccurred) {
-			if (count($arrayTypes) === 1) {
-				return [self::intersect($arrayTypes[0], ...$accessoryTypes)];
-			}
-
-			$templateArrayType = null;
-			foreach ($arrayTypes as $arrayType) {
-				if (!$arrayType instanceof TemplateArrayType) {
-					$templateArrayType = null;
-					break;
-				}
-
-				if ($templateArrayType !== null) {
-					continue;
-				}
-
-				$templateArrayType = $arrayType;
-			}
-
-			$arrayType = new ArrayType(
-				self::union(...$keyTypesForGeneralArray),
-				// merging the arrays into one generalizes them already, and bounds what it merges
-				self::union(...self::optimizeConstantArrays($valueTypesForGeneralArray)),
-			);
-
-			if ($templateArrayType !== null) {
-				$arrayType = new TemplateArrayType(
-					$templateArrayType->getScope(),
-					$templateArrayType->getStrategy(),
-					$templateArrayType->getVariance(),
-					$templateArrayType->getName(),
-					$arrayType,
-					$templateArrayType->getDefault(),
-				);
-			}
-
-			return [
-				self::intersect($arrayType, ...$accessoryTypes),
-			];
-		}
-
-		if ($widen) {
-			// generalized first: unioning the shapes exactly would be wasted on
-			// the shapes the generalization folds
-			$shapes = [];
-			foreach ($arrayTypes as $arrayType) {
-				if (!$arrayType->isConstantArray()->yes()) {
-					$shapes[] = $arrayType;
-					continue;
-				}
-				foreach ($arrayType->getConstantArrays() as $constantArray) {
-					$shapes[] = $constantArray;
-				}
-			}
-			$reducedArrayTypes = self::reduceArrays(array_values(self::optimizeConstantArrays($shapes)));
-		} else {
-			$reducedArrayTypes = self::reduceArrays($arrayTypes);
-		}
-		foreach ($reducedArrayTypes as $idx => $reducedArray) {
-			$applied = $accessoryTypes;
-			if ($reducedArray->isIterableAtLeastOnce()->no()) {
-				// Empty arrays cannot satisfy non-empty / oversized constraints —
-				// applying those accessories would produce a contradictory intersection
-				// (e.g. `array{}&oversized-array`) that rejects the very value it
-				// represents, breaking the super-type contract of the union.
-				$applied = array_values(array_filter(
-					$applied,
-					static fn (Type $t): bool => !($t instanceof OversizedArrayType) && !($t instanceof NonEmptyArrayType),
-				));
-			}
-			$reducedArrayTypes[$idx] = self::intersect($reducedArray, ...$applied);
-		}
-		return $reducedArrayTypes;
 	}
 
 	/**
@@ -1310,10 +697,11 @@ final class TypeCombinator
 	}
 
 	/**
+	 * @internal
 	 * @param Type[] $types
 	 * @return Type[]
 	 */
-	private static function optimizeConstantArrays(array $types): array
+	public static function optimizeConstantArrays(array $types): array
 	{
 		$constantArrayValuesCount = self::countConstantArrayValueTypes($types);
 
@@ -1600,259 +988,6 @@ final class TypeCombinator
 			});
 		}
 		return $constantArrayValuesCount;
-	}
-
-	/**
-	 * The arrays with the shapes among them unioned exactly: each pair of
-	 * shapes that ConstantArrayType::tryUnion() merges into one, until no pair
-	 * does, and then the shapes with unsealed extras that can take each other in.
-	 *
-	 * Only shapes whose key sets nest can merge, so the pairs are found by the
-	 * keys the shapes share instead of trying every pair: when a shape is
-	 * visited, it is tried with the shapes visited before it that have all of
-	 * its keys or only keys it has. A merged shape is visited again.
-	 *
-	 * @param list<Type> $arrayTypes
-	 * @return list<Type>
-	 */
-	private static function reduceArrays(array $arrayTypes): array
-	{
-		$newArrays = [];
-		/** @var array<int, ConstantArrayType> $shapes */
-		$shapes = [];
-		foreach ($arrayTypes as $arrayType) {
-			if (!$arrayType->isConstantArray()->yes()) {
-				$newArrays[] = $arrayType;
-				continue;
-			}
-			foreach ($arrayType->getConstantArrays() as $constantArray) {
-				$shapes[] = $constantArray;
-			}
-		}
-
-		// beside the empty array, shapes merge into a shape holding it too
-		$hasEmptyArray = false;
-		foreach ($shapes as $shape) {
-			if ($shape->getKeyTypes() !== [] || $shape->isUnsealed()->yes()) {
-				continue;
-			}
-			$hasEmptyArray = true;
-			break;
-		}
-
-		// the position of each shape in the result, a merged one taking the
-		// earlier position of the two
-		$positions = array_keys($shapes);
-		// the visited shapes by their key count, by whether each of their
-		// values is a single constant scalar, and by each of their keys
-		$visitedPerKey = [];
-		$visitedKeyless = [];
-		$visitedKeyCounts = [];
-		// the visited shapes by the hash of their keys and values, with each
-		// key left out and with none
-		$visitedPerHash = [];
-		$visitedHashes = [];
-		for ($x = 0; $x < count($positions); $x++) {
-			if (!array_key_exists($x, $shapes)) {
-				continue;
-			}
-			$shape = $shapes[$x];
-			[$keys, $hashes, $isAtomic] = self::getShapeHashes($shape);
-			$keyCount = count($keys);
-
-			// The shapes differing at one key or in their optional keys only,
-			// whose hashes with that key left out, or with none, are the same.
-			$candidates = [];
-			foreach ($hashes as $hash) {
-				$candidates += $visitedPerHash[$hash] ?? [];
-			}
-			// The shapes with all of the keys of this one or only keys it has,
-			// which may hold it or be held by it. Two shapes of the same keys
-			// and only single constant scalar values hold each other only when
-			// they have the same values, and are among the shapes above.
-			$sharedKeyCounts = [];
-			foreach ($keys as $key) {
-				foreach ($visitedPerKey[$key] ?? [] as $count => $byAtomic) {
-					foreach ($byAtomic as $atomic => $ys) {
-						if ($isAtomic && $atomic === 1 && $count === $keyCount) {
-							continue;
-						}
-						foreach (array_keys($ys) as $y) {
-							$sharedKeyCounts[$y] = ($sharedKeyCounts[$y] ?? 0) + 1;
-						}
-					}
-				}
-			}
-			foreach ($sharedKeyCounts as $y => $sharedKeyCount) {
-				if ($sharedKeyCount !== $keyCount && $sharedKeyCount !== $visitedKeyCounts[$y]) {
-					continue;
-				}
-				$candidates[$y] = true;
-			}
-			$candidates += $keyCount === 0 ? $visitedKeyCounts : $visitedKeyless;
-			ksort($candidates);
-
-			foreach (array_keys($candidates) as $y) {
-				$merged = $shape->tryUnion($shapes[$y])
-					?? ($hasEmptyArray ? ArrayAlgebra::tryUnionConstantArrayBesideEmptyArray($shape, $shapes[$y]) : null);
-				if ($merged === null) {
-					continue;
-				}
-
-				[$yKeys, , $yIsAtomic] = self::getShapeHashes($shapes[$y]);
-				foreach ($yKeys as $key) {
-					unset($visitedPerKey[$key][count($yKeys)][(int) $yIsAtomic][$y]);
-				}
-				foreach ($visitedHashes[$y] as $hash) {
-					unset($visitedPerHash[$hash][$y]);
-				}
-				unset($shapes[$x], $shapes[$y], $visitedKeyCounts[$y], $visitedKeyless[$y], $visitedHashes[$y]);
-				foreach ($merged->getConstantArrays() as $mergedShape) {
-					$shapes[] = $mergedShape;
-					$positions[] = $positions[$y];
-				}
-				continue 2;
-			}
-
-			$visitedKeyCounts[$x] = $keyCount;
-			if ($keyCount === 0) {
-				$visitedKeyless[$x] = true;
-			}
-			foreach ($keys as $key) {
-				$visitedPerKey[$key][$keyCount][(int) $isAtomic][$x] = true;
-			}
-			foreach ($hashes as $hash) {
-				$visitedPerHash[$hash][$x] = true;
-			}
-			$visitedHashes[$x] = $hashes;
-		}
-
-		// the shapes with unsealed extras, which tryUnion() leaves alone
-		$indices = array_keys($shapes);
-		$indicesCount = count($indices);
-		for ($ii = 0; $ii < $indicesCount - 1; $ii++) {
-			$i = $indices[$ii];
-			if (!array_key_exists($i, $shapes) || $shapes[$i]->getUnsealedTypes() === null) {
-				continue;
-			}
-			for ($jj = $ii + 1; $jj < $indicesCount; $jj++) {
-				$j = $indices[$jj];
-				if (
-					!array_key_exists($j, $shapes)
-					|| $shapes[$j]->getUnsealedTypes() === null
-					|| (!$shapes[$i]->isUnsealed()->yes() && !$shapes[$j]->isUnsealed()->yes())
-				) {
-					continue;
-				}
-				if ($shapes[$j]->isKeysSupersetOf($shapes[$i])) {
-					$shapes[$j] = $shapes[$j]->mergeWith($shapes[$i]);
-					$positions[$j] = $positions[$i];
-					unset($shapes[$i]);
-					continue 2;
-				}
-				if (!$shapes[$i]->isKeysSupersetOf($shapes[$j])) {
-					continue;
-				}
-
-				$shapes[$i] = $shapes[$i]->mergeWith($shapes[$j]);
-				unset($shapes[$j]);
-			}
-		}
-
-		$result = [];
-		foreach ($shapes as $idx => $shape) {
-			// a merge with no known keys left but with unsealed extras is the
-			// plain array, as ConstantArrayTypeBuilder::getArray() makes it
-			if (count($shape->getKeyTypes()) === 0 && $shape->isUnsealed()->yes()) {
-				$unsealed = $shape->getUnsealedTypes();
-				if ($unsealed !== null) {
-					$result[$positions[$idx]] = new ArrayType($unsealed[0], $unsealed[1]);
-					continue;
-				}
-			}
-			$result[$positions[$idx]] = $shape;
-		}
-		ksort($result);
-
-		return array_merge($newArrays, array_values($result));
-	}
-
-	/**
-	 * The keys of a shape, the hashes of its keys and values - over all of them
-	 * and with each key left out - and whether each of its values is a single
-	 * value (see getSingleValueHash()). Equal shapes have equal hashes,
-	 * whatever their optional keys and the order of their keys, when their
-	 * values are single values or the same objects; other shapes may have
-	 * equal hashes too.
-	 *
-	 * @return array{list<int|string>, list<string>, bool}
-	 */
-	private static function getShapeHashes(ConstantArrayType $shape): array
-	{
-		$keys = [];
-		$keyHashes = [];
-		$isAtomic = true;
-		$valueTypes = $shape->getValueTypes();
-		$all = 0;
-		foreach ($shape->getKeyTypes() as $i => $keyType) {
-			$key = $keyType->getValue();
-			$keys[] = $key;
-			$valueHash = self::getSingleValueHash($valueTypes[$i]);
-			if ($valueHash === null) {
-				$isAtomic = false;
-				$valueHash = spl_object_id($valueTypes[$i]);
-			}
-			$keyHash = crc32(serialize($key) . "\0" . $valueHash);
-			$keyHashes[] = $keyHash;
-			$all ^= $keyHash;
-		}
-
-		$count = count($keys);
-		$hashes = [$count . ':' . $all];
-		foreach ($keyHashes as $keyHash) {
-			$hashes[] = ($count - 1) . ':' . ($all ^ $keyHash);
-		}
-
-		return [$keys, $hashes, $isAtomic];
-	}
-
-	/**
-	 * A hash of the one value of a type that has a single value - a constant
-	 * scalar, or a shape of such values without optional keys - or null. Two
-	 * such types hold each other only when they are equal.
-	 */
-	private static function getSingleValueHash(Type $type): ?string
-	{
-		if ($type->isConstantScalarValue()->yes()) {
-			$values = $type->getConstantScalarValues();
-			if (count($values) !== 1) {
-				return null;
-			}
-
-			// -0.0 === 0.0
-			return serialize($values[0] === 0.0 ? 0.0 : $values[0]);
-		}
-
-		$shapes = $type->getConstantArrays();
-		if (count($shapes) !== 1 || !$type->isConstantArray()->yes()) {
-			return null;
-		}
-		$shape = $shapes[0];
-		if ($shape->getOptionalKeys() !== [] || $shape->isUnsealed()->yes()) {
-			return null;
-		}
-
-		$hash = '';
-		$valueTypes = $shape->getValueTypes();
-		foreach ($shape->getKeyTypes() as $i => $keyType) {
-			$valueHash = self::getSingleValueHash($valueTypes[$i]);
-			if ($valueHash === null) {
-				return null;
-			}
-			$hash .= serialize($keyType->getValue()) . $valueHash;
-		}
-
-		return 'a' . crc32($hash);
 	}
 
 	/**

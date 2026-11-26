@@ -181,6 +181,16 @@ class CallToMethodStatementWithoutSideEffectsRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBreakIterator(): void
+	{
+		$this->analyse([__DIR__ . '/data/method-call-break-iterator.php'], [
+			[
+				'Call to method IntlBreakIterator::current() on a separate line has no effect.',
+				12,
+			],
+		]);
+	}
+
 	#[RequiresPhp('>= 8.5.0')]
 	public function testPipeOperator(): void
 	{

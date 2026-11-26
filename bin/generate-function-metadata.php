@@ -117,6 +117,10 @@ use Symfony\Component\Finder\Finder;
 		'mb_ereg_search_pos',
 		'mb_ereg_search_regs',
 		'mb_ereg_search_setpos',
+		// move the position of the break iterator
+		'IntlBreakIterator::isBoundary',
+		// take a message off the queue
+		'curl_multi_info_read',
 		// use the global random number generator
 		'array_rand',
 		// read files or ask the network
@@ -139,6 +143,7 @@ use Symfony\Component\Finder\Finder;
 		// run the iterator's methods or a generator
 		'iterator_count',
 		// read changing state
+		'curl_multi_getcontent',
 		'DateTime::createFromFormat',
 		'DateTime::getLastErrors',
 		'DateTimeImmutable::createFromFormat',

@@ -34,6 +34,8 @@ final class SealedDefinitionClassRule implements Rule
 		private bool $checkClassCaseSensitivity,
 		#[AutowiredParameter(ref: '%tips.discoveringSymbols%')]
 		private bool $discoveringSymbolsTip,
+		#[AutowiredParameter(ref: '%featureToggles.checkSealedSubtypes%')]
+		private bool $checkSealedSubtypes,
 	)
 	{
 	}
@@ -81,6 +83,24 @@ final class SealedDefinitionClassRule implements Rule
 					}
 
 					$errors[] = $errorBuilder->build();
+					continue;
+				}
+
+				$sealedTypeReflection = $this->reflectionProvider->getClass($class);
+
+				if (
+					$this->checkSealedSubtypes
+					&& ($sealedTypeReflection->isEnum() || $sealedTypeReflection->isFinal())
+					&& !$sealedTypeReflection->is($classReflection->getName())
+				) {
+					$errorBuilder = RuleErrorBuilder::message(sprintf(
+						'PHPDoc tag @phpstan-sealed contains final type %s that is not subtype of %s.',
+						$class,
+						$classReflection->getName(),
+					))->identifier('sealed.notSubtype');
+
+					$errors[] = $errorBuilder->build();
+
 					continue;
 				}
 

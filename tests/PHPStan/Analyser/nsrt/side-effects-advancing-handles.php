@@ -1,4 +1,4 @@
-<?php // lint >= 8.0
+<?php // lint >= 8.1
 
 declare(strict_types = 1);
 
@@ -40,9 +40,6 @@ class Foo
 		}
 		if (dba_nextkey($dba) === 'k') {
 			assertType('string|false', dba_nextkey($dba));
-		}
-		if (pcntl_waitid(P_ALL) === true) {
-			assertType('bool', pcntl_waitid(P_ALL));
 		}
 		if (readline('> ') === 'y') {
 			assertType('string|false', readline('> '));

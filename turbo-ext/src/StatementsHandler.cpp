@@ -1369,11 +1369,18 @@ private:
 			if (equal) break;
 
 			if (count >= PT_SH_GENERALIZE_AFTER_ITERATION_LIMIT) {
-				bodyScope = pt_mutating_scope_generalize_with(Z_OBJ_P(prevScope.raw()), Z_OBJ_P(bodyScope.raw()));
+				bodyScope = pt_mutating_scope_generalize_with_names(Z_OBJ_P(prevScope.raw()), Z_OBJ_P(bodyScope.raw()), NULL, Z_OBJ_P(scope));
 				if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 			}
 			count++;
 		} while (count < PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT);
+
+		if (count >= PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT) {
+			// the limit is only a safety net - a scope still changing after it
+			// is not a fixpoint, so no variable keeps a type
+			bodyScope = pt_mutating_scope_forget_loop_written_variables(Z_OBJ_P(bodyScope.raw()), NULL);
+			if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+		}
 
 		return bodyScope;
 	}
@@ -2137,7 +2144,24 @@ private:
 					walkConditionalExpressions = zv::Val(zv::Arr::empty());
 				}
 			} else if (count >= PT_SH_LOOP_SCOPE_ITERATIONS_LIMIT) {
-				if (!hasRuns) break;
+				if (!hasRuns) {
+					// the limit is only a safety net - types still changing
+					// after it are not a fixpoint, so the variables keep none:
+					// the last walk is made with them, and converges
+					zv::Arr mixedTypes = zv::Arr::create(0);
+					for (auto entry : zv::ArrRef(names.raw())) {
+						zv::Val mixed = pt_type_new_mixed_type();
+						if (UNEXPECTED(mixed.isUndef())) return zv::Val();
+						zv::Val nativeMixed = pt_type_new_mixed_type();
+						if (UNEXPECTED(nativeMixed.isUndef())) return zv::Val();
+						zv::Arr pair = zv::Arr::create(2);
+						pair.push(std::move(mixed));
+						pair.push(std::move(nativeMixed));
+						mixedTypes.set(Z_STR_P(entry.value().raw()), zv::Val(std::move(pair)));
+					}
+					types = zv::Val(std::move(mixedTypes));
+					continue;
+				}
 				// the conditional expressions keep changing: the walks go on
 				// without them - what they narrowed the types to is joined with
 				// what the variables take without them

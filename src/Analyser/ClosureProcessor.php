@@ -325,6 +325,8 @@ final class ClosureProcessor
 		$replayPassResult = null;
 		$replayEntryScope = null;
 		$bodyIsReplayable = $nodeScopeResolver->isReplayableConvergenceBody($expr, $expr->stmts);
+		$byRefUseNames = self::getByRefUseNames($byRefUses);
+		$closureEntryScope = $closureScope;
 		// a local site's entry already holds every invocation's state: one walk
 		// for the closure's own results (the rules and the inference of what is
 		// inside run in the deferred one)
@@ -363,9 +365,14 @@ final class ClosureProcessor
 				break;
 			}
 			if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-				$closureScope = $prevScope->generalizeWith($closureScope);
+				$closureScope = $prevScope->generalizeWith($closureScope, $byRefUseNames, $closureEntryScope);
 			}
 			$count++;
+		}
+		if ($count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS) {
+			// the limit is only a safety net - by-ref variables still changing
+			// after it did not converge, so they keep no type
+			$closureScope = $closureScope->forgetLoopWrittenVariables($byRefUseNames);
 		}
 
 		if ($closureResultScope === null) {
@@ -521,6 +528,8 @@ final class ClosureProcessor
 	{
 		$exitScope = null;
 		$throwPoints = [];
+		$byRefUseNames = self::getByRefUseNames($byRefUses);
+		$invocationEntryScope = $entryScope;
 		$count = 0;
 		do {
 			$result = $nodeScopeResolver->processStmtNodesInternal($expr, $expr->stmts, $entryScope, $storage->duplicate(), new NoopNodeCallback(), StatementContext::createTopLevel(false));
@@ -542,7 +551,7 @@ final class ClosureProcessor
 				break;
 			}
 			if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-				$nextEntryScope = $entryScope->generalizeWith($nextEntryScope);
+				$nextEntryScope = $entryScope->generalizeWith($nextEntryScope, $byRefUseNames, $invocationEntryScope);
 			}
 			$entryScope = $nextEntryScope;
 			$count++;
@@ -551,6 +560,11 @@ final class ClosureProcessor
 		if ($untilFixpoint) {
 			// zero or more runs: the state before them joins the ones after
 			$exitScope = $exitScope->mergeWith($entryScope);
+			if ($count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS) {
+				// the limit is only a safety net - by-ref variables still
+				// changing after it did not converge, so they keep no type
+				$exitScope = $exitScope->forgetLoopWrittenVariables($byRefUseNames);
+			}
 		}
 
 		return [$exitScope, $throwPoints];
@@ -678,6 +692,23 @@ final class ClosureProcessor
 		}
 
 		return $closureScope;
+	}
+
+	/**
+	 * @param Node\ClosureUse[] $byRefUses
+	 * @return array<string, true>
+	 */
+	private static function getByRefUseNames(array $byRefUses): array
+	{
+		$names = [];
+		foreach ($byRefUses as $use) {
+			if (!is_string($use->var->name)) {
+				continue;
+			}
+			$names[$use->var->name] = true;
+		}
+
+		return $names;
 	}
 
 	/**

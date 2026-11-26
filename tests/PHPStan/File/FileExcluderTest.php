@@ -256,6 +256,31 @@ class FileExcluderTest extends PHPStanTestCase
 				['/project/src/*Test'],
 				true,
 			],
+			[
+				'/project/src/FooTest',
+				['/project/src/*Test'],
+				true,
+			],
+			[
+				'/project/src/FooTests/Bar.php',
+				['/project/src/*Test'],
+				false,
+			],
+			[
+				'/project/src/Foo1/Bar.php',
+				['/project/src/Foo?'],
+				true,
+			],
+			[
+				'/project/src/FooA/Bar.php',
+				['/project/src/Foo[AB]'],
+				true,
+			],
+			[
+				'/project/src/FooC/Bar.php',
+				['/project/src/Foo[AB]'],
+				false,
+			],
 		];
 	}
 

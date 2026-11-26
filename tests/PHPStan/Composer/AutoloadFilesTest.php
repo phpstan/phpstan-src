@@ -70,6 +70,7 @@ class AutoloadFilesTest extends TestCase
 			'symfony/polyfill-php83/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-php84/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/polyfill-php85/bootstrap.php', // afaik polyfills aren't necessary
+			'symfony/polyfill-php86/bootstrap.php', // afaik polyfills aren't necessary
 			'symfony/string/Resources/functions.php', // afaik polyfills aren't necessary
 		];
 

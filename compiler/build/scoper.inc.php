@@ -20,6 +20,7 @@ foreach ($stubFinder->files()->name('*.php')->in([
 	'../../vendor/symfony/polyfill-php83',
 	'../../vendor/symfony/polyfill-php84',
 	'../../vendor/symfony/polyfill-php85',
+	'../../vendor/symfony/polyfill-php86',
 	'../../vendor/symfony/polyfill-mbstring',
 	'../../vendor/symfony/polyfill-intl-normalizer',
 	'../../vendor/symfony/polyfill-intl-grapheme',

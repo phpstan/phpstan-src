@@ -414,9 +414,9 @@ final class TypeCombinatorBench
 	 * Two unions of ranges, each range of one overlapping one range of the other at one value.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '4.621M', cycles: '5.860M', memory: '23.24KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '67.85M', cycles: '81.47M', memory: '80.37KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '1.061B', cycles: '1.274B', memory: '343.9KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '532.2K', cycles: '835.8K', memory: '22.80KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '2.299M', cycles: '2.798M', memory: '79.92KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '10.23M', cycles: '11.55M', memory: '343.4KiB')]
 	public function benchIntersectRangeUnions(int $types): Type
 	{
 		return TypeCombinator::intersect(...$this->rangeUnions);

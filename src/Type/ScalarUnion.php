@@ -4,7 +4,10 @@ namespace PHPStan\Type;
 
 use function array_keys;
 use function count;
+use function is_int;
 use function ksort;
+use function max;
+use function min;
 use function pack;
 use function usort;
 use const INF;
@@ -180,6 +183,92 @@ final class ScalarUnion
 		$flush();
 
 		return [$ranges, $constants];
+	}
+
+	/**
+	 * The intersection of operands that are each ints, integer ranges and
+	 * integer constants - the members of each given as a list, a union by its
+	 * members - as the ranges and constants of the integers all of them hold.
+	 * The intervals of two operands are swept in the order of their bounds,
+	 * instead of intersecting each member with each.
+	 *
+	 * @param non-empty-list<list<Type>> $operands
+	 * @return list<Type>|null null when a member is not of exact integers
+	 */
+	public static function intersectIntegers(array $operands): ?array
+	{
+		$intervals = null;
+		foreach ($operands as $members) {
+			$operandIntervals = [];
+			foreach ($members as $member) {
+				$numbers = $member->getKindMask() === TypeKind::INT ? $member->toExactNumberSet() : null;
+				if ($numbers === null) {
+					return null;
+				}
+				foreach ($numbers->getIntegerIntervals() as [$min, $max]) {
+					// unbounded sides compare as the infinities
+					$operandIntervals[] = [$min ?? -INF, $max ?? INF];
+				}
+			}
+			$operandIntervals = self::coalesceIntervals($operandIntervals);
+			$intervals = $intervals === null ? $operandIntervals : self::intersectIntervals($intervals, $operandIntervals);
+		}
+
+		$types = [];
+		foreach ($intervals as [$min, $max]) {
+			$types[] = IntegerRangeType::fromInterval(is_int($min) ? $min : null, is_int($max) ? $max : null);
+		}
+
+		return $types;
+	}
+
+	/**
+	 * The intervals sorted by their lower bounds, overlapping ones joined.
+	 *
+	 * @param list<array{int|float, int|float}> $intervals
+	 * @return list<array{int|float, int|float}>
+	 */
+	private static function coalesceIntervals(array $intervals): array
+	{
+		usort($intervals, static fn (array $a, array $b): int => $a[0] <=> $b[0]);
+		$coalesced = [];
+		foreach ($intervals as $interval) {
+			$last = count($coalesced) - 1;
+			if ($last >= 0 && $interval[0] <= $coalesced[$last][1]) {
+				$coalesced[$last][1] = max($coalesced[$last][1], $interval[1]);
+				continue;
+			}
+			$coalesced[] = $interval;
+		}
+
+		return $coalesced;
+	}
+
+	/**
+	 * @param list<array{int|float, int|float}> $left sorted and disjoint
+	 * @param list<array{int|float, int|float}> $right sorted and disjoint
+	 * @return list<array{int|float, int|float}> sorted and disjoint
+	 */
+	private static function intersectIntervals(array $left, array $right): array
+	{
+		$intervals = [];
+		$i = 0;
+		$j = 0;
+		while ($i < count($left) && $j < count($right)) {
+			$min = max($left[$i][0], $right[$j][0]);
+			$max = min($left[$i][1], $right[$j][1]);
+			if ($min <= $max) {
+				$intervals[] = [$min, $max];
+			}
+			// the interval ending first meets no later interval of the other side
+			if ($left[$i][1] < $right[$j][1]) {
+				$i++;
+			} else {
+				$j++;
+			}
+		}
+
+		return $intervals;
 	}
 
 	/** Orders the lower bounds, null being the smallest. */

@@ -735,6 +735,27 @@ final class TypeCombinator
 			}
 		}
 
+		// Integers, ranges and their plain unions intersect by their intervals,
+		// instead of distributing `A & (B | C)` over each pair of members.
+		if ($unionTypesCount > 0) {
+			$operands = [];
+			foreach ($types as $type) {
+				if (!$type instanceof UnionType) {
+					$operands[] = [$type];
+					continue;
+				}
+				if (get_class($type) !== UnionType::class) {
+					$operands = null;
+					break;
+				}
+				$operands[] = $type->getTypes();
+			}
+			$integers = $operands !== null ? ScalarUnion::intersectIntegers($operands) : null;
+			if ($integers !== null) {
+				return self::union(...$integers);
+			}
+		}
+
 		$sortTypes = static function (Type $a, Type $b): int {
 			if (!$a instanceof UnionType || !$b instanceof UnionType) {
 				return 0;

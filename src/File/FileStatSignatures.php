@@ -3,7 +3,10 @@
 namespace PHPStan\File;
 
 use PHPStan\DependencyInjection\AutowiredService;
+use function fclose;
+use function fstat;
 use function time;
+use function tmpfile;
 use const DIRECTORY_SEPARATOR;
 
 /**
@@ -27,7 +30,33 @@ final class FileStatSignatures
 	{
 		// On Windows, the ctime PHP reports is the creation time, which a file rewritten in place
 		// keeps, and the mtime alone can be set back - nothing can be vouched for there.
-		return new FileStatSignatureReader(time(), DIRECTORY_SEPARATOR === '/');
+		if (DIRECTORY_SEPARATOR !== '/') {
+			return new FileStatSignatureReader(time(), false);
+		}
+
+		return new FileStatSignatureReader($this->getFilesystemTime(), true);
+	}
+
+	/**
+	 * The kernel stamps files with a clock that advances only on a timer tick, so for a few
+	 * milliseconds after time() moves to the next second, a file written still gets the previous
+	 * one. Comparing timestamps to time() would vouch for such a file - the current second is read
+	 * off a file created now instead, the way git compares to the mtime of its index.
+	 */
+	private function getFilesystemTime(): int
+	{
+		$probe = @tmpfile();
+		if ($probe === false) {
+			return time() - 1;
+		}
+
+		$stat = @fstat($probe);
+		fclose($probe);
+		if ($stat === false) {
+			return time() - 1;
+		}
+
+		return $stat['mtime'];
 	}
 
 }

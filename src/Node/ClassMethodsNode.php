@@ -6,6 +6,7 @@ use Override;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeAbstract;
 use PHPStan\Node\Method\MethodCall;
+use PHPStan\Node\Method\MethodVariableWrites;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 
@@ -19,8 +20,9 @@ final class ClassMethodsNode extends NodeAbstract implements VirtualNode
 	/**
 	 * @param ClassMethod[] $methods
 	 * @param array<int, MethodCall> $methodCalls
+	 * @param list<MethodVariableWrites> $methodVariableWrites
 	 */
-	public function __construct(private ClassLike $class, private array $methods, private array $methodCalls, private ClassReflection $classReflection)
+	public function __construct(private ClassLike $class, private array $methods, private array $methodCalls, private ClassReflection $classReflection, private array $methodVariableWrites = [])
 	{
 		parent::__construct($class->getAttributes());
 	}
@@ -44,6 +46,16 @@ final class ClassMethodsNode extends NodeAbstract implements VirtualNode
 	public function getMethodCalls(): array
 	{
 		return $this->methodCalls;
+	}
+
+	/**
+	 * The VariableWritesNode of each method body, with the scope inside the method.
+	 *
+	 * @return list<MethodVariableWrites>
+	 */
+	public function getMethodVariableWrites(): array
+	{
+		return $this->methodVariableWrites;
 	}
 
 	#[Override]

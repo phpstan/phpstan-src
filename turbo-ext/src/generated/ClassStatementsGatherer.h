@@ -14,12 +14,13 @@ inline constexpr uint32_t nodeCallback = 0;
 inline constexpr uint32_t properties = 1;
 inline constexpr uint32_t methods = 2;
 inline constexpr uint32_t methodCalls = 3;
-inline constexpr uint32_t propertyUsages = 4;
-inline constexpr uint32_t constants = 5;
-inline constexpr uint32_t constantFetches = 6;
-inline constexpr uint32_t returnStatementNodes = 7;
-inline constexpr uint32_t propertyAssigns = 8;
-inline constexpr uint32_t classReflection = 9;
+inline constexpr uint32_t methodVariableWrites = 4;
+inline constexpr uint32_t propertyUsages = 5;
+inline constexpr uint32_t constants = 6;
+inline constexpr uint32_t constantFetches = 7;
+inline constexpr uint32_t returnStatementNodes = 8;
+inline constexpr uint32_t propertyAssigns = 9;
+inline constexpr uint32_t classReflection = 10;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -34,6 +35,7 @@ inline void declareProperties(reg::Class &cls)
 	cls.property("properties", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("methods", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("methodCalls", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("methodVariableWrites", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("propertyUsages", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("constants", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("constantFetches", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
@@ -53,49 +55,51 @@ inline constexpr char strings[] =
 	"getProperties\0" /* 77 */
 	"getMethods\0" /* 91 */
 	"getMethodCalls\0" /* 102 */
-	"getPropertyUsages\0" /* 117 */
-	"getConstants\0" /* 135 */
-	"getConstantFetches\0" /* 148 */
-	"getReturnStatementsNodes\0" /* 167 */
-	"getPropertyAssigns\0" /* 192 */
-	"node\0" /* 211 */
-	"PhpParser\\Node\0" /* 216 */
-	"scope\0" /* 231 */
-	"PHPStan\\Analyser\\Scope\0" /* 237 */
-	"__invoke\0" /* 260 */
-	"gatherNodes\0" /* 269 */
-	"PhpParser\\Node\\Expr\\FuncCall\0" /* 281 */
-	"tryToApplyPropertyReads\0" /* 310 */
-	"PhpParser\\Node\\Expr\\Variable\0" /* 334 */
-	"tryToApplyPromotedParameterRead\0" /* 363 */
-	"ancestorConstructorCall\0" /* 395 */
-	"PhpParser\\Node\\Expr\\StaticCall\0" /* 419 */
-	"tryToApplyPropertyWritesFromAncestorConstructor"; /* 450 */
+	"getMethodVariableWrites\0" /* 117 */
+	"getPropertyUsages\0" /* 141 */
+	"getConstants\0" /* 159 */
+	"getConstantFetches\0" /* 172 */
+	"getReturnStatementsNodes\0" /* 191 */
+	"getPropertyAssigns\0" /* 216 */
+	"node\0" /* 235 */
+	"PhpParser\\Node\0" /* 240 */
+	"scope\0" /* 255 */
+	"PHPStan\\Analyser\\Scope\0" /* 261 */
+	"__invoke\0" /* 284 */
+	"gatherNodes\0" /* 293 */
+	"PhpParser\\Node\\Expr\\FuncCall\0" /* 305 */
+	"tryToApplyPropertyReads\0" /* 334 */
+	"PhpParser\\Node\\Expr\\Variable\0" /* 358 */
+	"tryToApplyPromotedParameterRead\0" /* 387 */
+	"ancestorConstructorCall\0" /* 419 */
+	"PhpParser\\Node\\Expr\\StaticCall\0" /* 443 */
+	"tryToApplyPropertyWritesFromAncestorConstructor"; /* 474 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 16), /* __construct $classReflection */
 	reg::packed(51, MAY_BE_CALLABLE), /* __construct $nodeCallback */
 	reg::packed(76, MAY_BE_ARRAY), /* getProperties return */
 	reg::packed(76, MAY_BE_ARRAY), /* getMethods return */
 	reg::packed(76, MAY_BE_ARRAY), /* getMethodCalls return */
+	reg::packed(76, MAY_BE_ARRAY), /* getMethodVariableWrites return */
 	reg::packed(76, MAY_BE_ARRAY), /* getPropertyUsages return */
 	reg::packed(76, MAY_BE_ARRAY), /* getConstants return */
 	reg::packed(76, MAY_BE_ARRAY), /* getConstantFetches return */
 	reg::packed(76, MAY_BE_ARRAY), /* getReturnStatementsNodes return */
 	reg::packed(76, MAY_BE_ARRAY), /* getPropertyAssigns return */
-	reg::packed(211, 0, 216), /* __invoke $node */
-	reg::packed(231, 0, 237), /* __invoke $scope */
+	reg::packed(235, 0, 240), /* __invoke $node */
+	reg::packed(255, 0, 261), /* __invoke $scope */
 	reg::packed(76, MAY_BE_VOID), /* __invoke return */
-	reg::packed(211, 0, 216), /* gatherNodes $node */
-	reg::packed(231, 0, 237), /* gatherNodes $scope */
+	reg::packed(235, 0, 240), /* gatherNodes $node */
+	reg::packed(255, 0, 261), /* gatherNodes $scope */
 	reg::packed(76, MAY_BE_VOID), /* gatherNodes return */
-	reg::packed(211, 0, 281), /* tryToApplyPropertyReads $node */
-	reg::packed(231, 0, 237), /* tryToApplyPropertyReads $scope */
+	reg::packed(235, 0, 305), /* tryToApplyPropertyReads $node */
+	reg::packed(255, 0, 261), /* tryToApplyPropertyReads $scope */
 	reg::packed(76, MAY_BE_VOID), /* tryToApplyPropertyReads return */
-	reg::packed(211, 0, 334), /* tryToApplyPromotedParameterRead $node */
-	reg::packed(231, 0, 237), /* tryToApplyPromotedParameterRead $scope */
+	reg::packed(235, 0, 358), /* tryToApplyPromotedParameterRead $node */
+	reg::packed(255, 0, 261), /* tryToApplyPromotedParameterRead $scope */
 	reg::packed(76, MAY_BE_VOID), /* tryToApplyPromotedParameterRead return */
-	reg::packed(395, 0, 419), /* tryToApplyPropertyWritesFromAncestorConstructor $ancestorConstructorCall */
-	reg::packed(231, 0, 237), /* tryToApplyPropertyWritesFromAncestorConstructor $scope */
+	reg::packed(419, 0, 443), /* tryToApplyPropertyWritesFromAncestorConstructor $ancestorConstructorCall */
+	reg::packed(255, 0, 261), /* tryToApplyPropertyWritesFromAncestorConstructor $scope */
 	reg::packed(76, MAY_BE_VOID), /* tryToApplyPropertyWritesFromAncestorConstructor return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -107,16 +111,17 @@ inline constexpr sigtab::Sig __construct = { { 64 /* __construct */, 2, 0, 2, re
 inline constexpr sigtab::Sig getProperties = { { 77 /* getProperties */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getMethods = { { 91 /* getMethods */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getMethodCalls = { { 102 /* getMethodCalls */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getPropertyUsages = { { 117 /* getPropertyUsages */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getConstants = { { 135 /* getConstants */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getConstantFetches = { { 148 /* getConstantFetches */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getReturnStatementsNodes = { { 167 /* getReturnStatementsNodes */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getPropertyAssigns = { { 192 /* getPropertyAssigns */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig __invoke = { { 260 /* __invoke */, 2, 10, 2, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig gatherNodes = { { 269 /* gatherNodes */, 2, 13, 2, 15, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig tryToApplyPropertyReads = { { 310 /* tryToApplyPropertyReads */, 2, 16, 2, 18, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig tryToApplyPromotedParameterRead = { { 363 /* tryToApplyPromotedParameterRead */, 2, 19, 2, 21, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig tryToApplyPropertyWritesFromAncestorConstructor = { { 450 /* tryToApplyPropertyWritesFromAncestorConstructor */, 2, 22, 2, 24, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getMethodVariableWrites = { { 117 /* getMethodVariableWrites */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPropertyUsages = { { 141 /* getPropertyUsages */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstants = { { 159 /* getConstants */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantFetches = { { 172 /* getConstantFetches */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReturnStatementsNodes = { { 191 /* getReturnStatementsNodes */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPropertyAssigns = { { 216 /* getPropertyAssigns */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig __invoke = { { 284 /* __invoke */, 2, 11, 2, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig gatherNodes = { { 293 /* gatherNodes */, 2, 14, 2, 16, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig tryToApplyPropertyReads = { { 334 /* tryToApplyPropertyReads */, 2, 17, 2, 19, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig tryToApplyPromotedParameterRead = { { 387 /* tryToApplyPromotedParameterRead */, 2, 20, 2, 22, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig tryToApplyPropertyWritesFromAncestorConstructor = { { 474 /* tryToApplyPropertyWritesFromAncestorConstructor */, 2, 23, 2, 25, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ClassStatementsGatherer

@@ -4170,6 +4170,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 						$type = TypeCombinator::intersect($type, $expressions[$i]->getTypeHolder()->getType());
 					}
 
+					// The holders' types were derived from PHPDoc types. Where the target
+					// and every guard have native types equal to their PHPDoc types, the
+					// PHPDoc knowledge the holder carries is implied by the native types
+					// too, so the holder narrows the native type the way the condition
+					// it was derived from would have
+					if ($scope->narrowsNativeTypeByHolders($conditionalExprString, $expressions)) {
+						$nativeHolder = $scope->nativeExpressionTypes[$conditionalExprString];
+						$scope->nativeExpressionTypes[$conditionalExprString] = new ExpressionTypeHolder(
+							$nativeHolder->getExpr(),
+							TypeCombinator::intersect($nativeHolder->getType(), $type),
+							$nativeHolder->getCertainty(),
+						);
+					}
+
 					$scope->expressionTypes[$conditionalExprString] = new ExpressionTypeHolder(
 						$scope->expressionTypes[$conditionalExprString]->getExpr(),
 						TypeCombinator::intersect($scope->expressionTypes[$conditionalExprString]->getType(), $type),
@@ -4182,6 +4196,33 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		}
 
 		return $scope;
+	}
+
+	/**
+	 * @param ConditionalExpressionHolder[] $holders
+	 */
+	private function narrowsNativeTypeByHolders(string $exprString, array $holders): bool
+	{
+		if (!$this->hasEqualNativeType($exprString)) {
+			return false;
+		}
+
+		foreach ($holders as $holder) {
+			foreach (array_keys($holder->getConditionExpressionTypeHolders()) as $guardExprString) {
+				if (!$this->hasEqualNativeType($guardExprString)) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private function hasEqualNativeType(string $exprString): bool
+	{
+		return array_key_exists($exprString, $this->expressionTypes)
+			&& array_key_exists($exprString, $this->nativeExpressionTypes)
+			&& $this->expressionTypes[$exprString]->equalTypes($this->nativeExpressionTypes[$exprString]);
 	}
 
 	/**

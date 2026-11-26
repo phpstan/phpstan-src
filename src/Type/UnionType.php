@@ -1828,7 +1828,8 @@ class UnionType implements CompoundType
 			return $this;
 		}
 
-		return TypeCombinator::union(...$newTypes);
+		// a join of what the members answer, such as the values of all their arrays
+		return TypeCombinator::widen(TypeCombinator::union(...$newTypes));
 	}
 
 	/**

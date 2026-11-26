@@ -426,6 +426,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_CLOSURE_ORIGIN_CALL_REPLAY */ {"closureOriginCallReplay", "PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureOriginCallReplay"},
 	/* PT_CLASS_TYPE_COMBINATOR */ {"typeCombinator", "PHPStan\\Type\\TypeCombinator"},
 	/* PT_CLASS_SUBTRACTION_ALGEBRA */ {"subtractionAlgebra", "PHPStan\\Type\\SubtractionAlgebra"},
+	/* PT_CLASS_ARRAY_ALGEBRA */ {"arrayAlgebra", "PHPStan\\Type\\ArrayAlgebra"},
 };
 
 zend_class_entry *pt_class(int idx)
@@ -1375,10 +1376,13 @@ bool pt_holder_and(zval *a, zval *b, zval *result)
 	}
 	if (UNEXPECTED(EG(exception))) return false;
 	{
+		/* TypeCombinator::widen(TypeCombinator::union($a->type, $b->type)) */
 		zval union_type;
 		if (UNEXPECTED(!pt_type_combinator_binary("union", sizeof("union") - 1, a_type, b_type, &union_type))) return false;
-		pt_holder_create(result, OBJ_PROP_NUM(ao, PT_ETH_PROP_EXPR), &union_type, ac & bc);
+		zv::Val widened = pt_type_combinator_call(PT_LC("widen"), 1, &union_type);
 		zval_ptr_dtor(&union_type);
+		if (UNEXPECTED(widened.isUndef())) return false;
+		pt_holder_create(result, OBJ_PROP_NUM(ao, PT_ETH_PROP_EXPR), widened.raw(), ac & bc);
 	}
 	return true;
 }

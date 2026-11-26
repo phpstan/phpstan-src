@@ -68,7 +68,8 @@ class BenevolentUnionType extends UnionType
 			return new ErrorType();
 		}
 
-		return TypeUtils::toBenevolentUnion(TypeCombinator::union(...$resultTypes));
+		// a join of what the members answer
+		return TypeUtils::toBenevolentUnion(TypeCombinator::widen(TypeCombinator::union(...$resultTypes)));
 	}
 
 	protected function pickFromTypes(

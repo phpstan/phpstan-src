@@ -207,7 +207,7 @@ void ZEND_FASTCALL pt_type_try_null_handler(INTERNAL_FUNCTION_PARAMETERS)
 	RETURN_NULL();
 }
 
-static void subtractionTry(INTERNAL_FUNCTION_PARAMETERS, const char *lcname, size_t len)
+static void algebraTry(INTERNAL_FUNCTION_PARAMETERS, int classIdx, const char *lcname, size_t len)
 {
 	zval *otherType;
 	ZEND_PARSE_PARAMETERS_START(1, 1)
@@ -216,17 +216,27 @@ static void subtractionTry(INTERNAL_FUNCTION_PARAMETERS, const char *lcname, siz
 	zval argv[2];
 	ZVAL_OBJ(&argv[0], Z_OBJ_P(ZEND_THIS));
 	ZVAL_COPY_VALUE(&argv[1], otherType);
-	PT_RETURN_VAL(pt_type_call_static(PT_CLASS_SUBTRACTION_ALGEBRA, lcname, len, 2, argv));
+	PT_RETURN_VAL(pt_type_call_static(classIdx, lcname, len, 2, argv));
 }
 
 void ZEND_FASTCALL pt_type_subtraction_try_union_handler(INTERNAL_FUNCTION_PARAMETERS)
 {
-	subtractionTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("tryunion"));
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_SUBTRACTION_ALGEBRA, PT_LC("tryunion"));
 }
 
 void ZEND_FASTCALL pt_type_subtraction_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS)
 {
-	subtractionTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("tryintersect"));
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_SUBTRACTION_ALGEBRA, PT_LC("tryintersect"));
+}
+
+void ZEND_FASTCALL pt_type_constant_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_ARRAY_ALGEBRA, PT_LC("tryintersectconstantarray"));
+}
+
+void ZEND_FASTCALL pt_type_oversized_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_ARRAY_ALGEBRA, PT_LC("tryintersectoversizedarray"));
 }
 
 void ZEND_FASTCALL pt_type_exact_number_set_handler(INTERNAL_FUNCTION_PARAMETERS)

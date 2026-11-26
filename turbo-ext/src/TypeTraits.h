@@ -1706,6 +1706,11 @@ void ZEND_FASTCALL pt_type_try_null_handler(INTERNAL_FUNCTION_PARAMETERS);
 void ZEND_FASTCALL pt_type_subtraction_try_union_handler(INTERNAL_FUNCTION_PARAMETERS);
 void ZEND_FASTCALL pt_type_subtraction_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
 
+/* tryIntersect() of ConstantArrayType and OversizedArrayType:
+ * ArrayAlgebra::tryIntersectConstantArray($this, $otherType) / ::tryIntersectOversizedArray() */
+void ZEND_FASTCALL pt_type_constant_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
+void ZEND_FASTCALL pt_type_oversized_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
+
 /* toExactNumberSet() of IntegerType, FloatType and IntegerRangeType:
  * $this->toNumberSet(), which their subclasses override */
 void ZEND_FASTCALL pt_type_exact_number_set_handler(INTERNAL_FUNCTION_PARAMETERS);

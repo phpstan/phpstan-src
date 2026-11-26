@@ -9,6 +9,7 @@ use PHPStan\PhpDocParser\Ast\Type\TypeNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\ArrayAlgebra;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
@@ -571,7 +572,7 @@ class OversizedArrayType implements CompoundType, AccessoryType
 
 	public function tryIntersect(Type $otherType): ?Type
 	{
-		return null;
+		return ArrayAlgebra::tryIntersectOversizedArray($this, $otherType);
 	}
 
 }

@@ -47,7 +47,7 @@ class Foo
 	public function narrowing(array $optStr): void
 	{
 		if (array_is_list($optStr)) {
-			assertType('list{}&list', $optStr);
+			assertType('array{}', $optStr);
 		} else {
 			// array_is_list()'s false branch is not narrowed, so `a` stays optional
 			// here rather than being refined to array{a: string}.

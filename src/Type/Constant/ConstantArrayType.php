@@ -35,6 +35,7 @@ use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\ArrayAlgebra;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
@@ -354,7 +355,8 @@ class ConstantArrayType implements Type
 			$valueType = TypeCombinator::union($valueType, $this->unsealed[1]);
 		}
 
-		return $this->iterableValueType = $valueType;
+		// a join of every value, which a big shape makes too big to compute with
+		return $this->iterableValueType = TypeCombinator::widen($valueType);
 	}
 
 	private function getKeyTypesUnion(): Type
@@ -1418,7 +1420,7 @@ class ConstantArrayType implements Type
 		}
 
 		if (count($matchingValueTypes) > 0) {
-			$type = TypeCombinator::union(...$matchingValueTypes);
+			$type = TypeCombinator::widen(TypeCombinator::union(...$matchingValueTypes));
 			if ($type instanceof ErrorType) {
 				return new MixedType();
 			}
@@ -3939,7 +3941,7 @@ class ConstantArrayType implements Type
 
 	public function tryIntersect(Type $otherType): ?Type
 	{
-		return null;
+		return ArrayAlgebra::tryIntersectConstantArray($this, $otherType);
 	}
 
 }

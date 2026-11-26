@@ -48,7 +48,7 @@ class Foo
 		// string from non-empty-string | lowercase-string, compared again with callable-string before it
 		assertType('string', $callableOrNonEmptyOrLowercase);
 
-		assertType('iterable<(int|string), int|string>|iterable<int>', $shapeOrArrayOrIterable);
+		assertType('array{a: string}|iterable<int>', $shapeOrArrayOrIterable);
 	}
 
 }

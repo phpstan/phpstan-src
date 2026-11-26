@@ -138,7 +138,10 @@ public:
 		}
 		if (!changed) return thisValue();
 		if (zend_hash_num_elements(resultTypes.table()) == 0) return pt_type_new_error_type();
-		zv::Val unionType = combinatorUnion(resultTypes.table());
+		/* TypeCombinator::widen(TypeCombinator::union(...$resultTypes)): a join of what the members answer */
+		zv::Val joined = combinatorUnion(resultTypes.table());
+		if (UNEXPECTED(joined.isUndef())) return zv::Val();
+		zv::Val unionType = pt_type_combinator_call(PT_LC("widen"), 1, joined.raw());
 		if (UNEXPECTED(unionType.isUndef())) return zv::Val();
 		return toBenevolent(unionType.raw());
 	}

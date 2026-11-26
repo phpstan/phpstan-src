@@ -68,7 +68,7 @@ final class ExpressionTypeHolder
 
 		return new self(
 			$this->expr,
-			TypeCombinator::union($this->type, $other->type),
+			TypeCombinator::widen(TypeCombinator::union($this->type, $other->type)),
 			$this->certainty->and($other->certainty),
 		);
 	}

@@ -2321,7 +2321,10 @@ public:
 			newTypes.push(std::move(newType));
 		}
 		if (!changed) return thisValue();
-		return combinatorUnion(newTypes.table());
+		/* TypeCombinator::widen(TypeCombinator::union(...$newTypes)): a join of what the members answer */
+		zv::Val unionType = combinatorUnion(newTypes.table());
+		if (UNEXPECTED(unionType.isUndef())) return zv::Val();
+		return pt_type_combinator_call(PT_LC("widen"), 1, unionType.raw());
 	}
 
 	zv::Val pickFromTypesImpl(const UnionMemberOp &op) const

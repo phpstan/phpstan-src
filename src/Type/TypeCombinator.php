@@ -272,6 +272,48 @@ final class TypeCombinator
 		return $type instanceof NullType;
 	}
 
+	/**
+	 * The type, generalized where it holds more constant array values than
+	 * ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT: shapes with the same keys
+	 * merged, shapes sharing a required key folded into one, and what is still
+	 * too big degraded to an oversized array.
+	 *
+	 * union() is exact and never does this. Call it where the analysis joins
+	 * values that can grow without bound, such as the types of a variable after
+	 * branches, so a join stays small enough to compute with.
+	 */
+	public static function widen(Type $type): Type
+	{
+		$types = $type instanceof UnionType && !$type instanceof TemplateType ? $type->getTypes() : [$type];
+		$arrayTypes = [];
+		$otherTypes = [];
+		foreach ($types as $member) {
+			if ($member->isArray()->yes() && !$member instanceof LateResolvableType) {
+				$arrayTypes[] = $member;
+				continue;
+			}
+			$otherTypes[] = $member;
+		}
+		if ($arrayTypes === []) {
+			return $type;
+		}
+
+		if (self::countConstantArrayValueTypes($arrayTypes) <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+			return $type;
+		}
+
+		// as union() merges them, with the shapes generalized before their
+		// common accessory types go back on
+		$widenedArrayTypes = self::processArrayTypes($arrayTypes, true);
+
+		$widened = self::union(...$otherTypes, ...$widenedArrayTypes);
+		if ($type instanceof BenevolentUnionType) {
+			return TypeUtils::toBenevolentUnion($widened);
+		}
+
+		return $widened;
+	}
+
 	public static function union(Type ...$types): Type
 	{
 		if (self::$cacheEnabled ??= TurboExtensionEnabler::isTypeCombinatorCacheEnabled()) {
@@ -586,6 +628,25 @@ final class TypeCombinator
 				$newTypes[$type->describe(VerbosityLevel::cache())] = $type;
 			}
 			$types = array_values($newTypes);
+		}
+
+		// Exact absorption first: an array another member holds, such as
+		// array<int> in iterable<int>, is dropped before processArrayTypes()
+		// widens the arrays into one another, which would lose the rest of them.
+		if ($arrayTypes !== [] && $types !== []) {
+			$remainingArrayTypes = [];
+			foreach ($arrayTypes as $arrayType) {
+				foreach ($types as $type) {
+					if (
+						!TypeKind::areDisjoint($type->getKindMask(), $arrayType->getKindMask())
+						&& $type->isSuperTypeOf($arrayType)->yes()
+					) {
+						continue 2;
+					}
+				}
+				$remainingArrayTypes[] = $arrayType;
+			}
+			$arrayTypes = $remainingArrayTypes;
 		}
 
 		// compareTypesInUnion() leaves a pair of constant arrays as it is unless
@@ -1061,7 +1122,7 @@ final class TypeCombinator
 	 * @param list<Type> $arrayTypes
 	 * @return Type[]
 	 */
-	private static function processArrayTypes(array $arrayTypes): array
+	private static function processArrayTypes(array $arrayTypes, bool $widen = false): array
 	{
 		if ($arrayTypes === []) {
 			return [];
@@ -1080,12 +1141,12 @@ final class TypeCombinator
 				$otherArrayTypes[] = $arrayType;
 			}
 
-			return [$emptyArray, ...self::processArrayTypes($otherArrayTypes)];
+			return [$emptyArray, ...self::processArrayTypes($otherArrayTypes, $widen)];
 		}
 
 		$accessoryTypes = self::processArrayAccessoryTypes($arrayTypes);
 
-		if (count($arrayTypes) === 1) {
+		if (count($arrayTypes) === 1 && !$widen) {
 			return [
 				self::intersect(...$arrayTypes, ...$accessoryTypes),
 			];
@@ -1146,6 +1207,7 @@ final class TypeCombinator
 
 			$arrayType = new ArrayType(
 				self::union(...$keyTypesForGeneralArray),
+				// merging the arrays into one generalizes them already, and bounds what it merges
 				self::union(...self::optimizeConstantArrays($valueTypesForGeneralArray)),
 			);
 
@@ -1165,7 +1227,10 @@ final class TypeCombinator
 			];
 		}
 
-		$reducedArrayTypes = self::optimizeConstantArrays(self::reduceArrays($arrayTypes, true));
+		$reducedArrayTypes = self::reduceArrays($arrayTypes, true, $widen);
+		if ($widen) {
+			$reducedArrayTypes = self::optimizeConstantArrays($reducedArrayTypes);
+		}
 		foreach ($reducedArrayTypes as $idx => $reducedArray) {
 			$applied = $accessoryTypes;
 			if ($reducedArray->isIterableAtLeastOnce()->no()) {
@@ -1289,7 +1354,7 @@ final class TypeCombinator
 					$collapsed[] = $group[0];
 					continue;
 				}
-				$collapsed[] = self::mergeConstantArraysWithSameKeys($group);
+				$collapsed[] = self::widenValueTypes(self::mergeConstantArraysWithSameKeys($group));
 				$anyMerged = true;
 			}
 			if ($anyMerged) {
@@ -1345,6 +1410,9 @@ final class TypeCombinator
 				}
 			}
 			$merged = $merged->mergeWith($type);
+		}
+		if ($merged !== null) {
+			$merged = self::widenValueTypes($merged);
 		}
 		if (
 			$merged !== null
@@ -1428,7 +1496,7 @@ final class TypeCombinator
 				}
 
 				$keyType = TypeCombinator::union(...array_values($keyTypes));
-				$valueType = TypeCombinator::union(...array_values($valueTypes));
+				$valueType = self::widen(TypeCombinator::union(...array_values($valueTypes)));
 
 				$accessories = [];
 				if ($isList) {
@@ -1461,7 +1529,7 @@ final class TypeCombinator
 			}
 
 			$keyType = self::union(...$keyTypes);
-			$valueType = self::union(...$valueTypes);
+			$valueType = self::widen(self::union(...$valueTypes));
 
 			if ($valueType instanceof UnionType && count($valueType->getTypes()) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
 				$valueType = $valueType->generalize(GeneralizePrecision::lessSpecific());
@@ -1478,6 +1546,29 @@ final class TypeCombinator
 		}
 
 		return [...$emptyArrays, ...$results];
+	}
+
+	/**
+	 * The shape with its value types widened: merging shapes unions the values
+	 * at each key, and those joins grow like any other.
+	 */
+	private static function widenValueTypes(ConstantArrayType $array): ConstantArrayType
+	{
+		$valueTypes = $array->getValueTypes();
+		$changed = false;
+		foreach ($valueTypes as $i => $valueType) {
+			$widened = self::widen($valueType);
+			if ($widened === $valueType) {
+				continue;
+			}
+			$valueTypes[$i] = $widened;
+			$changed = true;
+		}
+		if (!$changed) {
+			return $array;
+		}
+
+		return new ConstantArrayType($array->getKeyTypes(), $valueTypes, $array->getNextAutoIndexes(), $array->getOptionalKeys(), $array->isList(), $array->getUnsealedTypes());
 	}
 
 	/**
@@ -1614,7 +1705,7 @@ final class TypeCombinator
 	 * @param list<Type> $constantArrays
 	 * @return list<Type>
 	 */
-	private static function reduceArrays(array $constantArrays, bool $preserveTaggedUnions): array
+	private static function reduceArrays(array $constantArrays, bool $preserveTaggedUnions, bool $widen = false): array
 	{
 		$newArrays = [];
 		$arraysToProcess = [];
@@ -1978,7 +2069,7 @@ final class TypeCombinator
 			unset($arraysToProcess[$idx]);
 		}
 
-		// Final pass: collapse the loop-accumulator pattern where each iteration
+		// Final pass, when widening (see widen()): collapse the loop-accumulator pattern where each iteration
 		// produced a longer non-empty list variant. When several non-empty list
 		// ConstantArrayTypes survive earlier merging and together push the
 		// constant-array value count past the limit, fold them into a single
@@ -1988,7 +2079,7 @@ final class TypeCombinator
 		// losslessly via the stage 1 same-key-set merge in optimizeConstantArrays
 		// (each position keeps its own value union), which is strictly more
 		// precise than this flat fold.
-		if ($preserveTaggedUnions && count($arraysToProcess) > 1) {
+		if ($widen && $preserveTaggedUnions && count($arraysToProcess) > 1) {
 			$listVariantIndices = [];
 			$listValueTypes = [];
 			$listVariants = [];
@@ -2011,7 +2102,7 @@ final class TypeCombinator
 				&& count($listVariantSignatures) >= 2
 				&& self::countConstantArrayValueTypes($listVariants) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
 			) {
-				$mergedValueType = self::union(...$listValueTypes);
+				$mergedValueType = self::widen(self::union(...$listValueTypes));
 				$merged = self::intersect(
 					new ArrayType(new IntegerType(), $mergedValueType),
 					new NonEmptyArrayType(),
@@ -2324,99 +2415,6 @@ final class TypeCombinator
 				}
 
 				if ($isSuperTypeB->maybe()) {
-					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof HasOffsetType) {
-						$types[$i] = $types[$i]->makeOffsetRequired($types[$j]->getOffsetType());
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue;
-					}
-
-					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof HasOffsetType) {
-						$types[$j] = $types[$j]->makeOffsetRequired($types[$i]->getOffsetType());
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
-
-					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof AccessoryArrayListType) {
-						$types[$i] = $types[$i]->makeList();
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue;
-					}
-
-					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof AccessoryArrayListType) {
-						$types[$j] = $types[$j]->makeList();
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
-
-					if (
-						$types[$i] instanceof ConstantArrayType
-						&& $types[$j] instanceof NonEmptyArrayType
-						&& (count($types[$i]->getKeyTypes()) === 1 || $types[$i]->isList()->yes())
-						&& $types[$i]->isOptionalKey(0)
-						&& !$types[$i]->isUnsealed()->yes()
-					) {
-						$types[$i] = $types[$i]->makeOffsetRequired($types[$i]->getKeyTypes()[0]);
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue;
-					}
-
-					if (
-						$types[$j] instanceof ConstantArrayType
-						&& $types[$i] instanceof NonEmptyArrayType
-						&& (count($types[$j]->getKeyTypes()) === 1 || $types[$j]->isList()->yes())
-						&& $types[$j]->isOptionalKey(0)
-						&& !$types[$j]->isUnsealed()->yes()
-					) {
-						$types[$j] = $types[$j]->makeOffsetRequired($types[$j]->getKeyTypes()[0]);
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
-
-					if ($types[$i] instanceof ConstantArrayType && $types[$j] instanceof HasOffsetValueType) {
-						$offsetType = $types[$j]->getOffsetType();
-						$valueType = $types[$j]->getValueType();
-						$newValueType = self::intersect($types[$i]->getOffsetValueType($offsetType), $valueType);
-						if ($newValueType instanceof NeverType) {
-							return $newValueType;
-						}
-						$types[$i] = $types[$i]->setOffsetValueType($offsetType, $newValueType);
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue;
-					}
-
-					if ($types[$j] instanceof ConstantArrayType && $types[$i] instanceof HasOffsetValueType) {
-						$offsetType = $types[$i]->getOffsetType();
-						$valueType = $types[$i]->getValueType();
-						$newValueType = self::intersect($types[$j]->getOffsetValueType($offsetType), $valueType);
-						if ($newValueType instanceof NeverType) {
-							return $newValueType;
-						}
-
-						$types[$j] = $types[$j]->setOffsetValueType($offsetType, $newValueType);
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
-
-					if ($types[$i] instanceof OversizedArrayType && $types[$j] instanceof HasOffsetValueType) {
-						array_splice($types, $j--, 1);
-						$typesCount--;
-						continue;
-					}
-
-					if ($types[$j] instanceof OversizedArrayType && $types[$i] instanceof HasOffsetValueType) {
-						array_splice($types, $i--, 1);
-						$typesCount--;
-						continue 2;
-					}
-
 					$constArrayIsI = $types[$i] instanceof ConstantArrayType && ($types[$j] instanceof ArrayType || $types[$j] instanceof ConstantArrayType);
 					$constArrayIsJ = $types[$j] instanceof ConstantArrayType && ($types[$i] instanceof ArrayType || $types[$i] instanceof ConstantArrayType);
 					if ($constArrayIsI || $constArrayIsJ) {

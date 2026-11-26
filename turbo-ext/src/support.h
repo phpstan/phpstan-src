@@ -535,6 +535,8 @@ enum {
 	PT_CLASS_TYPE_COMBINATOR,
 	/* tryUnion() and tryIntersect() of the subtractable types */
 	PT_CLASS_SUBTRACTION_ALGEBRA,
+	/* tryIntersect() of ConstantArrayType and OversizedArrayType */
+	PT_CLASS_ARRAY_ALGEBRA,
 	PT_CLASS_COUNT
 };
 

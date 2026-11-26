@@ -21,6 +21,11 @@ final class AbsorbedArrayUnionRule implements UnionRule
 		return TypeKind::ARRAY;
 	}
 
+	public function mergesConstantScalarValues(): bool
+	{
+		return true;
+	}
+
 	public function apply(array $types, array $normalizedGroups): array
 	{
 		$arrays = ArrayUnion::getArrayMembers($types);

@@ -21,6 +21,11 @@ final class FoldedShapeUnionRule implements UnionRule
 		return TypeKind::ARRAY;
 	}
 
+	public function mergesConstantScalarValues(): bool
+	{
+		return true;
+	}
+
 	public function apply(array $types, array $normalizedGroups): array
 	{
 		[$arrays, $dropped] = ArrayUnion::getMergeableArrays($types);

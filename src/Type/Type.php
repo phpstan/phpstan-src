@@ -757,7 +757,8 @@ interface Type
 	 * The intersection with the other type as one type, when this type knows it
 	 * better than as the subtype of the two, such as `Foo & object~Bar` being
 	 * `Foo~Bar`. Null when it does not; TypeCombinator::intersect() asks the
-	 * other type the same, and asks both before it drops supertypes.
+	 * other type the same, and asks both before it drops supertypes. A type that
+	 * compares the two to find out may return the one the other holds instead.
 	 */
 	public function tryIntersect(Type $otherType): ?Type;
 

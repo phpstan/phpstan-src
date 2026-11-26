@@ -22,6 +22,11 @@ final class IterableUnionRule implements UnionRule
 		return TypeKind::ARRAY | TypeKind::OBJECT;
 	}
 
+	public function mergesConstantScalarValues(): bool
+	{
+		return true;
+	}
+
 	public function apply(array $types, array $normalizedGroups): array
 	{
 		$iterables = [];

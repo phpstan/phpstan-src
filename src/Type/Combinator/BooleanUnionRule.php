@@ -19,6 +19,11 @@ final class BooleanUnionRule implements UnionRule
 		return TypeKind::BOOL;
 	}
 
+	public function mergesConstantScalarValues(): bool
+	{
+		return true;
+	}
+
 	public function apply(array $types, array $normalizedGroups): array
 	{
 		$trueIndex = null;

@@ -26,6 +26,11 @@ final class StringUnionRule implements UnionRule
 		return TypeKind::STRING;
 	}
 
+	public function mergesConstantScalarValues(): bool
+	{
+		return false;
+	}
+
 	public function apply(array $types, array $normalizedGroups): array
 	{
 		$refinements = [];

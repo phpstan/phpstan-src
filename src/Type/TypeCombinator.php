@@ -47,6 +47,7 @@ use function array_slice;
 use function array_values;
 use function count;
 use function get_class;
+use function is_float;
 use function spl_object_id;
 use function usort;
 
@@ -210,6 +211,11 @@ final class TypeCombinator
 	 */
 	public static function widen(Type $type): Type
 	{
+		// no member is an array
+		if (($type->getKindMask() & TypeKind::ARRAY) === 0) {
+			return $type;
+		}
+
 		$types = $type instanceof UnionType && !$type instanceof TemplateType ? $type->getTypes() : [$type];
 		$arrayTypes = [];
 		$otherTypes = [];
@@ -297,7 +303,8 @@ final class TypeCombinator
 		// Fast path for single non-union type
 		if ($typesCount === 1) {
 			$singleType = $types[0];
-			if (!$singleType instanceof UnionType && !$singleType->isArray()->yes()) {
+			// a union is normalized already
+			if ($singleType instanceof UnionType || !$singleType->isArray()->yes()) {
 				return $singleType;
 			}
 		}
@@ -466,14 +473,23 @@ final class TypeCombinator
 			return $types[0];
 		}
 
-		// the kinds of the members, never - of no values - overlapping every kind
+		// the kinds of the members, never - of no values - overlapping every kind,
+		// and of those that are not one constant scalar value
 		$kindMask = 0;
+		$nonConstantKindMask = 0;
 		foreach ($types as $type) {
 			$memberKindMask = $type->getKindMask();
-			$kindMask |= $memberKindMask === 0 ? TypeKind::ALL : $memberKindMask;
+			if ($memberKindMask === 0) {
+				$memberKindMask = TypeKind::ALL;
+			}
+			$kindMask |= $memberKindMask;
+			if (count($type->getConstantScalarValues()) === 1) {
+				continue;
+			}
+			$nonConstantKindMask |= $memberKindMask;
 		}
 		foreach (self::$unionRules ??= self::createUnionRules() as $rule) {
-			if (($rule->getKindMask() & $kindMask) === 0) {
+			if (($rule->getKindMask() & ($rule->mergesConstantScalarValues() ? $kindMask : $nonConstantKindMask)) === 0) {
 				continue;
 			}
 			$types = $rule->apply($types, $alreadyNormalized);
@@ -511,7 +527,10 @@ final class TypeCombinator
 	}
 
 	/**
-	 * The operand the union of two is, when one holds the other: the one that
+	 * The union of two operands when it is known without the rules: of two that
+	 * never merge into one member - of different kinds, or two different constant
+	 * scalars - the union of both, of a normalized union and another operand what
+	 * unionWithNormalizedUnion() answers, and when one holds the other the one that
 	 * holds the other and is not held by it, and of two holding each other the
 	 * later one, as SingleValueUnionRule and SubsumptionUnionRule keep it, unless
 	 * tryUnion() merges them into another type or they are two values, as -0.0
@@ -527,11 +546,37 @@ final class TypeCombinator
 		$bKinds = $b->getKindMask();
 		if (
 			($aKinds & $bKinds) === 0
+			&& $aKinds !== 0
+			&& $bKinds !== 0
+			&& (($aKinds | $bKinds) & TypeKind::ARRAY) === 0
+			// true and false merge into bool
+			&& (($aKinds & TypeKind::BOOL) === 0 || ($bKinds & TypeKind::BOOL) === 0)
+			&& !$a instanceof UnionType
+			&& !$b instanceof UnionType
+			&& !$a instanceof UnresolvedTemplateArgumentType
+			&& !$b instanceof UnresolvedTemplateArgumentType
+		) {
+			// values of different kinds never merge into one member
+			return new UnionType([$a, $b], true);
+		}
+		if (
+			($aKinds & $bKinds) === 0
 			|| (($aKinds | $bKinds) & TypeKind::ARRAY) !== 0
 			|| $a instanceof UnresolvedTemplateArgumentType
 			|| $b instanceof UnresolvedTemplateArgumentType
 		) {
 			return null;
+		}
+
+		if ($a instanceof UnionType || $b instanceof UnionType) {
+			return self::unionWithNormalizedUnion($a, $b, false) ?? self::unionWithNormalizedUnion($b, $a, true);
+		}
+		if (
+			self::isValueApartFromSingleValues($a)
+			&& self::isValueApartFromSingleValues($b)
+			&& SingleValueUnionRule::getValueKey($a) !== SingleValueUnionRule::getValueKey($b)
+		) {
+			return new UnionType([$a, $b], true);
 		}
 
 		$aHoldsB = $a->isSuperTypeOf($b)->yes();
@@ -541,9 +586,6 @@ final class TypeCombinator
 		}
 		if (
 			!$aHoldsB
-			// a benevolent union is flattened and wrapped again by the general path
-			|| $a instanceof UnionType
-			|| $b instanceof UnionType
 			|| $a->tryUnion($b) !== null
 			|| $b->tryUnion($a) !== null
 		) {
@@ -558,6 +600,71 @@ final class TypeCombinator
 		}
 
 		return $b;
+	}
+
+	/**
+	 * The union of a normalized union and another operand that one of its members
+	 * holds: the union. Of a constant scalar no member holds, when the members of
+	 * its kinds are single values too, which never merge with it: the union with
+	 * the value added. Otherwise null, as for a union holding the operand only as
+	 * a whole, like `int<0, 5>|int<6, 9>` holds `int<2, 7>`, which is left to the
+	 * rules. The members are asked one by one instead of the union, which would
+	 * build the set of its values for this one question.
+	 */
+	private static function unionWithNormalizedUnion(Type $union, Type $other, bool $otherFirst): ?Type
+	{
+		if (!$union instanceof UnionType || $union instanceof TemplateType || $other instanceof UnionType) {
+			return null;
+		}
+
+		$otherKinds = $other->getKindMask();
+		$canAdd = self::isValueApartFromSingleValues($other);
+		$otherValues = $canAdd ? $other->getConstantScalarValues() : null;
+		if ($otherValues !== null && is_float($otherValues[0])) {
+			// -0.0 === 0.0 and NAN !== NAN, the value keys tell floats apart
+			$otherValues = null;
+		}
+		$otherKey = SingleValueUnionRule::getValueKey($other);
+		$members = $union->getTypes();
+		foreach ($members as $member) {
+			// a member of other kinds neither holds the value nor merges with it
+			if (($member->getKindMask() & $otherKinds) === 0) {
+				continue;
+			}
+			if ($otherValues !== null && $member->isConstantScalarValue()->yes()) {
+				$memberValues = $member->getConstantScalarValues();
+				// a single value holds only its own value
+				if (count($memberValues) === 1 && $memberValues[0] !== $otherValues[0]) {
+					continue;
+				}
+			}
+			if (
+				$member->isSuperTypeOf($other)->yes()
+				// two values SingleValueUnionRule keeps apart, as -0.0 and 0.0
+				&& ($otherKey === null || (SingleValueUnionRule::getValueKey($member) ?? $otherKey) === $otherKey)
+			) {
+				return $union;
+			}
+			$canAdd = $canAdd && $member->isConstantScalarValue()->yes() && SingleValueUnionRule::isSingleValue($member);
+		}
+		if (!$canAdd) {
+			return null;
+		}
+
+		// a benevolent union with a value apart from its members is a plain one
+		return new UnionType($otherFirst ? [$other, ...$members] : [...$members, $other], true);
+	}
+
+	/**
+	 * A constant scalar that never merges with another single value, as booleans
+	 * merge into bool: a member of its own beside the other values.
+	 */
+	private static function isValueApartFromSingleValues(Type $type): bool
+	{
+		return ($type->getKindMask() & TypeKind::BOOL) === 0
+			&& $type->isConstantScalarValue()->yes()
+			&& SingleValueUnionRule::isSingleValue($type)
+			&& !$type->hasTemplateOrLateResolvableType();
 	}
 
 	/**

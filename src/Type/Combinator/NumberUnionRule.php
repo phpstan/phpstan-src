@@ -30,12 +30,15 @@ final class NumberUnionRule implements UnionRule
 		return TypeKind::INT | TypeKind::FLOAT;
 	}
 
+	public function mergesConstantScalarValues(): bool
+	{
+		return false;
+	}
+
 	public function apply(array $types, array $normalizedGroups): array
 	{
 		$candidates = [];
 		$kinds = [];
-		// constants alone stay apart, SingleValueUnionRule merged the equal ones
-		$hasNonConstant = false;
 		foreach ($types as $i => $type) {
 			$kind = $type->getKindMask();
 			if (($kind & ~(TypeKind::INT | TypeKind::FLOAT)) !== 0) {
@@ -43,9 +46,8 @@ final class NumberUnionRule implements UnionRule
 			}
 			$candidates[$i] = $type;
 			$kinds[$i] = $kind;
-			$hasNonConstant = $hasNonConstant || !$type->isConstantScalarValue()->yes();
 		}
-		if (count($candidates) < 2 || !$hasNonConstant) {
+		if (count($candidates) < 2) {
 			return $types;
 		}
 

@@ -18,7 +18,9 @@ final class SubtractionAlgebra
 	/** @see Type::tryUnion() */
 	public static function tryUnion(SubtractableType $type, Type $otherType): ?Type
 	{
-		if (!self::containsWithoutSubtraction($type, $otherType)) {
+		// without a subtraction nothing is readmitted, and whether the type
+		// holds the other one is isSuperTypeOf()'s to answer
+		if ($type->getSubtractedType() === null || !self::containsWithoutSubtraction($type, $otherType)) {
 			return null;
 		}
 
@@ -28,7 +30,13 @@ final class SubtractionAlgebra
 	/** @see Type::tryIntersect() */
 	public static function tryIntersect(SubtractableType $type, Type $otherType): ?Type
 	{
-		if (!self::containsWithoutSubtraction($type, $otherType)) {
+		// without a subtraction nothing is subtracted from the other one, and
+		// whether the type holds it is isSuperTypeOf()'s to answer - but for a
+		// mixed, whose intersection with a mixed keeps the explicit one
+		if (
+			($type->getSubtractedType() === null && !$type instanceof MixedType)
+			|| !self::containsWithoutSubtraction($type, $otherType)
+		) {
 			return null;
 		}
 

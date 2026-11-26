@@ -41,9 +41,18 @@ final class SubsumptionUnionRule implements UnionRule
 	/** A member of none of the classes above, paired with every other member. */
 	private const OTHER = 4;
 
+	private const IN_NO_GROUP = -1;
+
+	private const IN_GROUPS = -2;
+
 	public function getKindMask(): int
 	{
 		return TypeKind::ALL;
+	}
+
+	public function mergesConstantScalarValues(): bool
+	{
+		return false;
 	}
 
 	public function apply(array $types, array $normalizedGroups): array
@@ -91,6 +100,11 @@ final class SubsumptionUnionRule implements UnionRule
 			}
 		}
 
+		$groupIds = [];
+		foreach ($types as $i => $type) {
+			$groupIds[$i] = self::getGroupId($groupsByType, $inTwoGroups, $type);
+		}
+
 		$count = count($types);
 		for ($i = 0; $i < $count; $i++) {
 			if (!isset($types[$i])) {
@@ -103,12 +117,16 @@ final class SubsumptionUnionRule implements UnionRule
 				if ($classes[$i] !== self::OTHER && $classes[$j] !== self::OTHER) {
 					continue;
 				}
-				if (
-					!$isSingleValue[$i]
-					&& !$isSingleValue[$j]
-					&& self::isAlreadyNormalized($groupsByType, $inTwoGroups, $types[$i], $types[$j])
-				) {
-					continue;
+				if (!$isSingleValue[$i] && !$isSingleValue[$j]) {
+					$iGroup = $groupIds[$i];
+					$jGroup = $groupIds[$j];
+					if ($types[$i] === $types[$j] || $iGroup === self::IN_GROUPS || $jGroup === self::IN_GROUPS) {
+						if (self::isAlreadyNormalized($groupsByType, $inTwoGroups, $types[$i], $types[$j])) {
+							continue;
+						}
+					} elseif ($iGroup !== self::IN_NO_GROUP && $iGroup === $jGroup) {
+						continue;
+					}
 				}
 
 				$merged = self::merge($types[$i], $types[$j]);
@@ -119,6 +137,7 @@ final class SubsumptionUnionRule implements UnionRule
 				[$a, $b] = $merged;
 				if ($a !== null) {
 					$types[$i] = $a;
+					$groupIds[$i] = self::getGroupId($groupsByType, $inTwoGroups, $a);
 					unset($types[$j], $others[$j]);
 					if ($classes[$i] !== self::OTHER && self::getMergedClass($a) === self::OTHER) {
 						// the members compared with the others only meet this one from the start
@@ -136,6 +155,7 @@ final class SubsumptionUnionRule implements UnionRule
 				}
 
 				$types[$j] = $b;
+				$groupIds[$j] = self::getGroupId($groupsByType, $inTwoGroups, $b);
 				unset($types[$i], $others[$i]);
 				if ($classes[$j] !== self::OTHER && self::getMergedClass($b) === self::OTHER) {
 					$isSingleValue[$j] = false;
@@ -182,6 +202,31 @@ final class SubsumptionUnionRule implements UnionRule
 	private static function getMergedClass(Type $merged): int
 	{
 		return SingleValueUnionRule::isSingleValue($merged) ? self::SINGLE_VALUE : self::getClass($merged);
+	}
+
+	/**
+	 * The one normalized group of a member, IN_NO_GROUP, or IN_GROUPS for a
+	 * member of several groups or of one twice, left to isAlreadyNormalized().
+	 *
+	 * @param array<int, array<int, true>> $groupsByType
+	 * @param array<int, true> $inTwoGroups
+	 */
+	private static function getGroupId(array $groupsByType, array $inTwoGroups, Type $type): int
+	{
+		$id = spl_object_id($type);
+		$groups = $groupsByType[$id] ?? null;
+		if ($groups === null) {
+			return self::IN_NO_GROUP;
+		}
+		if (count($groups) > 1 || isset($inTwoGroups[$id])) {
+			return self::IN_GROUPS;
+		}
+
+		foreach (array_keys($groups) as $group) {
+			return $group;
+		}
+
+		return self::IN_NO_GROUP;
 	}
 
 	/**

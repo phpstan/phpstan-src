@@ -23,6 +23,13 @@ interface UnionRule
 	public function getKindMask(): int;
 
 	/**
+	 * Whether the rule merges members that are each one constant scalar value,
+	 * as `1`, `'foo'` or `true`. When it does not, union() also skips it when
+	 * every member of its kinds is one.
+	 */
+	public function mergesConstantScalarValues(): bool;
+
+	/**
 	 * @param list<Type> $types the members, none of them a union, an implicit never or an implicit mixed
 	 * @param array<int, list<Type>> $normalizedGroups the members of each union passed in, which no rule merges among themselves
 	 * @return list<Type>

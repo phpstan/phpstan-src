@@ -399,12 +399,14 @@ final class ArrayUnion
 		// key left out and with none
 		$visitedPerHash = [];
 		$visitedHashes = [];
+		// the hashes of getSingleValueHash() by value object, which shapes share
+		$valueHashes = [];
 		for ($x = 0; $x < count($positions); $x++) {
 			if (!array_key_exists($x, $shapes)) {
 				continue;
 			}
 			$shape = $shapes[$x];
-			[$keys, $hashes, $queriedHashes, $shapeValues] = self::getShapeHashes($shape);
+			[$keys, $hashes, $queriedHashes, $shapeValues] = self::getShapeHashes($shape, $valueHashes);
 			$keyCount = count($keys);
 			$requiredCount = $keyCount - count($shape->getOptionalKeys());
 
@@ -462,7 +464,7 @@ final class ArrayUnion
 					continue;
 				}
 
-				[$yKeys, , , $yValues] = self::getShapeHashes($shapes[$y]);
+				[$yKeys, , , $yValues] = self::getShapeHashes($shapes[$y], $valueHashes);
 				$yRequiredCount = count($yKeys) - count($shapes[$y]->getOptionalKeys());
 				foreach ($yKeys as $key) {
 					unset($visitedPerKey[$key][count($yKeys)][$yRequiredCount][$yValues][$y]);
@@ -549,9 +551,10 @@ final class ArrayUnion
 	 * getSingleValueHash()) or the same objects; other shapes may have equal
 	 * hashes too.
 	 *
+	 * @param array<int, array{Type, ?string}> $valueHashes getSingleValueHash() by spl_object_id(), holding the objects so that their IDs are not reused
 	 * @return array{list<int|string>, list<array{int, int}>, list<array{int, int}>, self::OTHER_VALUES|self::SINGLE_VALUES|self::SINGLE_VALUE_SHAPE}
 	 */
-	private static function getShapeHashes(ConstantArrayType $shape): array
+	private static function getShapeHashes(ConstantArrayType $shape, array &$valueHashes): array
 	{
 		$keys = [];
 		$keyHashes = [];
@@ -561,7 +564,8 @@ final class ArrayUnion
 		foreach ($shape->getKeyTypes() as $i => $keyType) {
 			$key = $keyType->getValue();
 			$keys[] = $key;
-			$valueHash = self::getSingleValueHash($valueTypes[$i]);
+			$valueId = spl_object_id($valueTypes[$i]);
+			$valueHash = ($valueHashes[$valueId] ??= [$valueTypes[$i], self::getSingleValueHash($valueTypes[$i])])[1];
 			if ($valueHash === null) {
 				$isAtomic = false;
 				$valueHash = spl_object_id($valueTypes[$i]);

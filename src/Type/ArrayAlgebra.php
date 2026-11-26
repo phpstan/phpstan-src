@@ -170,15 +170,22 @@ final class ArrayAlgebra
 	}
 
 	/**
-	 * A shape and an array neither holding the other: the shape with the
-	 * values at its keys narrowed to the values the other array allows there,
-	 * or never when one of its required keys cannot be there.
+	 * A shape and an array: the one the other holds, as both are compared
+	 * anyway, and of two neither holding the other the shape with the values at
+	 * its keys narrowed to the values the other array allows there, or never
+	 * when one of its required keys cannot be there.
 	 */
 	private static function tryIntersectShapeWithArray(ConstantArrayType $constArray, Type $otherArray): ?Type
 	{
 		$isSuperTypeA = $otherArray->isSuperTypeOf($constArray);
+		if ($isSuperTypeA->yes()) {
+			return $constArray;
+		}
 		$isSuperTypeB = $constArray->isSuperTypeOf($otherArray);
-		if ($isSuperTypeA->yes() || $isSuperTypeB->yes() || ($isSuperTypeA->no() && $isSuperTypeB->no())) {
+		if ($isSuperTypeB->yes()) {
+			return $otherArray;
+		}
+		if ($isSuperTypeA->no() && $isSuperTypeB->no()) {
 			return null;
 		}
 

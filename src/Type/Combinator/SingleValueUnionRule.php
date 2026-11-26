@@ -29,24 +29,68 @@ final class SingleValueUnionRule implements UnionRule
 		return TypeKind::ALL & ~TypeKind::ARRAY;
 	}
 
+	public function mergesConstantScalarValues(): bool
+	{
+		return true;
+	}
+
 	public function apply(array $types, array $normalizedGroups): array
 	{
-		/** @var array<string, list<int>> $byValue */
-		$byValue = [];
-		$hasSameValue = false;
+		// the index of the first member of each value: ints and strings keyed by
+		// themselves, in two maps as '1' and 1 are different values, the other
+		// values by getValueKey()
+		/** @var array<int, int> $byInt */
+		$byInt = [];
+		/** @var array<string, int> $byString */
+		$byString = [];
+		/** @var array<string, int> $byKey */
+		$byKey = [];
+		// the later members of a value, by the index of the first one
+		/** @var array<int, list<int>> $repeats */
+		$repeats = [];
 		foreach ($types as $i => $type) {
-			$key = self::getValueKey($type);
+			$values = $type->getConstantScalarValues();
+			if ($values !== []) {
+				// bool and the unions of constants have more than one value
+				if (count($values) !== 1) {
+					continue;
+				}
+				$value = $values[0];
+				if (is_int($value)) {
+					if (isset($byInt[$value])) {
+						$repeats[$byInt[$value]][] = $i;
+					} else {
+						$byInt[$value] = $i;
+					}
+					continue;
+				}
+				if (is_string($value)) {
+					if (isset($byString[$value])) {
+						$repeats[$byString[$value]][] = $i;
+					} else {
+						$byString[$value] = $i;
+					}
+					continue;
+				}
+				$key = self::getValueKey($type);
+			} else {
+				$key = self::getEnumCaseKey($type);
+			}
 			if ($key === null) {
 				continue;
 			}
-			$hasSameValue = $hasSameValue || isset($byValue[$key]);
-			$byValue[$key][] = $i;
+			if (isset($byKey[$key])) {
+				$repeats[$byKey[$key]][] = $i;
+			} else {
+				$byKey[$key] = $i;
+			}
 		}
-		if (!$hasSameValue) {
+		if ($repeats === []) {
 			return $types;
 		}
 
-		foreach ($byValue as $indices) {
+		foreach ($repeats as $first => $later) {
+			$indices = [$first, ...$later];
 			$count = count($indices);
 			for ($x = 1; $x < $count; $x++) {
 				$type = $types[$indices[$x]];
@@ -110,6 +154,11 @@ final class SingleValueUnionRule implements UnionRule
 			return is_float($value) ? serialize($value) : get_debug_type($value) . ':' . $value;
 		}
 
+		return self::getEnumCaseKey($type);
+	}
+
+	private static function getEnumCaseKey(Type $type): ?string
+	{
 		$enumCase = $type->getEnumCaseObject();
 		if ($enumCase === null || $type->isBoolean()->yes()) {
 			return null;

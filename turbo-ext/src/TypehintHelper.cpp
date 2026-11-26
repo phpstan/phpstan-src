@@ -16,6 +16,7 @@
  */
 
 #include "TypeTraits.h"
+#include <vector>
 #include "generated/TypehintHelper.h"
 
 namespace sigs = ptdecl::TypehintHelper::sig;
@@ -246,29 +247,64 @@ public:
 			zv::Val resultType = phpDocDecides ? zv::Val::copyOf(zv::Ref(phpDocType.raw())) : zv::Val::copyOf(zv::Ref(type.raw()));
 
 			if (instanceof_function(Z_OBJCE_P(type.raw()), pt_ce_union_type)) {
-				/* the members of the native union the result does not cover
-				 * (isSuperTypeOf($resultType)->no()) are unioned back in */
+				/* a native member is described by the result when it contains one of the
+				 * result's members (isSuperTypeOf()->yes()); only a result member no single
+				 * native member contains falls back to overlap (->maybe()); the members not
+				 * described are unioned back in */
 				zv::Val innerTypes = pt_union_type_get_types(Z_OBJ_P(type.raw()));
 				if (UNEXPECTED(innerTypes.isUndef())) return zv::Val();
 				if (UNEXPECTED(!zv::Ref(innerTypes.raw()).isArray())) {
 					zend_type_error("phpstan_turbo: UnionType::getTypes() must return array");
 					return zv::Val();
 				}
-				zv::Arr unionArguments = zv::Arr::create(1 + zv::ArrRef(innerTypes.raw()).size());
-				unionArguments.push(zv::Ref(resultType.raw()));
-				uint32_t addToUnionTypes = 0;
+				std::vector<zval *> nativeTypes;
 				for (zv::ArrayEntry entry : zv::ArrRef(innerTypes.raw())) {
 					zv::Ref innerType = entry.value();
 					if (UNEXPECTED(!innerType.isObject())) {
 						zend_type_error("phpstan_turbo: UnionType::getTypes() must return a list of Type");
 						return zv::Val();
 					}
-					zv::Val isSuperType = pt_type_op(Z_OBJ_P(innerType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, resultType.raw());
-					if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
-					zend_long trinary = pt_type_result_trinary(isSuperType.raw());
-					if (UNEXPECTED(trinary < 0)) return zv::Val();
-					if (trinary != PT_TRI_NO) continue;
-					unionArguments.push(innerType);
+					nativeTypes.push_back(innerType.raw());
+				}
+
+				/* $resultType instanceof UnionType ? $resultType->getTypes() : [$resultType] */
+				zv::Val resultInnerTypes;
+				if (instanceof_function(Z_OBJCE_P(resultType.raw()), pt_ce_union_type)) {
+					resultInnerTypes = pt_union_type_get_types(Z_OBJ_P(resultType.raw()));
+					if (UNEXPECTED(resultInnerTypes.isUndef())) return zv::Val();
+					if (UNEXPECTED(!zv::Ref(resultInnerTypes.raw()).isArray())) {
+						zend_type_error("phpstan_turbo: UnionType::getTypes() must return array");
+						return zv::Val();
+					}
+				} else {
+					zv::Arr single = zv::Arr::create(1);
+					single.push(zv::Ref(resultType.raw()));
+					resultInnerTypes = zv::Val::copyOf(zv::Ref(single.raw()));
+				}
+
+				std::vector<bool> described(nativeTypes.size(), false);
+				std::vector<zend_long> trinaries(nativeTypes.size());
+				for (zv::ArrayEntry resultEntry : zv::ArrRef(resultInnerTypes.raw())) {
+					zv::Ref resultInnerType = resultEntry.value();
+					bool anyContaining = false;
+					for (size_t i = 0; i < nativeTypes.size(); i++) {
+						zv::Val isSuperType = pt_type_op(Z_OBJ_P(nativeTypes[i]), PT_OP_IS_SUPER_TYPE_OF, 1, resultInnerType.raw());
+						if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
+						trinaries[i] = pt_type_result_trinary(isSuperType.raw());
+						if (UNEXPECTED(trinaries[i] < 0)) return zv::Val();
+						if (trinaries[i] == PT_TRI_YES) anyContaining = true;
+					}
+					for (size_t i = 0; i < nativeTypes.size(); i++) {
+						if (trinaries[i] == (anyContaining ? PT_TRI_YES : PT_TRI_MAYBE)) described[i] = true;
+					}
+				}
+
+				zv::Arr unionArguments = zv::Arr::create(1 + static_cast<uint32_t>(nativeTypes.size()));
+				unionArguments.push(zv::Ref(resultType.raw()));
+				uint32_t addToUnionTypes = 0;
+				for (size_t i = 0; i < nativeTypes.size(); i++) {
+					if (described[i]) continue;
+					unionArguments.push(zv::Ref(nativeTypes[i]));
 					addToUnionTypes++;
 				}
 				if (addToUnionTypes > 0) {

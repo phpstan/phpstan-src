@@ -39,7 +39,7 @@ function testUnionValue(array $array, int $id): void {
 function testUnionArray(array $array, int $id): void {
 	$array[$id]['state'] = 'foo';
 	// only one element was set to 'foo', not all of them.
-	assertType("non-empty-array<int, non-empty-array{foo?: int, state?: string}>", $array);
+	assertType("non-empty-array<int, array{foo: int}|array{foo?: int, state: 'foo'}|array{state: string}>", $array);
 }
 
 /**
@@ -47,7 +47,7 @@ function testUnionArray(array $array, int $id): void {
  */
 function testUnionArrayDifferentType(array $array, int $id): void {
 	$array[$id]['state'] = true;
-	assertType("non-empty-array<int, array{state: string}|non-empty-array{foo?: int, state?: true}>", $array);
+	assertType("non-empty-array<int, array{foo: int}|array{foo?: int, state: true}|array{state: string}>", $array);
 }
 
 /**
@@ -55,7 +55,7 @@ function testUnionArrayDifferentType(array $array, int $id): void {
  */
 function testConstantArray(array $array, int $id): void {
 	$array[$id]['state'] = 'bar';
-	assertType("non-empty-array<int, array{state: 'bar'}|array{state: 'foo'}>", $array);
+	assertType("non-empty-array<int, array{state: 'bar'|'foo'}>", $array);
 }
 
 /**
@@ -63,5 +63,5 @@ function testConstantArray(array $array, int $id): void {
  */
 function testConstantArrayNonScalarAssign(array $array, int $id, bool $b): void {
 	$array[$id]['state'] = $b;
-	assertType("non-empty-array<int, array{state: 'foo'}|array{state: bool}>", $array);
+	assertType("non-empty-array<int, array{state: 'foo'|bool}>", $array);
 }

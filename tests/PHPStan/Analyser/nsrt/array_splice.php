@@ -179,7 +179,7 @@ function constantArrays(array $arr, array $arr2): void
 	/** @var array{x: 'x', y?: 'y', 3: 66}|array{z: 'z', 5?: 77, 4: int} $arr2 */
 	$arr;
 	$extract = array_splice($arr, 0, 1, $arr2);
-	assertType('array{0: \'x\'|\'z\', 1: \'y\'|int, 2: \'baz\'|int, b: \'bar\', 3?: \'baz\'}', $arr);
+	assertType('array{0: \'x\', 1: 66|\'y\', 2: 66|\'baz\', b: \'bar\', 3?: \'baz\'}|array{0: \'z\', 1: int, 2: \'baz\'|int, b: \'bar\', 3?: \'baz\'}', $arr);
 	assertType('array{\'foo\'}', $extract);
 
 	/** @var array{17: 'foo', b: 'bar', 19: 'baz'} $arr */

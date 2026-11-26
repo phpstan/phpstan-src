@@ -26,24 +26,21 @@ use PHPStan\Type\Generic\TemplateUnionType;
 use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use function array_fill;
 use function array_filter;
-use function array_flip;
-use function array_intersect_key;
 use function array_key_exists;
 use function array_key_first;
 use function array_keys;
 use function array_merge;
 use function array_push;
-use function array_search;
 use function array_slice;
 use function array_splice;
 use function array_values;
 use function count;
+use function crc32;
 use function get_class;
 use function implode;
 use function in_array;
 use function ksort;
 use function serialize;
-use function sort;
 use function spl_object_id;
 use function sprintf;
 use function usort;
@@ -1186,9 +1183,8 @@ final class TypeCombinator
 		}
 
 		if ($generalArrayOccurred) {
-			$reducedArrayTypes = self::reduceArrays($arrayTypes, false);
-			if (count($reducedArrayTypes) === 1) {
-				return [self::intersect($reducedArrayTypes[0], ...$accessoryTypes)];
+			if (count($arrayTypes) === 1) {
+				return [self::intersect($arrayTypes[0], ...$accessoryTypes)];
 			}
 
 			$templateArrayType = null;
@@ -1227,9 +1223,22 @@ final class TypeCombinator
 			];
 		}
 
-		$reducedArrayTypes = self::reduceArrays($arrayTypes, true, $widen);
 		if ($widen) {
-			$reducedArrayTypes = self::optimizeConstantArrays($reducedArrayTypes);
+			// generalized first: unioning the shapes exactly would be wasted on
+			// the shapes the generalization folds
+			$shapes = [];
+			foreach ($arrayTypes as $arrayType) {
+				if (!$arrayType->isConstantArray()->yes()) {
+					$shapes[] = $arrayType;
+					continue;
+				}
+				foreach ($arrayType->getConstantArrays() as $constantArray) {
+					$shapes[] = $constantArray;
+				}
+			}
+			$reducedArrayTypes = self::reduceArrays(array_values(self::optimizeConstantArrays($shapes)));
+		} else {
+			$reducedArrayTypes = self::reduceArrays($arrayTypes);
 		}
 		foreach ($reducedArrayTypes as $idx => $reducedArray) {
 			$applied = $accessoryTypes;
@@ -1605,517 +1614,256 @@ final class TypeCombinator
 	}
 
 	/**
-	 * The value at each key of the array that is a single constant scalar, null
-	 * when the array has real unsealed extras - its keys-supersets are then not
-	 * decided by the known keys alone.
+	 * The arrays with the shapes among them unioned exactly: each pair of
+	 * shapes that ConstantArrayType::tryUnion() merges into one, until no pair
+	 * does, and then the shapes with unsealed extras that can take each other in.
 	 *
-	 * @return array<int|string, scalar|null>|null
+	 * Only shapes whose key sets nest can merge, so the pairs are found by the
+	 * keys the shapes share instead of trying every pair: when a shape is
+	 * visited, it is tried with the shapes visited before it that have all of
+	 * its keys or only keys it has. A merged shape is visited again.
+	 *
+	 * @param list<Type> $arrayTypes
+	 * @return list<Type>
 	 */
-	private static function getConstantScalarValuesByKey(ConstantArrayType $array): ?array
+	private static function reduceArrays(array $arrayTypes): array
 	{
-		$unsealed = $array->getUnsealedTypes();
-		if ($unsealed !== null && !($unsealed[0] instanceof NeverType && $unsealed[0]->isExplicit())) {
+		$newArrays = [];
+		/** @var array<int, ConstantArrayType> $shapes */
+		$shapes = [];
+		foreach ($arrayTypes as $arrayType) {
+			if (!$arrayType->isConstantArray()->yes()) {
+				$newArrays[] = $arrayType;
+				continue;
+			}
+			foreach ($arrayType->getConstantArrays() as $constantArray) {
+				$shapes[] = $constantArray;
+			}
+		}
+
+		// beside the empty array, shapes merge into a shape holding it too
+		$hasEmptyArray = false;
+		foreach ($shapes as $shape) {
+			if ($shape->getKeyTypes() !== [] || $shape->isUnsealed()->yes()) {
+				continue;
+			}
+			$hasEmptyArray = true;
+			break;
+		}
+
+		// the position of each shape in the result, a merged one taking the
+		// earlier position of the two
+		$positions = array_keys($shapes);
+		// the visited shapes by their key count, by whether each of their
+		// values is a single constant scalar, and by each of their keys
+		$visitedPerKey = [];
+		$visitedKeyless = [];
+		$visitedKeyCounts = [];
+		// the visited shapes by the hash of their keys and values, with each
+		// key left out and with none
+		$visitedPerHash = [];
+		$visitedHashes = [];
+		for ($x = 0; $x < count($positions); $x++) {
+			if (!array_key_exists($x, $shapes)) {
+				continue;
+			}
+			$shape = $shapes[$x];
+			[$keys, $hashes, $isAtomic] = self::getShapeHashes($shape);
+			$keyCount = count($keys);
+
+			// The shapes differing at one key or in their optional keys only,
+			// whose hashes with that key left out, or with none, are the same.
+			$candidates = [];
+			foreach ($hashes as $hash) {
+				$candidates += $visitedPerHash[$hash] ?? [];
+			}
+			// The shapes with all of the keys of this one or only keys it has,
+			// which may hold it or be held by it. Two shapes of the same keys
+			// and only single constant scalar values hold each other only when
+			// they have the same values, and are among the shapes above.
+			$sharedKeyCounts = [];
+			foreach ($keys as $key) {
+				foreach ($visitedPerKey[$key] ?? [] as $count => $byAtomic) {
+					foreach ($byAtomic as $atomic => $ys) {
+						if ($isAtomic && $atomic === 1 && $count === $keyCount) {
+							continue;
+						}
+						foreach (array_keys($ys) as $y) {
+							$sharedKeyCounts[$y] = ($sharedKeyCounts[$y] ?? 0) + 1;
+						}
+					}
+				}
+			}
+			foreach ($sharedKeyCounts as $y => $sharedKeyCount) {
+				if ($sharedKeyCount !== $keyCount && $sharedKeyCount !== $visitedKeyCounts[$y]) {
+					continue;
+				}
+				$candidates[$y] = true;
+			}
+			$candidates += $keyCount === 0 ? $visitedKeyCounts : $visitedKeyless;
+			ksort($candidates);
+
+			foreach (array_keys($candidates) as $y) {
+				$merged = $shape->tryUnion($shapes[$y])
+					?? ($hasEmptyArray ? ArrayAlgebra::tryUnionConstantArrayBesideEmptyArray($shape, $shapes[$y]) : null);
+				if ($merged === null) {
+					continue;
+				}
+
+				[$yKeys, , $yIsAtomic] = self::getShapeHashes($shapes[$y]);
+				foreach ($yKeys as $key) {
+					unset($visitedPerKey[$key][count($yKeys)][(int) $yIsAtomic][$y]);
+				}
+				foreach ($visitedHashes[$y] as $hash) {
+					unset($visitedPerHash[$hash][$y]);
+				}
+				unset($shapes[$x], $shapes[$y], $visitedKeyCounts[$y], $visitedKeyless[$y], $visitedHashes[$y]);
+				foreach ($merged->getConstantArrays() as $mergedShape) {
+					$shapes[] = $mergedShape;
+					$positions[] = $positions[$y];
+				}
+				continue 2;
+			}
+
+			$visitedKeyCounts[$x] = $keyCount;
+			if ($keyCount === 0) {
+				$visitedKeyless[$x] = true;
+			}
+			foreach ($keys as $key) {
+				$visitedPerKey[$key][$keyCount][(int) $isAtomic][$x] = true;
+			}
+			foreach ($hashes as $hash) {
+				$visitedPerHash[$hash][$x] = true;
+			}
+			$visitedHashes[$x] = $hashes;
+		}
+
+		// the shapes with unsealed extras, which tryUnion() leaves alone
+		$indices = array_keys($shapes);
+		$indicesCount = count($indices);
+		for ($ii = 0; $ii < $indicesCount - 1; $ii++) {
+			$i = $indices[$ii];
+			if (!array_key_exists($i, $shapes) || $shapes[$i]->getUnsealedTypes() === null) {
+				continue;
+			}
+			for ($jj = $ii + 1; $jj < $indicesCount; $jj++) {
+				$j = $indices[$jj];
+				if (
+					!array_key_exists($j, $shapes)
+					|| $shapes[$j]->getUnsealedTypes() === null
+					|| (!$shapes[$i]->isUnsealed()->yes() && !$shapes[$j]->isUnsealed()->yes())
+				) {
+					continue;
+				}
+				if ($shapes[$j]->isKeysSupersetOf($shapes[$i])) {
+					$shapes[$j] = $shapes[$j]->mergeWith($shapes[$i]);
+					$positions[$j] = $positions[$i];
+					unset($shapes[$i]);
+					continue 2;
+				}
+				if (!$shapes[$i]->isKeysSupersetOf($shapes[$j])) {
+					continue;
+				}
+
+				$shapes[$i] = $shapes[$i]->mergeWith($shapes[$j]);
+				unset($shapes[$j]);
+			}
+		}
+
+		$result = [];
+		foreach ($shapes as $idx => $shape) {
+			// a merge with no known keys left but with unsealed extras is the
+			// plain array, as ConstantArrayTypeBuilder::getArray() makes it
+			if (count($shape->getKeyTypes()) === 0 && $shape->isUnsealed()->yes()) {
+				$unsealed = $shape->getUnsealedTypes();
+				if ($unsealed !== null) {
+					$result[$positions[$idx]] = new ArrayType($unsealed[0], $unsealed[1]);
+					continue;
+				}
+			}
+			$result[$positions[$idx]] = $shape;
+		}
+		ksort($result);
+
+		return array_merge($newArrays, array_values($result));
+	}
+
+	/**
+	 * The keys of a shape, the hashes of its keys and values - over all of them
+	 * and with each key left out - and whether each of its values is a single
+	 * value (see getSingleValueHash()). Equal shapes have equal hashes,
+	 * whatever their optional keys and the order of their keys, when their
+	 * values are single values or the same objects; other shapes may have
+	 * equal hashes too.
+	 *
+	 * @return array{list<int|string>, list<string>, bool}
+	 */
+	private static function getShapeHashes(ConstantArrayType $shape): array
+	{
+		$keys = [];
+		$keyHashes = [];
+		$isAtomic = true;
+		$valueTypes = $shape->getValueTypes();
+		$all = 0;
+		foreach ($shape->getKeyTypes() as $i => $keyType) {
+			$key = $keyType->getValue();
+			$keys[] = $key;
+			$valueHash = self::getSingleValueHash($valueTypes[$i]);
+			if ($valueHash === null) {
+				$isAtomic = false;
+				$valueHash = spl_object_id($valueTypes[$i]);
+			}
+			$keyHash = crc32(serialize($key) . "\0" . $valueHash);
+			$keyHashes[] = $keyHash;
+			$all ^= $keyHash;
+		}
+
+		$count = count($keys);
+		$hashes = [$count . ':' . $all];
+		foreach ($keyHashes as $keyHash) {
+			$hashes[] = ($count - 1) . ':' . ($all ^ $keyHash);
+		}
+
+		return [$keys, $hashes, $isAtomic];
+	}
+
+	/**
+	 * A hash of the one value of a type that has a single value - a constant
+	 * scalar, or a shape of such values without optional keys - or null. Two
+	 * such types hold each other only when they are equal.
+	 */
+	private static function getSingleValueHash(Type $type): ?string
+	{
+		if ($type->isConstantScalarValue()->yes()) {
+			$values = $type->getConstantScalarValues();
+			if (count($values) !== 1) {
+				return null;
+			}
+
+			// -0.0 === 0.0
+			return serialize($values[0] === 0.0 ? 0.0 : $values[0]);
+		}
+
+		$shapes = $type->getConstantArrays();
+		if (count($shapes) !== 1 || !$type->isConstantArray()->yes()) {
+			return null;
+		}
+		$shape = $shapes[0];
+		if ($shape->getOptionalKeys() !== [] || $shape->isUnsealed()->yes()) {
 			return null;
 		}
 
-		$values = [];
-		$valueTypes = $array->getValueTypes();
-		// keys written through a union offset share one value type - inspect it once
-		$singleValues = [];
-		foreach ($array->getKeyTypes() as $i => $keyType) {
-			$id = spl_object_id($valueTypes[$i]);
-			if (array_key_exists($id, $singleValues)) {
-				if ($singleValues[$id] !== null) {
-					$values[$keyType->getValue()] = $singleValues[$id][0];
-				}
-				continue;
+		$hash = '';
+		$valueTypes = $shape->getValueTypes();
+		foreach ($shape->getKeyTypes() as $i => $keyType) {
+			$valueHash = self::getSingleValueHash($valueTypes[$i]);
+			if ($valueHash === null) {
+				return null;
 			}
-			$singleValues[$id] = null;
-			if (!$valueTypes[$i]->isConstantScalarValue()->yes()) {
-				continue;
-			}
-			$constantScalarValues = $valueTypes[$i]->getConstantScalarValues();
-			if (count($constantScalarValues) !== 1) {
-				continue;
-			}
-			$singleValues[$id] = [$constantScalarValues[0]];
-			$values[$keyType->getValue()] = $constantScalarValues[0];
+			$hash .= serialize($keyType->getValue()) . $valueHash;
 		}
 
-		return $values;
-	}
-
-	/**
-	 * Whether two arrays differ in enough keys holding different single constant
-	 * scalars that neither can be a keys-superset of the other: each such key
-	 * pairs two disjoint values, and ConstantArrayType::isKeysSupersetOf() lets
-	 * at most one key's values be unrelated - only when both arrays have the
-	 * same number of keys, two or more.
-	 *
-	 * @param array<int|string, scalar|null>|null $a
-	 * @param array<int|string, scalar|null>|null $b
-	 */
-	private static function haveDisjointConstantScalarValues(?array $a, ?array $b, bool $oneUnrelatedKeyAllowed): bool
-	{
-		if ($a === null || $b === null) {
-			return false;
-		}
-		if (count($a) > count($b)) {
-			[$a, $b] = [$b, $a];
-		}
-
-		$differing = 0;
-		foreach ($a as $key => $value) {
-			if (!array_key_exists($key, $b) || $b[$key] === $value) {
-				continue;
-			}
-			$differing++;
-			if ($differing >= 2 || !$oneUnrelatedKeyAllowed) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * The arrays after $i sharing a key with it, by the first key they share
-	 * in $arraysToProcessPerKey's order, then by their indexes.
-	 *
-	 * @param array<int, list<int|string>> $keysByRank
-	 * @param array<int|string, list<int>> $arraysToProcessPerKey
-	 * @return list<int>
-	 */
-	private static function getReduceArraysPartners(int $i, array $keysByRank, array $arraysToProcessPerKey): array
-	{
-		$partners = [];
-		foreach ($keysByRank[$i] as $key) {
-			foreach ($arraysToProcessPerKey[$key] as $j) {
-				if ($j <= $i || isset($partners[$j])) {
-					continue;
-				}
-				$partners[$j] = $j;
-			}
-		}
-
-		return array_values($partners);
-	}
-
-	/**
-	 * @param list<Type> $constantArrays
-	 * @return list<Type>
-	 */
-	private static function reduceArrays(array $constantArrays, bool $preserveTaggedUnions, bool $widen = false): array
-	{
-		$newArrays = [];
-		$arraysToProcess = [];
-		$emptyArray = null;
-		foreach ($constantArrays as $constantArray) {
-			if (!$constantArray->isConstantArray()->yes()) {
-				// This is an optimization for current use-case of $preserveTaggedUnions=false, where we need
-				// one constant array as a result, or we generalize the $constantArrays.
-				if (!$preserveTaggedUnions) {
-					return $constantArrays;
-				}
-				$newArrays[] = $constantArray;
-				continue;
-			}
-
-			if ($constantArray->isIterableAtLeastOnce()->no()) {
-				$emptyArray = $constantArray;
-				continue;
-			}
-
-			$arraysToProcess = array_merge($arraysToProcess, $constantArray->getConstantArrays());
-		}
-
-		if ($emptyArray !== null) {
-			if ($preserveTaggedUnions && $emptyArray instanceof ConstantArrayType) {
-				// Let the empty array participate in merging — the passes below will absorb
-				// it into any array that already accepts [] (all-optional keys, compatible
-				// unsealed extras). If no such array exists, it remains as-is in the result.
-				$arraysToProcess[] = $emptyArray;
-			} else {
-				$newArrays[] = $emptyArray;
-			}
-		}
-
-		$arraysToProcessPerKey = [];
-		foreach ($arraysToProcess as $i => $arrayToProcess) {
-			foreach ($arrayToProcess->getKeyTypes() as $keyType) {
-				$arraysToProcessPerKey[$keyType->getValue()][] = $i;
-			}
-		}
-
-		// the single constant scalar value at each key of the arrays without
-		// real unsealed extras (whose supersets the key/value shape decides)
-		$constantScalarValues = [];
-		if ($preserveTaggedUnions) {
-			foreach ($arraysToProcess as $i => $arrayToProcess) {
-				$constantScalarValues[$i] = self::getConstantScalarValuesByKey($arrayToProcess);
-			}
-		}
-
-		// The loop below visits the pairs of arrays sharing a key: by the first
-		// key they share in $arraysToProcessPerKey's order, then by their
-		// indexes. It skips the pairs whose single constant scalar values rule out
-		// a keys-superset (haveDisjointConstantScalarValues()). For arrays with the
-		// same number of keys (two or more) and the same keys holding a single
-		// constant scalar, those are the pairs differing in two or more of them, so
-		// only the pairs sharing a bucket of the values with one key left out are
-		// visited - enumerating all pairs is quadratic in the number of arrays,
-		// which dominated unions of many same-shaped arrays (bug-12671).
-		$keyRanks = array_flip(array_keys($arraysToProcessPerKey));
-		$keySets = [];
-		$keysByRank = [];
-		foreach ($arraysToProcess as $i => $arrayToProcess) {
-			$keys = [];
-			foreach ($arrayToProcess->getKeyTypes() as $keyType) {
-				$keys[$keyRanks[$keyType->getValue()]] = $keyType->getValue();
-			}
-			ksort($keys);
-			$keysByRank[$i] = array_values($keys);
-			$keySets[$i] = array_flip($keys);
-		}
-
-		$bucketGroups = [];
-		$bucketPartners = [];
-		$arraysPerKeyAndGroup = [];
-		if ($preserveTaggedUnions) {
-			$buckets = [];
-			foreach ($constantScalarValues as $i => $values) {
-				if ($values === null || $values === [] || count($keysByRank[$i]) < 2) {
-					continue;
-				}
-
-				$sortedValues = [];
-				foreach ($values as $key => $value) {
-					// -0.0 === 0.0
-					$sortedValues[$keyRanks[$key]] = $value === 0.0 ? 0.0 : $value;
-				}
-				ksort($sortedValues);
-				$group = count($keysByRank[$i]) . ':' . implode(',', array_keys($sortedValues));
-				$bucketGroups[$i] = $group;
-				$sortedValues = array_values($sortedValues);
-				foreach (array_keys($sortedValues) as $leftOut) {
-					$projection = $sortedValues;
-					unset($projection[$leftOut]);
-					$buckets[$group . "\0" . $leftOut . "\0" . serialize($projection)][] = $i;
-				}
-			}
-			foreach ($buckets as $bucket) {
-				for ($a = 0, $bucketCount = count($bucket); $a < $bucketCount - 1; $a++) {
-					for ($b = $a + 1; $b < $bucketCount; $b++) {
-						$bucketPartners[$bucket[$a]][$bucket[$b]] = true;
-					}
-				}
-			}
-			foreach ($keysByRank as $i => $keys) {
-				foreach ($keys as $key) {
-					$arraysPerKeyAndGroup[$key][$bucketGroups[$i] ?? ''][] = $i;
-				}
-			}
-		}
-
-		$visitOrder = [];
-		foreach ($keysByRank as $i => $keys) {
-			foreach ($keys as $key) {
-				$arrays = $arraysToProcessPerKey[$key];
-				if ($arrays[count($arrays) - 1] !== $i) {
-					$visitOrder[$keyRanks[$key]][] = $i;
-					break;
-				}
-			}
-		}
-		ksort($visitOrder);
-
-		$nullifiedConstantScalarValues = [];
-		foreach ($visitOrder as $arraysOfRank) {
-			foreach ($arraysOfRank as $i) {
-				if (!array_key_exists($i, $arraysToProcess)) {
-					continue;
-				}
-
-				$allPartnersVisited = !isset($bucketGroups[$i]) || $constantScalarValues[$i] === null;
-				if ($allPartnersVisited) {
-					$partners = self::getReduceArraysPartners($i, $keysByRank, $arraysToProcessPerKey);
-				} else {
-					// the bucket partners, the arrays not in $i's group and the
-					// arrays that lost their single constant scalar values
-					$partners = $bucketPartners[$i] ?? [];
-					foreach ($keysByRank[$i] as $key) {
-						foreach ($arraysPerKeyAndGroup[$key] as $group => $arrays) {
-							if ($group === $bucketGroups[$i]) {
-								continue;
-							}
-							foreach ($arrays as $j) {
-								if ($j <= $i) {
-									continue;
-								}
-								$partners[$j] = true;
-							}
-						}
-					}
-					foreach (array_keys($nullifiedConstantScalarValues) as $j) {
-						if ($j <= $i || array_intersect_key($keySets[$i], $keySets[$j]) === []) {
-							continue;
-						}
-						$partners[$j] = true;
-					}
-
-					$partnersByRank = [];
-					foreach (array_keys($partners) as $j) {
-						foreach ($keysByRank[$i] as $key) {
-							if (isset($keySets[$j][$key])) {
-								$partnersByRank[$keyRanks[$key]][] = $j;
-								break;
-							}
-						}
-					}
-					ksort($partnersByRank);
-					$partners = [];
-					foreach ($partnersByRank as $partnersOfRank) {
-						sort($partnersOfRank);
-						foreach ($partnersOfRank as $j) {
-							$partners[] = $j;
-						}
-					}
-				}
-
-				for ($p = 0; $p < count($partners); $p++) {
-					$j = $partners[$p];
-					if (!array_key_exists($j, $arraysToProcess)) {
-						continue;
-					}
-
-					$overlappingKeysCount = count(array_intersect_key($keySets[$i], $keySets[$j]));
-
-					// Merge two single-key arrays sharing the same key when their value
-					// types union into a single type (not a UnionType). This is lossless
-					// and prevents exponential union growth when narrowing nested
-					// ArrayDimFetch expressions on a ConstantArrayType parent (see
-					// phpstan/phpstan#14462).
-					// mergeWith() unions the two values, so its result answers the
-					// question, and a keys-superset merge of the same pair below
-					// reuses it: unioning the values once more there made nested
-					// single-key arrays (`$x = [$x]` in nested loops) exponential
-					// in their depth.
-					$singleKeyMerge = null;
-					if (
-						$preserveTaggedUnions
-						&& $overlappingKeysCount === 1
-						&& count($arraysToProcess[$i]->getKeyTypes()) === 1
-						&& count($arraysToProcess[$j]->getKeyTypes()) === 1
-					) {
-						$singleKeyMerge = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
-						if (!$singleKeyMerge->getValueTypes()[0] instanceof UnionType) {
-							$arraysToProcess[$j] = $singleKeyMerge;
-							$constantScalarValues[$j] = null;
-							$nullifiedConstantScalarValues[$j] = true;
-							unset($arraysToProcess[$i]);
-							continue 2;
-						}
-					}
-
-					if (
-						$preserveTaggedUnions
-						&& self::haveDisjointConstantScalarValues(
-							$constantScalarValues[$i] ?? null,
-							$constantScalarValues[$j] ?? null,
-							count($arraysToProcess[$i]->getKeyTypes()) === count($arraysToProcess[$j]->getKeyTypes())
-								&& count($arraysToProcess[$i]->getKeyTypes()) >= 2,
-						)
-					) {
-						// neither array is a keys-superset of the other
-						continue;
-					}
-
-					if (
-						$preserveTaggedUnions
-						&& $overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())
-						&& $arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])
-					) {
-						$arraysToProcess[$j] = $singleKeyMerge ?? $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
-						$constantScalarValues[$j] = null;
-						$nullifiedConstantScalarValues[$j] = true;
-						unset($arraysToProcess[$i]);
-						continue 2;
-					}
-
-					if (
-						$preserveTaggedUnions
-						&& $overlappingKeysCount === count($arraysToProcess[$j]->getKeyTypes())
-						&& $arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])
-					) {
-						$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
-						$constantScalarValues[$i] = null;
-						$nullifiedConstantScalarValues[$i] = true;
-						unset($arraysToProcess[$j]);
-						if (!$allPartnersVisited) {
-							// from now on visited with every array after $j
-							$allPartners = self::getReduceArraysPartners($i, $keysByRank, $arraysToProcessPerKey);
-							$partners = array_slice($allPartners, (int) array_search($j, $allPartners, true) + 1);
-							$p = -1;
-							$allPartnersVisited = true;
-						}
-						continue 1;
-					}
-
-					if (
-						!$preserveTaggedUnions
-						// both arrays have same keys
-						&& $overlappingKeysCount === count($arraysToProcess[$i]->getKeyTypes())
-						&& $overlappingKeysCount === count($arraysToProcess[$j]->getKeyTypes())
-					) {
-						$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
-						unset($arraysToProcess[$i]);
-						continue 2;
-					}
-				}
-			}
-		}
-
-		// Second pass: merge pairs that the eligibleCombinations loop above couldn't touch.
-		// That loop only considers pairs sharing at least one known key, so it never fires
-		// for e.g. `array{}` ∪ `array{a?: 1}` (disjoint, one empty) or for two
-		// unsealed-extras arrays with disjoint required keys. Both collapse losslessly if
-		// one side's extras or optional-key shape can absorb the other side's content.
-		//
-		// Performance: two sealed, non-empty, no-extras arrays with disjoint keys cannot
-		// merge losslessly (legacyIsKeysSupersetOf returns false immediately on the first
-		// missing key). Skip those pairs via a candidate flag to avoid an O(n²) scan that
-		// dominated analyse time on files accumulating many sealed ConstantArrayType
-		// variants (bug-7581 / bug-8146a). A pair is worth checking only if at least one
-		// side is (a) empty, or (b) has real unsealed extras, or (c) has optional keys —
-		// the last case covers the narrowing shape used by e.g. array_key_exists checks
-		// over large optional-key shapes (bug-14032).
-		$indices = array_keys($arraysToProcess);
-		$indicesCount = count($indices);
-		if ($indicesCount > 1) {
-			$candidateFlags = [];
-			foreach ($indices as $idx) {
-				$arr = $arraysToProcess[$idx];
-				$unsealed = $arr->getUnsealedTypes();
-				if ($unsealed === null) {
-					$candidateFlags[$idx] = false;
-					continue;
-				}
-				[$unsealedKey] = $unsealed;
-				$hasRealExtras = !($unsealedKey instanceof NeverType && $unsealedKey->isExplicit());
-				if ($hasRealExtras) {
-					$candidateFlags[$idx] = true;
-					continue;
-				}
-				$keyTypesCount = count($arr->getKeyTypes());
-				if ($keyTypesCount === 0) {
-					$candidateFlags[$idx] = true;
-					continue;
-				}
-				$hasOptional = count($arr->getOptionalKeys()) > 0;
-				$candidateFlags[$idx] = $hasOptional;
-			}
-
-			for ($ii = 0; $ii < $indicesCount - 1; $ii++) {
-				$i = $indices[$ii];
-				if (!array_key_exists($i, $arraysToProcess)) {
-					continue;
-				}
-				if ($arraysToProcess[$i]->getUnsealedTypes() === null) {
-					continue;
-				}
-				for ($jj = $ii + 1; $jj < $indicesCount; $jj++) {
-					$j = $indices[$jj];
-					if (!array_key_exists($j, $arraysToProcess)) {
-						continue;
-					}
-					if (!$candidateFlags[$i] && !$candidateFlags[$j]) {
-						continue;
-					}
-					if ($arraysToProcess[$j]->getUnsealedTypes() === null) {
-						continue;
-					}
-					if ($arraysToProcess[$j]->isKeysSupersetOf($arraysToProcess[$i])) {
-						$arraysToProcess[$j] = $arraysToProcess[$j]->mergeWith($arraysToProcess[$i]);
-						unset($arraysToProcess[$i]);
-						continue 2;
-					}
-					if (!$arraysToProcess[$i]->isKeysSupersetOf($arraysToProcess[$j])) {
-						continue;
-					}
-
-					$arraysToProcess[$i] = $arraysToProcess[$i]->mergeWith($arraysToProcess[$j]);
-					unset($arraysToProcess[$j]);
-				}
-			}
-		}
-
-		// Final pass: if merging left us with a ConstantArrayType that has no known keys
-		// but has real unsealed extras, collapse it to a plain ArrayType (mirrors the same
-		// logic in ConstantArrayTypeBuilder::getArray — but applies to results produced by
-		// ConstantArrayType::mergeWith, which doesn't go through the builder).
-		foreach ($arraysToProcess as $idx => $arr) {
-			if (count($arr->getKeyTypes()) !== 0) {
-				continue;
-			}
-			$unsealed = $arr->getUnsealedTypes();
-			if ($unsealed === null) {
-				continue;
-			}
-			[$unsealedKey, $unsealedValue] = $unsealed;
-			if ($unsealedKey instanceof NeverType && $unsealedKey->isExplicit()) {
-				continue;
-			}
-			$newArrays[] = new ArrayType($unsealedKey, $unsealedValue);
-			unset($arraysToProcess[$idx]);
-		}
-
-		// Final pass, when widening (see widen()): collapse the loop-accumulator pattern where each iteration
-		// produced a longer non-empty list variant. When several non-empty list
-		// ConstantArrayTypes survive earlier merging and together push the
-		// constant-array value count past the limit, fold them into a single
-		// non-empty-list<unionValueType> so the result stays bounded without
-		// going through the lossier optimizeConstantArrays generalization.
-		// Skip when every list variant shares one key signature — those collapse
-		// losslessly via the stage 1 same-key-set merge in optimizeConstantArrays
-		// (each position keeps its own value union), which is strictly more
-		// precise than this flat fold.
-		if ($widen && $preserveTaggedUnions && count($arraysToProcess) > 1) {
-			$listVariantIndices = [];
-			$listValueTypes = [];
-			$listVariants = [];
-			$listVariantSignatures = [];
-			foreach ($arraysToProcess as $idx => $arr) {
-				if (!$arr->isList()->yes() || !$arr->isIterableAtLeastOnce()->yes()) {
-					continue;
-				}
-				$listVariantIndices[] = $idx;
-				$listValueTypes[] = $arr->getIterableValueType();
-				$listVariants[] = $arr;
-				$signatureParts = [];
-				foreach ($arr->getKeyTypes() as $i => $keyType) {
-					$signatureParts[] = ($arr->isOptionalKey($i) ? '?' : '!') . ($keyType instanceof ConstantIntegerType ? 'i' : 's') . $keyType->getValue();
-				}
-				$listVariantSignatures[implode(',', $signatureParts)] = true;
-			}
-			if (
-				count($listVariantIndices) >= 2
-				&& count($listVariantSignatures) >= 2
-				&& self::countConstantArrayValueTypes($listVariants) > ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
-			) {
-				$mergedValueType = self::widen(self::union(...$listValueTypes));
-				$merged = self::intersect(
-					new ArrayType(new IntegerType(), $mergedValueType),
-					new NonEmptyArrayType(),
-					new AccessoryArrayListType(),
-				);
-				$newArrays[] = $merged;
-				foreach ($listVariantIndices as $idx) {
-					unset($arraysToProcess[$idx]);
-				}
-			}
-		}
-
-		return array_merge($newArrays, $arraysToProcess);
+		return 'a' . crc32($hash);
 	}
 
 	/**

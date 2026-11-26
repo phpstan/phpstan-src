@@ -14,7 +14,7 @@ function processUpdates(array $roleUpdates): void {
 		return;
 	}
 
-	assertType('array{id: string, name?: string, team_name?: string|null}', $roleUpdates);
+	assertType('array{id: string, name: string, team_name?: string|null}|array{id: string, name?: string, team_name: string|null}', $roleUpdates);
 
 	$fieldUpdates = ['updated_at' => new \DateTime()];
 

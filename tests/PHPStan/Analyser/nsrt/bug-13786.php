@@ -20,4 +20,4 @@ foreach ($arr as $id => $dummy) {
 }
 
 $total[$id]['e'] = '1';
-assertType("array{a?: '0', b?: '0', c?: '0', d?: '0', e: '1'}", $total[$id]);
+assertType("array{a?: '0', b?: '0', c?: '0', d: '0', e: '1'}|array{e: '1'}", $total[$id]);

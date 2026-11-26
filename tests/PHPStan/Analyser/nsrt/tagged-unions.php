@@ -10,7 +10,7 @@ class Foo
 	/** @param array{A: int}|array{A: string} $foo */
 	public function doFoo(array $foo)
 	{
-		assertType('array{A: int}|array{A: string}', $foo);
+		assertType('array{A: int|string}', $foo);
 		if (is_int($foo['A'])) {
 			assertType("array{A: int}", $foo);
 			$foo['B'] = 'yo';
@@ -152,7 +152,7 @@ class TipsFromArnaud
 	public function doFoo2(array $a): void
 	{
 		// could be: array{a: int|string}
-		assertType('array{a: int}|array{a: string}', $a);
+		assertType('array{a: int|string}', $a);
 	}
 
 	/**

@@ -101,11 +101,11 @@ class HelloWorld
 		}
 
 		if (count($x) === 1) {
-			assertType("array{'ab'}|array{'xy'}", $x);
+			assertType("array{'ab'|'xy'}", $x);
 		} else {
-			assertType("array{}|array{0: 'ab', 1?: 'xy'}", $x);
+			assertType("array{}|array{'ab', 'xy'}", $x);
 		}
-		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
+		assertType("array{}|array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
 	}
 }
 

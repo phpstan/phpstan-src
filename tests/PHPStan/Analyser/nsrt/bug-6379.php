@@ -16,7 +16,7 @@ class HelloWorld
 	public static function paramsToString(array $params): string
 	{
 		if (isset($params['cr']) === true || isset($params['c']) === true) {
-			assertType('non-empty-array{cr?: string, c?: string}', $params);
+			assertType('array{cr: string, c?: string}|array{cr?: string, c: string}', $params);
 			if (!isset($params['cr'])) {
 				assertType('array{c: string}', $params);
 			}

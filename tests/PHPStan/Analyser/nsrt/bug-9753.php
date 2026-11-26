@@ -17,7 +17,7 @@ function doFoo(): void {
 				$items[] = $entry;
 			}
 		}
-		assertType('list{0: 1|2|3|4|5, 1?: 1|2|3|4|5, 2?: 1|2|3|4|5, 3?: 1|2|3|4|5}|null', $items);
+		assertType('array{1|2|3|4|5}|list{0: 1, 1: 1|2|3|4|5, 2?: 1|2|3|4|5, 3?: 1|2|3|4|5}|null', $items);
 	}
 
 	assertType('null', $items);

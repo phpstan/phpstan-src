@@ -49,7 +49,7 @@ function foo(array $steps, Factory $factory): void
 		$changeStep = true;
 	}
 
-	assertType('array{a: 1, changeStep?: int<0, max>}|array{a: 2}', $resultData);
+	assertType('array{a: 1, changeStep?: int<0, max>}|array{a: 1|2}', $resultData);
 }
 
 /**

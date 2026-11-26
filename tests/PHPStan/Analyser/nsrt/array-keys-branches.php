@@ -119,7 +119,7 @@ function (array $generalArray, array $xs) {
 		$array['n'] = 'str';
 	}
 
-	assertType('array{i: (float|int), j: int, k: int<0, max>, l: 1, m: 5, key: DateTimeImmutable, n?: \'str\'}', $array);
+	assertType('array{i: (float|int), j: int, k: int<1, max>, l: 1, m: 5, key: DateTimeImmutable, n?: \'str\'}|array{i: 0, j: int, k: 0, l: 1, m: 5, key: DateTimeImmutable, n?: \'str\'}', $array);
 	assertType('non-empty-array&hasOffsetValue(\'key\', mixed~null)', $generalArray);
 	assertType('mixed~null', $generalArray['key']);
 	assertType('array{0: \'foo\', 1: \'bar\', 2?: \'baz\'}', $arrayAppendedInIf);

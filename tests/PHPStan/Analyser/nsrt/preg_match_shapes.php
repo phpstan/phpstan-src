@@ -122,9 +122,9 @@ function doOffsetCapture(string $s): void {
 
 function doUnknownFlags(string $s, int $flags): void {
 	if (preg_match('/(foo)(bar)(baz)/xyz', $s, $matches, $flags)) {
-		assertType('array<array{string|null, int<-1, max>}|string|null>', $matches);
+		assertType('array<array{\'\'|null, -1}|array{string, int<0, max>}|string|null>', $matches);
 	}
-	assertType('array<array{string|null, int<-1, max>}|string|null>', $matches);
+	assertType('array<array{\'\'|null, -1}|array{string, int<0, max>}|string|null>', $matches);
 }
 
 function doMultipleAlternativeCaptureGroupsWithSameNameWithModifier(string $s): void {
@@ -519,7 +519,7 @@ function bug11323(string $s): void {
 		assertType('array{non-falsy-string, non-empty-string, "\n", "\n"}', $matches);
 	}
 	if (preg_match('/foo(*:first)|bar(*:second)([x])/', $s, $matches)) {
-		assertType("array{0: non-falsy-string, 1?: 'x', MARK?: 'first'|'second'}", $matches);
+		assertType("array{0: non-falsy-string, 1: 'x', MARK?: 'first'|'second'}|array{non-falsy-string}", $matches);
 	}
 }
 

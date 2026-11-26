@@ -42,11 +42,11 @@ class Foo
 		if (rand(0, 1)) {
 			$a[] = 4;
 		}
-		assertType('array{0: 1, 1?: 2|4, 3?: 3, 4?: 4}', $a);
+		assertType('array{0: 1, 1: 2|4, 3?: 3, 4?: 4}|array{0: 1, 1?: 2, 3?: 3}', $a);
 		if (rand(0, 1)) {
 			$a[] = 5;
 		}
-		assertType('array{0: 1, 1?: 2|4|5, 3?: 3, 4?: 4|5, 5?: 5}', $a);
+		assertType('array{0: 1, 1: 2|4, 3?: 3, 4?: 4, 5?: 5}|array{0: 1, 1: 2|5, 3?: 3, 4?: 5}|array{0: 1, 1?: 2, 3?: 3}', $a);
 	}
 
 }

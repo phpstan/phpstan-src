@@ -3936,7 +3936,7 @@ class ConstantArrayType implements Type
 
 	public function tryUnion(Type $otherType): ?Type
 	{
-		return null;
+		return ArrayAlgebra::tryUnionConstantArray($this, $otherType);
 	}
 
 	public function tryIntersect(Type $otherType): ?Type

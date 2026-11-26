@@ -30,9 +30,9 @@ function doFoo(): void
 	}
 
 	if (!otherEnabled()) {
-		assertType("array{}|array{field0?: non-falsy-string, field1?: non-falsy-string, other0?: 'o', company_address?: 'c'}", $post);
+		assertType("array{field0?: non-falsy-string, field1?: non-falsy-string, other0?: 'o', company_address?: 'c'}", $post);
 	}
 	if (isEnabled()) {
-		assertType("array{}|array{field0?: non-falsy-string, field1?: non-falsy-string, other0?: 'o', company_address?: 'c'}", $post);
+		assertType("array{field0?: non-falsy-string, field1?: non-falsy-string, other0?: 'o', company_address?: 'c'}", $post);
 	}
 }

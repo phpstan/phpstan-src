@@ -33,6 +33,7 @@ use Tally\Attribute\DataProvider;
 use Tally\Attribute\ExpectedFor;
 use Tally\Attribute\Linear;
 use Tally\Attribute\Linearithmic;
+use Tally\Attribute\Quadratic;
 use Tally\ScratchDirectory;
 
 final class TypeCombinatorBench
@@ -185,7 +186,7 @@ final class TypeCombinatorBench
 	 * only in their values.
 	 */
 	#[DataProvider(method: 'types')]
-	#[Linearithmic(size: 'types')]
+	#[Quadratic(size: 'types')]
 	public function benchUnionConstantArrays(int $types): Type
 	{
 		return TypeCombinator::union(...$this->arrays);
@@ -209,9 +210,9 @@ final class TypeCombinatorBench
 	 * Arrays of the same keys that differ in two constant values cannot be keys-supersets of each other.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '1.272M', cycles: '1.792M', memory: '36.70KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '5.229M', cycles: '6.417M', memory: '135.3KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '24.46M', cycles: '28.36M', memory: '566.8KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '1.167M', cycles: '1.694M', memory: '31.38KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '4.780M', cycles: '6.090M', memory: '127.3KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '22.14M', cycles: '26.54M', memory: '546.1KiB')]
 	public function benchUnionTaggedConstantArrays(int $types): Type
 	{
 		return TypeCombinator::union(...$this->taggedArrays);
@@ -267,9 +268,9 @@ final class TypeCombinatorBench
 	 * to an oversized array.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '2.423M', cycles: '3.328M', memory: '214.9KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '9.858M', cycles: '12.68M', memory: '799.2KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '43.29M', cycles: '53.86M', memory: '3.128MiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '3.289M', cycles: '4.333M', memory: '205.6KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '32.41M', cycles: '36.43M', memory: '838.9KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '441.1M', cycles: '466.6M', memory: '3.339MiB')]
 	public function benchUnionConstantArraysWithOwnKeys(int $types): Type
 	{
 		return TypeCombinator::union(...$this->arraysWithOwnKeys);
@@ -330,9 +331,9 @@ final class TypeCombinatorBench
 	 * Shapes of the same two keys differing in the value of one, which merge into one shape.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '4.564M', cycles: '5.995M', memory: '55.38KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '46.65M', cycles: '52.04M', memory: '267.1KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '728.5M', cycles: '767.2M', memory: '2.773MiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '3.878M', cycles: '5.469M', memory: '43.59KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '18.44M', cycles: '23.79M', memory: '137.1KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '86.41M', cycles: '106.8M', memory: '547.4KiB')]
 	public function benchUnionShapesDifferingAtOneKey(int $types): Type
 	{
 		return TypeCombinator::union(...$this->shapesDifferingAtOneKey);
@@ -342,9 +343,9 @@ final class TypeCombinatorBench
 	 * Lists of one to eight elements of their own values, as a list is appended to in a loop.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '2.552M', cycles: '3.361M', memory: '71.50KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '18.13M', cycles: '20.96M', memory: '229.6KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '202.7M', cycles: '226.7M', memory: '943.3KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '6.349M', cycles: '8.435M', memory: '89.52KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '93.59M', cycles: '116.2M', memory: '225.0KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '1.421B', cycles: '1.751B', memory: '833.0KiB')]
 	public function benchUnionListsOfGrowingLength(int $types): Type
 	{
 		return TypeCombinator::union(...$this->listsOfGrowingLength);

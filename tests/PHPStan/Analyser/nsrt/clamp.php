@@ -60,7 +60,7 @@ function doArrays(int|array $intOrArray, array $list): void
 {
 	assertType('array<int>|int<1, 10>', clamp($intOrArray, 1, 10));
 	assertType('list<int>', clamp($list, [0], [10]));
-	assertType('array{10}|array{1}|array{5}', clamp([5], [1], [10]));
+	assertType('array{1|5|10}', clamp([5], [1], [10]));
 	assertType('1|10|array{5}', clamp([5], 1, 10));
 }
 

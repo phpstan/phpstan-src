@@ -33,6 +33,7 @@ return static function (array $manifest, array $classMap): array {
 		'PHPStan\\Type\\Combinator\\AbsorbedArrayUnionRule' => $root . '/src/Type/Combinator/AbsorbedArrayUnionRule.php',
 		'PHPStan\\Type\\Combinator\\AtOnceUnionRemoveRule' => $root . '/src/Type/Combinator/AtOnceUnionRemoveRule.php',
 		'PHPStan\\Type\\Combinator\\DisjointFiniteUnionRemoveRule' => $root . '/src/Type/Combinator/DisjointFiniteUnionRemoveRule.php',
+		'PHPStan\\Type\\Combinator\\IntegerUnionRemoveRule' => $root . '/src/Type/Combinator/IntegerUnionRemoveRule.php',
 		'PHPStan\\Type\\Combinator\\FiniteTypesRemoveRule' => $root . '/src/Type/Combinator/FiniteTypesRemoveRule.php',
 		'PHPStan\\Type\\Combinator\\MixedUnionRemoveRule' => $root . '/src/Type/Combinator/MixedUnionRemoveRule.php',
 		'PHPStan\\Type\\Combinator\\PeelUnionRemoveRule' => $root . '/src/Type/Combinator/PeelUnionRemoveRule.php',

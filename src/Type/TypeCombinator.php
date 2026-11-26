@@ -14,6 +14,7 @@ use PHPStan\Type\Combinator\ExactIntersectRule;
 use PHPStan\Type\Combinator\FiniteTypesRemoveRule;
 use PHPStan\Type\Combinator\FoldedShapeUnionRule;
 use PHPStan\Type\Combinator\GeneralArrayUnionRule;
+use PHPStan\Type\Combinator\IntegerUnionRemoveRule;
 use PHPStan\Type\Combinator\IntersectRule;
 use PHPStan\Type\Combinator\IterableUnionRule;
 use PHPStan\Type\Combinator\MixedUnionRemoveRule;
@@ -115,6 +116,7 @@ final class TypeCombinator
 	private static function createUnionRemoveRules(): array
 	{
 		return [
+			new IntegerUnionRemoveRule(),
 			new AtOnceUnionRemoveRule(),
 			new MixedUnionRemoveRule(),
 			new DisjointFiniteUnionRemoveRule(),

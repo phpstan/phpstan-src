@@ -11,6 +11,8 @@ use function min;
 use function pack;
 use function usort;
 use const INF;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
 /**
  * The union of the scalar members of a union, kind by kind: the numbers as
@@ -199,23 +201,106 @@ final class ScalarUnion
 	{
 		$intervals = null;
 		foreach ($operands as $members) {
-			$operandIntervals = [];
-			foreach ($members as $member) {
-				$numbers = $member->getKindMask() === TypeKind::INT ? $member->toExactNumberSet() : null;
-				if ($numbers === null) {
-					return null;
-				}
-				foreach ($numbers->getIntegerIntervals() as [$min, $max]) {
-					// unbounded sides compare as the infinities
-					$operandIntervals[] = [$min ?? -INF, $max ?? INF];
-				}
+			$operandIntervals = self::getIntegerIntervals($members);
+			if ($operandIntervals === null) {
+				return null;
 			}
-			$operandIntervals = self::coalesceIntervals($operandIntervals);
 			$intervals = $intervals === null ? $operandIntervals : self::intersectIntervals($intervals, $operandIntervals);
 		}
 
+		return self::createIntegers($intervals);
+	}
+
+	/**
+	 * The integers of the members of one operand without those of the members
+	 * of the other, as ranges and constants, both swept in the order of their
+	 * bounds.
+	 *
+	 * @param list<Type> $members
+	 * @param list<Type> $membersToRemove
+	 * @return list<Type>|null null when a member is not of exact integers
+	 */
+	public static function removeIntegers(array $members, array $membersToRemove): ?array
+	{
+		$intervals = self::getIntegerIntervals($members);
+		if ($intervals === null) {
+			return null;
+		}
+		$intervalsToRemove = self::getIntegerIntervals($membersToRemove);
+		if ($intervalsToRemove === null) {
+			return null;
+		}
+
+		$result = [];
+		$j = 0;
+		foreach ($intervals as [$min, $max]) {
+			while ($j < count($intervalsToRemove) && $intervalsToRemove[$j][1] < $min) {
+				$j++;
+			}
+			// the removed intervals from $j on overlap this one or come after it
+			for ($k = $j; $k < count($intervalsToRemove) && $intervalsToRemove[$k][0] <= $max; $k++) {
+				[$removedMin, $removedMax] = $intervalsToRemove[$k];
+				if ($removedMin > $min) {
+					$result[] = [$min, self::predecessor($removedMin)];
+				}
+				$min = self::successor($removedMax);
+			}
+			if ($min > $max) {
+				continue;
+			}
+			$result[] = [$min, $max];
+		}
+
+		return self::createIntegers($result);
+	}
+
+	/**
+	 * The integer intervals of the members, sorted and with the overlapping
+	 * ones joined. An unbounded side is an infinity.
+	 *
+	 * @param list<Type> $members
+	 * @return list<array{int|float, int|float}>|null
+	 */
+	private static function getIntegerIntervals(array $members): ?array
+	{
+		$intervals = [];
+		foreach ($members as $member) {
+			$numbers = $member->getKindMask() === TypeKind::INT ? $member->toExactNumberSet() : null;
+			if ($numbers === null) {
+				return null;
+			}
+			foreach ($numbers->getIntegerIntervals() as [$min, $max]) {
+				$intervals[] = [$min ?? -INF, $max ?? INF];
+			}
+		}
+
+		return self::coalesceIntervals($intervals);
+	}
+
+	/** The next integer, or INF after the biggest one. */
+	private static function successor(int|float $bound): int|float
+	{
+		return is_int($bound) && $bound < PHP_INT_MAX ? $bound + 1 : INF;
+	}
+
+	/** The previous integer, or -INF before the smallest one. */
+	private static function predecessor(int|float $bound): int|float
+	{
+		return is_int($bound) && $bound > PHP_INT_MIN ? $bound - 1 : -INF;
+	}
+
+	/**
+	 * @param list<array{int|float, int|float}> $intervals
+	 * @return list<Type>
+	 */
+	private static function createIntegers(array $intervals): array
+	{
 		$types = [];
 		foreach ($intervals as [$min, $max]) {
+			// past either end of the integers, nothing is left of the interval
+			if ($min === INF || $max === -INF) {
+				continue;
+			}
 			$types[] = IntegerRangeType::fromInterval(is_int($min) ? $min : null, is_int($max) ? $max : null);
 		}
 

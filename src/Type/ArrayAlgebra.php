@@ -76,6 +76,21 @@ final class ArrayAlgebra
 		return $array->setOffsetValueType($offsetType, $valueType);
 	}
 
+	/**
+	 * An array with a value of A or one of B at an offset is an array with a
+	 * value of A|B there.
+	 *
+	 * @see Type::tryUnion()
+	 */
+	public static function tryUnionHasOffsetValue(HasOffsetValueType $type, Type $otherType): ?Type
+	{
+		if (!$otherType instanceof HasOffsetValueType || !$type->getOffsetType()->equals($otherType->getOffsetType())) {
+			return null;
+		}
+
+		return new HasOffsetValueType($type->getOffsetType(), TypeCombinator::union($type->getValueType(), $otherType->getValueType()));
+	}
+
 	/** @see Type::tryIntersect() */
 	public static function tryIntersectOversizedArray(OversizedArrayType $array, Type $otherType): ?Type
 	{

@@ -3268,7 +3268,7 @@ PT_MINIT_REGISTRATION(pt_register_intersection_type)
 	ptdecl::IntersectionType::declareClass(cls);
 
 	/* mirrors tryUnion() and tryIntersect() */
-	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryUnion, pt_type_intersection_try_union_handler);
 	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
 
 	/* mirrors getStringRefinement() */

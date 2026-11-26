@@ -23,11 +23,13 @@ return static function (array $manifest, array $classMap): array {
 		'PHPStan\\Type\\StringRefinement' => $root . '/src/Type/StringRefinement.php',
 		'PHPStan\\Type\\SubtractionAlgebra' => $root . '/src/Type/SubtractionAlgebra.php',
 		'PHPStan\\Type\\ArrayAlgebra' => $root . '/src/Type/ArrayAlgebra.php',
+		'PHPStan\\Type\\IntersectionAlgebra' => $root . '/src/Type/IntersectionAlgebra.php',
 	];
 	if (class_exists('PHPStanTurbo\\TypeCombinator', false)) {
 		$classMap['typeCombinator'] = 'PHPStanTurbo\\TypeCombinator';
 		$classMap['subtractionAlgebra'] = 'PHPStanTurbo\\SubtractionAlgebra';
 		$classMap['arrayAlgebra'] = 'PHPStanTurbo\\ArrayAlgebra';
+		$classMap['intersectionAlgebra'] = 'PHPStanTurbo\\IntersectionAlgebra';
 		return $classMap;
 	}
 
@@ -99,5 +101,6 @@ return static function (array $manifest, array $classMap): array {
 	$classMap['typeCombinator'] = 'PHPStanTurbo\\TypeCombinator';
 	$classMap['subtractionAlgebra'] = 'PHPStanTurbo\\SubtractionAlgebra';
 	$classMap['arrayAlgebra'] = 'PHPStanTurbo\\ArrayAlgebra';
+	$classMap['intersectionAlgebra'] = 'PHPStanTurbo\\IntersectionAlgebra';
 	return $classMap;
 };

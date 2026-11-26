@@ -11,6 +11,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\ArrayAlgebra;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
@@ -616,7 +617,7 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function tryUnion(Type $otherType): ?Type
 	{
-		return null;
+		return ArrayAlgebra::tryUnionHasOffsetValue($this, $otherType);
 	}
 
 	public function tryIntersect(Type $otherType): ?Type

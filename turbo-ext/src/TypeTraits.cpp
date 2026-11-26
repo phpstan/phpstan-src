@@ -234,6 +234,16 @@ void ZEND_FASTCALL pt_type_constant_array_try_union_handler(INTERNAL_FUNCTION_PA
 	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_ARRAY_ALGEBRA, PT_LC("tryunionconstantarray"));
 }
 
+void ZEND_FASTCALL pt_type_has_offset_value_try_union_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_ARRAY_ALGEBRA, PT_LC("tryunionhasoffsetvalue"));
+}
+
+void ZEND_FASTCALL pt_type_intersection_try_union_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_INTERSECTION_ALGEBRA, PT_LC("tryunion"));
+}
+
 void ZEND_FASTCALL pt_type_constant_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS)
 {
 	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_ARRAY_ALGEBRA, PT_LC("tryintersectconstantarray"));

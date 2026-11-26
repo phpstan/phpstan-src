@@ -427,6 +427,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_TYPE_COMBINATOR */ {"typeCombinator", "PHPStan\\Type\\TypeCombinator"},
 	/* PT_CLASS_SUBTRACTION_ALGEBRA */ {"subtractionAlgebra", "PHPStan\\Type\\SubtractionAlgebra"},
 	/* PT_CLASS_ARRAY_ALGEBRA */ {"arrayAlgebra", "PHPStan\\Type\\ArrayAlgebra"},
+	/* PT_CLASS_INTERSECTION_ALGEBRA */ {"intersectionAlgebra", "PHPStan\\Type\\IntersectionAlgebra"},
 };
 
 zend_class_entry *pt_class(int idx)

@@ -1358,6 +1358,12 @@ parameters:
 			path: src/Type/IntegerType.php
 
 		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/IntersectionAlgebra.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 4
@@ -1618,7 +1624,7 @@ parameters:
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
-			count: 4
+			count: 2
 			path: src/Type/TypeCombinator.php
 
 		-

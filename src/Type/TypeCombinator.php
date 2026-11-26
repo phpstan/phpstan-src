@@ -965,17 +965,6 @@ final class TypeCombinator
 			return null;
 		}
 
-		if ($a instanceof HasOffsetValueType && $b instanceof HasOffsetValueType) {
-			if ($a->getOffsetType()->equals($b->getOffsetType())) {
-				return [new HasOffsetValueType($a->getOffsetType(), self::union($a->getValueType(), $b->getValueType())), null];
-			}
-		}
-		if ($a instanceof IntersectionType && $b instanceof IntersectionType) {
-			$merged = self::mergeIntersectionsForUnion($a, $b);
-			if ($merged !== null) {
-				return [$merged, null];
-			}
-		}
 		if ($a->isConstantArray()->yes() && $b->isConstantArray()->yes()) {
 			return null;
 		}
@@ -2440,70 +2429,6 @@ final class TypeCombinator
 		}
 
 		return $newArray->getArray();
-	}
-
-	/**
-	 * Merge two IntersectionTypes that have the same structure but differ
-	 * in HasOffsetValueType value types (matched by offset key).
-	 *
-	 * E.g. (A & hasOV('k', X)) | (A & hasOV('k', Y)) → (A & hasOV('k', X|Y))
-	 */
-	private static function mergeIntersectionsForUnion(IntersectionType $a, IntersectionType $b): ?Type
-	{
-		$aTypes = $a->getTypes();
-		$bTypes = $b->getTypes();
-
-		if (count($aTypes) !== count($bTypes)) {
-			return null;
-		}
-
-		$mergedTypes = [];
-		$hasDifference = false;
-		$bUsed = array_fill(0, count($bTypes), false);
-
-		foreach ($aTypes as $aType) {
-			$matched = false;
-			foreach ($bTypes as $bIdx => $bType) {
-				if ($bUsed[$bIdx]) {
-					continue;
-				}
-
-				if ($aType->equals($bType)) {
-					$mergedTypes[] = $aType;
-					$bUsed[$bIdx] = true;
-					$matched = true;
-					break;
-				}
-
-				// HasOffsetValueType: merge value types when offset keys match
-				if ($aType instanceof HasOffsetValueType && $bType instanceof HasOffsetValueType
-					&& $aType->getOffsetType()->equals($bType->getOffsetType())) {
-					$mergedTypes[] = new HasOffsetValueType(
-						$aType->getOffsetType(),
-						self::union($aType->getValueType(), $bType->getValueType()),
-					);
-					$hasDifference = true;
-					$bUsed[$bIdx] = true;
-					$matched = true;
-					break;
-				}
-
-				// HasOffsetType, HasMethodType, HasPropertyType: only equal values match (no merging possible)
-			}
-			if (!$matched) {
-				return null;
-			}
-		}
-
-		if (!$hasDifference) {
-			return null;
-		}
-
-		$result = $mergedTypes[0];
-		for ($i = 1, $count = count($mergedTypes); $i < $count; $i++) {
-			$result = self::intersect($result, $mergedTypes[$i]);
-		}
-		return $result;
 	}
 
 	public static function removeFalsey(Type $type): Type

@@ -2225,7 +2225,7 @@ class IntersectionType implements CompoundType
 
 	public function tryUnion(Type $otherType): ?Type
 	{
-		return null;
+		return IntersectionAlgebra::tryUnion($this, $otherType);
 	}
 
 	public function tryIntersect(Type $otherType): ?Type

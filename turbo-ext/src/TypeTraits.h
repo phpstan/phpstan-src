@@ -1709,6 +1709,12 @@ void ZEND_FASTCALL pt_type_subtraction_try_intersect_handler(INTERNAL_FUNCTION_P
 /* tryUnion() of ConstantArrayType: ArrayAlgebra::tryUnionConstantArray($this, $otherType) */
 void ZEND_FASTCALL pt_type_constant_array_try_union_handler(INTERNAL_FUNCTION_PARAMETERS);
 
+/* tryUnion() of HasOffsetValueType: ArrayAlgebra::tryUnionHasOffsetValue($this, $otherType) */
+void ZEND_FASTCALL pt_type_has_offset_value_try_union_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* tryUnion() of IntersectionType: IntersectionAlgebra::tryUnion($this, $otherType) */
+void ZEND_FASTCALL pt_type_intersection_try_union_handler(INTERNAL_FUNCTION_PARAMETERS);
+
 /* tryIntersect() of ConstantArrayType and OversizedArrayType:
  * ArrayAlgebra::tryIntersectConstantArray($this, $otherType) / ::tryIntersectOversizedArray() */
 void ZEND_FASTCALL pt_type_constant_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);

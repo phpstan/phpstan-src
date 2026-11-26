@@ -188,6 +188,19 @@ private:
 			if (UNEXPECTED(variableFlow.isUndef())) return false;
 			variableFlows.push(std::move(variableFlow));
 			if (UNEXPECTED(!mergeImpurePoints(impurePoints, defaultExprResult.raw()))) return false;
+			/* $scope = $scope->addTemplateArgumentConstraints($defaultExprResult->getScope()->getTemplateArgumentConstraints()); */
+			zv::Val resultScopeHold;
+			zval *resultScope = pt_expression_result_scope(defaultExprResult.raw(), resultScopeHold);
+			if (UNEXPECTED(resultScope == NULL)) return false;
+			if (UNEXPECTED(Z_TYPE_P(resultScope) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function getTemplateArgumentConstraints() on %s", zend_zval_value_name(resultScope));
+				return false;
+			}
+			zv::Val constraints = pt_mutating_scope_get_template_argument_constraints(Z_OBJ_P(resultScope));
+			if (UNEXPECTED(constraints.isUndef())) return false;
+			zv::Val constrainedScope = pt_mutating_scope_add_template_argument_constraints(Z_OBJ_P(scope.raw()), constraints.raw());
+			if (UNEXPECTED(constrainedScope.isUndef())) return false;
+			scope = std::move(constrainedScope);
 		}
 
 		var = ptsh::readNodeProperty(pt_svh_static_var_var_site, staticVar, PT_LC("var"));

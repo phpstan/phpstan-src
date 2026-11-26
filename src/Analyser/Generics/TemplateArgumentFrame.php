@@ -10,6 +10,7 @@ use PHPStan\Reflection\ParametersAcceptor;
 use PHPStan\Reflection\ResolvedFunctionVariant;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Generic\TemplateType;
+use PHPStan\Type\Generic\UnresolvedTemplateArgumentType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeTraverser;
 use function array_keys;
@@ -112,7 +113,10 @@ final class TemplateArgumentFrame
 
 	/**
 	 * The frame with the inferred types of the body's `static` variables; the
-	 * statements holding them are walked again in the second pass.
+	 * statements holding them are walked again in the second pass. The walks
+	 * inferring the types observed, so on a resolved frame the markers of the
+	 * types are replaced by what the frame resolved them to - as the second
+	 * pass replaces them at their sites.
 	 *
 	 * @param array<int, array{Expr\Variable, Type, Type}> $staticVariableTypes
 	 * @param array<int, true> $statementIndexes
@@ -120,6 +124,12 @@ final class TemplateArgumentFrame
 	 */
 	public function withStaticVariableTypes(array $staticVariableTypes, array $statementIndexes, array $conditionalExpressions = []): self
 	{
+		if ($this->resolutions !== null) {
+			foreach ($staticVariableTypes as $id => [$var, $type, $nativeType]) {
+				$staticVariableTypes[$id] = [$var, $this->resolveMarkers($type), $this->resolveMarkers($nativeType)];
+			}
+		}
+
 		return new self(
 			$this->parent,
 			$this->resolutions,
@@ -348,6 +358,19 @@ final class TemplateArgumentFrame
 		}
 
 		return '';
+	}
+
+	private function resolveMarkers(Type $type): Type
+	{
+		return TypeTraverser::map($type, function (Type $type, callable $traverse): Type {
+			if ($type instanceof UnresolvedTemplateArgumentType && !$type->isClosureSignature()) {
+				$site = $type->getSite();
+
+				return $traverse($this->resolve($site, $type->getTemplateName()) ?? $type->getInitialType() ?? $this->resolveOrUnconstrained($site, $type->getTemplate()));
+			}
+
+			return $traverse($type);
+		});
 	}
 
 	private static function key(Expr $site, string $templateName): string

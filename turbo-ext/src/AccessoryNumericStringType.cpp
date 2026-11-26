@@ -382,6 +382,9 @@ PT_MINIT_REGISTRATION(pt_register_accessory_numeric_string_type)
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryNumericStringType");
 	ptdecl::AccessoryNumericStringType::declareClass(cls);
 	ptdecl::AccessoryNumericStringType::declareProperties(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<pt_string_cells_of(PT_STRING_CELL_ZERO | PT_STRING_CELL_DECIMAL | PT_STRING_CELL_NUMERIC | PT_STRING_CELL_NUMERIC_LOWER | PT_STRING_CELL_NUMERIC_UPPER)>);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 

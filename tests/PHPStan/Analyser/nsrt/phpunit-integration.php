@@ -30,11 +30,11 @@ final class Loader
 		}
 
 		if ($loaded === false || ($strict && $message !== '')) {
-			assertType('string', $message);
-			assertNativeType('string', $message);
+			assertType("''|non-falsy-string", $message);
+			assertNativeType("''|non-falsy-string", $message);
 			if ($filename !== '') {
-				assertType('string', $message);
-				assertNativeType('string', $message);
+				assertType("''|non-falsy-string", $message);
+				assertNativeType("''|non-falsy-string", $message);
 				throw new Exception(
 					sprintf(
 						'Could not load "%s".%s',
@@ -44,15 +44,15 @@ final class Loader
 				);
 			}
 
-			assertType('string', $message);
-			assertNativeType('string', $message);
+			assertType("''|non-falsy-string", $message);
+			assertNativeType("''|non-falsy-string", $message);
 
 			if ($message === '') {
 				$message = 'Could not load XML for unknown reason';
 			}
 
-			assertType('non-empty-string', $message);
-			assertNativeType('non-empty-string', $message);
+			assertType('non-falsy-string', $message);
+			assertNativeType('non-falsy-string', $message);
 
 			throw new Exception($message);
 		}

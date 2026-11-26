@@ -82,6 +82,9 @@ PT_MINIT_REGISTRATION(pt_register_string_never_accepting_object_with_to_string_t
 	ptdecl::StringNeverAcceptingObjectWithToStringType::declareClass(cls);
 	ptdecl::StringNeverAcceptingObjectWithToStringType::declareProperties(cls);
 
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
+
 	cls.method<&StringNeverAcceptingObjectWithToStringType::isSuperTypeOf, zp::Obj>(sigs::isSuperTypeOf);
 
 	cls.method(sigs::accepts, [](INTERNAL_FUNCTION_PARAMETERS) {

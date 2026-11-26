@@ -462,6 +462,13 @@ interface Type
 	public function toNumberSet(): ?NumberSet;
 
 	/**
+	 * The numbers this type holds when it is exactly the union of them: int,
+	 * float and their ranges and constants. Null for any other type, a template
+	 * of a number type included, which stands for a type and not its values.
+	 */
+	public function toExactNumberSet(): ?NumberSet;
+
+	/**
 	 * The values this type holds, by the kinds of values PHP's operators tell apart.
 	 * A union of types is the union of their sets, an intersection their intersection.
 	 */
@@ -614,6 +621,13 @@ interface Type
 	 * in the source code (not from user input). Used for SQL injection prevention.
 	 */
 	public function isLiteralString(): TrinaryLogic;
+
+	/**
+	 * The strings this type holds as StringRefinement cells, when they are
+	 * exactly the strings of those cells: string and the conjunctions of its
+	 * accessory types. Null for any other type, a constant string included.
+	 */
+	public function getStringRefinement(): ?int;
 
 	public function isLowercaseString(): TrinaryLogic;
 

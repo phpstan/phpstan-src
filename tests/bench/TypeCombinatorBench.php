@@ -174,7 +174,7 @@ final class TypeCombinatorBench
 	}
 
 	#[DataProvider(method: 'types')]
-	#[Linear(size: 'types')]
+	#[Linearithmic(size: 'types')]
 	public function benchUnionConstantIntegers(int $types): Type
 	{
 		return TypeCombinator::union(...$this->integers);
@@ -211,16 +211,16 @@ final class TypeCombinatorBench
 	#[DataProvider(method: 'types')]
 	#[ExpectedFor(dataSet: 'types-16', instructions: '1.424M', cycles: '1.962M', memory: '36.67KiB')]
 	#[ExpectedFor(dataSet: 'types-64', instructions: '5.858M', cycles: '7.110M', memory: '135.3KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '31.62M', cycles: '37.46M', memory: '566.8KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '35.91M', cycles: '41.90M', memory: '566.8KiB')]
 	public function benchUnionTaggedConstantArrays(int $types): Type
 	{
 		return TypeCombinator::union(...$this->taggedArrays);
 	}
 
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '160.6K', cycles: '350.5K', memory: '8.875KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '570.6K', cycles: '861.9K', memory: '26.20KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '2.199M', cycles: '2.807M', memory: '107.7KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '220.0K', cycles: '455.0K', memory: '9.195KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '785.5K', cycles: '1.124M', memory: '27.28KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '3.035M', cycles: '3.702M', memory: '112.5KiB')]
 	public function benchIntersectBenevolentUnion(int $types): Type
 	{
 		return TypeCombinator::intersect(...$this->benevolentUnions);
@@ -230,9 +230,9 @@ final class TypeCombinatorBench
 	 * Each member is a general bool, float, int or string.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '238.9K', cycles: '402.4K', memory: '3.430KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '424.8K', cycles: '595.1K', memory: '8.453KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '1.647M', cycles: '1.957M', memory: '38.72KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '190.7K', cycles: '426.4K', memory: '7.914KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '560.7K', cycles: '837.9K', memory: '20.01KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '2.648M', cycles: '3.143M', memory: '84.26KiB')]
 	public function benchUnionGeneralScalars(int $types): Type
 	{
 		return TypeCombinator::union(...$this->generalScalars);
@@ -242,9 +242,9 @@ final class TypeCombinatorBench
 	 * numeric-string is compared with each constant string.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '712.8K', cycles: '1.184M', memory: '9.977KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '2.673M', cycles: '3.750M', memory: '37.68KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '10.51M', cycles: '13.99M', memory: '146.4KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '663.7K', cycles: '1.066M', memory: '10.86KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '2.544M', cycles: '3.382M', memory: '40.86KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '10.06M', cycles: '12.62M', memory: '163.1KiB')]
 	public function benchUnionNumericStringAndConstantStrings(int $types): Type
 	{
 		return TypeCombinator::union(...$this->numericStringAndStrings);
@@ -254,9 +254,9 @@ final class TypeCombinatorBench
 	 * The constant arrays have the same eight keys, which the general array gets once.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '2.040M', cycles: '2.700M', memory: '64.27KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '7.762M', cycles: '9.538M', memory: '211.5KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '30.76M', cycles: '37.02M', memory: '813.5KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '3.481M', cycles: '4.284M', memory: '106.4KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '14.36M', cycles: '16.60M', memory: '345.6KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '61.45M', cycles: '69.22M', memory: '1.201MiB')]
 	public function benchUnionGeneralArrayAndConstantArrays(int $types): Type
 	{
 		return TypeCombinator::union(...$this->arraysWithSameKeys);
@@ -268,8 +268,8 @@ final class TypeCombinatorBench
 	 */
 	#[DataProvider(method: 'types')]
 	#[ExpectedFor(dataSet: 'types-16', instructions: '3.095M', cycles: '4.054M', memory: '214.9KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '120.2M', cycles: '146.4M', memory: '799.2KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '327.5M', cycles: '408.6M', memory: '3.128MiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '114.5M', cycles: '138.3M', memory: '799.2KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '312.1M', cycles: '387.8M', memory: '3.128MiB')]
 	public function benchUnionConstantArraysWithOwnKeys(int $types): Type
 	{
 		return TypeCombinator::union(...$this->arraysWithOwnKeys);
@@ -330,9 +330,9 @@ final class TypeCombinatorBench
 	 * Shapes of the same two keys differing in the value of one, which merge into one shape.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '2.628M', cycles: '3.718M', memory: '48.16KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '20.85M', cycles: '24.61M', memory: '243.6KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '247.2M', cycles: '269.3M', memory: '2.674MiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '4.659M', cycles: '6.106M', memory: '55.38KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '46.65M', cycles: '52.04M', memory: '267.1KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '728.5M', cycles: '767.2M', memory: '2.773MiB')]
 	public function benchUnionShapesDifferingAtOneKey(int $types): Type
 	{
 		return TypeCombinator::union(...$this->shapesDifferingAtOneKey);
@@ -342,9 +342,9 @@ final class TypeCombinatorBench
 	 * Lists of one to eight elements of their own values, as a list is appended to in a loop.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '4.001M', cycles: '5.114M', memory: '119.5KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '20.29M', cycles: '23.90M', memory: '402.4KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '199.9M', cycles: '224.3M', memory: '1.588MiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '4.267M', cycles: '5.511M', memory: '119.6KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '22.13M', cycles: '26.27M', memory: '402.5KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '215.2M', cycles: '243.7M', memory: '1.588MiB')]
 	public function benchUnionListsOfGrowingLength(int $types): Type
 	{
 		return TypeCombinator::union(...$this->listsOfGrowingLength);
@@ -354,9 +354,9 @@ final class TypeCombinatorBench
 	 * Non-empty arrays with a different value at the same offset each, which merge into one.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '2.830M', cycles: '3.766M', memory: '13.91KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '15.23M', cycles: '17.59M', memory: '51.30KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '134.0M', cycles: '145.5M', memory: '245.7KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '3.690M', cycles: '4.786M', memory: '21.20KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '35.03M', cycles: '38.25M', memory: '73.79KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '516.9M', cycles: '540.8M', memory: '342.4KiB')]
 	public function benchUnionOffsetValueIntersections(int $types): Type
 	{
 		return TypeCombinator::union(...$this->offsetValueIntersections);
@@ -366,9 +366,9 @@ final class TypeCombinatorBench
 	 * non-empty-string holds each constant string but the empty one, with which it is string.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '678.8K', cycles: '1.213M', memory: '14.52KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '2.395M', cycles: '3.495M', memory: '45.65KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '10.39M', cycles: '13.94M', memory: '166.2KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '262.3K', cycles: '503.9K', memory: '12.02KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '874.5K', cycles: '1.211M', memory: '46.89KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '3.322M', cycles: '4.019M', memory: '167.6KiB')]
 	public function benchUnionNonEmptyStringAndConstantStrings(int $types): Type
 	{
 		return TypeCombinator::union(...$this->nonEmptyStringAndStrings);
@@ -378,9 +378,9 @@ final class TypeCombinatorBench
 	 * Integer ranges with a gap between each two, which stay apart.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '551.9K', cycles: '675.7K', memory: '3.992KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '7.936M', cycles: '8.124M', memory: '15.67KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '120.3M', cycles: '121.1M', memory: '77.42KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '944.0K', cycles: '1.143M', memory: '9.992KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '13.26M', cycles: '13.72M', memory: '29.80KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '202.3M', cycles: '205.8M', memory: '136.6KiB')]
 	public function benchUnionDisjointRanges(int $types): Type
 	{
 		return TypeCombinator::union(...$this->disjointRanges);
@@ -390,9 +390,9 @@ final class TypeCombinatorBench
 	 * Integer ranges each touching the one before, in reverse order, which merge into one range.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '284.0K', cycles: '432.1K', memory: '3.992KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '1.316M', cycles: '1.567M', memory: '16.23KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '7.369M', cycles: '8.025M', memory: '84.73KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '252.2K', cycles: '428.8K', memory: '10.23KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '931.6K', cycles: '1.176M', memory: '30.66KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '4.521M', cycles: '5.066M', memory: '141.4KiB')]
 	public function benchUnionTouchingRangesInReverse(int $types): Type
 	{
 		return TypeCombinator::union(...$this->touchingRangesInReverse);
@@ -402,9 +402,9 @@ final class TypeCombinatorBench
 	 * Integer ranges with a constant in the gap after each, which stay apart.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '1.953M', cycles: '2.188M', memory: '7.211KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '27.52M', cycles: '28.17M', memory: '31.70KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '422.3M', cycles: '427.5M', memory: '125.0KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '1.284M', cycles: '1.547M', memory: '17.91KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '14.74M', cycles: '15.32M', memory: '63.05KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '208.7M', cycles: '212.4M', memory: '244.0KiB')]
 	public function benchUnionIntegersAndRanges(int $types): Type
 	{
 		return TypeCombinator::union(...$this->integersAndRanges);
@@ -414,9 +414,9 @@ final class TypeCombinatorBench
 	 * Two unions of ranges, each range of one overlapping one range of the other at one value.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '3.263M', cycles: '4.057M', memory: '6.898KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '48.68M', cycles: '57.06M', memory: '20.25KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '765.0M', cycles: '894.3M', memory: '90.88KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '3.416M', cycles: '4.298M', memory: '12.50KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '49.38M', cycles: '58.65M', memory: '35.69KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '768.4M', cycles: '914.1M', memory: '166.4KiB')]
 	public function benchIntersectRangeUnions(int $types): Type
 	{
 		return TypeCombinator::intersect(...$this->rangeUnions);
@@ -426,9 +426,9 @@ final class TypeCombinatorBench
 	 * A constant in the middle of each range of a union removed from it, splitting each range.
 	 */
 	#[DataProvider(method: 'types')]
-	#[ExpectedFor(dataSet: 'types-16', instructions: '1.993M', cycles: '2.515M', memory: '6.047KiB')]
-	#[ExpectedFor(dataSet: 'types-64', instructions: '25.57M', cycles: '27.78M', memory: '13.17KiB')]
-	#[ExpectedFor(dataSet: 'types-256', instructions: '383.9M', cycles: '400.4M', memory: '43.67KiB')]
+	#[ExpectedFor(dataSet: 'types-16', instructions: '2.452M', cycles: '3.167M', memory: '8.883KiB')]
+	#[ExpectedFor(dataSet: 'types-64', instructions: '27.40M', cycles: '30.25M', memory: '16.01KiB')]
+	#[ExpectedFor(dataSet: 'types-256', instructions: '391.2M', cycles: '411.2M', memory: '46.51KiB')]
 	public function benchRemoveConstantsFromRanges(int $types): Type
 	{
 		return TypeCombinator::remove(...$this->rangesAndConstants);

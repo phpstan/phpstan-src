@@ -853,6 +853,9 @@ PT_MINIT_REGISTRATION(pt_register_iterable_type)
 	/* the slots must stay in this order (PT_IT_PROP_*) */
 	ptdecl::IterableType::declareProperties(cls);
 
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
+
 	cls.method<&IterableType::construct, zp::TypeObj, zp::TypeObj>(sigs::__construct);
 
 	cls.method(sigs::getKeyType, itGetKeyType);

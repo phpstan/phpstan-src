@@ -27,4 +27,10 @@ class StringNeverAcceptingObjectWithToStringType extends StringType
 		return parent::accepts($type, true);
 	}
 
+	/** It differs from string in what it accepts. */
+	public function getStringRefinement(): ?int
+	{
+		return null;
+	}
+
 }

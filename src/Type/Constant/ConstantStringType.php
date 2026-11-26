@@ -431,6 +431,12 @@ class ConstantStringType extends StringType implements ConstantScalarType
 		return TrinaryLogic::createYes();
 	}
 
+	/** A constant is a value of its cell, not the whole cell: StringRefinement::ofConstant(). */
+	public function getStringRefinement(): ?int
+	{
+		return null;
+	}
+
 	public function isLowercaseString(): TrinaryLogic
 	{
 		return TrinaryLogic::createFromBoolean(strtolower($this->value) === $this->value);

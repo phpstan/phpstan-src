@@ -283,6 +283,9 @@ PT_MINIT_REGISTRATION(pt_register_never_type)
 	/* "isExplicit" and "reason" must stay the first two declared properties
 	 * (slots::isExplicit, slots::reason) */
 	ptdecl::NeverType::declareProperties(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createnever"));
 

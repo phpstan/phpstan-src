@@ -249,7 +249,7 @@ function doFoo2(string $row): void
 		return;
 	}
 
-	assertType("array{0: non-falsy-string, 1: string, branchCode: ''|numeric-string, 2: ''|numeric-string, accountNumber: numeric-string, 3: numeric-string, bankCode: non-falsy-string&numeric-string, 4: non-falsy-string&numeric-string}", $matches);
+	assertType("array{0: non-falsy-string, 1: ''|non-falsy-string, branchCode: ''|numeric-string, 2: ''|numeric-string, accountNumber: numeric-string, 3: numeric-string, bankCode: non-falsy-string&numeric-string, 4: non-falsy-string&numeric-string}", $matches);
 }
 
 function doFoo3(string $row): void
@@ -429,7 +429,7 @@ function (string $s, $mixed): void {
 
 function (string $s): void {
 	if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $s, $matches) === 1) {
-		assertType("array{non-falsy-string, string, 'b'|'d'|'E'|'e'|'F'|'f'|'G'|'g'|'H'|'h'|'o'|'s'|'u'|'X'|'x'}", $matches);
+		assertType("array{non-falsy-string, ''|non-falsy-string, 'b'|'d'|'E'|'e'|'F'|'f'|'G'|'g'|'H'|'h'|'o'|'s'|'u'|'X'|'x'}", $matches);
 	}
 };
 

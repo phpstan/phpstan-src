@@ -515,6 +515,9 @@ PT_MINIT_REGISTRATION(pt_register_unresolved_template_argument_type)
 	/* the slots must stay in this order (PT_UTA_PROP_*) */
 	ptdecl::UnresolvedTemplateArgumentType::declareProperties(cls);
 
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
+
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *site, *templateType, *initialType;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::TypeObjOrNull>(execute_data, site, templateType, initialType)) RETURN_THROWS();

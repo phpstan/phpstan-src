@@ -61,4 +61,10 @@ class StringAlwaysAcceptingObjectWithToStringType extends StringType
 		return $result;
 	}
 
+	/** It holds the Stringable objects too. */
+	public function getStringRefinement(): ?int
+	{
+		return null;
+	}
+
 }

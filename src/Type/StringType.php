@@ -285,6 +285,11 @@ class StringType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getStringRefinement(): ?int
+	{
+		return StringRefinement::ALL;
+	}
+
 	public function isLowercaseString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

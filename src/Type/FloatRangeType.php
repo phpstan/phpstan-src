@@ -77,7 +77,7 @@ class FloatRangeType extends FloatType implements CompoundType
 	 * Maps the non-NAN floats onto integers in their order, both zeros onto 0:
 	 * a float's bits read as an integer grow with the float's magnitude.
 	 */
-	private static function toOrdinal(float $value): int
+	public static function toOrdinal(float $value): int
 	{
 		if ($value === 0.0) {
 			return 0;
@@ -96,7 +96,7 @@ class FloatRangeType extends FloatType implements CompoundType
 		return -($bits & PHP_INT_MAX);
 	}
 
-	private static function fromOrdinal(int $ordinal): float
+	public static function fromOrdinal(int $ordinal): float
 	{
 		if ($ordinal === 0) {
 			return 0.0;
@@ -471,36 +471,6 @@ class FloatRangeType extends FloatType implements CompoundType
 		}
 
 		return self::fromInterval(0.0, max(-$this->min, $this->max));
-	}
-
-	/**
-	 * Return the union with another type, but only if it can be expressed in a simpler way than using UnionType
-	 */
-	public function tryUnion(Type $otherType): ?Type
-	{
-		$bounds = self::getOrdinalBounds($otherType);
-		if ($bounds !== null) {
-			[$otherMin, $otherMax] = $bounds;
-			$min = self::toOrdinal($this->min);
-			$max = self::toOrdinal($this->max);
-			// touching ranges merge: nothing lies between $max and $max + 1
-			if ($otherMax < $min - 1 || $max + 1 < $otherMin) {
-				return null;
-			}
-
-			return self::fromInterval(self::fromOrdinal(min($min, $otherMin)), self::fromOrdinal(max($max, $otherMax)));
-		}
-
-		if (get_class($otherType) === parent::class) {
-			return $otherType;
-		}
-
-		// float is float<min, max>|NAN
-		if ($otherType instanceof ConstantFloatType && $this->min === -INF && $this->max === INF) {
-			return new FloatType();
-		}
-
-		return null;
 	}
 
 	/**

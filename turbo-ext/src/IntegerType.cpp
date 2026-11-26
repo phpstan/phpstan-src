@@ -248,6 +248,9 @@ PT_MINIT_REGISTRATION(pt_register_integer_type)
 	reg::Class cls("PHPStan\\Type\\IntegerType");
 	ptdecl::IntegerType::declareClass(cls);
 	ptdecl::IntegerType::declareProperties(cls);
+
+	/* mirrors toExactNumberSet() */
+	cls.method(sigs::toExactNumberSet, pt_type_exact_number_set_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, pt_value_set_of_numbers);
 

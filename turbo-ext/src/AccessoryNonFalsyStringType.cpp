@@ -329,6 +329,9 @@ PT_MINIT_REGISTRATION(pt_register_accessory_non_falsy_string_type)
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryNonFalsyStringType");
 	ptdecl::AccessoryNonFalsyStringType::declareClass(cls);
 	ptdecl::AccessoryNonFalsyStringType::declareProperties(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<(PT_STRING_CELLS_ALL & ~pt_string_cells_of(PT_STRING_CELL_EMPTY | PT_STRING_CELL_ZERO))>);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 

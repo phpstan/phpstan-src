@@ -163,6 +163,9 @@ PT_MINIT_REGISTRATION(pt_register_void_type)
 	ptdecl::VoidType::declareClass(cls);
 	ptdecl::VoidType::declareProperties(cls);
 
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
+
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 	});

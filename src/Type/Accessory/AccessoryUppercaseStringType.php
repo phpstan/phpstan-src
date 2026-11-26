@@ -24,6 +24,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StringRefinement;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
@@ -324,6 +325,11 @@ class AccessoryUppercaseStringType implements CompoundType, AccessoryType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return StringRefinement::of(StringRefinement::EMPTY | StringRefinement::ZERO | StringRefinement::DECIMAL | StringRefinement::NUMERIC | StringRefinement::NUMERIC_UPPER | StringRefinement::TEXT | StringRefinement::TEXT_UPPER);
 	}
 
 	public function isLowercaseString(): TrinaryLogic

@@ -3,15 +3,10 @@
 namespace PHPStan\Type;
 
 use PHPStan\TrinaryLogic;
-use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
-use PHPStan\Type\Accessory\AccessoryDecimalIntegerStringType;
-use PHPStan\Type\Accessory\AccessoryLowercaseStringType;
-use PHPStan\Type\Accessory\AccessoryNonEmptyStringType;
-use PHPStan\Type\Accessory\AccessoryNonFalsyStringType;
 use PHPStan\Type\Accessory\AccessoryType;
-use PHPStan\Type\Accessory\AccessoryUppercaseStringType;
 use PHPStan\Type\Accessory\HasOffsetType;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\HasPropertyType;
@@ -20,7 +15,6 @@ use PHPStan\Type\Accessory\OversizedArrayType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantFloatType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\Generic\GenericClassStringType;
@@ -39,6 +33,7 @@ use function array_key_exists;
 use function array_key_first;
 use function array_keys;
 use function array_merge;
+use function array_push;
 use function array_search;
 use function array_slice;
 use function array_splice;
@@ -53,13 +48,11 @@ use function sort;
 use function spl_object_id;
 use function sprintf;
 use function usort;
-use const PHP_INT_MAX;
-use const PHP_INT_MIN;
 
 /**
  * @api
  */
-#[ShadowedByTurboExtension(implementation: __DIR__ . '/../../turbo-ext/src/TypeCombinator.cpp')]
+#[ReferencedByTurboExtension(key: 'typeCombinator')]
 final class TypeCombinator
 {
 
@@ -402,7 +395,7 @@ final class TypeCombinator
 					continue;
 				}
 				foreach ($type->getTypes() as $benevolentInnerType) {
-					$benevolentTypes[$benevolentInnerType->describe(VerbosityLevel::value())] = $benevolentInnerType;
+					$benevolentTypes[spl_object_id($benevolentInnerType)] = $benevolentInnerType;
 					$flattenedTypes[] = $benevolentInnerType;
 				}
 				continue;
@@ -466,11 +459,29 @@ final class TypeCombinator
 
 		$arrayTypes = [];
 		$scalarTypes = [];
-		$hasGenericScalarTypes = [];
+		$hasGenericBooleanType = false;
 		$enumCaseTypes = [];
-		$integerRangeTypes = [];
-		$floatRangeTypes = [];
+		$numberTypes = [];
+		$stringRefinements = [];
+		// the merged numbers and strings take the place of the first of them: of two
+		// members each holding the other, the pairwise comparison keeps the later one
+		$firstNumberIndex = null;
+		$firstStringIndex = null;
 		for ($i = 0; $i < $typesCount; $i++) {
+			// ints, floats and the refinements of string are merged kind by kind
+			if ($types[$i]->toExactNumberSet() !== null) {
+				$firstNumberIndex ??= $i;
+				$numberTypes[] = $types[$i];
+				unset($types[$i]);
+				continue;
+			}
+			if ($types[$i]->getStringRefinement() !== null) {
+				$firstStringIndex ??= $i;
+				$stringRefinements[] = $types[$i];
+				unset($types[$i]);
+				continue;
+			}
+
 			if ($types[$i]->isConstantScalarValue()->yes()) {
 				$type = $types[$i];
 				$scalarTypes[get_class($type)][$type->describe(VerbosityLevel::cache())] = $type;
@@ -478,22 +489,9 @@ final class TypeCombinator
 				continue;
 			}
 
-			// only a type containing every value of the scalar (not T of int, 1&T)
-			// absorbs all the constants of that scalar
+			// only a type containing every value of bool (not T of bool) absorbs both constants
 			if ($types[$i]->isBoolean()->yes()) {
-				if (!isset($hasGenericScalarTypes[ConstantBooleanType::class]) && $types[$i]->isSuperTypeOf(new BooleanType())->yes()) {
-					$hasGenericScalarTypes[ConstantBooleanType::class] = true;
-				}
-			} elseif ($types[$i]->isFloat()->yes()) {
-				if (!isset($hasGenericScalarTypes[ConstantFloatType::class]) && $types[$i]->isSuperTypeOf(new FloatType())->yes()) {
-					$hasGenericScalarTypes[ConstantFloatType::class] = true;
-				}
-			} elseif ($types[$i]->isInteger()->yes() && !$types[$i] instanceof IntegerRangeType) {
-				if (!isset($hasGenericScalarTypes[ConstantIntegerType::class]) && $types[$i]->isSuperTypeOf(new IntegerType())->yes()) {
-					$hasGenericScalarTypes[ConstantIntegerType::class] = true;
-				}
-			} elseif ($types[$i]->isString()->yes() && $types[$i]->isClassString()->no() && TypeUtils::getAccessoryTypes($types[$i]) === []) {
-				$hasGenericScalarTypes[ConstantStringType::class] = true;
+				$hasGenericBooleanType = $hasGenericBooleanType || $types[$i]->isSuperTypeOf(new BooleanType())->yes();
 			} else {
 				$enumCase = $types[$i]->getEnumCaseObject();
 				if ($enumCase !== null) {
@@ -502,20 +500,6 @@ final class TypeCombinator
 					unset($types[$i]);
 					continue;
 				}
-			}
-
-			if ($types[$i] instanceof IntegerRangeType) {
-				$integerRangeTypes[] = $types[$i];
-				unset($types[$i]);
-
-				continue;
-			}
-
-			if ($types[$i] instanceof FloatRangeType) {
-				$floatRangeTypes[] = $types[$i];
-				unset($types[$i]);
-
-				continue;
 			}
 
 			// a late-resolvable type, such as a conditional type, stays as it is until it resolves:
@@ -529,45 +513,35 @@ final class TypeCombinator
 		}
 
 		$enumCaseTypes = array_values($enumCaseTypes);
-		usort(
-			$integerRangeTypes,
-			static fn (IntegerRangeType $a, IntegerRangeType $b): int => ($a->getMin() ?? PHP_INT_MIN) <=> ($b->getMin() ?? PHP_INT_MIN)
-				?: ($a->getMax() ?? PHP_INT_MAX) <=> ($b->getMax() ?? PHP_INT_MAX),
-		);
-		// array_merge() hands the first array back as it is when the second one
-		// is empty, so the keys the bucketing above unset must be renumbered here
-		if ($floatRangeTypes === []) {
-			// most unions have no float range, and sorting an empty list still creates the closure
-			$types = array_merge(array_values($types), $integerRangeTypes);
-		} else {
-			usort(
-				$floatRangeTypes,
-				static fn (FloatRangeType $a, FloatRangeType $b): int => $a->getMin() <=> $b->getMin() ?: $a->getMax() <=> $b->getMax(),
-			);
-			// sorted by min, touching float ranges are neighbours: merging them now lets a
-			// constant meet the merged range (float<min, max> and NAN are float)
-			$mergedFloatRangeTypes = [];
-			foreach ($floatRangeTypes as $floatRangeType) {
-				$last = count($mergedFloatRangeTypes) - 1;
-				if ($last >= 0) {
-					$merged = $mergedFloatRangeTypes[$last]->tryUnion($floatRangeType);
-					if ($merged instanceof FloatRangeType) {
-						$mergedFloatRangeTypes[$last] = $merged;
-						continue;
-					}
-				}
-				$mergedFloatRangeTypes[] = $floatRangeType;
-			}
-			$types = array_merge(array_values($types), $integerRangeTypes, $mergedFloatRangeTypes);
-		}
-		$typesCount = count($types);
-
+		// before the strings are merged, which leaves their constants unkeyed
 		if (isset($scalarTypes[IntersectionType::class])) {
 			$scalarTypes[IntersectionType::class] = self::reduceRefinedConstantScalars($scalarTypes[IntersectionType::class], $scalarTypes);
 		}
+		[$numberRanges, $numberConstants] = ScalarUnion::unionNumbers($numberTypes);
+		[$stringTypes, $constantStrings] = ScalarUnion::unionStrings($stringRefinements, array_values($scalarTypes[ConstantStringType::class] ?? []));
+		if ($constantStrings === []) {
+			unset($scalarTypes[ConstantStringType::class]);
+		} else {
+			$scalarTypes[ConstantStringType::class] = $constantStrings;
+		}
+		$orderedTypes = [];
+		for ($i = 0; $i < $typesCount; $i++) {
+			if (isset($types[$i])) {
+				$orderedTypes[] = $types[$i];
+			} elseif ($i === $firstNumberIndex) {
+				array_push($orderedTypes, ...$numberRanges);
+			} elseif ($i === $firstStringIndex) {
+				array_push($orderedTypes, ...$stringTypes);
+			}
+		}
+		$types = $orderedTypes;
+		$typesCount = count($types);
 
+		if ($numberConstants !== []) {
+			$scalarTypes[ConstantIntegerType::class] = $numberConstants;
+		}
 		foreach ($scalarTypes as $classType => $scalarTypeItems) {
-			if (isset($hasGenericScalarTypes[$classType])) {
+			if ($classType === ConstantBooleanType::class && $hasGenericBooleanType) {
 				unset($scalarTypes[$classType]);
 				continue;
 			}
@@ -763,7 +737,8 @@ final class TypeCombinator
 		if ($benevolentTypes !== []) {
 			$allBenevolent = true;
 			foreach ($types as $type) {
-				if (isset($benevolentTypes[$type->describe(VerbosityLevel::value())])) {
+				// the input types keep the benevolent members alive, so their ids stay unique
+				if (isset($benevolentTypes[spl_object_id($type)])) {
 					continue;
 				}
 
@@ -933,38 +908,6 @@ final class TypeCombinator
 			return null;
 		}
 
-		if ($a instanceof IntegerRangeType) {
-			$type = $a->tryUnion($b);
-			if ($type !== null) {
-				$a = $type;
-				return [$a, null];
-			}
-		}
-		if ($b instanceof IntegerRangeType) {
-			$type = $b->tryUnion($a);
-			if ($type !== null) {
-				$b = $type;
-				return [null, $b];
-			}
-		}
-		if ($a instanceof IntegerRangeType && $b instanceof IntegerRangeType) {
-			return null;
-		}
-		if ($a instanceof FloatRangeType) {
-			$type = $a->tryUnion($b);
-			if ($type !== null) {
-				return [$type, null];
-			}
-		}
-		if ($b instanceof FloatRangeType) {
-			$type = $b->tryUnion($a);
-			if ($type !== null) {
-				return [null, $type];
-			}
-		}
-		if ($a instanceof FloatRangeType && $b instanceof FloatRangeType) {
-			return null;
-		}
 		if ($a instanceof HasOffsetValueType && $b instanceof HasOffsetValueType) {
 			if ($a->getOffsetType()->equals($b->getOffsetType())) {
 				return [new HasOffsetValueType($a->getOffsetType(), self::union($a->getValueType(), $b->getValueType())), null];
@@ -1025,132 +968,7 @@ final class TypeCombinator
 			return [$a, null];
 		}
 
-		if (
-			$a instanceof ConstantStringType
-		) {
-			if ($a->getValue() === '') {
-				$description = $b->describe(VerbosityLevel::value());
-				if (in_array($description, ['non-empty-string', 'non-falsy-string'], true)) {
-					return [null, self::intersect(
-						new StringType(),
-						...self::getAccessoryCaseStringTypes($b),
-					)];
-				}
-			}
-
-			if ($a->getValue() === '0') {
-				$nonEmpty = self::downgradeNonFalsyStringToNonEmpty($b);
-				if ($nonEmpty !== null) {
-					return [null, $nonEmpty];
-				}
-			}
-		}
-
-		if (
-			$b instanceof ConstantStringType
-		) {
-			if ($b->getValue() === '') {
-				$description = $a->describe(VerbosityLevel::value());
-				if (in_array($description, ['non-empty-string', 'non-falsy-string'], true)) {
-					return [self::intersect(
-						new StringType(),
-						...self::getAccessoryCaseStringTypes($a),
-					), null];
-				}
-			}
-
-			if ($b->getValue() === '0') {
-				$nonEmpty = self::downgradeNonFalsyStringToNonEmpty($a);
-				if ($nonEmpty !== null) {
-					return [$nonEmpty, null];
-				}
-			}
-		}
-
-		// numeric-string | non-decimal-int-string → string (preserving common accessories)
-		// Works because decimal-int-string ⊂ numeric-string, so together they cover all strings
-		// A base that is the type itself was compared with the other one above.
-		if ($a->isString()->yes() && $b->isString()->yes()) {
-			if ($b->isDecimalIntegerString()->no()) {
-				$bBase = self::removeDecimalIntStringAccessory($b);
-				if ($bBase !== $b && $bBase->isSuperTypeOf($a)->yes() && $a->isSuperTypeOf(new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]))->yes()) {
-					return [null, $bBase];
-				}
-			}
-			if ($a->isDecimalIntegerString()->no()) {
-				$aBase = self::removeDecimalIntStringAccessory($a);
-				if ($aBase !== $a && $aBase->isSuperTypeOf($b)->yes() && $b->isSuperTypeOf(new IntersectionType([new StringType(), new AccessoryDecimalIntegerStringType()]))->yes()) {
-					return [$aBase, null];
-				}
-			}
-		}
-
 		return null;
-	}
-
-	/**
-	 * @return list<Type>
-	 */
-	private static function getAccessoryCaseStringTypes(Type $type): array
-	{
-		$accessory = [];
-		if ($type->isLowercaseString()->yes()) {
-			$accessory[] = new AccessoryLowercaseStringType();
-		}
-		if ($type->isUppercaseString()->yes()) {
-			$accessory[] = new AccessoryUppercaseStringType();
-		}
-
-		return $accessory;
-	}
-
-	/**
-	 * Turns a non-falsy-string type into its non-empty-string counterpart by
-	 * downgrading the non-falsy accessory while preserving every other accessory
-	 * (numeric-string, decimal-int-string, lowercase-string, …). Used to simplify
-	 * `'0' | non-falsy-string-X` back to `non-empty-string-X`, since `"0"` is the
-	 * only value that separates the two. Returns null when $type is not a
-	 * non-constant non-falsy-string built from an intersection.
-	 */
-	private static function downgradeNonFalsyStringToNonEmpty(Type $type): ?Type
-	{
-		if (!$type instanceof IntersectionType || $type->isNonFalsyString()->no()) {
-			return null;
-		}
-
-		$newTypes = [];
-		$found = false;
-		foreach ($type->getTypes() as $innerType) {
-			if ($innerType instanceof AccessoryNonFalsyStringType) {
-				$found = true;
-				continue;
-			}
-
-			$newTypes[] = $innerType;
-		}
-
-		if (!$found) {
-			return null;
-		}
-
-		$withoutNonFalsy = self::intersect(...$newTypes);
-		if ($withoutNonFalsy->isNonEmptyString()->yes()) {
-			return $withoutNonFalsy;
-		}
-
-		return self::intersect($withoutNonFalsy, new AccessoryNonEmptyStringType());
-	}
-
-	private static function removeDecimalIntStringAccessory(Type $type): Type
-	{
-		if (!$type instanceof IntersectionType) {
-			return $type;
-		}
-
-		return self::intersect(...array_filter(
-			$type->getTypes(),
-			static fn (Type $t): bool => !$t instanceof AccessoryDecimalIntegerStringType,
-		));
 	}
 
 	private static function unionWithSubtractedType(

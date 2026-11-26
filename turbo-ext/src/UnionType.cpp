@@ -3097,6 +3097,9 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 {
 	reg::Class cls("PHPStan\\Type\\UnionType");
 	ptdecl::UnionType::declareClass(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) { pt_value_set_of_members(INTERNAL_FUNCTION_PARAM_PASSTHRU, false); });
 	/* mirror getPossiblyLooselyEqualType() and getAlwaysLooselyEqualType(), memoized per PHP version */

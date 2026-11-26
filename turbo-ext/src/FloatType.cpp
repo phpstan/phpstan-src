@@ -284,6 +284,11 @@ PT_MINIT_REGISTRATION(pt_register_float_type)
 	reg::Class cls("PHPStan\\Type\\FloatType");
 	ptdecl::FloatType::declareClass(cls);
 	ptdecl::FloatType::declareProperties(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
+	/* mirrors toExactNumberSet() */
+	cls.method(sigs::toExactNumberSet, pt_type_exact_number_set_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, pt_value_set_of_numbers);
 

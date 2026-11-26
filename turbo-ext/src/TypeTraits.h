@@ -1659,6 +1659,50 @@ void ZEND_FASTCALL pt_type_kind_mask_handler(INTERNAL_FUNCTION_PARAMETERS)
 
 /* }}} */
 
+/* {{{ Type::getStringRefinement(): StringRefinement's cells, with its values */
+
+inline constexpr zend_long PT_STRING_CELL_EMPTY = 1;
+inline constexpr zend_long PT_STRING_CELL_ZERO = 2;
+inline constexpr zend_long PT_STRING_CELL_DECIMAL = 4;
+inline constexpr zend_long PT_STRING_CELL_NUMERIC = 8;
+inline constexpr zend_long PT_STRING_CELL_NUMERIC_LOWER = 16;
+inline constexpr zend_long PT_STRING_CELL_NUMERIC_UPPER = 32;
+inline constexpr zend_long PT_STRING_CELL_TEXT = 64;
+inline constexpr zend_long PT_STRING_CELL_TEXT_LOWER = 128;
+inline constexpr zend_long PT_STRING_CELL_TEXT_UPPER = 256;
+inline constexpr zend_long PT_STRING_CELL_NON_LITERAL_SHIFT = 10;
+inline constexpr zend_long PT_STRING_CELLS_VALUES = 1023;
+inline constexpr zend_long PT_STRING_CELLS_LITERAL = PT_STRING_CELLS_VALUES;
+inline constexpr zend_long PT_STRING_CELLS_ALL = PT_STRING_CELLS_VALUES | (PT_STRING_CELLS_VALUES << PT_STRING_CELL_NON_LITERAL_SHIFT);
+
+/* StringRefinement::of() */
+constexpr zend_long pt_string_cells_of(zend_long values)
+{
+	return values | (values << PT_STRING_CELL_NON_LITERAL_SHIFT);
+}
+
+/* getStringRefinement() returning constant cells */
+template <zend_long Cells>
+void ZEND_FASTCALL pt_type_string_refinement_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	RETURN_LONG(Cells);
+}
+
+/* IntersectionType's getStringRefinement(): the members' cells AND-ed, null
+ * when a member has none; UNDEF = pending exception */
+zv::Val pt_type_string_refinement_of_members(zend_object *self);
+
+/* a method without parameters returning null: getStringRefinement() and
+ * toExactNumberSet() of the types they do not describe */
+void ZEND_FASTCALL pt_type_null_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* toExactNumberSet() of IntegerType, FloatType and IntegerRangeType:
+ * $this->toNumberSet(), which their subclasses override */
+void ZEND_FASTCALL pt_type_exact_number_set_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* }}} */
+
 /* TypeUtils::resolveLateResolvableTypes($type) with the default
  * $resolveUnresolvableTypes = true — the shadowing class's body
  * (TypeUtils.cpp); UNDEF = pending exception */

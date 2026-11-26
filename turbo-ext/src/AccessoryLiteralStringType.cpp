@@ -307,6 +307,9 @@ PT_MINIT_REGISTRATION(pt_register_accessory_literal_string_type)
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryLiteralStringType");
 	ptdecl::AccessoryLiteralStringType::declareClass(cls);
 	ptdecl::AccessoryLiteralStringType::declareProperties(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<PT_STRING_CELLS_LITERAL>);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 

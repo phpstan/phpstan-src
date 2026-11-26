@@ -3266,6 +3266,12 @@ PT_MINIT_REGISTRATION(pt_register_intersection_type)
 {
 	reg::Class cls("PHPStan\\Type\\IntersectionType");
 	ptdecl::IntersectionType::declareClass(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(pt_type_string_refinement_of_members(Z_OBJ_P(ZEND_THIS)));
+	});
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) { pt_value_set_of_members(INTERNAL_FUNCTION_PARAM_PASSTHRU, true); });
 	/* the slots PT_IT_PROP_*: the sixteen explicit properties first, the

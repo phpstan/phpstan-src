@@ -2041,8 +2041,9 @@ class TypeCombinatorTest extends PHPStanTestCase
 						new AccessoryNonFalsyStringType(),
 					]),
 				],
-				StringType::class,
-				'string',
+				// string would hold '0' too
+				UnionType::class,
+				"''|non-falsy-string",
 			],
 			[
 				[
@@ -2097,16 +2098,16 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
 					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
 				],
-				UnionType::class,
-				'lowercase-string|non-falsy-string',
+				StringType::class,
+				'string',
 			],
 			[
 				[
 					new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
 					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
 				],
-				UnionType::class,
-				'lowercase-string|non-empty-string',
+				StringType::class,
+				'string',
 			],
 			[
 				[
@@ -2137,16 +2138,16 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
 					new IntersectionType([new StringType(), new AccessoryUppercaseStringType()]),
 				],
-				UnionType::class,
-				'non-falsy-string|uppercase-string',
+				StringType::class,
+				'string',
 			],
 			[
 				[
 					new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
 					new IntersectionType([new StringType(), new AccessoryUppercaseStringType()]),
 				],
-				UnionType::class,
-				'non-empty-string|uppercase-string',
+				StringType::class,
+				'string',
 			],
 			[
 				[

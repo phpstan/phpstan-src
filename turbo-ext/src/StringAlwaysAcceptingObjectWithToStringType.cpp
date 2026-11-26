@@ -142,6 +142,9 @@ PT_MINIT_REGISTRATION(pt_register_string_always_accepting_object_with_to_string_
 	reg::Class cls("PHPStan\\Type\\StringAlwaysAcceptingObjectWithToStringType");
 	ptdecl::StringAlwaysAcceptingObjectWithToStringType::declareClass(cls);
 	ptdecl::StringAlwaysAcceptingObjectWithToStringType::declareProperties(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors getKindMask() */
 	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_STRING | PT_KIND_OBJECT>);
 	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_STRING | PT_KIND_OBJECT); });

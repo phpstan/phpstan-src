@@ -226,6 +226,9 @@ PT_MINIT_REGISTRATION(pt_register_strict_mixed_type)
 	ptdecl::StrictMixedType::declareClass(cls);
 	ptdecl::StrictMixedType::declareProperties(cls);
 
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
+
 	cls.method(sigs::getReferencedClasses, smtEmptyArray0);
 	cls.op(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.method(sigs::getObjectClassNames, smtEmptyArray0);

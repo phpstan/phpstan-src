@@ -984,6 +984,9 @@ PT_MINIT_REGISTRATION(pt_register_static_type)
 
 	reg::Class cls("PHPStan\\Type\\StaticType");
 	ptdecl::StaticType::declareClass(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createobjects"));
 	/* the slots must stay in this order (PT_ST_PROP_*) */

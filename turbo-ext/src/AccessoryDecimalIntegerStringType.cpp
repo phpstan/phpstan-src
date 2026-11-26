@@ -558,6 +558,15 @@ PT_MINIT_REGISTRATION(pt_register_accessory_decimal_integer_string_type)
 	ptdecl::AccessoryDecimalIntegerStringType::declareClass(cls);
 	/* "inverse" must stay the first declared property (slots::inverse) */
 	ptdecl::AccessoryDecimalIntegerStringType::declareProperties(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		bool inverse;
+		if (!PT_THIS.inverse(inverse)) RETURN_THROWS();
+		constexpr zend_long decimal = PT_STRING_CELL_ZERO | PT_STRING_CELL_DECIMAL;
+		RETURN_LONG(pt_string_cells_of(inverse ? PT_STRING_CELLS_VALUES & ~decimal : decimal));
+	});
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 

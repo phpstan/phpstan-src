@@ -186,6 +186,11 @@ class IntegerRangeType extends IntegerType implements CompoundType
 		return new NumberSet([[$this->min, $this->max]], [], false);
 	}
 
+	public function toExactNumberSet(): ?NumberSet
+	{
+		return $this->toNumberSet();
+	}
+
 	public function getMin(): ?int
 	{
 		return $this->min;

@@ -532,6 +532,7 @@ enum {
 	/* the callee of a closure created from a callable, and the replay of its calls */
 	PT_CLASS_CLOSURE_ORIGIN,
 	PT_CLASS_CLOSURE_ORIGIN_CALL_REPLAY,
+	PT_CLASS_TYPE_COMBINATOR,
 	PT_CLASS_COUNT
 };
 
@@ -1228,26 +1229,21 @@ enum : uint32_t
 int pt_type_cached_fact(zend_object *type, uint32_t fact);
 void pt_type_cache_fact(zend_object *type, uint32_t fact, bool holds);
 
-/* the static combinator (TypeCombinator.cpp); TypeCombinatorCache.cpp calls
- * its do*() entry points directly */
-extern zend_class_entry *pt_ce_type_combinator;
 namespace zv { class Val; }
 /* A copy of a node's attributes without its printed expression key
  * (ExprPrinter::ATTRIBUTE_CACHE_KEY): a node built from another node's
  * attributes must not inherit that node's key. The array is separated only
  * when the key is present; a non-array passes through. */
 zv::Val pt_attributes_without_expression_key(zval *attributes);
-/* TypeCombinator::<lcname>(...$args) — the public entry points answered in
- * C++ (union, intersect, remove, removeNull, addNull, containsNull,
- * removeFalsey, removeTruthy, countConstantArrayValueTypes, clearCache),
- * anything else through the class entry; the arguments borrowed; UNDEF =
- * pending exception */
+/* TypeCombinator::<lcname>(...$args) (TypeCombinatorCalls.cpp): union,
+ * intersect and remove through the native cache, anything else through the
+ * class entry; the arguments borrowed; UNDEF = pending exception */
 zv::Val pt_type_combinator_call(const char *lcname, size_t len, uint32_t argc, zval *argv);
 /* the same with the arguments spread from a PHP array
  * (`TypeCombinator::union(...$types)`) */
 zv::Val pt_type_combinator_call_spread(const char *lcname, size_t len, HashTable *args);
 /* the hot entry points directly: TypeCombinator::union(...$types) /
- * intersect(...$types) (memoized when the twin's $cacheEnabled says so) /
+ * intersect(...$types) (memoized) /
  * remove($fromType, $typeToRemove) / removeNull($type) / addNull($type) /
  * containsNull($type) (false = pending exception), and the unmemoized
  * doUnion() / doIntersect() / doRemove() bodies TypeCombinatorCache

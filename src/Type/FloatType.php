@@ -148,6 +148,11 @@ class FloatType implements Type
 		return new NumberSet([], [[-INF, INF]], true);
 	}
 
+	public function toExactNumberSet(): ?NumberSet
+	{
+		return $this->toNumberSet();
+	}
+
 	public function toBitwiseNotType(): Type
 	{
 		return new IntegerType();
@@ -295,6 +300,11 @@ class FloatType implements Type
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic

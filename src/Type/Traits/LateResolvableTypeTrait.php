@@ -586,6 +586,11 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isLiteralString();
 	}
 
+	public function getStringRefinement(): ?int
+	{
+		return null;
+	}
+
 	public function isLowercaseString(): TrinaryLogic
 	{
 		return $this->resolve()->isLowercaseString();

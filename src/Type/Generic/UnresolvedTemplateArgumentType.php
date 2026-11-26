@@ -849,6 +849,11 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 		return $this->getDelegate()->isLiteralString();
 	}
 
+	public function getStringRefinement(): ?int
+	{
+		return null;
+	}
+
 	public function isLowercaseString(): TrinaryLogic
 	{
 		return $this->getDelegate()->isLowercaseString();

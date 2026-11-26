@@ -801,7 +801,7 @@ $sfScopes[spl_object_id($sfPromotedScope)] = [$sfPromotedScope, [new \PhpParser\
 // two adjacent scopes for the conditional bookkeeping and the merges: their
 // tables AND their conditional expressions are built per side, so every type
 // a native body combines is a native one (a foreign class is an atom to the
-// native TypeCombinator). The second one's $other is the first.
+// prefixed TypeCombinator, see prefixed-type-combinator.php). The second one's $other is the first.
 $sfSideType = static function (string $side, string $phpClass, mixed ...$ctorArgs): \PHPStan\Type\Type {
 	$class = $side === 'native' ? 'PHPStanTurbo\\' . substr($phpClass, strrpos($phpClass, '\\') + 1) : $phpClass;
 
@@ -1950,7 +1950,7 @@ foreach ($sfScopes as $sfId => [$sfWalkScope, $sfExprs, $sfStorage]) {
 			}
 			// the narrowing that really combines types can only be compared over
 			// the per-side tables: a type of this side meeting the walk's (PHP)
-			// one goes through the native TypeCombinator, which treats a foreign
+			// one goes through the prefixed TypeCombinator, which treats a foreign
 			// class as atomic
 			if ($scope->hasExpressionType(new \PhpParser\Node\Expr\Variable('i'))->yes()) {
 				$aVar = new \PhpParser\Node\Expr\Variable('a');

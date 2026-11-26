@@ -424,6 +424,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_PARTIAL_FUNCTION_APPLICATION_PARAMETERS */ {"partialFunctionApplicationParameters", "PHPStan\\Reflection\\PartialFunctionApplicationParameters"},
 	/* PT_CLASS_CLOSURE_ORIGIN */ {"closureOrigin", "PHPStan\\Type\\ClosureOrigin"},
 	/* PT_CLASS_CLOSURE_ORIGIN_CALL_REPLAY */ {"closureOriginCallReplay", "PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureOriginCallReplay"},
+	/* PT_CLASS_TYPE_COMBINATOR */ {"typeCombinator", "PHPStan\\Type\\TypeCombinator"},
 };
 
 zend_class_entry *pt_class(int idx)

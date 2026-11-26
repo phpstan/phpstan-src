@@ -1060,6 +1060,9 @@ PT_MINIT_REGISTRATION(pt_register_callable_type)
 	/* the slots must stay in this order (PT_CT_PROP_*) */
 	ptdecl::CallableType::declareProperties(cls);
 
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
+
 	cls.method("__construct", reg::Public, 0, {
 		parametersArg,
 		reg::withDefault(reg::obj("returnType", ptcls::type, true), "null"),

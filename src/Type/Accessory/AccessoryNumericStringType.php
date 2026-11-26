@@ -25,6 +25,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NativeTypePosition;
+use PHPStan\Type\StringRefinement;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -337,6 +338,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return StringRefinement::of(StringRefinement::ZERO | StringRefinement::DECIMAL | StringRefinement::NUMERIC | StringRefinement::NUMERIC_LOWER | StringRefinement::NUMERIC_UPPER);
 	}
 
 	public function isLowercaseString(): TrinaryLogic

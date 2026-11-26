@@ -1080,6 +1080,9 @@ PT_MINIT_REGISTRATION(pt_register_closure_type)
 	ptdecl::ClosureType::declareClass(cls);
 	/* the slots must stay in this order (PT_CLT_PROP_*) */
 	ptdecl::ClosureType::declareProperties(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createobjects"));
 

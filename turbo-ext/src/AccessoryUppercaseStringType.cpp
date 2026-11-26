@@ -334,6 +334,9 @@ PT_MINIT_REGISTRATION(pt_register_accessory_uppercase_string_type)
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryUppercaseStringType");
 	ptdecl::AccessoryUppercaseStringType::declareClass(cls);
 	ptdecl::AccessoryUppercaseStringType::declareProperties(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<pt_string_cells_of(PT_STRING_CELL_EMPTY | PT_STRING_CELL_ZERO | PT_STRING_CELL_DECIMAL | PT_STRING_CELL_NUMERIC | PT_STRING_CELL_NUMERIC_UPPER | PT_STRING_CELL_TEXT | PT_STRING_CELL_TEXT_UPPER)>);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 

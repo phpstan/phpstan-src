@@ -30,7 +30,8 @@ inline constexpr char strings[] =
 	"getKindMask\0" /* 71 */
 	"strictTypes\0" /* 83 */
 	"PHPStan\\Type\\AcceptsResult\0" /* 95 */
-	"accepts"; /* 122 */
+	"accepts\0" /* 122 */
+	"getStringRefinement"; /* 130 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* isSuperTypeOf $type */
 	reg::packed(23, 0, 24), /* isSuperTypeOf return */
@@ -38,6 +39,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* accepts $type */
 	reg::packed(83, MAY_BE_BOOL), /* accepts $strictTypes */
 	reg::packed(23, 0, 95), /* accepts return */
+	reg::packed(23, MAY_BE_NULL | MAY_BE_LONG), /* getStringRefinement return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -47,6 +49,7 @@ namespace sig {
 inline constexpr sigtab::Sig isSuperTypeOf = { { 57 /* isSuperTypeOf */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getKindMask = { { 71 /* getKindMask */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig accepts = { { 122 /* accepts */, 2, 3, 2, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStringRefinement = { { 130 /* getStringRefinement */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StringAlwaysAcceptingObjectWithToStringType

@@ -1604,12 +1604,6 @@ parameters:
 			path: src/Type/TypeCombinator.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 2
-			path: src/Type/TypeCombinator.php
-
-		-
 			rawMessage: 'Doing instanceof PHPStan\Type\Generic\GenericClassStringType is error-prone and deprecated. Use Type::isClassStringType() and Type::getClassStringObjectType() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 2
@@ -1618,7 +1612,7 @@ parameters:
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
-			count: 7
+			count: 5
 			path: src/Type/TypeCombinator.php
 
 		-

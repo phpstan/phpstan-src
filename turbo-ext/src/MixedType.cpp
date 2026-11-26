@@ -1509,6 +1509,9 @@ PT_MINIT_REGISTRATION(pt_register_mixed_type)
 	 * declared properties (slots::subtractedType, slots::isExplicitMixed) */
 	ptdecl::MixedType::declareProperties(cls);
 
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
+
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool isExplicitMixed = false;
 		zval *subtractedType = NULL;

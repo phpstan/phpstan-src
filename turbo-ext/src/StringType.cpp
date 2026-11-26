@@ -416,6 +416,9 @@ PT_MINIT_REGISTRATION(pt_register_string_type)
 	reg::Class cls("PHPStan\\Type\\StringType");
 	ptdecl::StringType::declareClass(cls);
 	ptdecl::StringType::declareProperties(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<PT_STRING_CELLS_ALL>);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 

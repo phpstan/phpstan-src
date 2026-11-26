@@ -17,76 +17,78 @@ inline constexpr char strings[] =
 	"exponentiate\0" /* 28 */
 	"PHPStan\\Type\\NumberSet\0" /* 41 */
 	"toNumberSet\0" /* 64 */
-	"PHPStan\\Type\\ValueSet\0" /* 76 */
-	"toValueSet\0" /* 98 */
-	"right\0" /* 109 */
-	"phpVersion\0" /* 115 */
-	"PHPStan\\Php\\PhpVersion\0" /* 126 */
-	"arithmeticAdd\0" /* 149 */
-	"arithmeticSubtract\0" /* 163 */
-	"arithmeticMultiply\0" /* 182 */
-	"arithmeticDivide\0" /* 201 */
-	"arithmeticIntDivide\0" /* 218 */
-	"arithmeticModulo\0" /* 238 */
-	"arithmeticNegate\0" /* 255 */
-	"bitwiseAnd\0" /* 272 */
-	"bitwiseOr\0" /* 283 */
-	"bitwiseXor\0" /* 293 */
-	"bitwiseShiftLeft\0" /* 304 */
-	"bitwiseShiftRight\0" /* 321 */
-	"getPossiblyLooselyEqualType\0" /* 339 */
-	"getAlwaysLooselyEqualType\0" /* 367 */
-	"stringConcatenate\0" /* 393 */
-	"arrayUnion"; /* 411 */
+	"toExactNumberSet\0" /* 76 */
+	"PHPStan\\Type\\ValueSet\0" /* 93 */
+	"toValueSet\0" /* 115 */
+	"right\0" /* 126 */
+	"phpVersion\0" /* 132 */
+	"PHPStan\\Php\\PhpVersion\0" /* 143 */
+	"arithmeticAdd\0" /* 166 */
+	"arithmeticSubtract\0" /* 180 */
+	"arithmeticMultiply\0" /* 199 */
+	"arithmeticDivide\0" /* 218 */
+	"arithmeticIntDivide\0" /* 235 */
+	"arithmeticModulo\0" /* 255 */
+	"arithmeticNegate\0" /* 272 */
+	"bitwiseAnd\0" /* 289 */
+	"bitwiseOr\0" /* 300 */
+	"bitwiseXor\0" /* 310 */
+	"bitwiseShiftLeft\0" /* 321 */
+	"bitwiseShiftRight\0" /* 338 */
+	"getPossiblyLooselyEqualType\0" /* 356 */
+	"getAlwaysLooselyEqualType\0" /* 384 */
+	"stringConcatenate\0" /* 410 */
+	"arrayUnion"; /* 428 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 9), /* exponentiate $exponent */
 	reg::packed(27, 0, 9), /* exponentiate return */
 	reg::packed(27, MAY_BE_NULL, 41), /* toNumberSet return */
-	reg::packed(27, 0, 76), /* toValueSet return */
-	reg::packed(109, 0, 9), /* arithmeticAdd $right */
-	reg::packed(115, 0, 126), /* arithmeticAdd $phpVersion */
+	reg::packed(27, MAY_BE_NULL, 41), /* toExactNumberSet return */
+	reg::packed(27, 0, 93), /* toValueSet return */
+	reg::packed(126, 0, 9), /* arithmeticAdd $right */
+	reg::packed(132, 0, 143), /* arithmeticAdd $phpVersion */
 	reg::packed(27, 0, 9), /* arithmeticAdd return */
-	reg::packed(109, 0, 9), /* arithmeticSubtract $right */
-	reg::packed(115, 0, 126), /* arithmeticSubtract $phpVersion */
+	reg::packed(126, 0, 9), /* arithmeticSubtract $right */
+	reg::packed(132, 0, 143), /* arithmeticSubtract $phpVersion */
 	reg::packed(27, 0, 9), /* arithmeticSubtract return */
-	reg::packed(109, 0, 9), /* arithmeticMultiply $right */
-	reg::packed(115, 0, 126), /* arithmeticMultiply $phpVersion */
+	reg::packed(126, 0, 9), /* arithmeticMultiply $right */
+	reg::packed(132, 0, 143), /* arithmeticMultiply $phpVersion */
 	reg::packed(27, 0, 9), /* arithmeticMultiply return */
-	reg::packed(109, 0, 9), /* arithmeticDivide $right */
-	reg::packed(115, 0, 126), /* arithmeticDivide $phpVersion */
+	reg::packed(126, 0, 9), /* arithmeticDivide $right */
+	reg::packed(132, 0, 143), /* arithmeticDivide $phpVersion */
 	reg::packed(27, 0, 9), /* arithmeticDivide return */
-	reg::packed(109, 0, 9), /* arithmeticIntDivide $right */
-	reg::packed(115, 0, 126), /* arithmeticIntDivide $phpVersion */
+	reg::packed(126, 0, 9), /* arithmeticIntDivide $right */
+	reg::packed(132, 0, 143), /* arithmeticIntDivide $phpVersion */
 	reg::packed(27, 0, 9), /* arithmeticIntDivide return */
-	reg::packed(109, 0, 9), /* arithmeticModulo $right */
-	reg::packed(115, 0, 126), /* arithmeticModulo $phpVersion */
+	reg::packed(126, 0, 9), /* arithmeticModulo $right */
+	reg::packed(132, 0, 143), /* arithmeticModulo $phpVersion */
 	reg::packed(27, 0, 9), /* arithmeticModulo return */
-	reg::packed(115, 0, 126), /* arithmeticNegate $phpVersion */
+	reg::packed(132, 0, 143), /* arithmeticNegate $phpVersion */
 	reg::packed(27, 0, 9), /* arithmeticNegate return */
-	reg::packed(109, 0, 9), /* bitwiseAnd $right */
-	reg::packed(115, 0, 126), /* bitwiseAnd $phpVersion */
+	reg::packed(126, 0, 9), /* bitwiseAnd $right */
+	reg::packed(132, 0, 143), /* bitwiseAnd $phpVersion */
 	reg::packed(27, 0, 9), /* bitwiseAnd return */
-	reg::packed(109, 0, 9), /* bitwiseOr $right */
-	reg::packed(115, 0, 126), /* bitwiseOr $phpVersion */
+	reg::packed(126, 0, 9), /* bitwiseOr $right */
+	reg::packed(132, 0, 143), /* bitwiseOr $phpVersion */
 	reg::packed(27, 0, 9), /* bitwiseOr return */
-	reg::packed(109, 0, 9), /* bitwiseXor $right */
-	reg::packed(115, 0, 126), /* bitwiseXor $phpVersion */
+	reg::packed(126, 0, 9), /* bitwiseXor $right */
+	reg::packed(132, 0, 143), /* bitwiseXor $phpVersion */
 	reg::packed(27, 0, 9), /* bitwiseXor return */
-	reg::packed(109, 0, 9), /* bitwiseShiftLeft $right */
-	reg::packed(115, 0, 126), /* bitwiseShiftLeft $phpVersion */
+	reg::packed(126, 0, 9), /* bitwiseShiftLeft $right */
+	reg::packed(132, 0, 143), /* bitwiseShiftLeft $phpVersion */
 	reg::packed(27, 0, 9), /* bitwiseShiftLeft return */
-	reg::packed(109, 0, 9), /* bitwiseShiftRight $right */
-	reg::packed(115, 0, 126), /* bitwiseShiftRight $phpVersion */
+	reg::packed(126, 0, 9), /* bitwiseShiftRight $right */
+	reg::packed(132, 0, 143), /* bitwiseShiftRight $phpVersion */
 	reg::packed(27, 0, 9), /* bitwiseShiftRight return */
-	reg::packed(115, 0, 126), /* getPossiblyLooselyEqualType $phpVersion */
+	reg::packed(132, 0, 143), /* getPossiblyLooselyEqualType $phpVersion */
 	reg::packed(27, 0, 9), /* getPossiblyLooselyEqualType return */
-	reg::packed(115, 0, 126), /* getAlwaysLooselyEqualType $phpVersion */
+	reg::packed(132, 0, 143), /* getAlwaysLooselyEqualType $phpVersion */
 	reg::packed(27, 0, 9), /* getAlwaysLooselyEqualType return */
-	reg::packed(109, 0, 9), /* stringConcatenate $right */
-	reg::packed(115, 0, 126), /* stringConcatenate $phpVersion */
+	reg::packed(126, 0, 9), /* stringConcatenate $right */
+	reg::packed(132, 0, 143), /* stringConcatenate $phpVersion */
 	reg::packed(27, 0, 9), /* stringConcatenate return */
-	reg::packed(109, 0, 9), /* arrayUnion $right */
-	reg::packed(115, 0, 126), /* arrayUnion $phpVersion */
+	reg::packed(126, 0, 9), /* arrayUnion $right */
+	reg::packed(132, 0, 143), /* arrayUnion $phpVersion */
 	reg::packed(27, 0, 9), /* arrayUnion return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -96,23 +98,24 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig exponentiate = { { 28 /* exponentiate */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toNumberSet = { { 64 /* toNumberSet */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toValueSet = { { 98 /* toValueSet */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticAdd = { { 149 /* arithmeticAdd */, 2, 4, 2, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticSubtract = { { 163 /* arithmeticSubtract */, 2, 7, 2, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticMultiply = { { 182 /* arithmeticMultiply */, 2, 10, 2, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticDivide = { { 201 /* arithmeticDivide */, 2, 13, 2, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticIntDivide = { { 218 /* arithmeticIntDivide */, 2, 16, 2, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticModulo = { { 238 /* arithmeticModulo */, 2, 19, 2, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticNegate = { { 255 /* arithmeticNegate */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig bitwiseAnd = { { 272 /* bitwiseAnd */, 2, 24, 2, 26, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig bitwiseOr = { { 283 /* bitwiseOr */, 2, 27, 2, 29, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig bitwiseXor = { { 293 /* bitwiseXor */, 2, 30, 2, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig bitwiseShiftLeft = { { 304 /* bitwiseShiftLeft */, 2, 33, 2, 35, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig bitwiseShiftRight = { { 321 /* bitwiseShiftRight */, 2, 36, 2, 38, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getPossiblyLooselyEqualType = { { 339 /* getPossiblyLooselyEqualType */, 1, 39, 1, 40, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getAlwaysLooselyEqualType = { { 367 /* getAlwaysLooselyEqualType */, 1, 41, 1, 42, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig stringConcatenate = { { 393 /* stringConcatenate */, 2, 43, 2, 45, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arrayUnion = { { 411 /* arrayUnion */, 2, 46, 2, 48, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toExactNumberSet = { { 76 /* toExactNumberSet */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 115 /* toValueSet */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticAdd = { { 166 /* arithmeticAdd */, 2, 5, 2, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticSubtract = { { 180 /* arithmeticSubtract */, 2, 8, 2, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticMultiply = { { 199 /* arithmeticMultiply */, 2, 11, 2, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticDivide = { { 218 /* arithmeticDivide */, 2, 14, 2, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticIntDivide = { { 235 /* arithmeticIntDivide */, 2, 17, 2, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticModulo = { { 255 /* arithmeticModulo */, 2, 20, 2, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticNegate = { { 272 /* arithmeticNegate */, 1, 23, 1, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig bitwiseAnd = { { 289 /* bitwiseAnd */, 2, 25, 2, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig bitwiseOr = { { 300 /* bitwiseOr */, 2, 28, 2, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig bitwiseXor = { { 310 /* bitwiseXor */, 2, 31, 2, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig bitwiseShiftLeft = { { 321 /* bitwiseShiftLeft */, 2, 34, 2, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig bitwiseShiftRight = { { 338 /* bitwiseShiftRight */, 2, 37, 2, 39, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getPossiblyLooselyEqualType = { { 356 /* getPossiblyLooselyEqualType */, 1, 40, 1, 41, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getAlwaysLooselyEqualType = { { 384 /* getAlwaysLooselyEqualType */, 1, 42, 1, 43, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig stringConcatenate = { { 410 /* stringConcatenate */, 2, 44, 2, 46, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arrayUnion = { { 428 /* arrayUnion */, 2, 47, 2, 49, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::OperatorTypeTrait

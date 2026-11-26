@@ -179,68 +179,69 @@ inline constexpr char strings[] =
 	"isNonEmptyString\0" /* 2035 */
 	"isNonFalsyString\0" /* 2052 */
 	"isLiteralString\0" /* 2069 */
-	"isLowercaseString\0" /* 2085 */
-	"isClassString\0" /* 2103 */
-	"isUppercaseString\0" /* 2117 */
-	"getClassStringObjectType\0" /* 2135 */
-	"getObjectTypeOrClassStringObjectType\0" /* 2160 */
-	"isVoid\0" /* 2197 */
-	"isScalar\0" /* 2204 */
-	"phpVersion\0" /* 2213 */
-	"PHPStan\\Php\\PhpVersion\0" /* 2224 */
-	"looseCompare\0" /* 2247 */
-	"isExtraOffsetAccessibleClass\0" /* 2260 */
-	"isOffsetAccessible\0" /* 2289 */
-	"isOffsetAccessLegal\0" /* 2308 */
-	"offsetType\0" /* 2328 */
-	"hasOffsetValueType\0" /* 2339 */
-	"getOffsetValueType\0" /* 2358 */
-	"valueType\0" /* 2377 */
-	"unionValues\0" /* 2387 */
-	"true\0" /* 2399 */
-	"setOffsetValueType\0" /* 2404 */
-	"setExistingOffsetValueType\0" /* 2423 */
-	"unsetOffset\0" /* 2450 */
-	"getEnumCases\0" /* 2462 */
-	"PHPStan\\Type\\Enum\\EnumCaseObjectType\0" /* 2475 */
-	"getEnumCaseObject\0" /* 2512 */
-	"isCallable\0" /* 2530 */
-	"getCallableParametersAcceptors\0" /* 2541 */
-	"findCallableParametersAcceptors\0" /* 2572 */
-	"isCloneable\0" /* 2604 */
-	"isInstanceOf\0" /* 2616 */
-	"subtract\0" /* 2629 */
-	"getTypeWithoutSubtractedType\0" /* 2638 */
-	"withoutFinalByKeywordOverride\0" /* 2667 */
-	"changeSubtractedType\0" /* 2697 */
-	"subtractedTypes\0" /* 2718 */
-	"matchAllowedSubTypes\0" /* 2734 */
-	"getSubtractedType\0" /* 2755 */
-	"cb\0" /* 2773 */
-	"traverse\0" /* 2776 */
-	"right\0" /* 2785 */
-	"traverseSimultaneously\0" /* 2791 */
-	"getNakedClassReflection\0" /* 2814 */
-	"getClassReflection\0" /* 2838 */
-	"resolvedClassReflection\0" /* 2857 */
-	"PHPStan\\Type\\ObjectType\0" /* 2881 */
-	"getAncestorWithClassName\0" /* 2905 */
-	"getParent\0" /* 2930 */
-	"getInterfaces\0" /* 2940 */
-	"typeToRemove\0" /* 2954 */
-	"tryRemove\0" /* 2967 */
-	"getFiniteTypes\0" /* 2977 */
-	"exponent\0" /* 2992 */
-	"arithmeticPower\0" /* 3001 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3017 */
-	"toPhpDocNode\0" /* 3056 */
-	"position\0" /* 3069 */
-	"PHPStan\\Type\\NativeTypePosition\0" /* 3078 */
-	"toNativePhpTypeNode\0" /* 3110 */
-	"hasTemplateOrLateResolvableType\0" /* 3130 */
-	"hasUnresolvedTemplateArgumentType\0" /* 3162 */
-	"PHPStan\\Type\\ValueSet\0" /* 3196 */
-	"toValueSet"; /* 3218 */
+	"getStringRefinement\0" /* 2085 */
+	"isLowercaseString\0" /* 2105 */
+	"isClassString\0" /* 2123 */
+	"isUppercaseString\0" /* 2137 */
+	"getClassStringObjectType\0" /* 2155 */
+	"getObjectTypeOrClassStringObjectType\0" /* 2180 */
+	"isVoid\0" /* 2217 */
+	"isScalar\0" /* 2224 */
+	"phpVersion\0" /* 2233 */
+	"PHPStan\\Php\\PhpVersion\0" /* 2244 */
+	"looseCompare\0" /* 2267 */
+	"isExtraOffsetAccessibleClass\0" /* 2280 */
+	"isOffsetAccessible\0" /* 2309 */
+	"isOffsetAccessLegal\0" /* 2328 */
+	"offsetType\0" /* 2348 */
+	"hasOffsetValueType\0" /* 2359 */
+	"getOffsetValueType\0" /* 2378 */
+	"valueType\0" /* 2397 */
+	"unionValues\0" /* 2407 */
+	"true\0" /* 2419 */
+	"setOffsetValueType\0" /* 2424 */
+	"setExistingOffsetValueType\0" /* 2443 */
+	"unsetOffset\0" /* 2470 */
+	"getEnumCases\0" /* 2482 */
+	"PHPStan\\Type\\Enum\\EnumCaseObjectType\0" /* 2495 */
+	"getEnumCaseObject\0" /* 2532 */
+	"isCallable\0" /* 2550 */
+	"getCallableParametersAcceptors\0" /* 2561 */
+	"findCallableParametersAcceptors\0" /* 2592 */
+	"isCloneable\0" /* 2624 */
+	"isInstanceOf\0" /* 2636 */
+	"subtract\0" /* 2649 */
+	"getTypeWithoutSubtractedType\0" /* 2658 */
+	"withoutFinalByKeywordOverride\0" /* 2687 */
+	"changeSubtractedType\0" /* 2717 */
+	"subtractedTypes\0" /* 2738 */
+	"matchAllowedSubTypes\0" /* 2754 */
+	"getSubtractedType\0" /* 2775 */
+	"cb\0" /* 2793 */
+	"traverse\0" /* 2796 */
+	"right\0" /* 2805 */
+	"traverseSimultaneously\0" /* 2811 */
+	"getNakedClassReflection\0" /* 2834 */
+	"getClassReflection\0" /* 2858 */
+	"resolvedClassReflection\0" /* 2877 */
+	"PHPStan\\Type\\ObjectType\0" /* 2901 */
+	"getAncestorWithClassName\0" /* 2925 */
+	"getParent\0" /* 2950 */
+	"getInterfaces\0" /* 2960 */
+	"typeToRemove\0" /* 2974 */
+	"tryRemove\0" /* 2987 */
+	"getFiniteTypes\0" /* 2997 */
+	"exponent\0" /* 3012 */
+	"arithmeticPower\0" /* 3021 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 3037 */
+	"toPhpDocNode\0" /* 3076 */
+	"position\0" /* 3089 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 3098 */
+	"toNativePhpTypeNode\0" /* 3130 */
+	"hasTemplateOrLateResolvableType\0" /* 3150 */
+	"hasUnresolvedTemplateArgumentType\0" /* 3182 */
+	"PHPStan\\Type\\ValueSet\0" /* 3216 */
+	"toValueSet"; /* 3238 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $className */
 	reg::packed(10, MAY_BE_NULL, 25, false, false, 43), /* __construct $subtractedType */
@@ -356,6 +357,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(111, 0, 187), /* isNonEmptyString return */
 	reg::packed(111, 0, 187), /* isNonFalsyString return */
 	reg::packed(111, 0, 187), /* isLiteralString return */
+	reg::packed(111, MAY_BE_NULL | MAY_BE_LONG), /* getStringRefinement return */
 	reg::packed(111, 0, 187), /* isLowercaseString return */
 	reg::packed(111, 0, 187), /* isClassString return */
 	reg::packed(111, 0, 187), /* isUppercaseString return */
@@ -364,26 +366,26 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(111, 0, 187), /* isVoid return */
 	reg::packed(111, 0, 187), /* isScalar return */
 	reg::packed(641, 0, 25), /* looseCompare $type */
-	reg::packed(2213, 0, 2224), /* looseCompare $phpVersion */
+	reg::packed(2233, 0, 2244), /* looseCompare $phpVersion */
 	reg::packed(111, 0, 1218), /* looseCompare return */
 	reg::packed(111, 0, 187), /* isExtraOffsetAccessibleClass return */
 	reg::packed(111, 0, 187), /* isOffsetAccessible return */
 	reg::packed(111, 0, 187), /* isOffsetAccessLegal return */
-	reg::packed(2328, 0, 25), /* hasOffsetValueType $offsetType */
+	reg::packed(2348, 0, 25), /* hasOffsetValueType $offsetType */
 	reg::packed(111, 0, 187), /* hasOffsetValueType return */
-	reg::packed(2328, 0, 25), /* getOffsetValueType $offsetType */
+	reg::packed(2348, 0, 25), /* getOffsetValueType $offsetType */
 	reg::packed(111, 0, 25), /* getOffsetValueType return */
-	reg::packed(2328, MAY_BE_NULL, 25), /* setOffsetValueType $offsetType */
-	reg::packed(2377, 0, 25), /* setOffsetValueType $valueType */
-	reg::packed(2387, MAY_BE_BOOL, reg::NoString, false, false, 2399), /* setOffsetValueType $unionValues */
+	reg::packed(2348, MAY_BE_NULL, 25), /* setOffsetValueType $offsetType */
+	reg::packed(2397, 0, 25), /* setOffsetValueType $valueType */
+	reg::packed(2407, MAY_BE_BOOL, reg::NoString, false, false, 2419), /* setOffsetValueType $unionValues */
 	reg::packed(111, 0, 25), /* setOffsetValueType return */
-	reg::packed(2328, 0, 25), /* setExistingOffsetValueType $offsetType */
-	reg::packed(2377, 0, 25), /* setExistingOffsetValueType $valueType */
+	reg::packed(2348, 0, 25), /* setExistingOffsetValueType $offsetType */
+	reg::packed(2397, 0, 25), /* setExistingOffsetValueType $valueType */
 	reg::packed(111, 0, 25), /* setExistingOffsetValueType return */
-	reg::packed(2328, 0, 25), /* unsetOffset $offsetType */
+	reg::packed(2348, 0, 25), /* unsetOffset $offsetType */
 	reg::packed(111, 0, 25), /* unsetOffset return */
 	reg::packed(111, MAY_BE_ARRAY), /* getEnumCases return */
-	reg::packed(111, MAY_BE_NULL, 2475), /* getEnumCaseObject return */
+	reg::packed(111, MAY_BE_NULL, 2495), /* getEnumCaseObject return */
 	reg::packed(111, 0, 187), /* isCallable return */
 	reg::packed(220, 0, 226), /* getCallableParametersAcceptors $scope */
 	reg::packed(111, MAY_BE_ARRAY), /* getCallableParametersAcceptors return */
@@ -397,32 +399,32 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(111, 0, 25), /* withoutFinalByKeywordOverride return */
 	reg::packed(10, MAY_BE_NULL, 25), /* changeSubtractedType $subtractedType */
 	reg::packed(111, 0, 25), /* changeSubtractedType return */
-	reg::packed(2718, MAY_BE_ARRAY), /* matchAllowedSubTypes $subtractedTypes */
+	reg::packed(2738, MAY_BE_ARRAY), /* matchAllowedSubTypes $subtractedTypes */
 	reg::packed(111, MAY_BE_NULL, 25), /* matchAllowedSubTypes return */
 	reg::packed(111, MAY_BE_NULL, 25), /* getSubtractedType return */
-	reg::packed(2773, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(2793, MAY_BE_CALLABLE), /* traverse $cb */
 	reg::packed(111, 0, 25), /* traverse return */
-	reg::packed(2785, 0, 25), /* traverseSimultaneously $right */
-	reg::packed(2773, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(2805, 0, 25), /* traverseSimultaneously $right */
+	reg::packed(2793, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(111, 0, 25), /* traverseSimultaneously return */
 	reg::packed(111, MAY_BE_NULL, 64), /* getNakedClassReflection return */
 	reg::packed(111, MAY_BE_NULL, 64), /* getClassReflection return */
 	reg::packed(111, MAY_BE_NULL, 64), /* resolvedClassReflection return */
 	reg::packed(0, MAY_BE_STRING), /* getAncestorWithClassName $className */
-	reg::packed(111, MAY_BE_NULL, 2881), /* getAncestorWithClassName return */
-	reg::packed(111, MAY_BE_NULL, 2881), /* getParent return */
+	reg::packed(111, MAY_BE_NULL, 2901), /* getAncestorWithClassName return */
+	reg::packed(111, MAY_BE_NULL, 2901), /* getParent return */
 	reg::packed(111, MAY_BE_ARRAY), /* getInterfaces return */
-	reg::packed(2954, 0, 25), /* tryRemove $typeToRemove */
+	reg::packed(2974, 0, 25), /* tryRemove $typeToRemove */
 	reg::packed(111, MAY_BE_NULL, 25), /* tryRemove return */
 	reg::packed(111, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(2992, 0, 25), /* arithmeticPower $exponent */
-	reg::packed(2213, 0, 2224), /* arithmeticPower $phpVersion */
+	reg::packed(3012, 0, 25), /* arithmeticPower $exponent */
+	reg::packed(2233, 0, 2244), /* arithmeticPower $phpVersion */
 	reg::packed(111, 0, 25), /* arithmeticPower return */
-	reg::packed(111, 0, 3017), /* toPhpDocNode return */
-	reg::packed(3069, 0, 3078), /* toNativePhpTypeNode $position */
+	reg::packed(111, 0, 3037), /* toPhpDocNode return */
+	reg::packed(3089, 0, 3098), /* toNativePhpTypeNode $position */
 	reg::packed(111, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 	reg::packed(111, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
-	reg::packed(111, 0, 3196), /* toValueSet return */
+	reg::packed(111, 0, 3216), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -505,51 +507,52 @@ inline constexpr sigtab::Sig isDecimalIntegerString = { { 2012 /* isDecimalInteg
 inline constexpr sigtab::Sig isNonEmptyString = { { 2035 /* isNonEmptyString */, 0, 111, 0, 111, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isNonFalsyString = { { 2052 /* isNonFalsyString */, 0, 112, 0, 112, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isLiteralString = { { 2069 /* isLiteralString */, 0, 113, 0, 113, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isLowercaseString = { { 2085 /* isLowercaseString */, 0, 114, 0, 114, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isClassString = { { 2103 /* isClassString */, 0, 115, 0, 115, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isUppercaseString = { { 2117 /* isUppercaseString */, 0, 116, 0, 116, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getClassStringObjectType = { { 2135 /* getClassStringObjectType */, 0, 117, 0, 117, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 2160 /* getObjectTypeOrClassStringObjectType */, 0, 118, 0, 118, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isVoid = { { 2197 /* isVoid */, 0, 119, 0, 119, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isScalar = { { 2204 /* isScalar */, 0, 120, 0, 120, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig looseCompare = { { 2247 /* looseCompare */, 2, 121, 2, 123, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isExtraOffsetAccessibleClass = { { 2260 /* isExtraOffsetAccessibleClass */, 0, 124, 0, 124, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isOffsetAccessible = { { 2289 /* isOffsetAccessible */, 0, 125, 0, 125, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isOffsetAccessLegal = { { 2308 /* isOffsetAccessLegal */, 0, 126, 0, 126, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasOffsetValueType = { { 2339 /* hasOffsetValueType */, 1, 127, 1, 128, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getOffsetValueType = { { 2358 /* getOffsetValueType */, 1, 129, 1, 130, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig setOffsetValueType = { { 2404 /* setOffsetValueType */, 2, 131, 3, 134, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig setExistingOffsetValueType = { { 2423 /* setExistingOffsetValueType */, 2, 135, 2, 137, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig unsetOffset = { { 2450 /* unsetOffset */, 1, 138, 1, 139, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getEnumCases = { { 2462 /* getEnumCases */, 0, 140, 0, 140, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getEnumCaseObject = { { 2512 /* getEnumCaseObject */, 0, 141, 0, 141, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isCallable = { { 2530 /* isCallable */, 0, 142, 0, 142, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getCallableParametersAcceptors = { { 2541 /* getCallableParametersAcceptors */, 1, 143, 1, 144, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig findCallableParametersAcceptors = { { 2572 /* findCallableParametersAcceptors */, 0, 145, 0, 145, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isCloneable = { { 2604 /* isCloneable */, 0, 146, 0, 146, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isInstanceOf = { { 2616 /* isInstanceOf */, 1, 147, 1, 148, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig subtract = { { 2629 /* subtract */, 1, 149, 1, 150, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getTypeWithoutSubtractedType = { { 2638 /* getTypeWithoutSubtractedType */, 0, 151, 0, 151, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig withoutFinalByKeywordOverride = { { 2667 /* withoutFinalByKeywordOverride */, 0, 152, 0, 152, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig changeSubtractedType = { { 2697 /* changeSubtractedType */, 1, 153, 1, 154, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig matchAllowedSubTypes = { { 2734 /* matchAllowedSubTypes */, 1, 155, 1, 156, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getSubtractedType = { { 2755 /* getSubtractedType */, 0, 157, 0, 157, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverse = { { 2776 /* traverse */, 1, 158, 1, 159, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverseSimultaneously = { { 2791 /* traverseSimultaneously */, 2, 160, 2, 162, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getNakedClassReflection = { { 2814 /* getNakedClassReflection */, 0, 163, 0, 163, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getClassReflection = { { 2838 /* getClassReflection */, 0, 164, 0, 164, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolvedClassReflection = { { 2857 /* resolvedClassReflection */, 0, 165, 0, 165, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getAncestorWithClassName = { { 2905 /* getAncestorWithClassName */, 1, 166, 1, 167, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getParent = { { 2930 /* getParent */, 0, 168, 0, 168, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getInterfaces = { { 2940 /* getInterfaces */, 0, 169, 0, 169, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig tryRemove = { { 2967 /* tryRemove */, 1, 170, 1, 171, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 2977 /* getFiniteTypes */, 0, 172, 0, 172, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticPower = { { 3001 /* arithmeticPower */, 2, 173, 2, 175, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 3056 /* toPhpDocNode */, 0, 176, 0, 176, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3110 /* toNativePhpTypeNode */, 1, 177, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3130 /* hasTemplateOrLateResolvableType */, 0, 178, 0, 178, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 3162 /* hasUnresolvedTemplateArgumentType */, 0, 179, 0, 179, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toValueSet = { { 3218 /* toValueSet */, 0, 180, 0, 180, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStringRefinement = { { 2085 /* getStringRefinement */, 0, 114, 0, 114, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isLowercaseString = { { 2105 /* isLowercaseString */, 0, 115, 0, 115, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isClassString = { { 2123 /* isClassString */, 0, 116, 0, 116, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isUppercaseString = { { 2137 /* isUppercaseString */, 0, 117, 0, 117, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClassStringObjectType = { { 2155 /* getClassStringObjectType */, 0, 118, 0, 118, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 2180 /* getObjectTypeOrClassStringObjectType */, 0, 119, 0, 119, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVoid = { { 2217 /* isVoid */, 0, 120, 0, 120, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isScalar = { { 2224 /* isScalar */, 0, 121, 0, 121, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig looseCompare = { { 2267 /* looseCompare */, 2, 122, 2, 124, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isExtraOffsetAccessibleClass = { { 2280 /* isExtraOffsetAccessibleClass */, 0, 125, 0, 125, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isOffsetAccessible = { { 2309 /* isOffsetAccessible */, 0, 126, 0, 126, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isOffsetAccessLegal = { { 2328 /* isOffsetAccessLegal */, 0, 127, 0, 127, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasOffsetValueType = { { 2359 /* hasOffsetValueType */, 1, 128, 1, 129, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOffsetValueType = { { 2378 /* getOffsetValueType */, 1, 130, 1, 131, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setOffsetValueType = { { 2424 /* setOffsetValueType */, 2, 132, 3, 135, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setExistingOffsetValueType = { { 2443 /* setExistingOffsetValueType */, 2, 136, 2, 138, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig unsetOffset = { { 2470 /* unsetOffset */, 1, 139, 1, 140, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getEnumCases = { { 2482 /* getEnumCases */, 0, 141, 0, 141, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getEnumCaseObject = { { 2532 /* getEnumCaseObject */, 0, 142, 0, 142, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isCallable = { { 2550 /* isCallable */, 0, 143, 0, 143, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getCallableParametersAcceptors = { { 2561 /* getCallableParametersAcceptors */, 1, 144, 1, 145, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig findCallableParametersAcceptors = { { 2592 /* findCallableParametersAcceptors */, 0, 146, 0, 146, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isCloneable = { { 2624 /* isCloneable */, 0, 147, 0, 147, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isInstanceOf = { { 2636 /* isInstanceOf */, 1, 148, 1, 149, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig subtract = { { 2649 /* subtract */, 1, 150, 1, 151, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTypeWithoutSubtractedType = { { 2658 /* getTypeWithoutSubtractedType */, 0, 152, 0, 152, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig withoutFinalByKeywordOverride = { { 2687 /* withoutFinalByKeywordOverride */, 0, 153, 0, 153, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig changeSubtractedType = { { 2717 /* changeSubtractedType */, 1, 154, 1, 155, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig matchAllowedSubTypes = { { 2754 /* matchAllowedSubTypes */, 1, 156, 1, 157, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getSubtractedType = { { 2775 /* getSubtractedType */, 0, 158, 0, 158, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverse = { { 2796 /* traverse */, 1, 159, 1, 160, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 2811 /* traverseSimultaneously */, 2, 161, 2, 163, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getNakedClassReflection = { { 2834 /* getNakedClassReflection */, 0, 164, 0, 164, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClassReflection = { { 2858 /* getClassReflection */, 0, 165, 0, 165, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolvedClassReflection = { { 2877 /* resolvedClassReflection */, 0, 166, 0, 166, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getAncestorWithClassName = { { 2925 /* getAncestorWithClassName */, 1, 167, 1, 168, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getParent = { { 2950 /* getParent */, 0, 169, 0, 169, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getInterfaces = { { 2960 /* getInterfaces */, 0, 170, 0, 170, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig tryRemove = { { 2987 /* tryRemove */, 1, 171, 1, 172, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 2997 /* getFiniteTypes */, 0, 173, 0, 173, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 3021 /* arithmeticPower */, 2, 174, 2, 176, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 3076 /* toPhpDocNode */, 0, 177, 0, 177, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 3130 /* toNativePhpTypeNode */, 1, 178, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 3150 /* hasTemplateOrLateResolvableType */, 0, 179, 0, 179, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 3182 /* hasUnresolvedTemplateArgumentType */, 0, 180, 0, 180, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 3238 /* toValueSet */, 0, 181, 0, 181, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ObjectType

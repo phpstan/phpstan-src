@@ -43,6 +43,6 @@ function accumulators(array $pl): string
 		$out .= "$a $b $c $d $e $f $g";
 		assertType('non-falsy-string&uppercase-string', $out);
 	}
-	assertType('uppercase-string', $out);
+	assertType("''|(non-falsy-string&uppercase-string)", $out);
 	return $out;
 }

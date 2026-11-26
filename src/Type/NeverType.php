@@ -605,6 +605,11 @@ class NeverType implements CompoundType
 		return TrinaryLogic::createNo();
 	}
 
+	public function getStringRefinement(): ?int
+	{
+		return null;
+	}
+
 	public function isLowercaseString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();

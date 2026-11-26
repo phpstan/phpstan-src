@@ -25,6 +25,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StringRefinement;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
@@ -324,6 +325,11 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return StringRefinement::ALL & ~StringRefinement::of(StringRefinement::EMPTY);
 	}
 
 	public function isLowercaseString(): TrinaryLogic

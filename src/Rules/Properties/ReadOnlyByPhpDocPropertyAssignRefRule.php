@@ -27,11 +27,10 @@ final class ReadOnlyByPhpDocPropertyAssignRefRule implements Rule
 
 	public function processNode(Node $node, Scope $scope): array
 	{
-		if (!$node->expr instanceof Node\Expr\PropertyFetch && !$node->expr instanceof Node\Expr\StaticPropertyFetch) {
+		$propertyFetch = $this->propertyReflectionFinder->findReferencedPropertyFetch($node->expr, $scope);
+		if ($propertyFetch === null) {
 			return [];
 		}
-
-		$propertyFetch = $node->expr;
 
 		$errors = [];
 		$reflections = $this->propertyReflectionFinder->findPropertyReflectionsFromNode($propertyFetch, $scope);

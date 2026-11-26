@@ -840,8 +840,8 @@ return [
 	// random functions, do not have side effects but are not deterministic
 	'mt_rand' => ['effects' => [SideEffects::NONDETERMINISTIC_RANDOM, SideEffects::WRITES_GLOBAL]],
 	'rand' => ['effects' => [SideEffects::NONDETERMINISTIC_RANDOM, SideEffects::WRITES_GLOBAL]],
-	'random_bytes' => ['effects' => [SideEffects::NONDETERMINISTIC_RANDOM, SideEffects::WRITES_GLOBAL]],
-	'random_int' => ['effects' => [SideEffects::NONDETERMINISTIC_RANDOM, SideEffects::WRITES_GLOBAL]],
+	'random_bytes' => ['effects' => [SideEffects::NONDETERMINISTIC_RANDOM]],
+	'random_int' => ['effects' => [SideEffects::NONDETERMINISTIC_RANDOM]],
 	'vfprintf' => ['effects' => [SideEffects::IO, SideEffects::WRITES_ARGS . '($stream)', SideEffects::NONDETERMINISTIC]],
 	'vprintf' => ['effects' => [SideEffects::IO_OUTPUT]],
 	'xml_parser_free' => ['effects' => [SideEffects::WRITES_ARGS . '($parser)']],

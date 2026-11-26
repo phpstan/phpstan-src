@@ -1891,6 +1891,17 @@ class UnionType implements CompoundType
 		return $this->hasTemplateOrLateResolvableType = false;
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		foreach ($this->types as $type) {
+			if ($type->hasUnresolvedTemplateArgumentType()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public function getPossiblyLooselyEqualType(PhpVersion $phpVersion): Type
 	{
 		return $this->possiblyLooselyEqualTypes[$phpVersion->getVersionId()] ??= $this->toValueSet()->getPossiblyLooselyEqualType($phpVersion);

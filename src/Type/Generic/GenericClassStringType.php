@@ -284,4 +284,9 @@ class GenericClassStringType extends ClassStringType
 		return $this->type->hasTemplateOrLateResolvableType();
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		return $this->type->hasUnresolvedTemplateArgumentType();
+	}
+
 }

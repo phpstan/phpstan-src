@@ -488,4 +488,9 @@ class HasOffsetType implements CompoundType, AccessoryType
 		return $this->offsetType->hasTemplateOrLateResolvableType();
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		return $this->offsetType->hasUnresolvedTemplateArgumentType();
+	}
+
 }

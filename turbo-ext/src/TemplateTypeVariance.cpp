@@ -322,16 +322,12 @@ private:
 	return true;
 }
 
-/* UnresolvedTemplateArgumentFinder::contains($type); false = pending exception */
-[[nodiscard]] static bool containsUnresolvedTemplateArgument(zval *type, bool &out)
+/* $type->hasUnresolvedTemplateArgumentType(); false = pending exception */
+[[nodiscard]] static bool hasUnresolvedTemplateArgumentType(zval *type, bool &out)
 {
-	zv::Val finder = pt_type_new(PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_FINDER, 0, NULL);
-	if (UNEXPECTED(finder.isUndef())) return false;
-	zval mapped;
-	if (UNEXPECTED(!pt_type_traverser_map(&mapped, type, finder.raw()))) return false;
-	zval_ptr_dtor(&mapped);
-	// the finder's only property, public bool $found
-	out = Z_TYPE_P(OBJ_PROP_NUM(Z_OBJ_P(finder.raw()), 0)) == IS_TRUE;
+	int has = pt_type_has_unresolved_template_argument(type);
+	if (UNEXPECTED(has < 0)) return false;
+	out = has == 1;
 	return true;
 }
 
@@ -460,8 +456,8 @@ zv::Val TemplateTypeVariance::isValidVariance(zval *templateType, zval *a, zval 
 				equalsOnly = !bleedingEdge;
 			}
 			if (isSuperType == PT_TRI_YES && !equalsOnly) {
-				if (UNEXPECTED(!containsUnresolvedTemplateArgument(a, equalsOnly))) return zv::Val();
-				if (!equalsOnly && UNEXPECTED(!containsUnresolvedTemplateArgument(b, equalsOnly))) return zv::Val();
+				if (UNEXPECTED(!hasUnresolvedTemplateArgumentType(a, equalsOnly))) return zv::Val();
+				if (!equalsOnly && UNEXPECTED(!hasUnresolvedTemplateArgumentType(b, equalsOnly))) return zv::Val();
 			}
 			if (isSuperType == PT_TRI_YES && !equalsOnly) {
 				isSubType = isSuperTypeOfValue(b, a);

@@ -3917,4 +3917,19 @@ class ConstantArrayType implements Type
 		return $this->hasTemplateOrLateResolvableType = false;
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		foreach ($this->valueTypes as $type) {
+			if ($type->hasUnresolvedTemplateArgumentType()) {
+				return true;
+			}
+		}
+
+		if ($this->unsealed === null) {
+			return false;
+		}
+
+		return $this->unsealed[0]->hasUnresolvedTemplateArgumentType() || $this->unsealed[1]->hasUnresolvedTemplateArgumentType();
+	}
+
 }

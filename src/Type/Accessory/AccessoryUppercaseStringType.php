@@ -421,6 +421,11 @@ class AccessoryUppercaseStringType implements CompoundType, AccessoryType
 		return false;
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		return false;
+	}
+
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createStrings($this);

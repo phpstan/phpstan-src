@@ -467,6 +467,7 @@ PT_MINIT_REGISTRATION(pt_register_has_method_type)
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_FALSE;
 	});
+	cls.method(sigs::hasUnresolvedTemplateArgumentType, PT_HAS_NO_UNRESOLVED_TEMPLATE_ARGUMENT);
 
 	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *position;

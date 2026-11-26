@@ -325,4 +325,15 @@ class GenericStaticType extends StaticType
 		return $this->subtractedType->hasTemplateOrLateResolvableType();
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		foreach ($this->types as $type) {
+			if ($type->hasUnresolvedTemplateArgumentType()) {
+				return true;
+			}
+		}
+
+		return $this->subtractedType !== null && $this->subtractedType->hasUnresolvedTemplateArgumentType();
+	}
+
 }

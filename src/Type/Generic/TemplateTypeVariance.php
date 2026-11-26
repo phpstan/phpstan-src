@@ -227,8 +227,8 @@ final class TemplateTypeVariance
 				if (
 					$isSuperType
 					&& BleedingEdgeToggle::isBleedingEdge()
-					&& !UnresolvedTemplateArgumentFinder::contains($a)
-					&& !UnresolvedTemplateArgumentFinder::contains($b)
+					&& !$a->hasUnresolvedTemplateArgumentType()
+					&& !$b->hasUnresolvedTemplateArgumentType()
 					&& $b->isSuperTypeOf($a)->yes()
 				) {
 					$result = true;

@@ -239,6 +239,11 @@ class ObjectWithoutClassType implements SubtractableType
 		return false;
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		return false;
+	}
+
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createObjects($this);

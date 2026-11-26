@@ -3646,6 +3646,7 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 		RETURN_BOOL(has == 1);
 	});
 	cls.op(PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, PT_OP_LAMBDA { int has = UnionType(self).hasTemplateOrLateResolvableType(); return has < 0 ? zv::Val() : zv::Val::boolean(has == 1); });
+	cls.method(sigs::hasUnresolvedTemplateArgumentType, PT_HAS_UNRESOLVED_TEMPLATE_ARGUMENT_OF(PT_TYPE_GETTER("gettypes")));
 
 	cls.method(sigs::toNativePhpTypeNode, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *position;

@@ -722,6 +722,11 @@ trait LateResolvableTypeTrait
 		return true;
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		return $this->resolve()->hasUnresolvedTemplateArgumentType();
+	}
+
 	public function toValueSet(): ValueSet
 	{
 		return $this->resolve()->toValueSet();

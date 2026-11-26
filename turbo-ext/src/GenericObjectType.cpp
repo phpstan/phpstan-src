@@ -1165,6 +1165,7 @@ PT_MINIT_REGISTRATION(pt_register_generic_object_type)
 	});
 	cls.method<&GenericObjectType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
 	cls.op<PT_OP_HAS_TEMPLATE_OR_LATE_RESOLVABLE_TYPE, &GenericObjectType::hasTemplateOrLateResolvableType>();
+	cls.method(sigs::hasUnresolvedTemplateArgumentType, PT_HAS_UNRESOLVED_TEMPLATE_ARGUMENT_OF(PT_TYPE_GETTER("gettypes"), PT_TYPE_GETTER("getsubtractedtype")));
 
 	cls.shadow(&pt_ce_generic_object_type);
 }

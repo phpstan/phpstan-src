@@ -292,6 +292,11 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 		return $this->getDelegate()->hasTemplateOrLateResolvableType();
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		return true;
+	}
+
 	public function toPhpDocNode(): TypeNode
 	{
 		return $this->getDelegate()->toPhpDocNode();

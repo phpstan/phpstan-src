@@ -595,6 +595,10 @@ PT_MINIT_REGISTRATION(pt_register_unresolved_template_argument_type)
 	cls.method(sigs::tryRemove, utaDelegate);
 	cls.method(sigs::toCoercedArgumentType, utaDelegate);
 	cls.method(sigs::hasTemplateOrLateResolvableType, utaDelegate);
+	cls.method(sigs::hasUnresolvedTemplateArgumentType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		RETURN_TRUE;
+	});
 	cls.method(sigs::toPhpDocNode, utaDelegate);
 	cls.method(sigs::toNativePhpTypeNode, utaDelegate);
 	cls.method(sigs::getReferencedClasses, utaDelegate);

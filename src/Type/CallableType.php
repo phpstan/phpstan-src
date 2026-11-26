@@ -885,6 +885,34 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return $this->getReturnType()->hasTemplateOrLateResolvableType();
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		foreach ($this->parameters as $parameter) {
+			if ($parameter->getType()->hasUnresolvedTemplateArgumentType()) {
+				return true;
+			}
+
+			if (!$parameter instanceof ExtendedParameterReflection) {
+				continue;
+			}
+
+			if ($parameter->getOutType() !== null && $parameter->getOutType()->hasUnresolvedTemplateArgumentType()) {
+				return true;
+			}
+			if ($parameter->getClosureThisType() !== null && $parameter->getClosureThisType()->hasUnresolvedTemplateArgumentType()) {
+				return true;
+			}
+		}
+
+		foreach ($this->assertions->getAll() as $assertTag) {
+			if ($assertTag->getType()->hasUnresolvedTemplateArgumentType()) {
+				return true;
+			}
+		}
+
+		return $this->getReturnType()->hasUnresolvedTemplateArgumentType();
+	}
+
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createInvalid();

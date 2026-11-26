@@ -731,4 +731,10 @@ interface Type
 	 */
 	public function hasTemplateOrLateResolvableType(): bool;
 
+	/**
+	 * Whether an UnresolvedTemplateArgumentType occurs anywhere in the type:
+	 * a template argument that is still being inferred.
+	 */
+	public function hasUnresolvedTemplateArgumentType(): bool;
+
 }

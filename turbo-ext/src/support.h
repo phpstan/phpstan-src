@@ -249,7 +249,6 @@ enum {
 	PT_CLASS_LIST_EXPR,
 	PT_CLASS_VARIABLE_WRITES_NODE,
 	PT_CLASS_VOID_TO_NULL_TRAVERSER,
-	PT_CLASS_UNRESOLVED_TEMPLATE_ARGUMENT_FINDER,
 	PT_CLASS_ALWAYS_REMEMBERED_EXPR,
 	PT_CLASS_NATIVE_METHOD_REFLECTION,
 	PT_CLASS_ENUM_CASES_METHOD_REFLECTION,
@@ -3377,9 +3376,9 @@ zv::Val pt_closure_origin_for_function(zval *functionName);
 zv::Val pt_closure_origin_for_method(zval *calledOnType, zval *methodName, bool isStaticCall);
 /* $closureType->getByRefUseTypes(); UNDEF = pending exception */
 zv::Val pt_closure_type_get_by_ref_use_types(zval *closureType);
-/* $closureType->containsUnresolvedTemplateArgument(); false = pending
+/* $closureType->hasUnresolvedTemplateArgumentType(); false = pending
  * exception */
-[[nodiscard]] bool pt_closure_type_contains_unresolved_template_argument(zval *closureType, bool &out);
+[[nodiscard]] bool pt_closure_type_has_unresolved_template_argument(zval *closureType, bool &out);
 /* $closureTypeResolver->getClosureType($scope, $expr, $shallow, $storage, $passedToType) /
  * ->buildClosureTypeForClosure(...) / ->buildClosureTypeForArrowFunction(...)
  * / ->getDeclaredClosureType($scope, $expr) — the native bodies for the

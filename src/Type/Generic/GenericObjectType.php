@@ -480,4 +480,17 @@ class GenericObjectType extends ObjectType
 		return $this->getSubtractedType()->hasTemplateOrLateResolvableType();
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		foreach ($this->types as $type) {
+			if ($type->hasUnresolvedTemplateArgumentType()) {
+				return true;
+			}
+		}
+
+		$subtractedType = $this->getSubtractedType();
+
+		return $subtractedType !== null && $subtractedType->hasUnresolvedTemplateArgumentType();
+	}
+
 }

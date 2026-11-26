@@ -2190,6 +2190,13 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this->subtractedType->hasTemplateOrLateResolvableType();
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		$subtractedType = $this->getSubtractedType();
+
+		return $subtractedType !== null && $subtractedType->hasUnresolvedTemplateArgumentType();
+	}
+
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createObjects($this);

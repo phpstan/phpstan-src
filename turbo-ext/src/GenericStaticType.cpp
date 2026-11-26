@@ -743,6 +743,7 @@ PT_MINIT_REGISTRATION(pt_register_generic_static_type)
 	cls.method<&GenericStaticType::toPhpDocNode>(sigs::toPhpDocNode);
 
 	cls.method<&GenericStaticType::hasTemplateOrLateResolvableType>(sigs::hasTemplateOrLateResolvableType);
+	cls.method(sigs::hasUnresolvedTemplateArgumentType, PT_HAS_UNRESOLVED_TEMPLATE_ARGUMENT_OF(PT_TYPE_GETTER("gettypes"), PT_TYPE_GETTER("getsubtractedtype")));
 
 	cls.shadow(&pt_ce_generic_static_type);
 }

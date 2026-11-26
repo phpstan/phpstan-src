@@ -950,6 +950,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->hasTemplateOrLateResolvableType();
 	}
 
+	public function hasUnresolvedTemplateArgumentType(): bool
+	{
+		return $this->getStaticObjectType()->hasUnresolvedTemplateArgumentType();
+	}
+
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createObjects($this);

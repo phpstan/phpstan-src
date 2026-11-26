@@ -240,7 +240,8 @@ inline constexpr char strings[] =
 	"value\0" /* 2698 */
 	"isValidIdentifier\0" /* 2704 */
 	"getFiniteTypes\0" /* 2722 */
-	"hasTemplateOrLateResolvableType"; /* 2737 */
+	"hasTemplateOrLateResolvableType\0" /* 2737 */
+	"hasUnresolvedTemplateArgumentType"; /* 2769 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $keyTypes */
 	reg::packed(9, MAY_BE_ARRAY), /* __construct $valueTypes */
@@ -437,6 +438,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(110, MAY_BE_BOOL), /* isValidIdentifier return */
 	reg::packed(110, MAY_BE_ARRAY), /* getFiniteTypes return */
 	reg::packed(110, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
+	reg::packed(110, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -549,6 +551,7 @@ inline constexpr sigtab::Sig toNativePhpTypeNode = { { 2678 /* toNativePhpTypeNo
 inline constexpr sigtab::Sig isValidIdentifier = { { 2704 /* isValidIdentifier */, 1, 191, 1, 192, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig getFiniteTypes = { { 2722 /* getFiniteTypes */, 0, 193, 0, 193, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 2737 /* hasTemplateOrLateResolvableType */, 0, 194, 0, 194, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 2769 /* hasUnresolvedTemplateArgumentType */, 0, 195, 0, 195, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantArrayType

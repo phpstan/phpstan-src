@@ -165,8 +165,9 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\NativeTypePosition\0" /* 1893 */
 	"toNativePhpTypeNode\0" /* 1925 */
 	"hasTemplateOrLateResolvableType\0" /* 1945 */
-	"PHPStan\\Type\\ValueSet\0" /* 1977 */
-	"toValueSet"; /* 1999 */
+	"hasUnresolvedTemplateArgumentType\0" /* 1977 */
+	"PHPStan\\Type\\ValueSet\0" /* 2011 */
+	"toValueSet"; /* 2033 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, MAY_BE_ARRAY), /* getReferencedClasses return */
 	reg::packed(12, MAY_BE_ARRAY), /* getObjectClassNames return */
@@ -305,7 +306,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 1832), /* toPhpDocNode return */
 	reg::packed(1884, 0, 1893), /* toNativePhpTypeNode $position */
 	reg::packed(12, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
-	reg::packed(12, 0, 1977), /* toValueSet return */
+	reg::packed(12, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
+	reg::packed(12, 0, 2011), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -407,7 +409,8 @@ inline constexpr sigtab::Sig getDefaultBaseType = { { 1813 /* getDefaultBaseType
 inline constexpr sigtab::Sig toPhpDocNode = { { 1871 /* toPhpDocNode */, 0, 134, 0, 134, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toNativePhpTypeNode = { { 1925 /* toNativePhpTypeNode */, 1, 135, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1945 /* hasTemplateOrLateResolvableType */, 0, 136, 0, 136, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toValueSet = { { 1999 /* toValueSet */, 0, 137, 0, 137, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 1977 /* hasUnresolvedTemplateArgumentType */, 0, 137, 0, 137, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 2033 /* toValueSet */, 0, 138, 0, 138, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::AccessoryArrayListType

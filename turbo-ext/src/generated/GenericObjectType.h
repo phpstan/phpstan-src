@@ -92,7 +92,8 @@ inline constexpr char strings[] =
 	"changeSubtractedType\0" /* 1161 */
 	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1182 */
 	"toPhpDocNode\0" /* 1221 */
-	"hasTemplateOrLateResolvableType"; /* 1234 */
+	"hasTemplateOrLateResolvableType\0" /* 1234 */
+	"hasUnresolvedTemplateArgumentType"; /* 1266 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $mainType */
 	reg::packed(9, MAY_BE_ARRAY), /* __construct $types */
@@ -160,6 +161,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(163, 0, 30), /* changeSubtractedType return */
 	reg::packed(163, 0, 1182), /* toPhpDocNode return */
 	reg::packed(163, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
+	reg::packed(163, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -194,6 +196,7 @@ inline constexpr sigtab::Sig withoutFinalByKeywordOverride = { { 1131 /* without
 inline constexpr sigtab::Sig changeSubtractedType = { { 1161 /* changeSubtractedType */, 1, 62, 1, 63, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toPhpDocNode = { { 1221 /* toPhpDocNode */, 0, 64, 0, 64, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1234 /* hasTemplateOrLateResolvableType */, 0, 65, 0, 65, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 1266 /* hasUnresolvedTemplateArgumentType */, 0, 66, 0, 66, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::GenericObjectType

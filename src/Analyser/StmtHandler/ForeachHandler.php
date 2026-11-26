@@ -1027,10 +1027,13 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		// For each item × variant, build a holder: "when item is variant's value
-		// at this position, the *other* items are the variant's values at their
-		// positions". Skip the variant if the condition value is too wide to be
-		// a useful discriminator (i.e. equal to the union of all the variant
-		// values at this position — narrowing it back wouldn't pick a variant).
+		// at this position, the *other* items are the values at their positions
+		// of the variants whose value at this position can be that value" -
+		// those of the variant itself, and of every other variant that does
+		// not rule it out. Skip the variant if the condition value is too wide
+		// to be a useful discriminator (i.e. equal to the union of all the
+		// variant values at this position — narrowing it back wouldn't pick a
+		// variant).
 		foreach ($items as $itemIdx => $itemInfo) {
 			$exprString = '$' . $itemInfo['name'];
 			$variantConditionTypes = $variantValuesByItem[$itemIdx];
@@ -1041,6 +1044,13 @@ final class ForeachHandler implements StmtHandler
 				if ($conditionType->equals($itemUnionType)) {
 					continue;
 				}
+				$matchingVariantIdxs = [];
+				foreach ($variantConditionTypes as $otherVariantIdx => $otherConditionType) {
+					if ($otherVariantIdx !== $variantIdx && $otherConditionType->isSuperTypeOf($conditionType)->no()) {
+						continue;
+					}
+					$matchingVariantIdxs[] = $otherVariantIdx;
+				}
 				$conditions = [
 					$exprString => ExpressionTypeHolder::createYes(new Variable($itemInfo['name']), $conditionType),
 				];
@@ -1048,7 +1058,11 @@ final class ForeachHandler implements StmtHandler
 					if ($otherIdx === $itemIdx) {
 						continue;
 					}
-					$otherType = $variantValuesByItem[$otherIdx][$variantIdx];
+					$otherTypes = [];
+					foreach ($matchingVariantIdxs as $matchingVariantIdx) {
+						$otherTypes[] = $variantValuesByItem[$otherIdx][$matchingVariantIdx];
+					}
+					$otherType = TypeCombinator::union(...$otherTypes);
 					$holder = new ConditionalExpressionHolder(
 						$conditions,
 						ExpressionTypeHolder::createYes(new Variable($otherInfo['name']), $otherType),

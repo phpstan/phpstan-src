@@ -8,6 +8,8 @@ use function array_values;
 use function count;
 use function get_debug_type;
 use function is_float;
+use function is_int;
+use function is_string;
 use function serialize;
 
 /**
@@ -98,6 +100,13 @@ final class SingleValueUnionRule implements UnionRule
 			$value = $values[0];
 
 			// the type before the value: '1', 1 and 1.0 are different values
+			if (is_int($value)) {
+				return 'i' . $value;
+			}
+			if (is_string($value)) {
+				return 's' . $value;
+			}
+
 			return is_float($value) ? serialize($value) : get_debug_type($value) . ':' . $value;
 		}
 

@@ -30,7 +30,7 @@ final class AbsorbedArrayUnionRule implements UnionRule
 
 		$holders = [];
 		foreach ($types as $i => $type) {
-			if (isset($arrays[$i]) || SingleValueUnionRule::getValueKey($type) !== null) {
+			if (isset($arrays[$i]) || SingleValueUnionRule::isSingleValue($type)) {
 				continue;
 			}
 			$holders[] = $type;

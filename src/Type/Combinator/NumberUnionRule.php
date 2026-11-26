@@ -27,11 +27,22 @@ final class NumberUnionRule implements UnionRule
 
 	public function apply(array $types, array $normalizedGroups): array
 	{
-		$numberTypes = [];
+		$candidates = [];
+		// constants alone stay apart, SingleValueUnionRule merged the equal ones
+		$hasNonConstant = false;
 		foreach ($types as $i => $type) {
 			if (($type->getKindMask() & ~(TypeKind::INT | TypeKind::FLOAT)) !== 0) {
 				continue;
 			}
+			$candidates[$i] = $type;
+			$hasNonConstant = $hasNonConstant || !$type->isConstantScalarValue()->yes();
+		}
+		if (count($candidates) < 2 || !$hasNonConstant) {
+			return $types;
+		}
+
+		$numberTypes = [];
+		foreach ($candidates as $i => $type) {
 			$numbers = $type->toExactNumberSet();
 			if ($numbers === null) {
 				continue;

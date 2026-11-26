@@ -577,6 +577,10 @@ final class TypeCombinator
 		// visited types alive so that their object ids are not reused.
 		$countsByType = [];
 		foreach ($types as $type) {
+			// a constant scalar holds no other type
+			if ($type->isConstantScalarValue()->yes()) {
+				continue;
+			}
 			TypeTraverser::map($type, static function (Type $type, callable $traverse) use (&$constantArrayValuesCount, &$countsByType): Type {
 				$id = spl_object_id($type);
 				if (array_key_exists($id, $countsByType)) {

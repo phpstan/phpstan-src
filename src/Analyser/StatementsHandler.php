@@ -251,10 +251,16 @@ final class StatementsHandler
 			}
 
 			if ($count >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
-				$bodyScope = $prevScope->generalizeWith($bodyScope);
+				$bodyScope = $prevScope->generalizeWith($bodyScope, null, $scope);
 			}
 			$count++;
 		} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
+
+		if ($count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS) {
+			// the limit is only a safety net - a scope still changing after it
+			// is not a fixpoint, so no variable keeps a type
+			$bodyScope = $bodyScope->forgetLoopWrittenVariables(null);
+		}
 
 		return $bodyScope;
 	}
@@ -1082,7 +1088,13 @@ final class StatementsHandler
 				}
 			} elseif ($count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS) {
 				if ($runs === []) {
-					break;
+					// the limit is only a safety net - types still changing
+					// after it are not a fixpoint, so the variables keep none:
+					// the last walk is made with them, and converges
+					foreach ($names as $name) {
+						$types[$name] = [new MixedType(), new MixedType()];
+					}
+					continue;
 				}
 				// the conditional expressions keep changing: the walks go on
 				// without them - what they narrowed the types to is joined with

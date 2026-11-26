@@ -442,6 +442,8 @@ public:
 		zv::Val entryScope = zv::Val::copyOf(zv::Ref(firstEntryScope));
 		zv::Val exitScope;
 		zv::Arr throwPoints = zv::Arr::empty();
+		zv::Val byRefUseNames = getByRefUseNames(byRefUses);
+		if (UNEXPECTED(byRefUseNames.isUndef())) return zv::Val();
 		zend_long count = 0;
 		do {
 			zv::Val passStorage = pt_expression_result_storage_duplicate(storage);
@@ -501,7 +503,7 @@ public:
 			if (UNEXPECTED(!pt_mutating_scope_equals(Z_OBJ_P(nextEntryScope.raw()), Z_OBJ_P(entryScope.raw()), equals))) return zv::Val();
 			if (equals) break;
 			if (count >= PT_CP_GENERALIZE_AFTER_ITERATION_LIMIT) {
-				zv::Val generalized = pt_mutating_scope_generalize_with(Z_OBJ_P(entryScope.raw()), Z_OBJ_P(nextEntryScope.raw()));
+				zv::Val generalized = pt_mutating_scope_generalize_with_names(Z_OBJ_P(entryScope.raw()), Z_OBJ_P(nextEntryScope.raw()), byRefUseNames.raw(), Z_OBJ_P(firstEntryScope));
 				if (UNEXPECTED(generalized.isUndef())) return zv::Val();
 				nextEntryScope = std::move(generalized);
 			}
@@ -514,6 +516,13 @@ public:
 			zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(exitScope.raw()), entryScope.raw());
 			if (UNEXPECTED(merged.isUndef())) return zv::Val();
 			exitScope = std::move(merged);
+			if (count >= PT_CP_LOOP_SCOPE_ITERATIONS_LIMIT) {
+				// the limit is only a safety net - by-ref variables still
+				// changing after it did not converge, so they keep no type
+				zv::Val forgotten = pt_mutating_scope_forget_loop_written_variables(Z_OBJ_P(exitScope.raw()), byRefUseNames.raw());
+				if (UNEXPECTED(forgotten.isUndef())) return zv::Val();
+				exitScope = std::move(forgotten);
+			}
 		}
 
 		zv::Arr pair = zv::Arr::create(2);
@@ -819,6 +828,22 @@ private:
 			closureScope = std::move(assigned);
 		}
 		return closureScope;
+	}
+
+	/* Mirrors the private getByRefUseNames(): array<string, true> of the
+	 * by-ref uses' names; UNDEF = pending exception */
+	static zv::Val getByRefUseNames(zval *byRefUses)
+	{
+		zv::Arr names = zv::Arr::empty();
+		for (zv::ArrayEntry entry : zv::ArrRef(byRefUses)) {
+			zval *var = ptclosure::prop(ptclosure::useVarSite, entry.value().deref().raw(), PT_LC("var"));
+			if (UNEXPECTED(var == NULL)) return zv::Val();
+			zval *name = ptclosure::prop(ptclosure::variableNameSite, var, PT_LC("name"));
+			if (UNEXPECTED(name == NULL)) return zv::Val();
+			if (Z_TYPE_P(name) != IS_STRING) continue;
+			names.set(Z_STR_P(name), zv::Val::boolean(true));
+		}
+		return zv::Val(std::move(names));
 	}
 
 	/* Mirrors the private assignByRefUses(): $scope with the by-ref variables
@@ -1252,6 +1277,9 @@ private:
 		zv::Val replayBodyRecording, replayPassStorage, replayPassResult, replayEntryScope;
 		bool bodyIsReplayable = false;
 		if (UNEXPECTED(!pt_node_scope_resolver_is_replayable_convergence_body(w.nodeScopeResolver, w.expr, stmtsHold.raw(), bodyIsReplayable))) return false;
+		zv::Val byRefUseNames = getByRefUseNames(w.byRefUses.raw());
+		if (UNEXPECTED(byRefUseNames.isUndef())) return false;
+		zv::Val closureEntryScope = zv::Val::copyOf(zv::Ref(w.closureScope()));
 		// a local site's entry already holds every invocation's state: one walk
 		// for the closure's own results (the rules and the inference of what is
 		// inside run in the deferred one)
@@ -1325,11 +1353,18 @@ private:
 			if (UNEXPECTED(!pt_mutating_scope_equals(Z_OBJ_P(w.closureScope()), Z_OBJ_P(prevScope.raw()), equals))) return false;
 			if (equals) break;
 			if (count >= PT_CP_GENERALIZE_AFTER_ITERATION_LIMIT) {
-				zv::Val generalized = pt_mutating_scope_generalize_with(Z_OBJ_P(prevScope.raw()), Z_OBJ_P(w.closureScope()));
+				zv::Val generalized = pt_mutating_scope_generalize_with_names(Z_OBJ_P(prevScope.raw()), Z_OBJ_P(w.closureScope()), byRefUseNames.raw(), Z_OBJ_P(closureEntryScope.raw()));
 				if (UNEXPECTED(generalized.isUndef())) return false;
 				w.setClosureScope(std::move(generalized));
 			}
 			count++;
+		}
+		if (count >= PT_CP_LOOP_SCOPE_ITERATIONS_LIMIT) {
+			// the limit is only a safety net - by-ref variables still changing
+			// after it did not converge, so they keep no type
+			zv::Val forgotten = pt_mutating_scope_forget_loop_written_variables(Z_OBJ_P(w.closureScope()), byRefUseNames.raw());
+			if (UNEXPECTED(forgotten.isUndef())) return false;
+			w.setClosureScope(std::move(forgotten));
 		}
 
 		if (w.closureResultScope.isUndef()) {

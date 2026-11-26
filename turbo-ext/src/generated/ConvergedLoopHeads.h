@@ -11,7 +11,8 @@ namespace ptdecl::ConvergedLoopHeads {
 /* the OBJ_PROP_NUM slots of the instance properties the class declares (the inherited ones come first) */
 namespace slot {
 inline constexpr uint32_t heads = 0;
-inline constexpr uint32_t warmEntries = 1;
+inline constexpr uint32_t entries = 1;
+inline constexpr uint32_t warmEntries = 2;
 } // namespace slot
 
 inline void declareClass(reg::Class &cls)
@@ -23,6 +24,7 @@ inline void declareClass(reg::Class &cls)
 inline void declareProperties(reg::Class &cls)
 {
 	cls.property("heads", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
+	cls.property("entries", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 	cls.property("warmEntries", ZEND_ACC_PRIVATE, reg::PropertyKind::TypedEmptyArray, MAY_BE_ARRAY);
 }
 
@@ -36,7 +38,9 @@ inline constexpr char strings[] =
 	"\0" /* 62 */
 	"warmStart\0" /* 63 */
 	"head\0" /* 73 */
-	"record"; /* 78 */
+	"record\0" /* 78 */
+	"scope\0" /* 85 */
+	"isUnreachable"; /* 91 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* warmStart $loop */
 	reg::packed(20, 0, 31), /* warmStart $entryScope */
@@ -44,6 +48,8 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* record $loop */
 	reg::packed(73, 0, 31), /* record $head */
 	reg::packed(62, MAY_BE_VOID), /* record return */
+	reg::packed(85, 0, 31), /* isUnreachable $scope */
+	reg::packed(62, MAY_BE_BOOL), /* isUnreachable return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -52,6 +58,7 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig warmStart = { { 63 /* warmStart */, 2, 0, 2, 2, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig record = { { 78 /* record */, 2, 3, 2, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isUnreachable = { { 91 /* isUnreachable */, 1, 6, 1, 7, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConvergedLoopHeads

@@ -4,8 +4,9 @@
  *
  * The entry scopes the loops nested in a top-level loop converged to, keyed
  * by the loop node's object id (spl_object_id() is the object handle). The
- * state lives in the twin's $heads slot (generated declarations); the loop
- * handlers use the pt_converged_loop_heads_* direct entries (support.h).
+ * state lives in the twin's $heads, $entries and $warmEntries slots
+ * (generated declarations); the loop handlers use the
+ * pt_converged_loop_heads_* direct entries (support.h).
  */
 
 #include "support.h"
@@ -38,6 +39,10 @@ public:
 	zv::Val warmStart(zval *loop, zval *entryScope) const
 	{
 		zend_ulong id = Z_OBJ_HANDLE_P(loop);
+		zval *entries = OBJ_PROP_NUM(self, slots::entries);
+		SEPARATE_ARRAY(entries);
+		Z_ADDREF_P(entryScope);
+		zend_hash_index_update(Z_ARRVAL_P(entries), id, entryScope);
 		zval *head = zend_hash_index_find(Z_ARRVAL_P(OBJ_PROP_NUM(self, slots::heads)), id);
 		if (head == nullptr) return zv::Val::copyOf(zv::Ref(entryScope));
 
@@ -71,6 +76,12 @@ public:
 	[[nodiscard]] bool record(zval *loop, zval *head) const
 	{
 		zend_ulong id = Z_OBJ_HANDLE_P(loop);
+		// a walk the entry of which is unreachable does not widen the head
+		zval *entry = zend_hash_index_find(Z_ARRVAL_P(OBJ_PROP_NUM(self, slots::entries)), id);
+		bool unreachable;
+		if (UNEXPECTED(!isUnreachable(Z_OBJ_P(entry), unreachable))) return false;
+		if (unreachable) return true;
+
 		zval *previous = zend_hash_index_find(Z_ARRVAL_P(OBJ_PROP_NUM(self, slots::heads)), id);
 		// an unchanged head keeps the warm entry derived from it
 		if (previous != nullptr) {
@@ -91,6 +102,24 @@ public:
 
 private:
 	zend_object *self;
+
+	/* Mirrors isUnreachable(); false = pending exception */
+	[[nodiscard]] static bool isUnreachable(zend_object *scope, bool &out)
+	{
+		out = false;
+		zv::Val definedVariables = pt_mutating_scope_get_defined_variables(scope);
+		if (UNEXPECTED(definedVariables.isUndef())) return false;
+		for (zv::ArrayEntry variable : zv::TableRef(Z_ARRVAL_P(definedVariables.raw()))) {
+			zv::Val variableType = pt_mutating_scope_get_variable_type(scope, Z_STR_P(variable.value().raw()));
+			if (UNEXPECTED(variableType.isUndef())) return false;
+			if (Z_TYPE_P(variableType.raw()) == IS_OBJECT && instanceof_function(Z_OBJCE_P(variableType.raw()), pt_ce_never_type)) {
+				out = true;
+				return true;
+			}
+		}
+
+		return true;
+	}
 };
 
 } // namespace phpstanturbo

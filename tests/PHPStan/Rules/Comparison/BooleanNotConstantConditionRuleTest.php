@@ -200,7 +200,6 @@ class BooleanNotConstantConditionRuleTest extends RuleTestCase
 			[
 				'Negated boolean expression is always true.',
 				13,
-				'Because the type is coming from a PHPDoc, you can turn off this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.',
 			],
 			[
 				'Negated boolean expression is always true.',

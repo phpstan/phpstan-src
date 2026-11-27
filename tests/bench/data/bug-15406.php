@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 11.10B
+ * cycles: 14.41B
+ * memory: 26.97MiB
+ */
+
 namespace Bug15406Bench;
 
 // closures that call themselves by reference, nested eight levels deep

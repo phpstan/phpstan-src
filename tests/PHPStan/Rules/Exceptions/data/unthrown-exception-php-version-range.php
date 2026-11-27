@@ -74,4 +74,85 @@ class Foo
 		}
 	}
 
+	public function arrayChunk(int $length): void
+	{
+		try {
+			array_chunk([1], $length);
+		} catch (\ValueError $e) { // a length below 1 throws on PHP 8
+
+		}
+	}
+
+	public function strSplit(string $s, int $length): void
+	{
+		try {
+			str_split($s, $length);
+		} catch (\ValueError $e) { // a length below 1 throws on PHP 8
+
+		}
+	}
+
+	public function minOfArray(array $a): void
+	{
+		try {
+			min($a);
+		} catch (\ValueError $e) { // an empty array throws on PHP 8
+
+		}
+	}
+
+	public function maxOfArray(array $a): void
+	{
+		try {
+			max($a);
+		} catch (\ValueError $e) { // an empty array throws on PHP 8
+
+		}
+	}
+
+	public function sprintfWithUnknownFormat(string $format): void
+	{
+		try {
+			sprintf($format, 1);
+		} catch (\ValueError $e) { // an invalid format throws on PHP 8
+
+		}
+	}
+
+	public function vprintfWithUnknownFormat(string $format, array $values): void
+	{
+		try {
+			vprintf($format, $values);
+		} catch (\ValueError $e) { // an invalid format throws on PHP 8
+
+		}
+	}
+
+	public function versionCompareWithUnknownOperator(string $operator): void
+	{
+		try {
+			version_compare('1.0', '2.0', $operator);
+		} catch (\ValueError $e) { // an invalid operator throws on PHP 8
+
+		}
+	}
+
+	public function arrayCombine(array $keys, array $values): void
+	{
+		try {
+			array_combine($keys, $values);
+		} catch (\ValueError $e) { // arrays of different sizes throw on PHP 8
+
+		}
+	}
+
+	public function roundWithUnknownMode(float $f, int $mode): void
+	{
+		try {
+			round($f, 0, $mode);
+		} catch (\ValueError $e) { // an invalid mode throws on PHP 8.4+
+
+		}
+	}
+
 }

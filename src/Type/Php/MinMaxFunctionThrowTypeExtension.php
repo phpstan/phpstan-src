@@ -8,8 +8,10 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Type\DynamicFunctionThrowTypeExtension;
+use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VoidType;
+use ValueError;
 use function count;
 use function in_array;
 
@@ -33,7 +35,7 @@ final class MinMaxFunctionThrowTypeExtension implements DynamicFunctionThrowType
 			return $functionReflection->getThrowType();
 		}
 
-		if (!$scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->yes()) {
+		if ($scope->getPhpVersion()->throwsValueErrorForInternalFunctions()->no()) {
 			return new VoidType();
 		}
 
@@ -49,7 +51,7 @@ final class MinMaxFunctionThrowTypeExtension implements DynamicFunctionThrowType
 		$argTypes = [];
 		foreach ($args as $arg) {
 			if ($arg->unpack || $arg->name !== null) {
-				return $functionReflection->getThrowType();
+				return $functionReflection->getThrowType() ?? new ObjectType(ValueError::class);
 			}
 
 			$argTypes[] = $scope->getNativeType($arg->value);
@@ -58,7 +60,7 @@ final class MinMaxFunctionThrowTypeExtension implements DynamicFunctionThrowType
 		$parametersAcceptor = ParametersAcceptorSelector::selectFromTypes($argTypes, $functionReflection->getVariants(), false);
 		$parameters = $parametersAcceptor->getParameters();
 		if (isset($parameters[0]) && $parameters[0]->getType()->isArray()->yes()) {
-			return $functionReflection->getThrowType();
+			return $functionReflection->getThrowType() ?? new ObjectType(ValueError::class);
 		}
 
 		return new VoidType();

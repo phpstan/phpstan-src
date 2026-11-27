@@ -2634,8 +2634,16 @@ final class AssignHandler implements ExprHandler
 			return false;
 		}
 
+		// after `$c = $c->parent` the expression `$c->parent` names the new value's
+		// property, not the one the narrowing was about
+		foreach ((new NodeFinder())->findInstanceOf([$expr], Variable::class) as $readVariable) {
+			if ($readVariable->name === $variableName) {
+				return false;
+			}
+		}
+
 		if ($expr instanceof Variable) {
-			return is_string($expr->name) && $expr->name !== $variableName;
+			return is_string($expr->name);
 		}
 
 		if (

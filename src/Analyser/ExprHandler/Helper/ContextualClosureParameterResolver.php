@@ -18,6 +18,7 @@ use PHPStan\Reflection\Native\NativeParameterReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Reflection\Php\DummyParameter;
+use PHPStan\Reflection\UnpackedArgumentTypes;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
@@ -26,6 +27,8 @@ use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_map;
 use function count;
+use function in_array;
+use function is_string;
 use function max;
 
 /**
@@ -91,42 +94,94 @@ final class ContextualClosureParameterResolver
 			);
 		}
 
+		$parameterHasDefault = [];
+		$parameterIndexes = [];
+		foreach ($expr->params as $param) {
+			if ($param->variadic) {
+				break;
+			}
+			$parameterHasDefault[] = $param->default !== null;
+			if (!($param->var instanceof Node\Expr\Variable) || !is_string($param->var->name)) {
+				continue;
+			}
+			$parameterIndexes[$param->var->name] = count($parameterHasDefault) - 1;
+		}
+
 		$types = [];
 		$nativeTypes = [];
-		$arrayTypes = [];
-		$nativeArrayTypes = [];
-		$hasUnpackedArg = false;
+		$unpacked = [];
+		$namedTypes = [];
+		$namedNativeTypes = [];
 		foreach ($intrinsicArgs as $arg) {
-			$hasUnpackedArg = $hasUnpackedArg || $arg->unpack;
 			$result = $storage?->findExpressionResult($arg->value);
 			$type = $result !== null ? $result->getType() : $this->nodeScopeResolver->readScopeStateOrSyntheticType($arg->value, $scope);
 			$nativeType = $result !== null ? $result->getNativeType() : $this->nodeScopeResolver->readScopeStateOrSyntheticType($arg->value, $scope->doNotTreatPhpDocTypesAsCertain());
-			if ($arrayMapArgs !== null) {
-				$arrayTypes[] = $type;
-				$nativeArrayTypes[] = $nativeType;
-				$type = $type->getIterableValueType();
-				$nativeType = $nativeType->getIterableValueType();
+			if ($arrayMapArgs === null && $arg->name !== null) {
+				// a named arg is not positional: it gives its value to the parameter of that name
+				$index = $parameterIndexes[$arg->name->toString()] ?? null;
+				if ($index !== null) {
+					$namedTypes[$index] = $type;
+					$namedNativeTypes[$index] = $nativeType;
+				}
+				continue;
 			}
 			$types[] = $type;
 			$nativeTypes[] = $nativeType;
+			$unpacked[] = $arg->unpack;
 		}
 
-		// an unpacked arg is one parameter here, so its arrays cannot be told apart
-		if ($arrayMapArgs !== null && !$hasUnpackedArg) {
-			$types = ArrayMapCallbackParameterTypes::addPaddingNull($types, $arrayTypes);
-			$nativeTypes = ArrayMapCallbackParameterTypes::addPaddingNull($nativeTypes, $nativeArrayTypes);
+		return new ClosureParameterTypes(
+			$this->createIntrinsicParameters($types, $unpacked, $arrayMapArgs !== null, $parameterHasDefault, $namedTypes),
+			$this->createIntrinsicParameters($nativeTypes, $unpacked, $arrayMapArgs !== null, $parameterHasDefault, $namedNativeTypes),
+		);
+	}
+
+	/**
+	 * @param list<Type> $argTypes the positional args
+	 * @param list<bool> $unpacked
+	 * @param list<bool> $parameterHasDefault whether each parameter before a variadic one has a default
+	 * @param array<int, Type> $namedTypes the types of the named args, by the index of their parameter
+	 * @return list<DummyParameter>
+	 */
+	private function createIntrinsicParameters(array $argTypes, array $unpacked, bool $isArrayMap, array $parameterHasDefault, array $namedTypes): array
+	{
+		$types = $argTypes;
+		$restType = null;
+		if ($isArrayMap) {
+			[$types, $restType] = ArrayMapCallbackParameterTypes::getCallbackValueTypes($argTypes, $unpacked);
+		} elseif (in_array(true, $unpacked, true)) {
+			[$types, $restType] = UnpackedArgumentTypes::expand($argTypes, $unpacked);
 		}
 
 		$parameters = [];
 		foreach ($types as $type) {
 			$parameters[] = new DummyParameter('item', $type, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 		}
-		$nativeParameters = [];
-		foreach ($nativeTypes as $nativeType) {
-			$nativeParameters[] = new DummyParameter('item', $nativeType, optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+
+		// a parameter after the known positions may get no value, and then has its default
+		$parametersCount = 0;
+		foreach ($parameterHasDefault as $i => $hasDefault) {
+			if ($restType === null && !isset($namedTypes[$i])) {
+				continue;
+			}
+			if (!$hasDefault && !isset($namedTypes[$i])) {
+				continue;
+			}
+			$parametersCount = $i + 1;
+		}
+		for ($i = count($parameters); $i < $parametersCount; $i++) {
+			if (isset($namedTypes[$i])) {
+				$parameters[] = new DummyParameter('item', $namedTypes[$i], optional: false, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
+				continue;
+			}
+			$parameters[] = new DummyParameter('item', $parameterHasDefault[$i] || $restType === null ? new MixedType() : $restType, optional: true, passedByReference: PassedByReference::createNo(), variadic: false, defaultValue: null);
 		}
 
-		return new ClosureParameterTypes($parameters, $nativeParameters);
+		if ($restType !== null) {
+			$parameters[] = new DummyParameter('item', $restType, optional: true, passedByReference: PassedByReference::createNo(), variadic: true, defaultValue: null);
+		}
+
+		return $parameters;
 	}
 
 	/**

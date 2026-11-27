@@ -48,9 +48,15 @@ inline constexpr char strings[] =
 	"nativePassedToType\0" /* 359 */
 	"PHPStan\\Analyser\\ClosureParameterTypes\0" /* 378 */
 	"resolve\0" /* 417 */
-	"resolveExpectedReturnTypes\0" /* 425 */
-	"createPassedToTypeReturnType\0" /* 452 */
-	"createPassedToTypeParameters"; /* 481 */
+	"argTypes\0" /* 425 */
+	"unpacked\0" /* 434 */
+	"isArrayMap\0" /* 443 */
+	"parameterHasDefault\0" /* 454 */
+	"namedTypes\0" /* 474 */
+	"createIntrinsicParameters\0" /* 485 */
+	"resolveExpectedReturnTypes\0" /* 511 */
+	"createPassedToTypeReturnType\0" /* 538 */
+	"createPassedToTypeParameters"; /* 567 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 18), /* __construct $nodeScopeResolver */
 	reg::packed(53, 0, 79), /* __construct $closureSignatureInference */
@@ -64,6 +70,12 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(328, MAY_BE_NULL, 341), /* resolve $passedToType */
 	reg::packed(359, MAY_BE_NULL, 341), /* resolve $nativePassedToType */
 	reg::packed(210, 0, 378), /* resolve return */
+	reg::packed(425, MAY_BE_ARRAY), /* createIntrinsicParameters $argTypes */
+	reg::packed(434, MAY_BE_ARRAY), /* createIntrinsicParameters $unpacked */
+	reg::packed(443, MAY_BE_BOOL), /* createIntrinsicParameters $isArrayMap */
+	reg::packed(454, MAY_BE_ARRAY), /* createIntrinsicParameters $parameterHasDefault */
+	reg::packed(474, MAY_BE_ARRAY), /* createIntrinsicParameters $namedTypes */
+	reg::packed(210, MAY_BE_ARRAY), /* createIntrinsicParameters return */
 	reg::packed(242, 0, 248), /* resolveExpectedReturnTypes $scope */
 	reg::packed(143, 0, 148), /* resolveExpectedReturnTypes $expr */
 	reg::packed(328, MAY_BE_NULL, 341), /* resolveExpectedReturnTypes $passedToType */
@@ -85,9 +97,10 @@ inline constexpr sigtab::Sig __construct = { { 131 /* __construct */, 2, 0, 2, r
 inline constexpr sigtab::Sig hasIntrinsicArgs = { { 211 /* hasIntrinsicArgs */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasOwnContext = { { 228 /* hasOwnContext */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig resolve = { { 417 /* resolve */, 5, 6, 5, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolveExpectedReturnTypes = { { 425 /* resolveExpectedReturnTypes */, 4, 12, 4, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig createPassedToTypeReturnType = { { 452 /* createPassedToTypeReturnType */, 2, 17, 2, 19, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createPassedToTypeParameters = { { 481 /* createPassedToTypeParameters */, 2, 20, 2, 22, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createIntrinsicParameters = { { 485 /* createIntrinsicParameters */, 5, 12, 5, 17, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveExpectedReturnTypes = { { 511 /* resolveExpectedReturnTypes */, 4, 18, 4, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig createPassedToTypeReturnType = { { 538 /* createPassedToTypeReturnType */, 2, 23, 2, 25, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createPassedToTypeParameters = { { 567 /* createPassedToTypeParameters */, 2, 26, 2, 28, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ContextualClosureParameterResolver

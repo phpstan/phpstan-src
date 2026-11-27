@@ -10,6 +10,7 @@ use PHPStan\Node\Expr\TypeExpr;
 use PHPStan\Parser\ArrayMapArgVisitor;
 use PHPStan\Reflection\ArrayMapCallbackParameterTypes;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\UnpackedArgumentTypes;
 use PHPStan\TrinaryLogic;
 use PHPStan\Type\Accessory\AccessoryArrayListType;
 use PHPStan\Type\Accessory\AccessoryType;
@@ -31,6 +32,7 @@ use function array_map;
 use function array_reduce;
 use function array_slice;
 use function count;
+use function in_array;
 
 #[AutowiredService]
 final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -44,6 +46,20 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 	public function getTypeFromFunctionCall(FunctionReflection $functionReflection, FuncCall $functionCall, Scope $scope): ?Type
 	{
 		$args = $functionCall->getArgs();
+		$unpackedArgTypes = null;
+		$unpacked = [];
+		if (count($args) >= 2 && in_array(true, array_map(static fn (Node\Arg $arg) => $arg->unpack, $args), true)) {
+			$arrayArgs = array_slice($args, 1);
+			$unpackedArgTypes = array_map(static fn (Node\Arg $arg) => $scope->getType($arg->value), $arrayArgs);
+			$unpacked = array_map(static fn (Node\Arg $arg) => $arg->unpack, $arrayArgs);
+			[$arrayTypes, $restType] = UnpackedArgumentTypes::expand($unpackedArgTypes, $unpacked);
+			if ($restType === null) {
+				$args = [$args[0], ...array_map(static fn (Type $arrayType) => new Node\Arg(new TypeExpr($arrayType)), $arrayTypes)];
+			} else {
+				$unpackedArgTypes = null;
+			}
+		}
+
 		$numArgs = count($args);
 		if ($numArgs < 2) {
 			return null;
@@ -58,7 +74,10 @@ final class ArrayMapFunctionReturnTypeExtension implements DynamicFunctionReturn
 			$arrayArgs = array_slice($args, 1);
 			$arrayTypes = array_map(static fn (Node\Arg $arg) => $scope->getType($arg->value), $arrayArgs);
 			$callbackValueTypes = array_map(static fn (Type $arrayType) => $arrayType->getIterableValueType(), $arrayTypes);
-			if (count(array_filter($arrayArgs, static fn (Node\Arg $arg) => $arg->unpack)) === 0) {
+			if ($unpackedArgTypes !== null) {
+				// the args are the arrays expand() gave, so the unpacked args decide the padding
+				$callbackValueTypes = ArrayMapCallbackParameterTypes::addPaddingNullToArgs($callbackValueTypes, null, $unpackedArgTypes, $unpacked)[0];
+			} elseif (count(array_filter($arrayArgs, static fn (Node\Arg $arg) => $arg->unpack)) === 0) {
 				$callbackValueTypes = ArrayMapCallbackParameterTypes::addPaddingNull($callbackValueTypes, $arrayTypes);
 			}
 			$valueType = $scope->getType(new FuncCall(

@@ -429,6 +429,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_ARRAY_ALGEBRA */ {"arrayAlgebra", "PHPStan\\Type\\ArrayAlgebra"},
 	/* PT_CLASS_INTERSECTION_ALGEBRA */ {"intersectionAlgebra", "PHPStan\\Type\\IntersectionAlgebra"},
 	/* PT_CLASS_CLASS_STRING_ALGEBRA */ {"classStringAlgebra", "PHPStan\\Type\\ClassStringAlgebra"},
+	/* PT_CLASS_UNPACKED_ARGUMENT_TYPES */ {"unpackedArgumentTypes", "PHPStan\\Reflection\\UnpackedArgumentTypes"},
 };
 
 zend_class_entry *pt_class(int idx)

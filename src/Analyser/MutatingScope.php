@@ -5285,16 +5285,31 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$constantIntegers['b'] = [];
 		}
 
-		// the empty array stays apart, as in TypeCombinator::union(): merged
-		// key by key with the other shapes, it would make all their keys optional
+		// the empty array stays apart from the shapes both sides have, as in
+		// TypeCombinator::union(): merged key by key with them, it would make
+		// all their keys optional. A shape that may be empty, having only
+		// optional keys, holds the empty array already, and then all merge key
+		// by key.
 		$emptyArrays = [];
-		foreach (['a', 'b'] as $key) {
-			foreach ($constantArrays[$key] as $i => $type) {
-				if (!$type->isIterableAtLeastOnce()->no()) {
-					continue;
+		$splitEmptyArrays = true;
+		foreach ($constantArrays as $sideTypes) {
+			$hasNonEmptyShape = false;
+			foreach ($sideTypes as $type) {
+				$isNonEmpty = $type->isIterableAtLeastOnce();
+				$splitEmptyArrays = $splitEmptyArrays && !$isNonEmpty->maybe();
+				$hasNonEmptyShape = $hasNonEmptyShape || $isNonEmpty->yes();
+			}
+			$splitEmptyArrays = $splitEmptyArrays && $hasNonEmptyShape;
+		}
+		if ($splitEmptyArrays) {
+			foreach (['a', 'b'] as $key) {
+				foreach ($constantArrays[$key] as $i => $type) {
+					if (!$type->isIterableAtLeastOnce()->no()) {
+						continue;
+					}
+					$emptyArrays[] = $type;
+					unset($constantArrays[$key][$i]);
 				}
-				$emptyArrays[] = $type;
-				unset($constantArrays[$key][$i]);
 			}
 		}
 

@@ -9825,10 +9825,21 @@ public:
 			constantIntegers.list[1] = zv::Arr::create(0);
 		}
 
-		/* the empty array stays apart, as in TypeCombinator::union(): merged
-		 * key by key with the other shapes, it would make all their keys optional */
+		/* the empty array stays apart from the shapes both sides have (see the
+		 * twin's comment) */
 		zv::Arr emptyArrays = zv::Arr::create(0);
+		bool splitEmptyArrays = true;
 		for (int side = 0; side < 2; side++) {
+			bool hasNonEmptyShape = false;
+			for (auto entry : zv::TableRef(constantArrays.table(side))) {
+				zend_long isIterableAtLeastOnce = typeOpTrinary(entry.value().deref().asObject(), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
+				if (UNEXPECTED(isIterableAtLeastOnce < 0)) return zv::Val();
+				splitEmptyArrays = splitEmptyArrays && isIterableAtLeastOnce != PT_TRI_MAYBE;
+				hasNonEmptyShape = hasNonEmptyShape || isIterableAtLeastOnce == PT_TRI_YES;
+			}
+			splitEmptyArrays = splitEmptyArrays && hasNonEmptyShape;
+		}
+		for (int side = 0; splitEmptyArrays && side < 2; side++) {
 			zv::Arr kept = zv::Arr::create(constantArrays.count(side));
 			for (auto entry : zv::TableRef(constantArrays.table(side))) {
 				zv::Ref type = entry.value().deref();

@@ -31,7 +31,7 @@ class HelloWorld
 			} else {
 				$key = 'Ostatní';
 				assertType('bool', array_key_exists($key, $otherData));
-				assertType('array{}|array{Ostatní: array{abs: int, rel: (float|int)}}', $otherData);
+				assertType('array<\'Ostatní\', array{abs: int, rel: (float|int)}>', $otherData);
 				if (!array_key_exists($key, $otherData)) {
 					$otherData[$key] = [
 						'abs' => 0,

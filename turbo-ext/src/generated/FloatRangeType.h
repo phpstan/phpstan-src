@@ -84,14 +84,15 @@ inline constexpr char strings[] =
 	"toBoolean\0" /* 769 */
 	"PHPStan\\Type\\NumberSet\0" /* 779 */
 	"toNumberSet\0" /* 802 */
-	"toInteger\0" /* 814 */
-	"toString\0" /* 824 */
-	"toAbsoluteNumber\0" /* 833 */
-	"tryIntersect\0" /* 850 */
-	"typeToRemove\0" /* 863 */
-	"tryRemove\0" /* 876 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 886 */
-	"toPhpDocNode"; /* 925 */
+	"toExactNumberSet\0" /* 814 */
+	"toInteger\0" /* 831 */
+	"toString\0" /* 841 */
+	"toAbsoluteNumber\0" /* 850 */
+	"tryIntersect\0" /* 867 */
+	"typeToRemove\0" /* 880 */
+	"tryRemove\0" /* 893 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 903 */
+	"toPhpDocNode"; /* 942 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_DOUBLE), /* __construct $min */
 	reg::packed(4, MAY_BE_DOUBLE), /* __construct $max */
@@ -161,14 +162,15 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(20, MAY_BE_BOOL), /* excludesZero return */
 	reg::packed(20, 0, 744), /* toBoolean return */
 	reg::packed(20, 0, 779), /* toNumberSet return */
+	reg::packed(20, MAY_BE_NULL, 779), /* toExactNumberSet return */
 	reg::packed(20, 0, 21), /* toInteger return */
 	reg::packed(20, 0, 21), /* toString return */
 	reg::packed(20, 0, 21), /* toAbsoluteNumber return */
 	reg::packed(385, 0, 21), /* tryIntersect $otherType */
 	reg::packed(20, MAY_BE_NULL, 21), /* tryIntersect return */
-	reg::packed(863, 0, 21), /* tryRemove $typeToRemove */
+	reg::packed(880, 0, 21), /* tryRemove $typeToRemove */
 	reg::packed(20, MAY_BE_NULL, 21), /* tryRemove return */
-	reg::packed(20, 0, 886), /* toPhpDocNode return */
+	reg::packed(20, 0, 903), /* toPhpDocNode return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -206,12 +208,13 @@ inline constexpr sigtab::Sig getGreaterOrEqualType = { { 709 /* getGreaterOrEqua
 inline constexpr sigtab::Sig excludesZero = { { 731 /* excludesZero */, 0, 65, 0, 65, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig toBoolean = { { 769 /* toBoolean */, 0, 66, 0, 66, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toNumberSet = { { 802 /* toNumberSet */, 0, 67, 0, 67, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toInteger = { { 814 /* toInteger */, 0, 68, 0, 68, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toString = { { 824 /* toString */, 0, 69, 0, 69, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toAbsoluteNumber = { { 833 /* toAbsoluteNumber */, 0, 70, 0, 70, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryIntersect = { { 850 /* tryIntersect */, 1, 71, 1, 72, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryRemove = { { 876 /* tryRemove */, 1, 73, 1, 74, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 925 /* toPhpDocNode */, 0, 75, 0, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toExactNumberSet = { { 814 /* toExactNumberSet */, 0, 68, 0, 68, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toInteger = { { 831 /* toInteger */, 0, 69, 0, 69, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toString = { { 841 /* toString */, 0, 70, 0, 70, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toAbsoluteNumber = { { 850 /* toAbsoluteNumber */, 0, 71, 0, 71, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 867 /* tryIntersect */, 1, 72, 1, 73, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryRemove = { { 893 /* tryRemove */, 1, 74, 1, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 942 /* toPhpDocNode */, 0, 76, 0, 76, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::FloatRangeType

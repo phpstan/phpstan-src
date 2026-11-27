@@ -292,6 +292,8 @@ PT_MINIT_REGISTRATION(pt_register_constant_integer_type)
 
 	cls.method<&ConstantIntegerType::toString>(sigs::toString);
 	cls.method<&ConstantIntegerType::toNumberSet>(sigs::toNumberSet);
+	/* mirrors toExactNumberSet() */
+	cls.method(sigs::toExactNumberSet, pt_type_exact_number_set_handler);
 
 	cls.method<&ConstantIntegerType::toArrayKey>(sigs::toArrayKey);
 	cls.op<PT_OP_TO_ARRAY_KEY, &ConstantIntegerType::toArrayKey>();

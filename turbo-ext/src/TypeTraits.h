@@ -1727,8 +1727,9 @@ void ZEND_FASTCALL pt_type_generic_class_string_try_intersect_handler(INTERNAL_F
 void ZEND_FASTCALL pt_type_constant_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
 void ZEND_FASTCALL pt_type_oversized_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
 
-/* toExactNumberSet() of IntegerType, FloatType and IntegerRangeType:
- * $this->toNumberSet(), which their subclasses override */
+/* toExactNumberSet() of IntegerRangeType, ConstantIntegerType,
+ * ConstantFloatType and FloatRangeType, and of IntegerType and FloatType
+ * themselves (not their other subclasses): $this->toNumberSet() */
 void ZEND_FASTCALL pt_type_exact_number_set_handler(INTERNAL_FUNCTION_PARAMETERS);
 
 /* }}} */

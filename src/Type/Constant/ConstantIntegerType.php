@@ -41,6 +41,11 @@ class ConstantIntegerType extends IntegerType implements ConstantScalarType
 		return new NumberSet([[$this->value, $this->value]], [], false);
 	}
 
+	public function toExactNumberSet(): ?NumberSet
+	{
+		return $this->toNumberSet();
+	}
+
 	public function getValue(): int
 	{
 		return $this->value;

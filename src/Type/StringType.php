@@ -285,9 +285,10 @@ class StringType implements Type
 		return TrinaryLogic::createMaybe();
 	}
 
+	/** A subclass may hold strings the cells do not describe, so only string itself holds them all. */
 	public function getStringRefinement(): ?int
 	{
-		return StringRefinement::ALL;
+		return static::class === self::class ? StringRefinement::ALL : null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic

@@ -431,6 +431,11 @@ class FloatRangeType extends FloatType implements CompoundType
 		return new NumberSet([], [[$this->min, $this->max]], false);
 	}
 
+	public function toExactNumberSet(): ?NumberSet
+	{
+		return $this->toNumberSet();
+	}
+
 	public function toInteger(): Type
 	{
 		// casting a float outside of the int range is undefined

@@ -41,44 +41,46 @@ inline constexpr char strings[] =
 	"\0" /* 18 */
 	"PHPStan\\Type\\NumberSet\0" /* 19 */
 	"toNumberSet\0" /* 42 */
-	"getValue\0" /* 54 */
-	"type\0" /* 63 */
-	"PHPStan\\Type\\Type\0" /* 68 */
-	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 86 */
-	"isSuperTypeOf\0" /* 119 */
-	"level\0" /* 133 */
-	"PHPStan\\Type\\VerbosityLevel\0" /* 139 */
-	"describe\0" /* 167 */
-	"toFloat\0" /* 176 */
-	"toBitwiseNotType\0" /* 184 */
-	"toAbsoluteNumber\0" /* 201 */
-	"toString\0" /* 218 */
-	"toArrayKey\0" /* 227 */
-	"strictTypes\0" /* 238 */
-	"toCoercedArgumentType\0" /* 250 */
-	"precision\0" /* 272 */
-	"PHPStan\\Type\\GeneralizePrecision\0" /* 282 */
-	"generalize\0" /* 315 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 326 */
-	"toPhpDocNode"; /* 365 */
+	"toExactNumberSet\0" /* 54 */
+	"getValue\0" /* 71 */
+	"type\0" /* 80 */
+	"PHPStan\\Type\\Type\0" /* 85 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 103 */
+	"isSuperTypeOf\0" /* 136 */
+	"level\0" /* 150 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 156 */
+	"describe\0" /* 184 */
+	"toFloat\0" /* 193 */
+	"toBitwiseNotType\0" /* 201 */
+	"toAbsoluteNumber\0" /* 218 */
+	"toString\0" /* 235 */
+	"toArrayKey\0" /* 244 */
+	"strictTypes\0" /* 255 */
+	"toCoercedArgumentType\0" /* 267 */
+	"precision\0" /* 289 */
+	"PHPStan\\Type\\GeneralizePrecision\0" /* 299 */
+	"generalize\0" /* 332 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 343 */
+	"toPhpDocNode"; /* 382 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_LONG), /* __construct $value */
 	reg::packed(18, 0, 19), /* toNumberSet return */
+	reg::packed(18, MAY_BE_NULL, 19), /* toExactNumberSet return */
 	reg::packed(18, MAY_BE_LONG), /* getValue return */
-	reg::packed(63, 0, 68), /* isSuperTypeOf $type */
-	reg::packed(18, 0, 86), /* isSuperTypeOf return */
-	reg::packed(133, 0, 139), /* describe $level */
+	reg::packed(80, 0, 85), /* isSuperTypeOf $type */
+	reg::packed(18, 0, 103), /* isSuperTypeOf return */
+	reg::packed(150, 0, 156), /* describe $level */
 	reg::packed(18, MAY_BE_STRING), /* describe return */
-	reg::packed(18, 0, 68), /* toFloat return */
-	reg::packed(18, 0, 68), /* toBitwiseNotType return */
-	reg::packed(18, 0, 68), /* toAbsoluteNumber return */
-	reg::packed(18, 0, 68), /* toString return */
-	reg::packed(18, 0, 68), /* toArrayKey return */
-	reg::packed(238, MAY_BE_BOOL), /* toCoercedArgumentType $strictTypes */
-	reg::packed(18, 0, 68), /* toCoercedArgumentType return */
-	reg::packed(272, 0, 282), /* generalize $precision */
-	reg::packed(18, 0, 68), /* generalize return */
-	reg::packed(18, 0, 326), /* toPhpDocNode return */
+	reg::packed(18, 0, 85), /* toFloat return */
+	reg::packed(18, 0, 85), /* toBitwiseNotType return */
+	reg::packed(18, 0, 85), /* toAbsoluteNumber return */
+	reg::packed(18, 0, 85), /* toString return */
+	reg::packed(18, 0, 85), /* toArrayKey return */
+	reg::packed(255, MAY_BE_BOOL), /* toCoercedArgumentType $strictTypes */
+	reg::packed(18, 0, 85), /* toCoercedArgumentType return */
+	reg::packed(289, 0, 299), /* generalize $precision */
+	reg::packed(18, 0, 85), /* generalize return */
+	reg::packed(18, 0, 343), /* toPhpDocNode return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -87,17 +89,18 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 6 /* __construct */, 1, 0, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toNumberSet = { { 42 /* toNumberSet */, 0, 1, 0, 1, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getValue = { { 54 /* getValue */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isSuperTypeOf = { { 119 /* isSuperTypeOf */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig describe = { { 167 /* describe */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toFloat = { { 176 /* toFloat */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toBitwiseNotType = { { 184 /* toBitwiseNotType */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toAbsoluteNumber = { { 201 /* toAbsoluteNumber */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toString = { { 218 /* toString */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toArrayKey = { { 227 /* toArrayKey */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toCoercedArgumentType = { { 250 /* toCoercedArgumentType */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig generalize = { { 315 /* generalize */, 1, 14, 1, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 365 /* toPhpDocNode */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toExactNumberSet = { { 54 /* toExactNumberSet */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getValue = { { 71 /* getValue */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 136 /* isSuperTypeOf */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describe = { { 184 /* describe */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toFloat = { { 193 /* toFloat */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toBitwiseNotType = { { 201 /* toBitwiseNotType */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toAbsoluteNumber = { { 218 /* toAbsoluteNumber */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toString = { { 235 /* toString */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toArrayKey = { { 244 /* toArrayKey */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toCoercedArgumentType = { { 267 /* toCoercedArgumentType */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig generalize = { { 332 /* generalize */, 1, 15, 1, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 382 /* toPhpDocNode */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantIntegerType

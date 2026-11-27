@@ -959,6 +959,8 @@ PT_MINIT_REGISTRATION(pt_register_float_range_type)
 	});
 
 	cls.method<&FloatRangeType::toNumberSet>(sigs::toNumberSet);
+	/* mirrors toExactNumberSet() */
+	cls.method(sigs::toExactNumberSet, pt_type_exact_number_set_handler);
 	cls.method<&FloatRangeType::describe, zp::Obj>(sigs::describe);
 	cls.op<PT_OP_DESCRIBE, &FloatRangeType::describe>();
 

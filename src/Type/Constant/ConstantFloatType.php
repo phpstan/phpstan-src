@@ -136,6 +136,11 @@ class ConstantFloatType extends FloatType implements ConstantScalarType
 		return new NumberSet([], [[$this->value, $this->value]], false);
 	}
 
+	public function toExactNumberSet(): ?NumberSet
+	{
+		return $this->toNumberSet();
+	}
+
 	public function toInteger(): Type
 	{
 		return new ConstantIntegerType($this->toIntegerValue());

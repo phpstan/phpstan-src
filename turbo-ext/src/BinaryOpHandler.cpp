@@ -230,6 +230,11 @@ NodeProp pt_boh_pre_inc_var = PT_NODE_PROP(PT_CLASS_PRE_INC, "var");
 NodeProp pt_boh_pre_dec_var = PT_NODE_PROP(PT_CLASS_PRE_DEC, "var");
 NodeProp pt_boh_post_inc_var = PT_NODE_PROP(PT_CLASS_POST_INC, "var");
 NodeProp pt_boh_post_dec_var = PT_NODE_PROP(PT_CLASS_POST_DEC, "var");
+NodeProp pt_boh_arg_unpack = PT_NODE_PROP(PT_CLASS_ARG, "unpack");
+NodeProp pt_boh_property_fetch_var = PT_NODE_PROP(PT_CLASS_PROPERTY_FETCH, "var");
+NodeProp pt_boh_property_fetch_name = PT_NODE_PROP(PT_CLASS_PROPERTY_FETCH, "name");
+NodeProp pt_boh_array_dim_fetch_var = PT_NODE_PROP(PT_CLASS_ARRAY_DIM_FETCH, "var");
+NodeProp pt_boh_array_dim_fetch_dim = PT_NODE_PROP(PT_CLASS_ARRAY_DIM_FETCH, "dim");
 
 /* a FuncCall whose name is a Name: $call->name's (string) cast, and the
  * call's getArgs() read on first use (callArgs()) */
@@ -815,6 +820,144 @@ public:
 		return pt_specified_types_union_with(Z_OBJ_P(specifiedTypes.raw()), formTypes.raw());
 	}
 
+	/* Mirrors rememberRelationalFact() */
+	zv::Val rememberRelationalFact(zv::Val specifiedTypes, zval *expr, zval *leftResult, zval *rightResult, zval *context, bool nativeTypesPromoted) const
+	{
+		bool contextTrue, contextFalse;
+		if (UNEXPECTED(!pt_type_specifier_context_true(Z_OBJ_P(context), contextTrue))) return zv::Val();
+		if (UNEXPECTED(!pt_type_specifier_context_false(Z_OBJ_P(context), contextFalse))) return zv::Val();
+		if (contextTrue == contextFalse) return specifiedTypes;
+
+		int kind = kindOf(expr);
+		if (UNEXPECTED(kind < 0)) return zv::Val();
+		bool isIdentity = kind == KIND_IDENTICAL || kind == KIND_NOT_IDENTICAL;
+		if (!isIdentity && kind != KIND_SMALLER && kind != KIND_SMALLER_OR_EQUAL && kind != KIND_GREATER && kind != KIND_GREATER_OR_EQUAL) {
+			return specifiedTypes;
+		}
+
+		/* an identity relates the operands only when it holds */
+		if (isIdentity && contextTrue != (kind == KIND_IDENTICAL)) return specifiedTypes;
+		zval *left = ptoh::binaryOpLeft(expr);
+		if (UNEXPECTED(left == NULL)) return zv::Val();
+		int leftRelatable = isRelatableOperand(left);
+		if (UNEXPECTED(leftRelatable < 0)) return zv::Val();
+		if (!leftRelatable) return specifiedTypes;
+		zval *right = ptoh::binaryOpRight(expr);
+		if (UNEXPECTED(right == NULL)) return zv::Val();
+		int rightRelatable = isRelatableOperand(right);
+		if (UNEXPECTED(rightRelatable < 0)) return zv::Val();
+		if (!rightRelatable) return specifiedTypes;
+
+		zv::Val leftType = nativeTypesPromoted ? pt_expression_result_get_native_type(leftResult) : pt_expression_result_get_type(leftResult);
+		if (UNEXPECTED(leftType.isUndef())) return zv::Val();
+		zv::Val rightType = nativeTypesPromoted ? pt_expression_result_get_native_type(rightResult) : pt_expression_result_get_type(rightResult);
+		if (UNEXPECTED(rightType.isUndef())) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(leftType.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getFiniteTypes() on %s", zend_zval_value_name(leftType.raw()));
+			return zv::Val();
+		}
+		zv::Val leftFinite = pt_type_call(Z_OBJ_P(leftType.raw()), PT_LC("getfinitetypes"), 0, NULL);
+		if (UNEXPECTED(leftFinite.isUndef())) return zv::Val();
+		if (Z_TYPE_P(leftFinite.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(leftFinite.raw())) == 1) return specifiedTypes;
+		if (UNEXPECTED(Z_TYPE_P(rightType.raw()) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getFiniteTypes() on %s", zend_zval_value_name(rightType.raw()));
+			return zv::Val();
+		}
+		zv::Val rightFinite = pt_type_call(Z_OBJ_P(rightType.raw()), PT_LC("getfinitetypes"), 0, NULL);
+		if (UNEXPECTED(rightFinite.isUndef())) return zv::Val();
+		if (Z_TYPE_P(rightFinite.raw()) == IS_ARRAY && zend_hash_num_elements(Z_ARRVAL_P(rightFinite.raw())) == 1) return specifiedTypes;
+		if (!isIdentity) {
+			zend_long leftIsInteger = pt_type_op_trinary(Z_OBJ_P(leftType.raw()), PT_OP_IS_INTEGER, 0, NULL);
+			if (UNEXPECTED(leftIsInteger < 0)) return zv::Val();
+			if (leftIsInteger != PT_TRI_YES) return specifiedTypes;
+			zend_long rightIsInteger = pt_type_op_trinary(Z_OBJ_P(rightType.raw()), PT_OP_IS_INTEGER, 0, NULL);
+			if (UNEXPECTED(rightIsInteger < 0)) return zv::Val();
+			if (rightIsInteger != PT_TRI_YES) return specifiedTypes;
+		}
+
+		zend_string *exprKey = pt_expr_printer_print(OBJ_PROP_NUM(self, slots::exprPrinter), Z_OBJ_P(expr));
+		if (UNEXPECTED(exprKey == NULL)) return zv::Val();
+		zv::Str exprKeyHold = zv::Str::adopt(exprKey);
+		zv::Arr entry = zv::Arr::create(2);
+		entry.push(zv::Ref(expr));
+		entry.push(ptoh::constantBoolean(contextTrue));
+		zv::Arr sureTypes = zv::Arr::create(1);
+		sureTypes.set(exprKey, zv::Val(std::move(entry)));
+		zv::Val sureTypesHold = zv::Val(std::move(sureTypes));
+		zv::Val factTypes = pt_specified_types_new(sureTypesHold.raw(), NULL);
+		if (UNEXPECTED(factTypes.isUndef())) return zv::Val();
+		return pt_specified_types_union_with(Z_OBJ_P(specifiedTypes.raw()), factTypes.raw());
+	}
+
+	/* Mirrors isRelatableOperand(): a variable, a property or offset fetched
+	 * from one, or its count(); -1 = pending exception */
+	static int isRelatableOperand(zval *expr)
+	{
+		NamedCall call;
+		int isCall = namedCall(expr, true, call);
+		if (UNEXPECTED(isCall < 0)) return -1;
+		int isCount = callMatches(isCall, call, { "count", "sizeof" }, ARITY_EXACTLY, 1);
+		if (UNEXPECTED(isCount < 0)) return -1;
+		if (isCount) {
+			zval *args = callArgs(call);
+			if (UNEXPECTED(args == NULL)) return -1;
+			zval *first = zend_hash_index_find(Z_ARRVAL_P(args), 0);
+			if (first != NULL) ZVAL_DEREF(first);
+			if (UNEXPECTED(first == NULL || Z_TYPE_P(first) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Attempt to read property \"unpack\" on null");
+				return -1;
+			}
+			zval *unpack = ptoh::operand(pt_boh_arg_unpack, first);
+			if (UNEXPECTED(unpack == NULL)) return -1;
+			if (!zend_is_true(unpack)) {
+				zval *value = firstArgValue(call);
+				if (UNEXPECTED(value == NULL)) return -1;
+				expr = value;
+			}
+		}
+
+		while (true) {
+			int isVariable = ptoh::isInstance(expr, PT_CLASS_VARIABLE);
+			if (UNEXPECTED(isVariable < 0)) return -1;
+			if (isVariable) {
+				zval *name = ptoh::operand(pt_boh_variable_name, expr);
+				if (UNEXPECTED(name == NULL)) return -1;
+				return Z_TYPE_P(name) == IS_STRING ? 1 : 0;
+			}
+			int isPropertyFetch = ptoh::isInstance(expr, PT_CLASS_PROPERTY_FETCH);
+			if (UNEXPECTED(isPropertyFetch < 0)) return -1;
+			if (isPropertyFetch) {
+				zval *name = ptoh::operand(pt_boh_property_fetch_name, expr);
+				if (UNEXPECTED(name == NULL)) return -1;
+				int isIdentifier = ptoh::isInstance(name, PT_CLASS_IDENTIFIER);
+				if (UNEXPECTED(isIdentifier < 0)) return -1;
+				if (!isIdentifier) return 0;
+				expr = ptoh::operand(pt_boh_property_fetch_var, expr);
+				if (UNEXPECTED(expr == NULL)) return -1;
+				continue;
+			}
+			int isDimFetch = ptoh::isInstance(expr, PT_CLASS_ARRAY_DIM_FETCH);
+			if (UNEXPECTED(isDimFetch < 0)) return -1;
+			if (isDimFetch) {
+				zval *dim = ptoh::operand(pt_boh_array_dim_fetch_dim, expr);
+				if (UNEXPECTED(dim == NULL)) return -1;
+				if (Z_TYPE_P(dim) == IS_NULL) return 0;
+				int dimIsScalar = ptoh::isInstance(dim, PT_CLASS_SCALAR);
+				if (UNEXPECTED(dimIsScalar < 0)) return -1;
+				if (!dimIsScalar) {
+					int dimIsVariable = ptoh::isInstance(dim, PT_CLASS_VARIABLE);
+					if (UNEXPECTED(dimIsVariable < 0)) return -1;
+					if (!dimIsVariable) return 0;
+				}
+				expr = ptoh::operand(pt_boh_array_dim_fetch_var, expr);
+				if (UNEXPECTED(expr == NULL)) return -1;
+				continue;
+			}
+
+			return 0;
+		}
+	}
+
 	/* TypeCombinator::remove($type, new ConstantFloatType(NAN))->equals($type) —
 	 * NAN is the one float that no ordering comparison places, so narrowing by
 	 * such a comparison is sound only for an operand that cannot hold it, and
@@ -1237,6 +1380,8 @@ private:
 			scope = scopeHold.raw();
 		}
 		specifiedTypes = handler.specifyRememberedComparisonForms(std::move(specifiedTypes), scope, &captures[1], &captures[2], &captures[3], &argv[0]);
+		if (UNEXPECTED(specifiedTypes.isUndef())) return;
+		specifiedTypes = handler.rememberRelationalFact(std::move(specifiedTypes), &captures[1], &captures[2], &captures[3], &argv[0], nativeTypesPromoted);
 		if (UNEXPECTED(specifiedTypes.isUndef())) return;
 		specifiedTypes.intoReturnValue(return_value);
 	}
@@ -2009,6 +2154,23 @@ PT_MINIT_REGISTRATION(pt_register_binary_op_handler)
 		zval *specifiedTypes, *scope, *expr, *leftResult, *rightResult, *context;
 		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Obj>(execute_data, specifiedTypes, scope, expr, leftResult, rightResult, context)) RETURN_THROWS();
 		PT_RETURN_VAL(BinaryOpHandler(Z_OBJ_P(ZEND_THIS)).specifyRememberedComparisonForms(zv::Val::copyOf(zv::Ref(specifiedTypes)), scope, expr, leftResult, rightResult, context));
+	});
+
+	cls.method(sigs::rememberRelationalFact, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *specifiedTypes, *expr, *leftResult, *rightResult, *context;
+		bool nativeTypesPromoted;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Obj, zp::Bool>(execute_data, specifiedTypes, expr, leftResult, rightResult, context, nativeTypesPromoted)) RETURN_THROWS();
+		PT_RETURN_VAL(BinaryOpHandler(Z_OBJ_P(ZEND_THIS)).rememberRelationalFact(zv::Val::copyOf(zv::Ref(specifiedTypes)), expr, leftResult, rightResult, context, nativeTypesPromoted));
+	});
+
+	cls.method(sigs::isRelatableOperand, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expr;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT(expr)
+		ZEND_PARSE_PARAMETERS_END();
+		int relatable = BinaryOpHandler::isRelatableOperand(expr);
+		if (UNEXPECTED(relatable < 0)) RETURN_THROWS();
+		RETURN_BOOL(relatable != 0);
 	});
 
 	cls.method(sigs::getEquivalentComparisonForms, [](INTERNAL_FUNCTION_PARAMETERS) {

@@ -224,12 +224,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 		$expectedErrorsString = implode("\n", $expectedErrors) . "\n";
 		$actualErrorsString = implode("\n", $actualErrors) . "\n";
 
-		if (count($delayedErrors) === 0) {
-			$this->assertSame($expectedErrorsString, $actualErrorsString);
-			return;
-		}
-
-		if ($expectedErrorsString === $actualErrorsString) {
+		if (count($delayedErrors) === 0 || $expectedErrorsString === $actualErrorsString) {
 			$this->assertSame($expectedErrorsString, $actualErrorsString);
 			return;
 		}

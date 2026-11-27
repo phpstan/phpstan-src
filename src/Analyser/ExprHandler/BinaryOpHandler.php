@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\ExprHandler;
 
 use Countable;
 use DivisionByZeroError;
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
@@ -733,7 +734,9 @@ final class BinaryOpHandler implements ExprHandler
 				$specifiedTypes = $specifyTypesCallback($context, $nativeTypesPromoted);
 				$scope = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
 
-				return $this->specifyRememberedComparisonForms($specifiedTypes, $scope, $expr, $leftResult, $rightResult, $context);
+				$specifiedTypes = $this->specifyRememberedComparisonForms($specifiedTypes, $scope, $expr, $leftResult, $rightResult, $context);
+
+				return $this->rememberRelationalFact($specifiedTypes, $expr, $leftResult, $rightResult, $context, $nativeTypesPromoted);
 			},
 			dependencies: Dependencies::merge($leftResult->getDependencies(), $rightResult->getDependencies()),
 		);
@@ -806,6 +809,81 @@ final class BinaryOpHandler implements ExprHandler
 		}
 
 		return $specifiedTypes->unionWith(new SpecifiedTypes($sureTypes, []));
+	}
+
+	/**
+	 * Narrowing `$a === $b` or an integer `$a < $b` also keeps its verdict in
+	 * the scope, which narrows each operand again when the other one narrows
+	 * later (MutatingScope::applySpecifiedTypes()). An operand with a constant
+	 * value relates to nothing - its own narrowing is all there is.
+	 */
+	private function rememberRelationalFact(SpecifiedTypes $specifiedTypes, BinaryOp $expr, ExpressionResult $leftResult, ExpressionResult $rightResult, TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes
+	{
+		if ($context->true() === $context->false()) {
+			return $specifiedTypes;
+		}
+
+		$isIdentity = $expr instanceof BinaryOp\Identical || $expr instanceof BinaryOp\NotIdentical;
+		if (
+			!$isIdentity
+			&& !$expr instanceof BinaryOp\Smaller
+			&& !$expr instanceof BinaryOp\SmallerOrEqual
+			&& !$expr instanceof BinaryOp\Greater
+			&& !$expr instanceof BinaryOp\GreaterOrEqual
+		) {
+			return $specifiedTypes;
+		}
+
+		// an identity relates the operands only when it holds
+		if ($isIdentity && $context->true() !== $expr instanceof BinaryOp\Identical) {
+			return $specifiedTypes;
+		}
+		if (!self::isRelatableOperand($expr->left) || !self::isRelatableOperand($expr->right)) {
+			return $specifiedTypes;
+		}
+		$leftType = $nativeTypesPromoted ? $leftResult->getNativeType() : $leftResult->getType();
+		$rightType = $nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType();
+		if (count($leftType->getFiniteTypes()) === 1 || count($rightType->getFiniteTypes()) === 1) {
+			return $specifiedTypes;
+		}
+		if (!$isIdentity && (!$leftType->isInteger()->yes() || !$rightType->isInteger()->yes())) {
+			return $specifiedTypes;
+		}
+
+		return $specifiedTypes->unionWith(new SpecifiedTypes([
+			$this->exprPrinter->printExpr($expr) => [$expr, new ConstantBooleanType($context->true())],
+		], []));
+	}
+
+	/** A variable, a property or offset fetched from one, or its count(). */
+	private static function isRelatableOperand(Expr $expr): bool
+	{
+		if (
+			$expr instanceof Expr\FuncCall
+			&& $expr->name instanceof Name
+			&& in_array($expr->name->toLowerString(), ['count', 'sizeof'], true)
+			&& !$expr->isPartialFunctionApplication()
+			&& count($expr->getArgs()) === 1
+			&& !$expr->getArgs()[0]->unpack
+		) {
+			$expr = $expr->getArgs()[0]->value;
+		}
+
+		while (true) {
+			if ($expr instanceof Variable) {
+				return is_string($expr->name);
+			}
+			if ($expr instanceof Expr\PropertyFetch && $expr->name instanceof Node\Identifier) {
+				$expr = $expr->var;
+				continue;
+			}
+			if ($expr instanceof Expr\ArrayDimFetch && $expr->dim !== null && ($expr->dim instanceof Node\Scalar || $expr->dim instanceof Variable)) {
+				$expr = $expr->var;
+				continue;
+			}
+
+			return false;
+		}
 	}
 
 	/**

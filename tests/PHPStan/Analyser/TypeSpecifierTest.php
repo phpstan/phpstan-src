@@ -495,7 +495,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					new Variable('foo'),
 					new Variable('bar'),
 				),
-				['$foo' => 'Bar', '$bar' => 'mixed'], // could be '$bar' => 'Bar'
+				['$foo' => 'Bar', '$bar' => 'mixed', '$foo === $bar' => 'true'], // could be '$bar' => 'Bar'
 				[],
 			],
 			[

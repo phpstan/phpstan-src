@@ -404,6 +404,9 @@ static zval *pt_ms_service_of(zval *services, uint32_t which)
 /* private const GENERALIZED_ARRAY_DEPTH_LIMIT */
 #define PT_MS_GENERALIZED_ARRAY_DEPTH_LIMIT 2
 
+/* private const RELATIONAL_FACT_ROUNDS_LIMIT */
+#define PT_MS_RELATIONAL_FACT_ROUNDS_LIMIT 4
+
 /* the twin's private CUSTOM_SERIALIZATION_METHODS (the serialization check
  * walks the same names), a persistent list built once at module startup */
 static const pt_superglobal_name pt_ms_custom_serialization_methods[] = {
@@ -7705,6 +7708,296 @@ public:
 		return true;
 	}
 
+	/* applySpecifiedTypes()' rounds over the tracked comparison verdicts;
+	 * false = pending exception */
+	[[nodiscard]] bool applyRelationalFacts(zv::Arr &specifiedExpressions, zv::Val &scope, zend_object *&scopeObject, bool &scopeIsWorkingCopy)
+	{
+		zv::Arr changed = zv::Arr::copyOfTable(specifiedExpressions.table());
+		for (int round = 0; zend_hash_num_elements(changed.table()) > 0 && round < PT_MS_RELATIONAL_FACT_ROUNDS_LIMIT; round++) {
+			zval changedZv;
+			ZVAL_COPY_VALUE(&changedZv, changed.raw());
+			zv::Val derived = otherPrivate(scopeObject, PT_LC("derivefromrelationalfacts"), 1, &changedZv, [&](MutatingScope &other) {
+				return other.deriveFromRelationalFacts(changed.table());
+			});
+			if (UNEXPECTED(derived.isUndef())) return false;
+			if (UNEXPECTED(Z_TYPE_P(derived.raw()) != IS_ARRAY)) {
+				zend_throw_error(NULL, "phpstan_turbo: deriveFromRelationalFacts() did not answer with an array");
+				return false;
+			}
+			zv::Arr derivedTypes = zv::Arr::copyOfTable(Z_ARRVAL_P(derived.raw()));
+			changed = zv::Arr::create(0);
+			while (zend_hash_num_elements(derivedTypes.table()) > 0) {
+				zv::Str exprString;
+				zv::Val pair;
+				for (auto entry : zv::TableRef(derivedTypes.table())) {
+					zend_string *skey = entry.stringKeyOrNull();
+					exprString = zv::Str::adopt(skey != NULL ? zend_string_copy(skey) : zend_long_to_str((zend_long) entry.indexKey()));
+					pair = zv::Val::copyOf(entry.value().deref());
+					break;
+				}
+				zend_symtable_del(derivedTypes.table(), exprString.get());
+				zval *exprZv = Z_TYPE_P(pair.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(pair.raw()), 0) : NULL;
+				zval *type = Z_TYPE_P(pair.raw()) == IS_ARRAY ? zend_hash_index_find(Z_ARRVAL_P(pair.raw()), 1) : NULL;
+				if (UNEXPECTED(exprZv == NULL || type == NULL || Z_TYPE_P(exprZv) != IS_OBJECT)) {
+					zend_throw_error(NULL, "phpstan_turbo: deriveFromRelationalFacts() answered an unexpected shape");
+					return false;
+				}
+				zend_object *expr = Z_OBJ_P(exprZv);
+
+				HashTable *table = otherTable(scopeObject, PT_MS_PROP_EXPRESSION_TYPES, PT_LC("expressionTypes"));
+				if (UNEXPECTED(table == NULL)) return false;
+				zval *tracked = zend_symtable_find(table, exprString.get());
+				if (tracked == NULL) continue;
+				zend_long certainty = holderCertainty(zv::Ref(tracked));
+				if (UNEXPECTED(certainty < 0)) return false;
+				if (certainty != PT_TRI_YES) continue;
+				zv::Val trackedType = holderType(zv::Ref(tracked));
+				if (UNEXPECTED(trackedType.isUndef())) return false;
+				zv::Val newType = intersectTypes(type, trackedType.raw());
+				if (UNEXPECTED(newType.isUndef())) return false;
+				bool same;
+				if (UNEXPECTED(!typeEquals(newType.raw(), trackedType.raw(), same))) return false;
+				if (same) continue;
+
+				zv::Val newNativeType;
+				{
+					HashTable *nativeTable = otherTable(scopeObject, PT_MS_PROP_NATIVE_EXPRESSION_TYPES, PT_LC("nativeExpressionTypes"));
+					if (UNEXPECTED(nativeTable == NULL)) return false;
+					zval *trackedNative = zend_symtable_find(nativeTable, exprString.get());
+					zend_long nativeCertainty = PT_TRI_NO;
+					if (trackedNative != NULL) {
+						nativeCertainty = holderCertainty(zv::Ref(trackedNative));
+						if (UNEXPECTED(nativeCertainty < 0)) return false;
+					}
+					if (nativeCertainty == PT_TRI_YES) {
+						zv::Val trackedNativeType = holderType(zv::Ref(trackedNative));
+						if (UNEXPECTED(trackedNativeType.isUndef())) return false;
+						newNativeType = intersectTypes(type, trackedNativeType.raw());
+						if (UNEXPECTED(newNativeType.isUndef())) return false;
+					} else {
+						newNativeType = zv::Val::copyOf(zv::Ref(type));
+					}
+				}
+				if (UNEXPECTED(!specifyInBatch(expr, newType.raw(), newNativeType.raw(), scope, scopeObject, scopeIsWorkingCopy))) return false;
+				if (UNEXPECTED(!recordSpecifiedExpression(changed, scopeObject, exprString.get(), expr, newType.raw()))) return false;
+				if (UNEXPECTED(!recordSpecifiedExpression(specifiedExpressions, scopeObject, exprString.get(), expr, newType.raw()))) return false;
+
+				/* a count() that cannot be 0 any more makes its array non-empty */
+				zval *countedExpr = NULL;
+				if (UNEXPECTED(!countCallArgument(exprZv, countedExpr))) return false;
+				if (countedExpr == NULL) continue;
+				zval zero;
+				if (UNEXPECTED(!pt_constant_integer_type_new(&zero, 0))) return false;
+				zv::Val zeroHold = zv::Val::adopt(zero);
+				bool zeroExcluded;
+				if (UNEXPECTED(!isSuperTypeOfNo(Z_OBJ_P(zeroHold.raw()), newType.raw(), zeroExcluded))) return false;
+				if (!zeroExcluded) continue;
+				zv::Val countedKey = pt_type_call(scopeObject, PT_LC("getnodekey"), 1, countedExpr);
+				if (UNEXPECTED(countedKey.isUndef())) return false;
+				if (UNEXPECTED(Z_TYPE_P(countedKey.raw()) != IS_STRING)) {
+					zend_type_error("MutatingScope::getNodeKey(): Return value must be of type string, %s returned", zend_zval_value_name(countedKey.raw()));
+					return false;
+				}
+				zval nonEmpty;
+				if (UNEXPECTED(!pt_non_empty_array_type_new(&nonEmpty))) return false;
+				zv::Arr countedPair = zv::Arr::create(2);
+				countedPair.push(zv::Ref(countedExpr));
+				countedPair.push(zv::Val::adopt(nonEmpty));
+				derivedTypes.set(Z_STR_P(countedKey.raw()), zv::Val(std::move(countedPair)));
+			}
+		}
+
+		return true;
+	}
+
+	/* the argument of a `count($x)` / `sizeof($x)` call node with one
+	 * unpacked-free argument, or NULL; false = pending exception */
+	[[nodiscard]] static bool countCallArgument(zval *node, zval *&out)
+	{
+		out = NULL;
+		bool isFuncCall;
+		if (UNEXPECTED(!isInstance(zv::Ref(node), PT_CLASS_FUNC_CALL, isFuncCall))) return false;
+		if (!isFuncCall) return true;
+		zv::Ref name = nodeProp(Z_OBJ_P(node), PT_LC("name"));
+		if (UNEXPECTED(name.raw() == NULL)) return false;
+		bool isName;
+		if (UNEXPECTED(!isInstance(name.deref(), PT_CLASS_NAME, isName))) return false;
+		if (!isName) return true;
+		zv::Val lower = pt_type_call(name.deref().asObject(), PT_LC("tolowerstring"), 0, NULL);
+		if (UNEXPECTED(lower.isUndef())) return false;
+		if (UNEXPECTED(Z_TYPE_P(lower.raw()) != IS_STRING)) {
+			zend_type_error("phpstan_turbo: Name::toLowerString() did not answer with a string");
+			return false;
+		}
+		if (!zend_string_equals_literal(Z_STR_P(lower.raw()), "count") && !zend_string_equals_literal(Z_STR_P(lower.raw()), "sizeof")) return true;
+		bool partial;
+		if (UNEXPECTED(!pt_call_like_is_partial_function_application(Z_OBJ_P(node), partial))) return false;
+		if (partial) return true;
+		zv::Val argsHold;
+		zval *args = pt_call_like_args(Z_OBJ_P(node), argsHold);
+		if (UNEXPECTED(args == NULL)) return false;
+		if (Z_TYPE_P(args) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(args)) != 1) return true;
+		zval *arg = zend_hash_index_find(Z_ARRVAL_P(args), 0);
+		if (arg != NULL) ZVAL_DEREF(arg);
+		if (UNEXPECTED(arg == NULL || Z_TYPE_P(arg) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Attempt to read property \"unpack\" on null");
+			return false;
+		}
+		zv::Ref unpack = nodeProp(Z_OBJ_P(arg), PT_LC("unpack"));
+		if (UNEXPECTED(unpack.raw() == NULL)) return false;
+		if (zend_is_true(unpack.deref().raw())) return true;
+		zv::Ref value = nodeProp(Z_OBJ_P(arg), PT_LC("value"));
+		if (UNEXPECTED(value.raw() == NULL)) return false;
+		out = value.deref().raw();
+		return true;
+	}
+
+	/* (twin) Mirrors deriveFromRelationalFacts() */
+	zv::Val deriveFromRelationalFacts(HashTable *changedExpressions)
+	{
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes"))) return zv::Val();
+		zv::Arr derivedTypes = zv::Arr::create(0);
+		zv::Ref phpVersion = service(PT_MSS_PHP_VERSION);
+		zv::Arr expressionTypes = zv::Arr::copyOfTable(Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()));
+		for (auto entry : zv::TableRef(expressionTypes.table())) {
+			zend_string *skey = entry.stringKeyOrNull();
+			zv::Str factString = zv::Str::adopt(skey != NULL ? zend_string_copy(skey) : zend_long_to_str((zend_long) entry.indexKey()));
+			zv::Ref factHolder = entry.value().deref();
+			zv::Val fact = holderExpr(factHolder);
+			if (UNEXPECTED(fact.isUndef())) return zv::Val();
+			bool isBinaryOp;
+			if (UNEXPECTED(!isInstance(fact.ref(), PT_CLASS_BINARY_OP_EXPR, isBinaryOp))) return zv::Val();
+			if (!isBinaryOp || zend_symtable_exists(changedExpressions, factString.get())) continue;
+			bool isIdentical, isNotIdentical, isSmaller, isSmallerOrEqual, isGreater, isGreaterOrEqual;
+			if (UNEXPECTED(!isInstance(fact.ref(), PT_CLASS_IDENTICAL_EXPR, isIdentical)
+				|| !isInstance(fact.ref(), PT_CLASS_BINARY_OP_NOT_IDENTICAL, isNotIdentical)
+				|| !isInstance(fact.ref(), PT_CLASS_SMALLER_EXPR, isSmaller)
+				|| !isInstance(fact.ref(), PT_CLASS_SMALLER_OR_EQUAL_EXPR, isSmallerOrEqual)
+				|| !isInstance(fact.ref(), PT_CLASS_GREATER_EXPR, isGreater)
+				|| !isInstance(fact.ref(), PT_CLASS_GREATER_OR_EQUAL_EXPR, isGreaterOrEqual))) {
+				return zv::Val();
+			}
+			bool isIdentity = isIdentical || isNotIdentical;
+			bool smallerFirst = isSmaller || isSmallerOrEqual;
+			if (!isIdentity && !smallerFirst && !isGreater && !isGreaterOrEqual) continue;
+			zend_long certainty = holderCertainty(factHolder);
+			if (UNEXPECTED(certainty < 0)) return zv::Val();
+			if (certainty != PT_TRI_YES) continue;
+			zv::Val verdict = holderType(factHolder);
+			if (UNEXPECTED(verdict.isUndef())) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(verdict.raw()) != IS_OBJECT)) {
+				zend_throw_error(NULL, "Call to a member function isTrue() on %s", zend_zval_value_name(verdict.raw()));
+				return zv::Val();
+			}
+			bool holds;
+			zv::Val isTrue = pt_type_call(Z_OBJ_P(verdict.raw()), PT_LC("istrue"), 0, NULL);
+			if (UNEXPECTED(isTrue.isUndef())) return zv::Val();
+			zend_long isTrueValue = pt_type_trinary_value(isTrue.raw());
+			if (UNEXPECTED(isTrueValue < 0)) return zv::Val();
+			if (isTrueValue == PT_TRI_YES) {
+				holds = true;
+			} else {
+				zv::Val isFalse = pt_type_call(Z_OBJ_P(verdict.raw()), PT_LC("isfalse"), 0, NULL);
+				if (UNEXPECTED(isFalse.isUndef())) return zv::Val();
+				zend_long isFalseValue = pt_type_trinary_value(isFalse.raw());
+				if (UNEXPECTED(isFalseValue < 0)) return zv::Val();
+				if (isFalseValue != PT_TRI_YES) continue;
+				holds = false;
+			}
+
+			zend_object *factObject = fact.ref().asObject();
+			zv::Ref left = nodeProp(factObject, PT_LC("left"));
+			zv::Ref right = nodeProp(factObject, PT_LC("right"));
+			if (UNEXPECTED(left.raw() == NULL || right.raw() == NULL)) return zv::Val();
+			zv::Val leftKey = thisGetNodeKey(left.deref().raw());
+			if (UNEXPECTED(leftKey.isUndef())) return zv::Val();
+			zv::Val rightKey = thisGetNodeKey(right.deref().raw());
+			if (UNEXPECTED(rightKey.isUndef())) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(leftKey.raw()) != IS_STRING || Z_TYPE_P(rightKey.raw()) != IS_STRING)) {
+				zend_type_error("MutatingScope::getNodeKey(): Return value must be of type string");
+				return zv::Val();
+			}
+			zval *leftChanged = zend_symtable_find(changedExpressions, Z_STR_P(leftKey.raw()));
+			zval *rightChanged = zend_symtable_find(changedExpressions, Z_STR_P(rightKey.raw()));
+			if (leftChanged == NULL && rightChanged == NULL) continue;
+
+			struct Implied { zend_string *key; zval *expr; zv::Val type; };
+			std::vector<Implied> implied;
+			if (isIdentity) {
+				if (holds != isIdentical) continue;
+				if (leftChanged != NULL) {
+					zv::Val changedType = holderType(zv::Ref(leftChanged));
+					if (UNEXPECTED(changedType.isUndef())) return zv::Val();
+					implied.push_back({Z_STR_P(rightKey.raw()), right.deref().raw(), std::move(changedType)});
+				}
+				if (rightChanged != NULL) {
+					zv::Val changedType = holderType(zv::Ref(rightChanged));
+					if (UNEXPECTED(changedType.isUndef())) return zv::Val();
+					implied.push_back({Z_STR_P(leftKey.raw()), left.deref().raw(), std::move(changedType)});
+				}
+			} else {
+				/* normalized to `$smaller < $larger` / `$smaller <= $larger`;
+				 * a false verdict of integers is the inverse comparison */
+				bool orEqual = isSmallerOrEqual || isGreaterOrEqual;
+				zval *smaller = smallerFirst ? left.deref().raw() : right.deref().raw();
+				zval *larger = smallerFirst ? right.deref().raw() : left.deref().raw();
+				zend_string *smallerKey = Z_STR_P(smallerFirst ? leftKey.raw() : rightKey.raw());
+				zend_string *largerKey = Z_STR_P(smallerFirst ? rightKey.raw() : leftKey.raw());
+				if (!holds) {
+					std::swap(smaller, larger);
+					std::swap(smallerKey, largerKey);
+					orEqual = !orEqual;
+				}
+				zval *smallerChanged = zend_symtable_find(changedExpressions, smallerKey);
+				if (smallerChanged != NULL) {
+					zv::Val smallerType = holderType(zv::Ref(smallerChanged));
+					if (UNEXPECTED(smallerType.isUndef())) return zv::Val();
+					zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(smallerType.raw()), PT_OP_IS_INTEGER, 0, NULL);
+					if (UNEXPECTED(isInteger < 0)) return zv::Val();
+					if (isInteger == PT_TRI_YES) {
+						zv::Val bound = orEqual
+							? pt_type_call(Z_OBJ_P(smallerType.raw()), PT_LC("getgreaterorequaltype"), 1, phpVersion.raw())
+							: pt_type_call(Z_OBJ_P(smallerType.raw()), PT_LC("getgreatertype"), 1, phpVersion.raw());
+						if (UNEXPECTED(bound.isUndef())) return zv::Val();
+						implied.push_back({largerKey, larger, std::move(bound)});
+					}
+				}
+				zval *largerChanged = zend_symtable_find(changedExpressions, largerKey);
+				if (largerChanged != NULL) {
+					zv::Val largerType = holderType(zv::Ref(largerChanged));
+					if (UNEXPECTED(largerType.isUndef())) return zv::Val();
+					zend_long isInteger = pt_type_op_trinary(Z_OBJ_P(largerType.raw()), PT_OP_IS_INTEGER, 0, NULL);
+					if (UNEXPECTED(isInteger < 0)) return zv::Val();
+					if (isInteger == PT_TRI_YES) {
+						zv::Val bound = orEqual
+							? pt_type_call(Z_OBJ_P(largerType.raw()), PT_LC("getsmallerorequaltype"), 1, phpVersion.raw())
+							: pt_type_call(Z_OBJ_P(largerType.raw()), PT_LC("getsmallertype"), 1, phpVersion.raw());
+						if (UNEXPECTED(bound.isUndef())) return zv::Val();
+						implied.push_back({smallerKey, smaller, std::move(bound)});
+					}
+				}
+			}
+
+			for (Implied &item : implied) {
+				zval *existing = zend_symtable_find(derivedTypes.table(), item.key);
+				zv::Val type;
+				if (existing != NULL) {
+					zval *existingType = zend_hash_index_find(Z_ARRVAL_P(existing), 1);
+					type = intersectTypes(existingType, item.type.raw());
+					if (UNEXPECTED(type.isUndef())) return zv::Val();
+				} else {
+					type = std::move(item.type);
+				}
+				zv::Arr itemPair = zv::Arr::create(2);
+				itemPair.push(zv::Ref(item.expr));
+				itemPair.push(std::move(type));
+				derivedTypes.set(item.key, zv::Val(std::move(itemPair)));
+			}
+		}
+
+		return zv::Val(std::move(derivedTypes));
+	}
+
 	/* (twin 4020) */
 	zv::Val applySpecifiedTypes(zval *specifiedTypesArg)
 	{
@@ -7990,6 +8283,10 @@ public:
 
 			if (UNEXPECTED(!recordSpecifiedExpression(specifiedExpressions, scopeObject, exprString, expr, type))) return zv::Val();
 		}
+
+		/* a tracked comparison verdict carries the narrowing of one operand
+		 * over to the other one */
+		if (UNEXPECTED(!applyRelationalFacts(specifiedExpressions, scope, scopeObject, scopeIsWorkingCopy))) return zv::Val();
 
 		{
 			zval specifiedExpressionsZv;
@@ -13048,6 +13345,7 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.privateClassConstantLong("COMPLEX_UNION_TYPE_MEMBER_LIMIT", PT_MS_COMPLEX_UNION_TYPE_MEMBER_LIMIT);
 	cls.privateClassConstantLong("GLOBAL_CONSTANT_FETCH_KEYS_LIMIT", PT_MS_GLOBAL_CONSTANT_FETCH_KEYS_LIMIT);
 	cls.privateClassConstantLong("GENERALIZED_ARRAY_DEPTH_LIMIT", PT_MS_GENERALIZED_ARRAY_DEPTH_LIMIT);
+	cls.privateClassConstantLong("RELATIONAL_FACT_ROUNDS_LIMIT", PT_MS_RELATIONAL_FACT_ROUNDS_LIMIT);
 	pt_ms_custom_serialization_methods_list = pt_persistent_string_list(pt_ms_custom_serialization_methods, sizeof(pt_ms_custom_serialization_methods) / sizeof(pt_ms_custom_serialization_methods[0]));
 	cls.privateClassConstantValue("CUSTOM_SERIALIZATION_METHODS", pt_ms_custom_serialization_methods_constant);
 	/* }}} */

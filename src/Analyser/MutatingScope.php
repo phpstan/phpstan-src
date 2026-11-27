@@ -7,6 +7,7 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\ConstFetch;
@@ -112,6 +113,7 @@ use function array_diff_key;
 use function array_filter;
 use function array_intersect_key;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_last;
 use function array_map;
@@ -158,6 +160,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	/** Past this array nesting, widening between loop passes turns an array value whose nesting grew into mixed. */
 	private const GENERALIZED_ARRAY_DEPTH_LIMIT = 2;
+
+	/** Rounds of carrying a narrowing through tracked comparison verdicts per application, a chain `$a < $b < $c` takes one per link. */
+	private const RELATIONAL_FACT_ROUNDS_LIMIT = 4;
 
 	/** Magic methods that let the author decide which properties survive a serialize()/unserialize() round trip. */
 	private const CUSTOM_SERIALIZATION_METHODS = ['__sleep', '__serialize', '__unserialize'];
@@ -4158,6 +4163,60 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$specifiedExpressions[$exprString] = ExpressionTypeHolder::createYes($expr, $holderType);
 		}
 
+		// a tracked comparison verdict carries the narrowing of one operand
+		// over to the other one
+		$changedExpressions = $specifiedExpressions;
+		for ($round = 0; $changedExpressions !== [] && $round < self::RELATIONAL_FACT_ROUNDS_LIMIT; $round++) {
+			$derivedTypes = $scope->deriveFromRelationalFacts($changedExpressions);
+			$changedExpressions = [];
+			while ($derivedTypes !== []) {
+				$exprString = (string) array_key_first($derivedTypes); // @phpstan-ignore cast.useless
+				[$expr, $type] = $derivedTypes[$exprString];
+				unset($derivedTypes[$exprString]);
+				if (
+					!array_key_exists($exprString, $scope->expressionTypes)
+					|| !$scope->expressionTypes[$exprString]->getCertainty()->yes()
+				) {
+					continue;
+				}
+				$trackedType = $scope->expressionTypes[$exprString]->getType();
+				$newType = TypeCombinator::intersect($type, $trackedType);
+				if ($newType->equals($trackedType)) {
+					continue;
+				}
+				$trackedNativeType = array_key_exists($exprString, $scope->nativeExpressionTypes) && $scope->nativeExpressionTypes[$exprString]->getCertainty()->yes()
+					? $scope->nativeExpressionTypes[$exprString]->getType()
+					: null;
+				$newNativeType = $trackedNativeType !== null ? TypeCombinator::intersect($type, $trackedNativeType) : $type;
+				if (!$this->isSpecifyExpressionTypeNoop($expr, $newType)) {
+					if (!$scopeIsWorkingCopy) {
+						$scope = $scope->openSpecificationScope();
+						$scopeIsWorkingCopy = true;
+					}
+					$scope->specifyExpressionTypeInPlace($expr, $newType, $newNativeType, TrinaryLogic::createYes());
+				}
+
+				$holder = ExpressionTypeHolder::createYes($expr, $scope->expressionTypes[$exprString]->getType());
+				$changedExpressions[$exprString] = $holder;
+				$specifiedExpressions[$exprString] = $holder;
+
+				// a count() that cannot be 0 any more makes its array non-empty
+				if (
+					!$expr instanceof FuncCall
+					|| !$expr->name instanceof Name
+					|| !in_array($expr->name->toLowerString(), ['count', 'sizeof'], true)
+					|| $expr->isPartialFunctionApplication()
+					|| count($expr->getArgs()) !== 1
+					|| $expr->getArgs()[0]->unpack
+					|| !(new ConstantIntegerType(0))->isSuperTypeOf($newType)->no()
+				) {
+					continue;
+				}
+				$countedExpr = $expr->getArgs()[0]->value;
+				$derivedTypes[$scope->getNodeKey($countedExpr)] = [$countedExpr, new NonEmptyArrayType()];
+			}
+		}
+
 		$scope = $scope->processConditionalExpressionsAfterSpecifying($specifiedExpressions);
 
 		$newConditionalExpressionHolders = $specifiedTypes->getNewConditionalExpressionHolders();
@@ -4192,6 +4251,95 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$scope->templateArgumentFrame,
 			$scope->templateArgumentConstraints,
 		);
+	}
+
+	/**
+	 * The narrowings the tracked `$a === $b` and integer `$a < $b` verdicts
+	 * imply for one operand when the other one is among the changed
+	 * expressions. A verdict changed itself was narrowed together with its
+	 * operands.
+	 *
+	 * @param array<string, ExpressionTypeHolder> $changedExpressions
+	 * @return array<string, array{Expr, Type}>
+	 */
+	private function deriveFromRelationalFacts(array $changedExpressions): array
+	{
+		$derivedTypes = [];
+		foreach ($this->expressionTypes as $factString => $factHolder) {
+			$fact = $factHolder->getExpr();
+			if (!$fact instanceof BinaryOp || array_key_exists((string) $factString, $changedExpressions)) { // @phpstan-ignore cast.useless
+				continue;
+			}
+			$isIdentical = $fact instanceof BinaryOp\Identical;
+			$isIdentity = $isIdentical || $fact instanceof BinaryOp\NotIdentical;
+			$isSmaller = $fact instanceof BinaryOp\Smaller || $fact instanceof BinaryOp\SmallerOrEqual;
+			if (!$isIdentity && !$isSmaller && !$fact instanceof BinaryOp\Greater && !$fact instanceof BinaryOp\GreaterOrEqual) {
+				continue;
+			}
+			if (!$factHolder->getCertainty()->yes()) {
+				continue;
+			}
+			$verdict = $factHolder->getType();
+			if ($verdict->isTrue()->yes()) {
+				$holds = true;
+			} elseif ($verdict->isFalse()->yes()) {
+				$holds = false;
+			} else {
+				continue;
+			}
+
+			$leftKey = $this->getNodeKey($fact->left);
+			$rightKey = $this->getNodeKey($fact->right);
+			$leftChanged = array_key_exists($leftKey, $changedExpressions);
+			$rightChanged = array_key_exists($rightKey, $changedExpressions);
+			if (!$leftChanged && !$rightChanged) {
+				continue;
+			}
+
+			$implied = [];
+			if ($isIdentity) {
+				if ($holds !== $isIdentical) {
+					continue;
+				}
+				if ($leftChanged) {
+					$implied[] = [$rightKey, $fact->right, $changedExpressions[$leftKey]->getType()];
+				}
+				if ($rightChanged) {
+					$implied[] = [$leftKey, $fact->left, $changedExpressions[$rightKey]->getType()];
+				}
+			} else {
+				// normalized to `$smaller < $larger` / `$smaller <= $larger`;
+				// a false verdict of integers is the inverse comparison
+				$orEqual = $fact instanceof BinaryOp\SmallerOrEqual || $fact instanceof BinaryOp\GreaterOrEqual;
+				[$smaller, $larger, $smallerKey, $largerKey] = $isSmaller
+					? [$fact->left, $fact->right, $leftKey, $rightKey]
+					: [$fact->right, $fact->left, $rightKey, $leftKey];
+				if (!$holds) {
+					[$smaller, $larger, $smallerKey, $largerKey] = [$larger, $smaller, $largerKey, $smallerKey];
+					$orEqual = !$orEqual;
+				}
+				if (array_key_exists($smallerKey, $changedExpressions)) {
+					$smallerType = $changedExpressions[$smallerKey]->getType();
+					if ($smallerType->isInteger()->yes()) {
+						$implied[] = [$largerKey, $larger, $orEqual ? $smallerType->getGreaterOrEqualType($this->services->phpVersion) : $smallerType->getGreaterType($this->services->phpVersion)];
+					}
+				}
+				if (array_key_exists($largerKey, $changedExpressions)) {
+					$largerType = $changedExpressions[$largerKey]->getType();
+					if ($largerType->isInteger()->yes()) {
+						$implied[] = [$smallerKey, $smaller, $orEqual ? $largerType->getSmallerOrEqualType($this->services->phpVersion) : $largerType->getSmallerType($this->services->phpVersion)];
+					}
+				}
+			}
+
+			foreach ($implied as [$impliedKey, $impliedExpr, $impliedType]) {
+				$derivedTypes[$impliedKey] = array_key_exists($impliedKey, $derivedTypes)
+					? [$impliedExpr, TypeCombinator::intersect($derivedTypes[$impliedKey][1], $impliedType)]
+					: [$impliedExpr, $impliedType];
+			}
+		}
+
+		return $derivedTypes;
 	}
 
 	/**

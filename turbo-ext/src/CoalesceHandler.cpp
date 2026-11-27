@@ -30,6 +30,17 @@ zend_class_entry *pt_ce_coalesce_handler = nullptr;
 
 namespace {
 
+/* $operandContext->enterPassedToType($context->getPassedToType(), $context->getNativePassedToType()) */
+zv::Val carryPassedToType(zv::Val operandContext, zval *context)
+{
+	if (UNEXPECTED(operandContext.isUndef())) return operandContext;
+	zv::Val type = pt_expression_context_get_passed_to_type(context);
+	if (UNEXPECTED(type.isUndef())) return zv::Val();
+	zv::Val nativeType = pt_expression_context_get_native_passed_to_type(context);
+	if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
+	return pt_expression_context_enter_passed_to_type(operandContext.raw(), Z_TYPE_P(type.raw()) == IS_NULL ? NULL : type.raw(), Z_TYPE_P(nativeType.raw()) == IS_NULL ? NULL : nativeType.raw());
+}
+
 /* $resolution->isSet($typeCallback) (IssetabilityResolution.cpp): the ?bool
  * verdict */
 zv::Val resolutionIsSet(zval *resolution, zval *typeCallback)
@@ -112,7 +123,9 @@ public:
 		if (UNEXPECTED(ensuredScope == NULL)) return zv::Val();
 		zv::Val condScope = pt_node_scope_resolver_look_for_set_allowed_undefined_expressions(nodeScopeResolver, ensuredScope, left);
 		if (UNEXPECTED(condScope.isUndef())) return zv::Val();
-		zv::Val condContext = pt_expression_context_enter_deep(context);
+		// both sides are the value of the coalesce, so a closure on either side
+		// is passed wherever the coalesce is
+		zv::Val condContext = carryPassedToType(pt_expression_context_enter_deep(context), context);
 		if (UNEXPECTED(condContext.isUndef())) return zv::Val();
 		zv::Val condResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, left, condScope.raw(), storage, nodeCallback, condContext.raw());
 		if (UNEXPECTED(condResult.isUndef())) return zv::Val();
@@ -172,7 +185,7 @@ public:
 		if (UNEXPECTED(rightScope.isUndef())) return zv::Val();
 		zval *right = ptoh::binaryOpRight(expr);
 		if (UNEXPECTED(right == NULL)) return zv::Val();
-		zv::Val rightContext = pt_expression_context_enter_deep_keeping_value_flow(context);
+		zv::Val rightContext = carryPassedToType(pt_expression_context_enter_deep_keeping_value_flow(context), context);
 		if (UNEXPECTED(rightContext.isUndef())) return zv::Val();
 		zv::Val rightResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, right, rightScope.raw(), storage, nodeCallback, rightContext.raw());
 		if (UNEXPECTED(rightResult.isUndef())) return zv::Val();

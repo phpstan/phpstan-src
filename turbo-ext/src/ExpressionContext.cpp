@@ -149,6 +149,8 @@ public:
 		f.inAssignRightSideVariableName = NULL;
 		f.inAssignRightSideExpr = NULL;
 		f.resolveTemplateArguments = boolSlot(slots::resolveTemplateArguments);
+		f.passedToType = isNull(slots::passedToType) ? NULL : slot(slots::passedToType);
+		f.nativePassedToType = isNull(slots::nativePassedToType) ? NULL : slot(slots::nativePassedToType);
 		f.valueFlowTarget = slot(slots::valueFlowTarget);
 		f.valueConsumed = isValueConsumed() ? 1 : 0;
 		return newSelf(f);

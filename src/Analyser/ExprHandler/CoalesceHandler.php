@@ -57,7 +57,9 @@ final class CoalesceHandler implements ExprHandler
 		$beforeScope = $scope;
 		$nonNullabilityResult = $this->nonNullabilityHelper->ensureNonNullability($scope, $expr->left);
 		$condScope = $nodeScopeResolver->lookForSetAllowedUndefinedExpressions($nonNullabilityResult->getScope(), $expr->left);
-		$condResult = $nodeScopeResolver->processExprNode($stmt, $expr->left, $condScope, $storage, $nodeCallback, $context->enterDeep());
+		// both sides are the value of the coalesce, so a closure on either side
+		// is passed wherever the coalesce is
+		$condResult = $nodeScopeResolver->processExprNode($stmt, $expr->left, $condScope, $storage, $nodeCallback, $context->enterDeep()->enterPassedToType($context->getPassedToType(), $context->getNativePassedToType()));
 		$scope = $this->nonNullabilityHelper->revertNonNullability($condResult->getScope(), $nonNullabilityResult->getSpecifiedExpressions());
 		$scope = $nodeScopeResolver->lookForUnsetAllowedUndefinedExpressions($scope, $expr->left);
 
@@ -85,7 +87,7 @@ final class CoalesceHandler implements ExprHandler
 			);
 		}
 		$rightScope = $scope->applySpecifiedTypes($rightSideSpecifiedTypes);
-		$rightResult = $nodeScopeResolver->processExprNode($stmt, $expr->right, $rightScope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow());
+		$rightResult = $nodeScopeResolver->processExprNode($stmt, $expr->right, $rightScope, $storage, $nodeCallback, $context->enterDeepKeepingValueFlow()->enterPassedToType($context->getPassedToType(), $context->getNativePassedToType()));
 		// the left-is-set narrowing, composed from the already-processed chain
 		// results - the inside-out equivalent of narrowing by isset($expr->left)
 		// without synthesizing an Isset_ node and re-walking the chain on demand

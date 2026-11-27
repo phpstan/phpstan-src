@@ -94,12 +94,13 @@ inline constexpr char strings[] =
 	"deriveOnlyNeverExecutionEnds\0" /* 1114 */
 	"buildDeclaredParameters\0" /* 1143 */
 	"getDeclaredClosureType\0" /* 1167 */
-	"buildParametersAndAcceptors\0" /* 1190 */
-	"cachedClosureData\0" /* 1218 */
-	"createClosureTypeFromCache\0" /* 1236 */
-	"returnType\0" /* 1263 */
-	"usedVariables\0" /* 1274 */
-	"assembleClosureType"; /* 1288 */
+	"templateSuffix\0" /* 1190 */
+	"buildParametersAndAcceptors\0" /* 1205 */
+	"cachedClosureData\0" /* 1233 */
+	"createClosureTypeFromCache\0" /* 1251 */
+	"returnType\0" /* 1278 */
+	"usedVariables\0" /* 1289 */
+	"assembleClosureType"; /* 1303 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 18), /* __construct $nodeScopeResolver */
 	reg::packed(53, 0, 81), /* __construct $initializerExprTypeResolver */
@@ -187,23 +188,24 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(482, MAY_BE_NULL, 490, false, false, 531), /* buildParametersAndAcceptors $storage */
 	reg::packed(536, MAY_BE_NULL, 549, false, false, 531), /* buildParametersAndAcceptors $passedToType */
 	reg::packed(781, MAY_BE_NULL, 549, false, false, 531), /* buildParametersAndAcceptors $nativePassedToType */
+	reg::packed(1190, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 531), /* buildParametersAndAcceptors $templateSuffix */
 	reg::packed(324, MAY_BE_ARRAY), /* buildParametersAndAcceptors return */
 	reg::packed(431, 0, 437), /* createClosureTypeFromCache $scope */
 	reg::packed(348, 0, 353), /* createClosureTypeFromCache $expr */
 	reg::packed(924, MAY_BE_ARRAY), /* createClosureTypeFromCache $parameters */
 	reg::packed(1019, MAY_BE_BOOL), /* createClosureTypeFromCache $isVariadic */
-	reg::packed(1218, MAY_BE_ARRAY), /* createClosureTypeFromCache $cachedClosureData */
+	reg::packed(1233, MAY_BE_ARRAY), /* createClosureTypeFromCache $cachedClosureData */
 	reg::packed(1039, MAY_BE_BOOL), /* createClosureTypeFromCache $contextFree */
 	reg::packed(324, 0, 567), /* createClosureTypeFromCache return */
 	reg::packed(431, 0, 437), /* assembleClosureType $scope */
 	reg::packed(348, 0, 353), /* assembleClosureType $expr */
 	reg::packed(924, MAY_BE_ARRAY), /* assembleClosureType $parameters */
 	reg::packed(1019, MAY_BE_BOOL), /* assembleClosureType $isVariadic */
-	reg::packed(1263, 0, 549), /* assembleClosureType $returnType */
+	reg::packed(1278, 0, 549), /* assembleClosureType $returnType */
 	reg::packed(727, MAY_BE_ARRAY), /* assembleClosureType $throwPoints */
 	reg::packed(739, MAY_BE_ARRAY), /* assembleClosureType $impurePoints */
 	reg::packed(752, MAY_BE_ARRAY), /* assembleClosureType $invalidateExpressions */
-	reg::packed(1274, MAY_BE_ARRAY), /* assembleClosureType $usedVariables */
+	reg::packed(1289, MAY_BE_ARRAY), /* assembleClosureType $usedVariables */
 	reg::packed(1030, MAY_BE_NULL | MAY_BE_STRING, reg::NoString, false, false, 531), /* assembleClosureType $cacheKey */
 	reg::packed(1039, MAY_BE_BOOL, reg::NoString, false, false, 476), /* assembleClosureType $contextFree */
 	reg::packed(324, 0, 567), /* assembleClosureType return */
@@ -228,9 +230,9 @@ inline constexpr sigtab::Sig resolveArrowFunctionReturnType = { { 1083 /* resolv
 inline constexpr sigtab::Sig deriveOnlyNeverExecutionEnds = { { 1114 /* deriveOnlyNeverExecutionEnds */, 1, 73, 1, 74, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig buildDeclaredParameters = { { 1143 /* buildDeclaredParameters */, 2, 75, 2, 77, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig getDeclaredClosureType = { { 1167 /* getDeclaredClosureType */, 2, 78, 2, 80, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig buildParametersAndAcceptors = { { 1190 /* buildParametersAndAcceptors */, 2, 81, 5, 86, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig createClosureTypeFromCache = { { 1236 /* createClosureTypeFromCache */, 6, 87, 6, 93, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig assembleClosureType = { { 1288 /* assembleClosureType */, 9, 94, 11, 105, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig buildParametersAndAcceptors = { { 1205 /* buildParametersAndAcceptors */, 2, 81, 6, 87, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig createClosureTypeFromCache = { { 1251 /* createClosureTypeFromCache */, 6, 88, 6, 94, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig assembleClosureType = { { 1303 /* assembleClosureType */, 9, 95, 11, 106, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ClosureTypeResolver

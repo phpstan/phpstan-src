@@ -70,6 +70,8 @@ int pt_ctr_capped_closure_type_walks = 0;
 pt_method_site pt_ctr_simple_throw_point_explicit_site;
 pt_method_site pt_ctr_simple_throw_point_implicit_site;
 pt_method_site pt_ctr_stats_increment_site;
+pt_method_site pt_ctr_walk_template_types_rename_site;
+pt_method_site pt_ctr_walk_template_types_restore_site;
 
 /* $this->initializerExprTypeResolver->getType($expr, InitializerExprContext::fromScope($scope)) */
 zv::Val initializerExprType(zval *initializerExprTypeResolver, zval *expr, zval *scope)
@@ -89,6 +91,20 @@ zv::Val simpleThrowPointExplicit(zval *type, bool canContainAnyThrowable)
 zv::Val simpleThrowPointImplicit()
 {
 	return pt_call_static_cached(pt_ctr_simple_throw_point_implicit_site, PT_CLASS_SIMPLE_THROW_POINT, PT_LC("createimplicit"), 0, NULL);
+}
+
+/* ClosureWalkTemplateTypes::rename($type, $suffix) / ::restore($type, $suffix) */
+zv::Val walkTemplateTypesRename(zval *type, zend_string *suffix)
+{
+	zv::Args argv{type, suffix};
+	return pt_call_static_cached(pt_ctr_walk_template_types_rename_site, PT_CLASS_CLOSURE_WALK_TEMPLATE_TYPES, PT_LC("rename"), 2, argv);
+}
+
+zv::Val walkTemplateTypesRestore(zv::Val type, zend_string *suffix)
+{
+	if (UNEXPECTED(type.isUndef())) return type;
+	zv::Args argv{type.raw(), suffix};
+	return pt_call_static_cached(pt_ctr_walk_template_types_restore_site, PT_CLASS_CLOSURE_WALK_TEMPLATE_TYPES, PT_LC("restore"), 2, argv);
 }
 
 /* TemplateArgumentStats::$enabled && TemplateArgumentStats::increment('closureTypeBodyWalks'); false = pending exception */
@@ -346,8 +362,9 @@ public:
 	/* Mirrors getClosureType() ($storage, $passedToType NULL for null) */
 	zv::Val getClosureType(zval *scope, zval *expr, bool shallow, zval *storage, zval *passedToType = NULL)
 	{
+		zv::Str templateSuffix = zv::Str::adopt(zend_strpprintf(0, "@%u", Z_OBJ_HANDLE_P(expr)));
 		Parameters p;
-		if (UNEXPECTED(!buildParametersAndAcceptors(scope, expr, storage, passedToType, NULL, p))) return zv::Val();
+		if (UNEXPECTED(!buildParametersAndAcceptors(scope, expr, storage, passedToType, NULL, p, shallow ? NULL : templateSuffix.get()))) return zv::Val();
 
 		// A shallow reflection is the closure/arrow function's signature without
 		// walking its body: parameters plus the DECLARED return type.
@@ -359,7 +376,7 @@ public:
 		zval *cached = zend_symtable_find(Z_ARRVAL_P(cachedTypes.raw()), cacheKey.get());
 		if (cached != NULL) {
 			ZVAL_DEREF(cached);
-			return createClosureTypeFromCache(scope, expr, p.parameters.raw(), p.isVariadic, cached, p.contextFree);
+			return walkTemplateTypesRestore(createClosureTypeFromCache(scope, expr, p.parameters.raw(), p.isVariadic, cached, p.contextFree), templateSuffix.get());
 		}
 		if (pt_ctr_resolve_closure_type_depth >= 2) {
 			pt_ctr_capped_closure_type_walks++;
@@ -369,8 +386,8 @@ public:
 		if (UNEXPECTED(!countClosureTypeBodyWalk())) return zv::Val();
 		int isArrowFunction = ptclosure::instanceOf(expr, PT_CLASS_ARROW_FUNCTION);
 		if (UNEXPECTED(isArrowFunction < 0)) return zv::Val();
-		if (isArrowFunction) return walkArrowFunction(scope, expr, p, cacheKey.get());
-		return walkClosure(scope, expr, p, cacheKey.get());
+		if (isArrowFunction) return walkTemplateTypesRestore(walkArrowFunction(scope, expr, p, cacheKey.get()), templateSuffix.get());
+		return walkTemplateTypesRestore(walkClosure(scope, expr, p, cacheKey.get()), templateSuffix.get());
 	}
 
 	/* Mirrors buildClosureTypeForClosure() (the nullable ones NULL for null) */
@@ -1075,7 +1092,7 @@ private:
 	}
 
 	/* Mirrors buildParametersAndAcceptors() (the nullable ones NULL for null) */
-	[[nodiscard]] bool buildParametersAndAcceptors(zval *scope, zval *expr, zval *storage, zval *passedToType, zval *nativePassedToType, Parameters &p)
+	[[nodiscard]] bool buildParametersAndAcceptors(zval *scope, zval *expr, zval *storage, zval *passedToType, zval *nativePassedToType, Parameters &p, zend_string *templateSuffix = NULL)
 	{
 		if (UNEXPECTED(!buildDeclaredParameters(scope, expr, p.parameters, p.isVariadic))) return false;
 		zv::Val passedToTypeHold, nativePassedToTypeHold;
@@ -1104,6 +1121,17 @@ private:
 					passedToType = passedToTypeHold.raw();
 					nativePassedToType = nativePassedToTypeHold.raw();
 				}
+			}
+		}
+		zv::Val renamedPassedToType, renamedNativePassedToType;
+		if (templateSuffix != NULL && passedToType != NULL) {
+			renamedPassedToType = walkTemplateTypesRename(passedToType, templateSuffix);
+			if (UNEXPECTED(renamedPassedToType.isUndef())) return false;
+			passedToType = renamedPassedToType.raw();
+			if (nativePassedToType != NULL) {
+				renamedNativePassedToType = walkTemplateTypesRename(nativePassedToType, templateSuffix);
+				if (UNEXPECTED(renamedNativePassedToType.isUndef())) return false;
+				nativePassedToType = renamedNativePassedToType.raw();
 			}
 		}
 		zval *contextualResolver = OBJ_PROP_NUM(self, slots::contextualClosureParameterResolver);

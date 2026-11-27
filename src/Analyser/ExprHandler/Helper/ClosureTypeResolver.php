@@ -142,7 +142,8 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		?Type $passedToType = null,
 	): ClosureType
 	{
-		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType);
+		$templateSuffix = '@' . spl_object_id($expr);
+		[$parameters, $isVariadic, $callableParameters, $nativeCallableParameters, $contextFree] = $this->buildParametersAndAcceptors($scope, $expr, $storage, $passedToType, null, $shallow ? null : $templateSuffix);
 
 		// A shallow reflection is the closure/arrow function's signature without
 		// walking its body: parameters plus the DECLARED return type. Used at scope
@@ -163,7 +164,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		$cachedTypes = $this->findCachedTypes($expr);
 		$cacheKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
 		if (array_key_exists($cacheKey, $cachedTypes)) {
-			return $this->createClosureTypeFromCache($scope, $expr, $parameters, $isVariadic, $cachedTypes[$cacheKey], $contextFree);
+			return ClosureWalkTemplateTypes::restore($this->createClosureTypeFromCache($scope, $expr, $parameters, $isVariadic, $cachedTypes[$cacheKey], $contextFree), $templateSuffix);
 		}
 		if (self::$resolveClosureTypeDepth >= 2) {
 			self::$cappedClosureTypeWalks++;
@@ -229,7 +230,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			// result rather than reading the still-unprocessed body expression
 			$returnType = $this->resolveArrowFunctionReturnType($scope, $arrowScope, $expr, false, self::readableWalkStorage($walkStorage, $cappedBefore));
 
-			return $this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, [], $cacheKey, $contextFree);
+			return ClosureWalkTemplateTypes::restore($this->assembleClosureType($scope, $expr, $parameters, $isVariadic, $returnType, $throwPoints, $impurePoints, $invalidateExpressions, [], $cacheKey, $contextFree), $templateSuffix);
 		}
 
 		self::$resolveClosureTypeDepth++;
@@ -290,7 +291,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		$throwPoints = $closureStatementResult->getThrowPoints();
 		$impurePoints = array_merge($closureImpurePoints, $closureStatementResult->getImpurePoints());
 
-		return $this->buildClosureTypeFromClosureWalk(
+		return ClosureWalkTemplateTypes::restore($this->buildClosureTypeFromClosureWalk(
 			$scope,
 			$expr,
 			$parameters,
@@ -305,7 +306,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			false,
 			self::readableWalkStorage($walkStorage, $cappedBefore),
 			$contextFree,
-		);
+		), $templateSuffix);
 	}
 
 	/**
@@ -824,6 +825,9 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 * written - its signature is then inferred from its usages (see
 	 * ClosureSignatureInference) and the parameters reflect that.
 	 *
+	 * A $templateSuffix renames the templates of the callable the closure is
+	 * passed to for a body walk (see ClosureWalkTemplateTypes).
+	 *
 	 * @return array{list<NativeParameterReflection>, bool, ParameterReflection[]|null, ParameterReflection[]|null, bool}
 	 */
 	private function buildParametersAndAcceptors(
@@ -832,6 +836,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		?ExpressionResultStorage $storage = null,
 		?Type $passedToType = null,
 		?Type $nativePassedToType = null,
+		?string $templateSuffix = null,
 	): array
 	{
 		[$parameters, $isVariadic] = $this->buildDeclaredParameters($scope, $expr);
@@ -841,6 +846,12 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 			if ($inParameter !== null) {
 				$passedToType = $inParameter->getType();
 				$nativePassedToType = $inParameter instanceof ExtendedParameterReflection ? $inParameter->getNativeType() : $inParameter->getType();
+			}
+		}
+		if ($templateSuffix !== null && $passedToType !== null) {
+			$passedToType = ClosureWalkTemplateTypes::rename($passedToType, $templateSuffix);
+			if ($nativePassedToType !== null) {
+				$nativePassedToType = ClosureWalkTemplateTypes::rename($nativePassedToType, $templateSuffix);
 			}
 		}
 		$parameterTypes = $this->contextualClosureParameterResolver->resolve($scope, $expr, $storage, $passedToType, $nativePassedToType);

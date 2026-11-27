@@ -2269,6 +2269,10 @@ zv::Val pt_disjunction_holder_projection_augment_new(zval *nodeScopeResolver, zv
 zv::Val pt_conditional_expression_holder_recipe_evaluate(zend_object *recipe, zval *scope);
 zv::Val pt_disjunction_branch_union_augment_evaluate(zend_object *augment, zval *scope);
 zv::Val pt_disjunction_holder_projection_augment_evaluate(zend_object *augment, zval *scope);
+/* the private keepNativeValuesOutsidePhpDoc($created, $scope, $targetExpr,
+ * $phpDocType) both disjunction augments share (DisjunctionBranchUnionAugment.cpp,
+ * arguments borrowed); UNDEF = pending exception */
+zv::Val pt_disjunction_keep_native_values_outside_phpdoc(zval *nodeScopeResolver, zval *created, zval *scope, zval *targetExpr, zval *phpDocType);
 /* $helper->buildBranchUnionAugment(...) / ->buildConditionalHolderRecipe(...)
  * ($nonVariableTargetScope / $holderSideExpr NULL for null) /
  * BooleanNarrowingHelper's ->specifyConjunction(...) / ->specifyDisjunction(...)

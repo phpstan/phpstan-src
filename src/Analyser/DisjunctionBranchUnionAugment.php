@@ -70,10 +70,37 @@ final class DisjunctionBranchUnionAugment implements DeferredSpecifiedTypesAugme
 			}
 
 			$created = $this->defaultNarrowingHelper->createForSubject($targetExpr, $unionType, TypeSpecifierContext::createTrue(), $scope);
+			$created = $this->keepNativeValuesOutsidePhpDoc($created, $scope, $targetExpr, $originalType);
 			$result = $result === null ? $created : $result->unionWith($created);
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Where the PHPDoc type of the subject describes more than its native
+	 * type, a sure entry of the union would narrow the native type to PHPDoc
+	 * knowledge. The alternative of the union and of whatever the PHPDoc type
+	 * does not describe narrows the PHPDoc type to the union and keeps every
+	 * native value the PHPDoc type rules out.
+	 */
+	private function keepNativeValuesOutsidePhpDoc(SpecifiedTypes $created, MutatingScope $scope, Expr $targetExpr, Type $phpDocType): SpecifiedTypes
+	{
+		$nativeType = $this->nodeScopeResolver->findScopeStateType($targetExpr, $scope->doNotTreatPhpDocTypesAsCertain());
+		if ($nativeType !== null && $phpDocType->isSuperTypeOf($nativeType)->yes()) {
+			return $created;
+		}
+
+		$exprString = $scope->getNodeKey($targetExpr);
+		$sureTypes = $created->getSureTypes();
+		if (!isset($sureTypes[$exprString])) {
+			return $created;
+		}
+
+		return $created->removeExpr($exprString)->unionWith(
+			(new SpecifiedTypes([$exprString => $sureTypes[$exprString]]))
+				->intersectWith(new SpecifiedTypes(sureNotTypes: [$exprString => [$targetExpr, $phpDocType]])),
+		);
 	}
 
 }

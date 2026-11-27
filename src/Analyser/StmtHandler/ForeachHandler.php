@@ -248,7 +248,7 @@ final class ForeachHandler implements StmtHandler
 				do {
 					$prevScope = $bodyScope;
 					// a warm start begins at the loop's entry already
-					$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope, true);
+					$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope, true, true);
 					if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 						// walking is deterministic in the entry scope - an unchanged entry
 						// reproduces the previous pass's exit, so the verification walk is skipped
@@ -309,7 +309,7 @@ final class ForeachHandler implements StmtHandler
 		if (!$entryConverged) {
 			// a body state that did not converge may still reach the guards
 			// a vacuous conditional excludes, so only a fixpoint keeps them
-			$bodyScope = $bodyScope->mergeWith($loopEntryScope, !$iterationLimitReached);
+			$bodyScope = $bodyScope->mergeWith($loopEntryScope, !$iterationLimitReached, true);
 		}
 		$finalEntryScope = $bodyScope;
 		if (!$context->isTopLevel()) {
@@ -898,7 +898,7 @@ final class ForeachHandler implements StmtHandler
 			do {
 				$prevLoopScope = $loopScope;
 				$iterStorage = $originalStorage->duplicate();
-				$iterBodyScope = $loopScope->mergeWith($endScope, true);
+				$iterBodyScope = $loopScope->mergeWith($endScope, true, true);
 				$iterBodyScope = $this->enterForeach($nodeScopeResolver, $iterBodyScope, $iterStorage, $originalScope, $stmt, $iterateeType, $nativeIterateeType, new NoopNodeCallback());
 				$iterBodyScopeResult = $nodeScopeResolver->processStmtNodesInternal($stmt, $stmt->stmts, $iterBodyScope, $iterStorage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution())->filterOutLoopExitPoints();
 				$backEdgeScope = $iterBodyScopeResult->getLoopBackEdgeScope();
@@ -910,7 +910,7 @@ final class ForeachHandler implements StmtHandler
 					break;
 				}
 				$loopScope = $backEdgeScope;
-				$bodyScope = $bodyScope->mergeWith($loopScope, true);
+				$bodyScope = $bodyScope->mergeWith($loopScope, true, true);
 				if ($loopScope->equals($prevLoopScope)) {
 					break;
 				}

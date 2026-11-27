@@ -2920,6 +2920,26 @@ public:
 				zend_string *key = entryKeyString(entry, "getVariablesOfExpressionKey", "key");
 				if (UNEXPECTED(key == NULL)) return zv::Val();
 				if (!addVariablesOfExpressionKey(roots, key)) return zv::Val::null();
+				/* a statement narrowing a guard applies the holder to its
+				 * target, so the guards' variables differ in effect too */
+				zv::Ref holders = entry.value().deref();
+				if (UNEXPECTED(!holders.isArray())) {
+					zend_throw_error(NULL, "phpstan_turbo: a conditional expressions entry is not an array");
+					return zv::Val();
+				}
+				for (auto holderEntry : zv::TableRef(holders.asArrayTable())) {
+					zv::Val conditions = conditionalConditions(holderEntry.value().deref());
+					if (UNEXPECTED(conditions.isUndef())) return zv::Val();
+					if (UNEXPECTED(Z_TYPE_P(conditions.raw()) != IS_ARRAY)) {
+						zend_throw_error(NULL, "phpstan_turbo: a ConditionalExpressionHolder has no conditions");
+						return zv::Val();
+					}
+					for (auto guardEntry : zv::ArrRef(conditions.raw())) {
+						zend_string *guardKey = entryKeyString(guardEntry, "getVariablesOfExpressionKey", "key");
+						if (UNEXPECTED(guardKey == NULL)) return zv::Val();
+						if (!addVariablesOfExpressionKey(roots, guardKey)) return zv::Val::null();
+					}
+				}
 			}
 		}
 
@@ -8361,9 +8381,9 @@ public:
 	}
 
 	/* (twin 4388) */
-	zv::Val mergeWith(zval *otherScope, bool preserveVacuousConditionals)
+	zv::Val mergeWith(zval *otherScope, bool preserveVacuousConditionals, bool joinsIterations)
 	{
-		zv::Val merged = mergeWithVariableState(otherScope, preserveVacuousConditionals);
+		zv::Val merged = mergeWithVariableState(otherScope, preserveVacuousConditionals, joinsIterations);
 		if (UNEXPECTED(merged.isUndef())) return zv::Val();
 		zend_object *mergedObject = requireObject(merged, "addTemplateArgumentConstraints");
 		if (UNEXPECTED(mergedObject == NULL)) return zv::Val();
@@ -8438,7 +8458,7 @@ public:
 	}
 
 	/* private (twin 4393) */
-	zv::Val mergeWithVariableState(zval *otherScopeZval, bool preserveVacuousConditionals)
+	zv::Val mergeWithVariableState(zval *otherScopeZval, bool preserveVacuousConditionals, bool joinsIterations)
 	{
 		if (otherScopeZval == NULL || Z_TYPE_P(otherScopeZval) != IS_OBJECT) return self_();
 		zend_object *otherScope = Z_OBJ_P(otherScopeZval);
@@ -8473,10 +8493,10 @@ public:
 		zv::Val conditionalExpressions = pt_scope_ops_intersect_conditional_expressions(ourConditionalExpressions.table(), theirConditionalExpressions.table());
 		if (UNEXPECTED(conditionalExpressions.isUndef())) return zv::Val();
 		if (preserveVacuousConditionals) {
-			zv::Val preserved = preserveVacuousConditionalExpressions(Z_ARRVAL_P(conditionalExpressions.raw()), ourConditionalExpressions.table(), theirExpressionTypes.table());
+			zv::Val preserved = preserveVacuousConditionalExpressions(Z_ARRVAL_P(conditionalExpressions.raw()), ourConditionalExpressions.table(), theirExpressionTypes.table(), joinsIterations);
 			if (UNEXPECTED(preserved.isUndef())) return zv::Val();
 			conditionalExpressions = std::move(preserved);
-			zv::Val preservedTheirs = preserveVacuousConditionalExpressions(Z_ARRVAL_P(conditionalExpressions.raw()), theirConditionalExpressions.table(), ourExpressionTypes.table());
+			zv::Val preservedTheirs = preserveVacuousConditionalExpressions(Z_ARRVAL_P(conditionalExpressions.raw()), theirConditionalExpressions.table(), ourExpressionTypes.table(), joinsIterations);
 			if (UNEXPECTED(preservedTheirs.isUndef())) return zv::Val();
 			conditionalExpressions = std::move(preservedTheirs);
 		}
@@ -8798,9 +8818,34 @@ public:
 		return zv::Val(std::move(result));
 	}
 
+	/* private static isAboutCall(): the holder's target or one of its guards
+	 * is a CallLike; false = pending exception */
+	[[nodiscard]] static bool isAboutCall(zv::Ref holder, zv::Ref typeHolder, bool &out)
+	{
+		out = false;
+		zv::Val typeHolderExpr = holderExpr(typeHolder);
+		if (UNEXPECTED(typeHolderExpr.isUndef())) return false;
+		if (UNEXPECTED(!isInstance(typeHolderExpr.ref(), PT_CLASS_CALL_LIKE, out))) return false;
+		if (out) return true;
+		zv::Val conditions = conditionalConditions(holder);
+		if (UNEXPECTED(conditions.isUndef())) return false;
+		if (UNEXPECTED(Z_TYPE_P(conditions.raw()) != IS_ARRAY)) {
+			zend_throw_error(NULL, "phpstan_turbo: a ConditionalExpressionHolder has no conditions");
+			return false;
+		}
+		for (auto guardEntry : zv::ArrRef(conditions.raw())) {
+			zv::Val guardExpr = holderExpr(guardEntry.value());
+			if (UNEXPECTED(guardExpr.isUndef())) return false;
+			if (UNEXPECTED(!isInstance(guardExpr.ref(), PT_CLASS_CALL_LIKE, out))) return false;
+			if (out) return true;
+		}
+		return true;
+	}
+
 	/* private (twin 4527) — rescues one-sided conditional holders across an
-	 * if-merge */
-	static zv::Val preserveVacuousConditionalExpressions(HashTable *currentConditionalExpressions, HashTable *sourceConditionalExpressions, HashTable *otherExpressionTypes)
+	 * if-merge; a join of different loop iterations rescues no holder about
+	 * a call */
+	static zv::Val preserveVacuousConditionalExpressions(HashTable *currentConditionalExpressions, HashTable *sourceConditionalExpressions, HashTable *otherExpressionTypes, bool joinsIterations)
 	{
 		zv::Arr result = zv::Arr::copyOfTable(currentConditionalExpressions);
 		for (auto sourceEntry : zv::TableRef(sourceConditionalExpressions)) {
@@ -8818,6 +8863,11 @@ public:
 				zv::Ref holder = holderEntry.value().deref();
 				zv::Val typeHolder = conditionalTypeHolder(holder);
 				if (UNEXPECTED(typeHolder.isUndef())) return zv::Val();
+				if (joinsIterations) {
+					bool aboutCall;
+					if (UNEXPECTED(!isAboutCall(holder, typeHolder.ref(), aboutCall))) return zv::Val();
+					if (aboutCall) continue;
+				}
 				zend_long certainty = holderCertainty(typeHolder.ref());
 				if (UNEXPECTED(certainty < 0)) return zv::Val();
 				if (certainty == PT_TRI_NO) {
@@ -12323,12 +12373,14 @@ static void ZEND_FASTCALL msMergeWith(INTERNAL_FUNCTION_PARAMETERS)
 {
 	zval *otherScope;
 	bool preserveVacuousConditionals = false;
-	ZEND_PARSE_PARAMETERS_START(1, 2)
+	bool joinsIterations = false;
+	ZEND_PARSE_PARAMETERS_START(1, 3)
 		Z_PARAM_OBJECT_OF_CLASS_OR_NULL(otherScope, pt_ce_mutating_scope)
 		Z_PARAM_OPTIONAL
 		Z_PARAM_BOOL(preserveVacuousConditionals)
+		Z_PARAM_BOOL(joinsIterations)
 	ZEND_PARSE_PARAMETERS_END();
-	PT_RETURN_VAL(PT_THIS.mergeWith(otherScope, preserveVacuousConditionals));
+	PT_RETURN_VAL(PT_THIS.mergeWith(otherScope, preserveVacuousConditionals, joinsIterations));
 }
 
 zv::Val pt_mutating_scope_get_template_argument_constraints(zend_object *scope)
@@ -12370,23 +12422,24 @@ bool pt_mutating_scope_native_types_promoted(zend_object *scope, bool &out)
 	return MutatingScope::scopeNativeTypesPromoted(scope, out);
 }
 
-zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool preserveVacuousConditionals)
+zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool preserveVacuousConditionals, bool joinsIterations)
 {
 	if (otherScope != NULL && Z_TYPE_P(otherScope) == IS_NULL) {
 		otherScope = NULL;
 	}
 	if (EXPECTED(scope->ce == pt_ce_mutating_scope || PT_TYPE_METHOD_IS(scope, PT_LC("mergewith"), msMergeWith))) {
 		/* the handler's Z_PARAM_OBJECT_OF_CLASS_OR_NULL check */
-		if (EXPECTED(otherScope == NULL || instanceof_function(Z_OBJCE_P(otherScope), pt_ce_mutating_scope))) return MutatingScope(scope).mergeWith(otherScope, preserveVacuousConditionals);
+		if (EXPECTED(otherScope == NULL || instanceof_function(Z_OBJCE_P(otherScope), pt_ce_mutating_scope))) return MutatingScope(scope).mergeWith(otherScope, preserveVacuousConditionals, joinsIterations);
 	}
-	zval argv[2];
+	zval argv[3];
 	if (otherScope != NULL) {
 		ZVAL_COPY_VALUE(&argv[0], otherScope);
 	} else {
 		ZVAL_NULL(&argv[0]);
 	}
 	ZVAL_BOOL(&argv[1], preserveVacuousConditionals);
-	return pt_type_call(scope, PT_LC("mergewith"), 2, argv);
+	ZVAL_BOOL(&argv[2], joinsIterations);
+	return pt_type_call(scope, PT_LC("mergewith"), 3, argv);
 }
 
 /* the entries the helper ports call (MethodCallReturnTypeHelper.cpp,

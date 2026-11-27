@@ -25,7 +25,7 @@ final class ConditionalExpressionsRecordingScope extends MutatingScope
 		return $this;
 	}
 
-	public function mergeWith(?MutatingScope $otherScope, bool $preserveVacuousConditionals = false): MutatingScope
+	public function mergeWith(?MutatingScope $otherScope, bool $preserveVacuousConditionals = false, bool $joinsIterations = false): MutatingScope
 	{
 		return $this;
 	}

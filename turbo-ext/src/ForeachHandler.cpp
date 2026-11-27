@@ -520,7 +520,7 @@ public:
 				do {
 					zv::Val prevScope = zv::Val::copyOf(bodyScope.ref());
 					// a warm start begins at the loop's entry already
-					if (Z_OBJ_P(bodyScope.raw()) != Z_OBJ_P(loopEntryScope.raw())) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), true);
+					if (Z_OBJ_P(bodyScope.raw()) != Z_OBJ_P(loopEntryScope.raw())) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), true, true);
 					if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 					if (!prevEntryScope.isNull()) {
 						bool equal;
@@ -597,7 +597,7 @@ public:
 		}
 
 		/* a non-converged body state keeps no vacuous conditionals (PHP mirror) */
-		if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), !iterationLimitReached);
+		if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), !iterationLimitReached, true);
 		if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 		zv::Val finalEntryScope = zv::Val::copyOf(bodyScope.ref());
 		if (!isTopLevel && !loopHeads.isNull() && UNEXPECTED(!pt_converged_loop_heads_record(loopHeads.raw(), stmt, finalEntryScope.raw()))) return zv::Val();
@@ -1727,7 +1727,7 @@ private:
 				zv::Val prevLoopScope = zv::Val::copyOf(loopScope.ref());
 				zv::Val iterStorage = pt_expression_result_storage_duplicate(originalStorage);
 				if (UNEXPECTED(iterStorage.isUndef())) return false;
-				zv::Val iterBodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(loopScope.raw()), endScope.raw(), true);
+				zv::Val iterBodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(loopScope.raw()), endScope.raw(), true, true);
 				if (UNEXPECTED(iterBodyScope.isUndef())) return false;
 				{
 					zv::Val noop = ptlh::newNoopNodeCallback();
@@ -1765,7 +1765,7 @@ private:
 				}
 				loopScope = std::move(backEdgeScope);
 				{
-					zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopScope.raw(), true);
+					zv::Val merged = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopScope.raw(), true, true);
 					if (UNEXPECTED(merged.isUndef())) return false;
 					bodyScope = std::move(merged);
 				}

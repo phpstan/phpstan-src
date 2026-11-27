@@ -58,7 +58,7 @@ final class ConvergedLoopHeads
 			return $warmEntry[1];
 		}
 
-		$warmScope = $entryScope->mergeWith($head, true);
+		$warmScope = $entryScope->mergeWith($head, true, true);
 		$this->warmEntries[$id] = [$entryScope, $warmScope];
 
 		return $warmScope;

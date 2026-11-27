@@ -223,7 +223,7 @@ final class ForHandler implements StmtHandler
 				$prevScope = $bodyScope;
 				$storage = $originalStorage->duplicate();
 				// a warm start begins at the loop's entry already
-				$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope, true);
+				$bodyScope = $bodyScope === $loopEntryScope ? $bodyScope : $bodyScope->mergeWith($loopEntryScope, true, true);
 				if ($prevEntryScope !== null && $bodyScope->equals($prevEntryScope)) {
 					// walking is deterministic in the entry scope - an unchanged entry
 					// reproduces the previous pass's exit, so the verification walk is skipped
@@ -292,7 +292,7 @@ final class ForHandler implements StmtHandler
 		if (!$entryConverged) {
 			// a body state that did not converge may still reach the guards
 			// a vacuous conditional excludes, so only a fixpoint keeps them
-			$bodyScope = $bodyScope->mergeWith($loopEntryScope, !$iterationLimitReached);
+			$bodyScope = $bodyScope->mergeWith($loopEntryScope, !$iterationLimitReached, true);
 		}
 		if (!$context->isTopLevel()) {
 			$loopHeads?->record($stmt, $bodyScope);

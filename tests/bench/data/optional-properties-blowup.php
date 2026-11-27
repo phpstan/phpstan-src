@@ -1,5 +1,11 @@
 <?php // lint >= 8.2
 
+/*
+ * instructions: 1.722B
+ * cycles: 2.126B
+ * memory: 24.46MiB
+ */
+
 declare(strict_types=1);
 
 namespace OptionalPropertiesBlowup;

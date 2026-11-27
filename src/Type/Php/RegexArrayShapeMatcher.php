@@ -14,7 +14,6 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\IntegerRangeType;
-use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Regex\RegexCapturingGroup;
@@ -387,7 +386,7 @@ final class RegexArrayShapeMatcher
 
 			if ($this->containsPatternOrder($flags)) {
 				$accessoryTypes = [
-					new ArrayType(new IntegerType(), $subjectValueType),
+					new ArrayType(IntegerRangeType::createAllGreaterThanOrEqualTo(0), $subjectValueType),
 					new AccessoryArrayListType(),
 				];
 				if ($wasMatched->yes()) {

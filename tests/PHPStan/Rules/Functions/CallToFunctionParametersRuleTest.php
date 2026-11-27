@@ -3703,4 +3703,17 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/template-bounds-variance.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug13875(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-13875.php'], []);
+		$this->analyse([__DIR__ . '/data/bug-13875-declaration-site.php'], []);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug12444(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-12444.php'], []);
+	}
+
 }

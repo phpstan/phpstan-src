@@ -435,7 +435,14 @@ final class ArrayAlgebra
 			$newArray->setOffsetValueType($keyType, $value, $optional);
 		}
 
-		return $newArray->getArray();
+		$newArrayType = $newArray->getArray();
+		// optional keys rebuilt one by one may each be left out alone, so the
+		// builder cannot tell a list from the keys - the inputs can
+		if ($a->isList()->yes() || $b->isList()->yes()) {
+			$newArrayType = TypeCombinator::intersect($newArrayType, new AccessoryArrayListType());
+		}
+
+		return $newArrayType;
 	}
 
 	/** @see Type::tryIntersect() */

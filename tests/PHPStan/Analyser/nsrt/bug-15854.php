@@ -80,3 +80,26 @@ function build(array $entries): void
 	echo count($values['items']), isset($values['perItem']) ? 'y' : 'n';
 }
 
+
+function parse(\DOMElement $element): void
+{
+	$values = [];
+
+	foreach ($element->childNodes as $child) {
+		if (!$child instanceof \DOMElement) {
+			continue;
+		}
+
+		if ($child->nodeName === 'aware') {
+			$values['aware'][] = $child->nodeValue;
+
+			continue;
+		}
+
+		if ($child->nodeName === 'name') {
+			$values['name'] = $child->nodeValue;
+		}
+	}
+
+	assertType('array{name?: string|null, aware?: non-empty-list<string|null>}', $values);
+}

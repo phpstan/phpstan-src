@@ -9440,10 +9440,12 @@ public:
 		zv::Val nativeTypes = generalizeVariableTypeHolders(Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()), otherNativeTypes, writableTable, entryNativeTypes);
 		if (UNEXPECTED(nativeTypes.isUndef())) return zv::Val();
 
-		/* the holders of the new pass's state, as the twin */
+		/* the holders of the new pass's state that the previous pass derived too, as the twin */
 		HashTable *otherConditionalExpressions = otherTable(otherScope, PT_MS_PROP_CONDITIONAL_EXPRESSIONS, PT_LC("conditionalExpressions"));
-		if (UNEXPECTED(otherConditionalExpressions == NULL)) return zv::Val();
-		zv::Val conditionalExpressions = withoutWidenedConditionalExpressions(otherConditionalExpressions, otherExpressionTypes, Z_ARRVAL_P(variableTypeHolders.raw()));
+		if (UNEXPECTED(otherConditionalExpressions == NULL || !requireSlot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS, "conditionalExpressions"))) return zv::Val();
+		zv::Val keptConditionalExpressions = pt_scope_ops_intersect_conditional_expressions(otherConditionalExpressions, Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()));
+		if (UNEXPECTED(keptConditionalExpressions.isUndef())) return zv::Val();
+		zv::Val conditionalExpressions = withoutWidenedConditionalExpressions(Z_ARRVAL_P(keptConditionalExpressions.raw()), otherExpressionTypes, Z_ARRVAL_P(variableTypeHolders.raw()));
 		if (UNEXPECTED(conditionalExpressions.isUndef())) return zv::Val();
 
 		CreateArgs a;

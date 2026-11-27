@@ -678,6 +678,38 @@ public:
 		if (UNEXPECTED(resultValue < 0)) return zv::Val();
 		if (resultValue == PT_TRI_YES) return result;
 
+		/* a shape union() merged from shapes differing at one key is accepted
+		 * when each of the shapes it holds is:
+		 * ArrayAlgebra::splitConstantArrayAtFiniteValue($constantArrays[0]) of
+		 * a type that is one constant array and no template */
+		zv::Val constantArrays = pt_type_call_array(Z_OBJ_P(type), PT_LC("getconstantarrays"), 0, NULL);
+		if (UNEXPECTED(constantArrays.isUndef())) return zv::Val();
+		bool splitIsTemplate = false;
+		if (zv::ArrRef(constantArrays.raw()).size() == 1 && UNEXPECTED(!isInstance(type, PT_CLASS_TEMPLATE_TYPE, splitIsTemplate))) return zv::Val();
+		zend_long splitIsConstantArray = PT_TRI_NO;
+		if (zv::ArrRef(constantArrays.raw()).size() == 1 && !splitIsTemplate) {
+			splitIsConstantArray = pt_type_call_trinary(Z_OBJ_P(type), PT_LC("isconstantarray"), 0, NULL);
+			if (UNEXPECTED(splitIsConstantArray < 0)) return zv::Val();
+		}
+		if (splitIsConstantArray == PT_TRI_YES) {
+			zval splitArgv[1];
+			ZVAL_COPY_VALUE(&splitArgv[0], zend_hash_index_find(Z_ARRVAL_P(constantArrays.raw()), 0));
+			zv::Val shapes = pt_type_call_static(PT_CLASS_ARRAY_ALGEBRA, PT_LC("splitconstantarrayatfinitevalue"), 1, splitArgv);
+			if (UNEXPECTED(shapes.isUndef())) return zv::Val();
+			if (!zv::Ref(shapes.raw()).isNull()) {
+				bool acceptsShapes = true;
+				for (zv::ArrayEntry shape : zv::ArrRef(shapes.raw())) {
+					zend_long accepted = acceptsTrinary(thisAccepts(shape.value().deref().raw(), strictTypes));
+					if (UNEXPECTED(accepted < 0)) return zv::Val();
+					if (accepted != PT_TRI_YES) {
+						acceptsShapes = false;
+						break;
+					}
+				}
+				if (acceptsShapes) return acceptsResult(PT_TRI_YES);
+			}
+		}
+
 		/* the reasons every member shares, decorated per member */
 		zv::Val commonReasons;
 		for (zv::ArrayEntry entry : innerAccepts.arrRef()) {

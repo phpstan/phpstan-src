@@ -36,6 +36,67 @@ final class ArrayAlgebra
 	/** The most optional keys whose sets tryUnionConstantArrayBesideEmptyArray() counts in an integer. */
 	private const KEY_SETS_COUNTED_LIMIT = 62;
 
+	/** The most shapes splitConstantArrayAtFiniteValue() splits a shape into, over all of its keys. */
+	private const SPLIT_SHAPES_LIMIT = 64;
+
+	/**
+	 * The shapes of a shape, one per value of its first key whose value is a
+	 * union of finitely many values: `array{type: 'a'|'b', x: int}` is
+	 * `array{type: 'a', x: int}` and `array{type: 'b', x: int}`.
+	 *
+	 * tryUnionConstantArray() merges shapes that differ at one key into one
+	 * shape, which a union of the shapes it merged no longer accepts member by
+	 * member - UnionType::accepts() splits it back with this. Null when no key
+	 * has such a value, or when the shape splits into more than
+	 * SPLIT_SHAPES_LIMIT shapes over all of its keys.
+	 *
+	 * @return list<ConstantArrayType>|null
+	 */
+	public static function splitConstantArrayAtFiniteValue(ConstantArrayType $array): ?array
+	{
+		$valueTypes = $array->getValueTypes();
+		$splitIndex = null;
+		$splitValues = [];
+		$shapesCount = 1;
+		foreach ($valueTypes as $i => $valueType) {
+			// unions of constant scalars, the values tryUnionConstantArray() unions at one key
+			if (!$valueType instanceof UnionType || $valueType instanceof TemplateType || !$valueType->isConstantScalarValue()->yes()) {
+				continue;
+			}
+			$finiteTypes = $valueType->getFiniteTypes();
+			if (count($finiteTypes) < 2) {
+				continue;
+			}
+			$shapesCount *= count($finiteTypes);
+			if ($shapesCount > self::SPLIT_SHAPES_LIMIT) {
+				return null;
+			}
+			if ($splitIndex !== null) {
+				continue;
+			}
+			$splitIndex = $i;
+			$splitValues = $finiteTypes;
+		}
+		if ($splitIndex === null) {
+			return null;
+		}
+
+		$shapes = [];
+		foreach ($splitValues as $splitValue) {
+			$valueTypes[$splitIndex] = $splitValue;
+			$shapes[] = new ConstantArrayType(
+				$array->getKeyTypes(),
+				$valueTypes,
+				$array->getNextAutoIndexes(),
+				$array->getOptionalKeys(),
+				$array->isList(),
+				$array->getUnsealedTypes(),
+			);
+		}
+
+		return $shapes;
+	}
+
 	/** @see Type::tryIntersect() */
 	public static function tryIntersectConstantArray(ConstantArrayType $array, Type $otherType): ?Type
 	{

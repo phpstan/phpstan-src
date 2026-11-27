@@ -325,6 +325,25 @@ class UnionType implements CompoundType
 			return $result;
 		}
 
+		// A shape that union() merged from shapes differing at one key is accepted when
+		// each of the shapes it holds is, even when no single member accepts all of them.
+		$constantArrays = $type->getConstantArrays();
+		if (count($constantArrays) === 1 && !$type instanceof TemplateType && $type->isConstantArray()->yes()) {
+			$shapes = ArrayAlgebra::splitConstantArrayAtFiniteValue($constantArrays[0]);
+			if ($shapes !== null) {
+				$acceptsShapes = true;
+				foreach ($shapes as $shape) {
+					if (!$this->accepts($shape, $strictTypes)->yes()) {
+						$acceptsShapes = false;
+						break;
+					}
+				}
+				if ($acceptsShapes) {
+					return AcceptsResult::createYes();
+				}
+			}
+		}
+
 		$commonReasons = null;
 		foreach ($innerAccepts as $innerResult) {
 			if ($commonReasons === null) {

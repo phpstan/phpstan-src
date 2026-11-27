@@ -304,6 +304,11 @@ final class ArrayUnion
 			}
 
 			foreach ($constantArrays as $constantArray) {
+				$unsealed = $constantArray->getUnsealedTypes();
+				if ($unsealed !== null && $constantArray->isUnsealed()->yes()) {
+					$keyTypes[] = $unsealed[0];
+					$valueTypes[] = $unsealed[1];
+				}
 				$constantValueTypes = $constantArray->getValueTypes();
 				foreach ($constantArray->getKeyTypes() as $i => $keyType) {
 					$valueTypes[] = $constantValueTypes[$i];

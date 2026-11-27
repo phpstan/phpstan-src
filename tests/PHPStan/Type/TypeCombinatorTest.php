@@ -3201,7 +3201,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{...<string, string>}',
 			],
 			ArrayType::class,
-			'array<string, int|string>',
+			'array',
 		];
 
 		yield [
@@ -3210,7 +3210,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{...<string, string>}',
 			],
 			ArrayType::class,
-			'array<string, string>',
+			'array',
 		];
 
 		yield [

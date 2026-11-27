@@ -1195,7 +1195,7 @@ private:
 	static zv::Val selectArgsAcceptor(zval *types, zval *parametersAcceptors, zval *namedArgumentsVariants, bool hasName, bool unpack)
 	{
 		return hasName && Z_TYPE_P(namedArgumentsVariants) != IS_NULL
-			? selectorSelectFromTypes(types, namedArgumentsVariants, unpack)
+			? pt_parameters_acceptor_selector_select_from_named_types(types, parametersAcceptors, namedArgumentsVariants, unpack)
 			: selectorSelectFromTypes(types, parametersAcceptors, unpack);
 	}
 

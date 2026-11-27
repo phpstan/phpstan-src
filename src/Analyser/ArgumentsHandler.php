@@ -1195,7 +1195,7 @@ final class ArgumentsHandler
 	private function selectArgsAcceptor(array $types, array $parametersAcceptors, ?array $namedArgumentsVariants, bool $hasName, bool $unpack): ParametersAcceptor
 	{
 		return $hasName && $namedArgumentsVariants !== null
-			? ParametersAcceptorSelector::selectFromTypes($types, $namedArgumentsVariants, $unpack)
+			? ParametersAcceptorSelector::selectFromNamedTypes($types, $parametersAcceptors, $namedArgumentsVariants, $unpack)
 			: ParametersAcceptorSelector::selectFromTypes($types, $parametersAcceptors, $unpack);
 	}
 

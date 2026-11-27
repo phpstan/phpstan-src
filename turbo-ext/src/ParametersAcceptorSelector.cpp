@@ -892,6 +892,120 @@ public:
 		return genericResolve(types, combined.raw());
 	}
 
+	/* Mirrors selectFromNamedTypes() */
+	static zv::Val selectFromNamedTypes(zval *types, zval *parametersAcceptors, zval *namedArgumentsVariants, bool unpack)
+	{
+		HashTable *namedVariants = Z_ARRVAL_P(namedArgumentsVariants);
+		if (unpack || zend_hash_num_elements(namedVariants) != 1 || zend_hash_num_elements(Z_ARRVAL_P(parametersAcceptors)) == 0) {
+			return selectFromTypes(types, namedArgumentsVariants, unpack);
+		}
+
+		zval *namedArgumentsVariant = readIndex(namedVariants, 0);
+		if (UNEXPECTED(namedArgumentsVariant == NULL)) return zv::Val();
+		bool isExtended = false;
+		if (UNEXPECTED(!isA(namedArgumentsVariant, PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR, isExtended))) return zv::Val();
+		if (!isExtended) return selectFromTypes(types, namedArgumentsVariants, unpack);
+
+		zv::Val positionalTypes = getPositionalTypes(types, namedArgumentsVariant);
+		if (UNEXPECTED(positionalTypes.isUndef())) return zv::Val();
+		if (positionalTypes.isNull()) return selectFromTypes(types, namedArgumentsVariants, unpack);
+
+		zv::Val positionalAcceptor = selectFromTypes(positionalTypes.raw(), parametersAcceptors, false);
+		if (UNEXPECTED(positionalAcceptor.isUndef())) return zv::Val();
+		zv::Val returnType = acceptorGet(positionalAcceptor.raw(), AG_RETURN_TYPE);
+		if (UNEXPECTED(returnType.isUndef())) return zv::Val();
+
+		zv::Val templateTypeMap = acceptorGet(namedArgumentsVariant, AG_TEMPLATE_TYPE_MAP);
+		if (UNEXPECTED(templateTypeMap.isUndef())) return zv::Val();
+		zv::Val parameters = acceptorGet(namedArgumentsVariant, AG_PARAMETERS);
+		if (UNEXPECTED(parameters.isUndef())) return zv::Val();
+		zv::Val isVariadic = acceptorGet(namedArgumentsVariant, AG_VARIADIC);
+		if (UNEXPECTED(isVariadic.isUndef())) return zv::Val();
+
+		bool positionalIsExtended = false;
+		if (UNEXPECTED(!isA(positionalAcceptor.raw(), PT_CLASS_EXTENDED_PARAMETERS_ACCEPTOR, positionalIsExtended))) return zv::Val();
+		zv::Val phpDocReturnType = positionalIsExtended ? acceptorGet(positionalAcceptor.raw(), AG_PHPDOC_RETURN_TYPE) : zv::Val::copyOf(zv::Ref(returnType.raw()));
+		if (UNEXPECTED(phpDocReturnType.isUndef())) return zv::Val();
+		zv::Val nativeReturnType = positionalIsExtended ? acceptorGet(positionalAcceptor.raw(), AG_NATIVE_RETURN_TYPE) : pt_type_new_mixed_type();
+		if (UNEXPECTED(nativeReturnType.isUndef())) return zv::Val();
+		zv::Val variances = acceptorGet(namedArgumentsVariant, AG_CALL_SITE_VARIANCE_MAP);
+		if (UNEXPECTED(variances.isUndef())) return zv::Val();
+
+		zval null = {};
+		ZVAL_NULL(&null);
+		zv::Args argv{templateTypeMap.raw(), &null, parameters.raw(), isVariadic.raw(), returnType.raw(), phpDocReturnType.raw(), nativeReturnType.raw(), variances.raw()};
+		zv::Val variant = pt_extended_function_variant_new(8, argv);
+		if (UNEXPECTED(variant.isUndef())) return zv::Val();
+
+		return genericResolve(types, variant.raw());
+	}
+
+	/* Mirrors getPositionalTypes(); UNDEF = pending exception, null for null */
+	static zv::Val getPositionalTypes(zval *types, zval *parametersAcceptor)
+	{
+		zv::Val parameters = acceptorParameters(parametersAcceptor);
+		if (UNEXPECTED(parameters.isUndef())) return zv::Val();
+		HashTable *parametersTable = Z_ARRVAL_P(parameters.raw());
+
+		zv::Arr positions = zv::Arr::empty();
+		for (zv::ArrayEntry entry : zv::ArrRef(parameters.raw())) {
+			zval *parameter = entry.value().deref().raw();
+			bool variadic = false;
+			if (UNEXPECTED(!parameterBool(parameter, PG_VARIADIC, variadic))) return zv::Val();
+			if (variadic) break;
+			zv::Val name = parameterGet(parameter, PG_NAME);
+			if (UNEXPECTED(name.isUndef())) return zv::Val();
+			if (UNEXPECTED(Z_TYPE_P(name.raw()) != IS_STRING)) {
+				zend_type_error("Illegal offset type");
+				return zv::Val();
+			}
+			zval position;
+			if (entry.stringKeyOrNull() != NULL) {
+				ZVAL_STR_COPY(&position, entry.stringKeyOrNull());
+			} else {
+				ZVAL_LONG(&position, (zend_long) entry.indexKey());
+			}
+			positions.separate();
+			zend_symtable_update(positions.table(), Z_STR_P(name.raw()), &position);
+			zval_ptr_dtor(&position);
+		}
+
+		zv::Arr typesByPosition = zv::Arr::empty();
+		zend_long count = 0;
+		for (zv::ArrayEntry entry : zv::ArrRef(types)) {
+			zval *type = entry.value().deref().raw();
+			zend_long key;
+			if (entry.stringKeyOrNull() != NULL) {
+				zval *position = zend_hash_find(positions.table(), entry.stringKeyOrNull());
+				if (position == NULL) return zv::Val::null();
+				if (UNEXPECTED(Z_TYPE_P(position) != IS_LONG)) return zv::Val::null();
+				key = Z_LVAL_P(position);
+			} else {
+				key = (zend_long) entry.indexKey();
+			}
+			setEntryKey(typesByPosition, NULL, (zend_ulong) key, type);
+			if (key + 1 > count) count = key + 1;
+		}
+
+		zv::Arr positionalTypes = zv::Arr::create((uint32_t) count);
+		for (zend_long i = 0; i < count; i++) {
+			zval *type = zend_hash_index_find(typesByPosition.table(), (zend_ulong) i);
+			if (type != NULL) {
+				positionalTypes.push(zv::Ref(type));
+				continue;
+			}
+
+			zval *parameter = issetIndex(parametersTable, (zend_ulong) i);
+			if (parameter == NULL) return zv::Val::null();
+			zv::Val defaultValue = parameterGet(parameter, PG_DEFAULT_VALUE);
+			if (UNEXPECTED(defaultValue.isUndef())) return zv::Val();
+			if (Z_TYPE_P(defaultValue.raw()) != IS_OBJECT || instanceof_function(Z_OBJCE_P(defaultValue.raw()), pt_ce_error_type)) return zv::Val::null();
+			positionalTypes.push(zv::Ref(defaultValue.raw()));
+		}
+
+		return zv::Val(std::move(positionalTypes));
+	}
+
 	/* Mirrors combineVariantsForNormalization() */
 	static zv::Val combineVariantsForNormalization(zval *args, zval *variants, zval *namedArgumentsVariants)
 	{
@@ -2623,7 +2737,7 @@ public:
 			if (UNEXPECTED(!gatherType(types, unpack, hasName, originalArg, stringKey, i, type.raw()))) return zv::Val();
 		}
 
-		if (hasName && Z_TYPE_P(namedArgumentsVariants) != IS_NULL) return selectFromTypes(types.raw(), namedArgumentsVariants, unpack);
+		if (hasName && Z_TYPE_P(namedArgumentsVariants) != IS_NULL) return selectFromNamedTypes(types.raw(), parametersAcceptors.raw(), namedArgumentsVariants, unpack);
 
 		return selectFromTypes(types.raw(), parametersAcceptors.raw(), unpack);
 	}
@@ -2762,6 +2876,17 @@ zv::Val pt_parameters_acceptor_selector_select_from_types(zval *types, zval *par
 	return pt_type_call_static_ce(pt_ce_parameters_acceptor_selector, PT_LC("selectfromtypes"), 3, argv);
 }
 
+zv::Val pt_parameters_acceptor_selector_select_from_named_types(zval *types, zval *parametersAcceptors, zval *namedArgumentsVariants, bool unpack)
+{
+	if (EXPECTED(Z_TYPE_P(types) == IS_ARRAY && Z_TYPE_P(parametersAcceptors) == IS_ARRAY && Z_TYPE_P(namedArgumentsVariants) == IS_ARRAY)) {
+		return ParametersAcceptorSelector::selectFromNamedTypes(types, parametersAcceptors, namedArgumentsVariants, unpack);
+	}
+	zval unpackZv;
+	ZVAL_BOOL(&unpackZv, unpack);
+	zv::Args argv{types, parametersAcceptors, namedArgumentsVariants, &unpackZv};
+	return pt_type_call_static_ce(pt_ce_parameters_acceptor_selector, PT_LC("selectfromnamedtypes"), 4, argv);
+}
+
 zv::Val pt_parameters_acceptor_selector_combine_variants_for_normalization(zval *args, zval *variants, zval *namedArgumentsVariants)
 {
 	if (EXPECTED(Z_TYPE_P(args) == IS_ARRAY && Z_TYPE_P(variants) == IS_ARRAY && (namedArgumentsVariants == NULL || Z_TYPE_P(namedArgumentsVariants) == IS_ARRAY || Z_TYPE_P(namedArgumentsVariants) == IS_NULL))) {
@@ -2867,6 +2992,18 @@ PT_MINIT_REGISTRATION(pt_register_parameters_acceptor_selector)
 			Z_PARAM_BOOL(unpack)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(ParametersAcceptorSelector::selectFromTypes(types, parametersAcceptors, unpack));
+	});
+
+	cls.method(sigs::selectFromNamedTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *types, *parametersAcceptors, *namedArgumentsVariants;
+		bool unpack;
+		ZEND_PARSE_PARAMETERS_START(4, 4)
+			Z_PARAM_ARRAY(types)
+			Z_PARAM_ARRAY(parametersAcceptors)
+			Z_PARAM_ARRAY(namedArgumentsVariants)
+			Z_PARAM_BOOL(unpack)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(ParametersAcceptorSelector::selectFromNamedTypes(types, parametersAcceptors, namedArgumentsVariants, unpack));
 	});
 
 	cls.method(sigs::combineVariantsForNormalization, [](INTERNAL_FUNCTION_PARAMETERS) {

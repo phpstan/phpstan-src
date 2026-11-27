@@ -241,7 +241,7 @@ public:
 				zv::Val storage = pt_expression_result_storage_duplicate(originalStorage);
 				if (UNEXPECTED(storage.isUndef())) return zv::Val();
 				// a warm start begins at the loop's entry already
-				if (Z_OBJ_P(bodyScope.raw()) != Z_OBJ_P(loopEntryScope.raw())) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), true);
+				if (Z_OBJ_P(bodyScope.raw()) != Z_OBJ_P(loopEntryScope.raw())) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), true, true);
 				if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 				if (!prevEntryScope.isNull()) {
 					bool equal;
@@ -343,7 +343,7 @@ public:
 
 		zval *storage = originalStorage;
 		/* a non-converged body state keeps no vacuous conditionals (PHP mirror) */
-		if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), !iterationLimitReached);
+		if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), !iterationLimitReached, true);
 		if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 		if (!isTopLevel && !loopHeads.isNull() && UNEXPECTED(!pt_converged_loop_heads_record(loopHeads.raw(), stmt, bodyScope.raw()))) return zv::Val();
 		zv::Val headScope = zv::Val::copyOf(bodyScope.ref());

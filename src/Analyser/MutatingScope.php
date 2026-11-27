@@ -7,6 +7,7 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
@@ -1388,6 +1389,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				}
 				foreach ($variables as $variable) {
 					$roots[$variable] = true;
+				}
+				// a statement narrowing a guard applies the holder to its target,
+				// so the guards' variables differ in effect too
+				foreach ($holders as $holder) {
+					foreach (array_keys($holder->getConditionExpressionTypeHolders()) as $guardKey) {
+						$guardVariables = self::getVariablesOfExpressionKey($guardKey);
+						if ($guardVariables === null) {
+							return null;
+						}
+						foreach ($guardVariables as $variable) {
+							$roots[$variable] = true;
+						}
+					}
 				}
 			}
 		}
@@ -4304,13 +4318,17 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		return $this->inFirstLevelStatement;
 	}
 
-	public function mergeWith(?self $otherScope, bool $preserveVacuousConditionals = false): self
+	/**
+	 * $joinsIterations marks a join of states from different loop iterations,
+	 * such as a loop head joining the back edge with the loop's entry.
+	 */
+	public function mergeWith(?self $otherScope, bool $preserveVacuousConditionals = false, bool $joinsIterations = false): self
 	{
 		if ($otherScope === null || $otherScope === $this) {
 			return $this;
 		}
 
-		$merged = $this->mergeWithVariableState($otherScope, $preserveVacuousConditionals)->addTemplateArgumentConstraints($otherScope->getTemplateArgumentConstraints());
+		$merged = $this->mergeWithVariableState($otherScope, $preserveVacuousConditionals, $joinsIterations)->addTemplateArgumentConstraints($otherScope->getTemplateArgumentConstraints());
 		if (
 			$merged->templateArgumentConstraints === null
 			|| $merged->templateArgumentFrame === null
@@ -4345,7 +4363,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		return $constraints;
 	}
 
-	private function mergeWithVariableState(?self $otherScope, bool $preserveVacuousConditionals = false): self
+	private function mergeWithVariableState(?self $otherScope, bool $preserveVacuousConditionals, bool $joinsIterations): self
 	{
 		if ($otherScope === null || $this === $otherScope) {
 			return $this;
@@ -4362,11 +4380,13 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				$conditionalExpressions,
 				$this->conditionalExpressions,
 				$theirExpressionTypes,
+				$joinsIterations,
 			);
 			$conditionalExpressions = $this->preserveVacuousConditionalExpressions(
 				$conditionalExpressions,
 				$otherScope->conditionalExpressions,
 				$ourExpressionTypes,
+				$joinsIterations,
 			);
 		}
 		$conditionalExpressions = $this->mergeSameGuardConditionalExpressions(
@@ -4595,6 +4615,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 * already satisfies the holder's consequent (subtype with at-least-as-strong
 	 * certainty) - the consequent then holds on both paths under the guard.
 	 *
+	 * A join of different loop iterations rescues no holder about a call: the
+	 * next iteration evaluates the call again, and narrowing that new result
+	 * would apply what the holder recorded about the previous one.
+	 *
 	 * @param array<string, ConditionalExpressionHolder[]> $currentConditionalExpressions
 	 * @param array<string, ConditionalExpressionHolder[]> $sourceConditionalExpressions
 	 * @param array<string, ExpressionTypeHolder> $otherExpressionTypes
@@ -4604,6 +4628,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		array $currentConditionalExpressions,
 		array $sourceConditionalExpressions,
 		array $otherExpressionTypes,
+		bool $joinsIterations,
 	): array
 	{
 		foreach ($sourceConditionalExpressions as $exprString => $holders) {
@@ -4613,6 +4638,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				}
 
 				$typeHolder = $holder->getTypeHolder();
+				if ($joinsIterations && self::isAboutCall($holder)) {
+					continue;
+				}
 				if ($typeHolder->getCertainty()->no() && !$typeHolder->getExpr() instanceof Variable) {
 					continue;
 				}
@@ -4667,6 +4695,20 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		}
 
 		return $currentConditionalExpressions;
+	}
+
+	private static function isAboutCall(ConditionalExpressionHolder $holder): bool
+	{
+		if ($holder->getTypeHolder()->getExpr() instanceof CallLike) {
+			return true;
+		}
+		foreach ($holder->getConditionExpressionTypeHolders() as $guardTypeHolder) {
+			if ($guardTypeHolder->getExpr() instanceof CallLike) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**

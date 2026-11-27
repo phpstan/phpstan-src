@@ -105,7 +105,7 @@ public:
 			do {
 				zv::Val prevScope = zv::Val::copyOf(bodyScope.ref());
 				// a warm start begins at the loop's entry already
-				if (Z_OBJ_P(bodyScope.raw()) != Z_OBJ_P(loopEntryScope.raw())) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), true);
+				if (Z_OBJ_P(bodyScope.raw()) != Z_OBJ_P(loopEntryScope.raw())) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), true, true);
 				if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 				if (!prevEntryScope.isNull()) {
 					bool equal;
@@ -207,7 +207,7 @@ public:
 			if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 
 			/* a non-converged body state keeps no vacuous conditionals (PHP mirror) */
-			if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), !iterationLimitReached);
+			if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), !iterationLimitReached, true);
 			if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 			if (!isTopLevel && UNEXPECTED(!pt_converged_loop_heads_record(loopHeads.raw(), stmt, bodyScope.raw()))) return zv::Val();
 		}

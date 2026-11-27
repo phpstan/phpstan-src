@@ -2131,11 +2131,11 @@ zv::Val pt_internal_statement_result_to_public(zval *result);
 
 /* MutatingScope.cpp — $scope->getTemplateArgumentConstraints() /
  * ->addTemplateArgumentConstraints($constraints) / ->mergeWith($otherScope,
- * $preserveVacuousConditionals) ($constraints / $otherScope NULL or IS_NULL
+ * $preserveVacuousConditionals, $joinsIterations) ($constraints / $otherScope NULL or IS_NULL
  * for null) */
 zv::Val pt_mutating_scope_get_template_argument_constraints(zend_object *scope);
 zv::Val pt_mutating_scope_add_template_argument_constraints(zend_object *scope, zval *constraints);
-zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool preserveVacuousConditionals = false);
+zv::Val pt_mutating_scope_merge_with(zend_object *scope, zval *otherScope, bool preserveVacuousConditionals = false, bool joinsIterations = false);
 
 /* MutatingScope.cpp — $scope->getPhpVersion()-><lcMethod>() as PT_TRI_*;
  * negative = pending exception */

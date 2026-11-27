@@ -2,17 +2,21 @@
 
 namespace PHPStan\Type\Combinator;
 
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 
 /**
  * Widening of array shapes, what TypeCombinator::widen() does to the arrays of
  * a union and to the values merged into a general array: while the types hold
  * more than ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT constant array values,
- * the next step runs - the shapes fold first, keeping their keys, and then
- * degrade to oversized general arrays.
+ * the next step runs - the general arrays merge first, then the shapes fold,
+ * keeping their keys, and then degrade to oversized general arrays. The steps
+ * see the members of the unions of arrays among the types.
  *
  * @internal
  */
@@ -28,7 +32,27 @@ final class ArrayWidening
 	 */
 	public static function widen(array $types): array
 	{
+		if (self::isWithinLimit($types)) {
+			return $types;
+		}
+
+		// the steps fold bare shapes, and the values merged into a general
+		// array are often tagged unions of shapes - a union with members of
+		// other kinds stays one type for OversizedArrayWidening to degrade
+		$members = [];
+		foreach ($types as $type) {
+			if ($type instanceof UnionType && !$type instanceof BenevolentUnionType && !$type instanceof TemplateType && $type->isArray()->yes()) {
+				foreach ($type->getTypes() as $member) {
+					$members[] = $member;
+				}
+				continue;
+			}
+			$members[] = $type;
+		}
+		$types = $members;
+
 		foreach (self::$steps ??= [
+			new GeneralArrayWidening(),
 			new SameKeysShapeWidening(),
 			new SharedKeyShapeWidening(),
 			new OversizedArrayWidening(),

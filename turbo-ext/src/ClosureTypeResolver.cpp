@@ -402,7 +402,7 @@ public:
 	{
 		zval *cacheLevel = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_CACHE);
 		if (UNEXPECTED(cacheLevel == NULL)) return zv::Str();
-		smart_str key = {0};
+		smart_str key = {NULL, 0};
 		smart_str_append(&key, cacheKey);
 		for (zv::ArrayEntry entry : zv::ArrRef(byRefUseTypes)) {
 			zv::Val description = describeType(entry.value().deref().raw(), cacheLevel);

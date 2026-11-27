@@ -41,9 +41,9 @@ function doFoo(bool $flag): void
 	}
 
 	// every combination of the constant arguments contributes to the type
-	assertType('non-empty-list<0|1|(literal-string&non-empty-string)>', range($flag ? 'A' : 1, 'z'));
-	assertType('non-empty-list<float<1.0, 100.0>|int<1, 100>>', range($flag ? 1.0 : 1, 100));
-	assertType('non-empty-list<float<1.0, 100.0>|int<1, 100>>', range(1, 100, $flag ? 0.5 : 1));
+	assertType('array{1, 0}|(non-empty-list<literal-string&non-empty-string>)', range($flag ? 'A' : 1, 'z'));
+	assertType('non-empty-list<float<1.0, 100.0>>|non-empty-list<int<1, 100>>', range($flag ? 1.0 : 1, 100));
+	assertType('non-empty-list<float<1.0, 100.0>>|non-empty-list<int<1, 100>>', range(1, 100, $flag ? 0.5 : 1));
 
 	// ranges longer than the threshold are generalized from the returned values
 	assertType('non-empty-list<float<1.0, 100.0>>', range(1.0, 100.0));

@@ -454,7 +454,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ArrayType(new MixedType(), new IntegerType()),
 				],
 				UnionType::class,
-				'array<int|string>|ArrayIterator|ArrayObject',
+				'array<int>|array<string>|ArrayIterator|ArrayObject',
 			],
 			[
 				[
@@ -561,24 +561,24 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ArrayType(new MixedType(), new IntegerType()),
 					new ArrayType(new MixedType(), new StringType()),
 				],
-				ArrayType::class,
-				'array<int|string>',
+				UnionType::class,
+				'array<int>|array<string>',
 			],
 			[
 				[
 					new ArrayType(new MixedType(), new IntegerType()),
 					new ArrayType(new IntegerType(), new StringType()),
 				],
-				ArrayType::class,
-				'array<int|string>',
+				UnionType::class,
+				'array<int, string>|array<int>',
 			],
 			[
 				[
 					new ArrayType(new StringType(), new IntegerType()),
 					new ArrayType(new IntegerType(), new StringType()),
 				],
-				ArrayType::class,
-				'array<int|string, int|string>',
+				UnionType::class,
+				'array<int, string>|array<string, int>',
 			],
 			[
 				[
@@ -801,8 +801,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 						new IntegerType(),
 					]),
 				],
-				ArrayType::class,
-				'array<\'bar\'|\'foo\'|int, DateTimeImmutable|int|stdClass>',
+				UnionType::class,
+				'array<int, stdClass>|array{bar: int, foo: DateTimeImmutable}',
 			],
 			[
 				[
@@ -3182,8 +3182,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{...<int, string>}',
 				'array{...<string, string>}',
 			],
-			ArrayType::class,
-			'array<int|string, string>',
+			UnionType::class,
+			'array<int, string>|array<string, string>',
 		];
 
 		yield [
@@ -3191,8 +3191,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{...<int, string>}',
 				'array{...<int, int>}',
 			],
-			ArrayType::class,
-			'array<int, int|string>',
+			UnionType::class,
+			'array<int, int>|array<int, string>',
 		];
 
 		yield [
@@ -3227,8 +3227,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{a: int}',
 				'array{...<int, int>}',
 			],
-			ArrayType::class,
-			'array<\'a\'|int, int>',
+			UnionType::class,
+			'array<int, int>|array{a: int}',
 		];
 
 		yield [

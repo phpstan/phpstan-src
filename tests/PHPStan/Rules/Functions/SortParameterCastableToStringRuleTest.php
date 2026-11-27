@@ -155,7 +155,7 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-12146.php'], $this->hackParameterNames([
 			[
-				'Parameter #1 $array of function array_unique expects an array of values castable to string, array<int|stdClass> given.',
+				'Parameter #1 $array of function array_unique expects an array of values castable to string, array<int>|array<stdClass> given.',
 				46,
 			],
 		]));

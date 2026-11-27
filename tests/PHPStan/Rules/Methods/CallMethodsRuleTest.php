@@ -4705,4 +4705,12 @@ class CallMethodsRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15426.php'], []);
 	}
 
+	public function testBug15431(): void
+	{
+		$this->checkThisOnly = false;
+		$this->checkNullables = false;
+		$this->checkUnionTypes = false;
+		$this->analyse([__DIR__ . '/data/bug-15431.php'], []);
+	}
+
 }

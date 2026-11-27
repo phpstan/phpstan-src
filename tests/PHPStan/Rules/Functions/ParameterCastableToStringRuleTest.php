@@ -202,11 +202,11 @@ class ParameterCastableToStringRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-12146.php'], $this->hackParameterNames([
 			[
-				'Parameter #1 $array of function array_intersect expects an array of values castable to string, array<int|stdClass> given.',
+				'Parameter #1 $array of function array_intersect expects an array of values castable to string, array<int>|array<stdClass> given.',
 				34,
 			],
 			[
-				'Parameter #1 $keys of function array_fill_keys expects an array of values castable to string, array<int|stdClass> given.',
+				'Parameter #1 $keys of function array_fill_keys expects an array of values castable to string, array<int>|array<stdClass> given.',
 				40,
 			],
 		]));

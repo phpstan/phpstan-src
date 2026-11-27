@@ -275,11 +275,11 @@ class ParameterCastableToNumberRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-12146.php'], $this->hackPhp74ErrorMessages([
 			[
-				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int|stdClass> given.',
+				'Parameter #1 $array of function array_sum expects an array of values castable to number, array<int>|array<stdClass> given.',
 				16,
 			],
 			[
-				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int|stdClass> given.',
+				'Parameter #1 $array of function array_product expects an array of values castable to number, array<int>|array<stdClass> given.',
 				22,
 			],
 		]));

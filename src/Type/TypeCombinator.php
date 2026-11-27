@@ -20,6 +20,7 @@ use PHPStan\Type\Combinator\IterableUnionRule;
 use PHPStan\Type\Combinator\MixedUnionRemoveRule;
 use PHPStan\Type\Combinator\NumberUnionRule;
 use PHPStan\Type\Combinator\OffsetValueLimitIntersectRule;
+use PHPStan\Type\Combinator\OverlappingArrayUnionRule;
 use PHPStan\Type\Combinator\PeelUnionRemoveRule;
 use PHPStan\Type\Combinator\RemoveRule;
 use PHPStan\Type\Combinator\ShapeRemoveRule;
@@ -264,7 +265,7 @@ final class TypeCombinator
 			new IterableUnionRule(),
 			new AbsorbedArrayUnionRule(),
 			new ShapeUnionRule(),
-			new GeneralArrayUnionRule(),
+			new OverlappingArrayUnionRule(),
 			new SubsumptionUnionRule(),
 		];
 	}

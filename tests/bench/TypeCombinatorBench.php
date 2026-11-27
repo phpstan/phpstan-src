@@ -251,7 +251,8 @@ final class TypeCombinatorBench
 	}
 
 	/**
-	 * The constant arrays have the same eight keys, which the general array gets once.
+	 * The constant arrays have the same eight string keys. The general array has int keys, so it
+	 * is told apart from them and they stay a union of shapes.
 	 */
 	#[DataProvider(method: 'types')]
 	#[ExpectedFor(dataSet: 'types-16', instructions: '1.393M', cycles: '1.859M', memory: '66.77KiB')]

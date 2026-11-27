@@ -81,6 +81,10 @@ final class MissingTypehintCheck
 			if ($type instanceof AccessoryType) {
 				return $type;
 			}
+			// each member is checked on its own, so a union of template types is not taken for an array without a value type
+			if ($type instanceof UnionType) {
+				return $traverse($type);
+			}
 			if (
 				$type instanceof IntersectionType
 				&& $type->isCallable()->yes()

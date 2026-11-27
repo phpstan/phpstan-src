@@ -9809,9 +9809,12 @@ public:
 
 		/* a value the previous pass already widened is compared with the new
 		 * pass's constants as a whole, so a literal set cannot keep growing
-		 * next to the general type each pass */
-		if (constantArrays.count(0) == 0 && generalArrays.count(0) > 0) {
+		 * next to the general type each pass; the arrays of a side that holds
+		 * a general array next to its shapes are generalized together too */
+		if (generalArrays.count(0) > 0) {
+			for (auto entry : zv::TableRef(constantArrays.table(0))) generalArrays.list[0].push(entry.value().deref());
 			for (auto entry : zv::TableRef(constantArrays.table(1))) generalArrays.list[1].push(entry.value().deref());
+			constantArrays.list[0] = zv::Arr::create(0);
 			constantArrays.list[1] = zv::Arr::create(0);
 		}
 		if (constantIntegers.count(0) == 0 && integerRanges.count(0) > 0) {

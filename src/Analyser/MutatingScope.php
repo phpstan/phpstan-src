@@ -5262,9 +5262,12 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 		// a value the previous pass already widened is compared with the new
 		// pass's constants as a whole, so a literal set cannot keep growing
-		// next to the general type each pass
-		if (count($constantArrays['a']) === 0 && count($generalArrays['a']) > 0) {
+		// next to the general type each pass; the arrays of a side that holds
+		// a general array next to its shapes are generalized together too
+		if (count($generalArrays['a']) > 0) {
+			$generalArrays['a'] = [...$generalArrays['a'], ...$constantArrays['a']];
 			$generalArrays['b'] = [...$generalArrays['b'], ...$constantArrays['b']];
+			$constantArrays['a'] = [];
 			$constantArrays['b'] = [];
 		}
 		if (count($constantIntegers['a']) === 0 && count($integerRanges['a']) > 0) {

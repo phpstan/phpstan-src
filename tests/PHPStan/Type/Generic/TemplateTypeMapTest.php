@@ -31,11 +31,11 @@ class TemplateTypeMapTest extends PHPStanTestCase
 		}
 	}
 
-	public static function dataUnionWithLowerBoundTypes(): iterable
+	public static function dataUnionWithUpperBoundTypes(): iterable
 	{
 		$map = (new TemplateTypeMap([
 			'T' => new ObjectType(Exception::class),
-		]))->convertToLowerBoundTypes();
+		]))->swapBounds();
 
 		yield [
 			$map,
@@ -52,7 +52,7 @@ class TemplateTypeMapTest extends PHPStanTestCase
 		yield [
 			$map->union((new TemplateTypeMap([
 				'T' => new ObjectType(InvalidArgumentException::class),
-			]))->convertToLowerBoundTypes()),
+			]))->swapBounds()),
 			InvalidArgumentException::class,
 		];
 
@@ -61,7 +61,7 @@ class TemplateTypeMapTest extends PHPStanTestCase
 				'T' => new ObjectType(Exception::class),
 			], [
 				'T' => new ObjectType(InvalidArgumentException::class),
-			]))->convertToLowerBoundTypes(),
+			]))->swapBounds(),
 			InvalidArgumentException::class,
 		];
 
@@ -70,13 +70,21 @@ class TemplateTypeMapTest extends PHPStanTestCase
 				'T' => new ObjectType(InvalidArgumentException::class),
 			], [
 				'T' => new ObjectType(Exception::class),
-			]))->convertToLowerBoundTypes(),
-			InvalidArgumentException::class,
+			]))->swapBounds(),
+			Exception::class,
+		];
+
+		// swapped twice, Exception is a lower bound again and joins the other lower bound
+		yield [
+			$map->swapBounds()->union(new TemplateTypeMap([
+				'T' => new ObjectType(InvalidArgumentException::class),
+			])),
+			Exception::class,
 		];
 	}
 
-	#[DataProvider('dataUnionWithLowerBoundTypes')]
-	public function testUnionWithLowerBoundTypes(TemplateTypeMap $map, string $expectedTDescription): void
+	#[DataProvider('dataUnionWithUpperBoundTypes')]
+	public function testUnionWithUpperBoundTypes(TemplateTypeMap $map, string $expectedTDescription): void
 	{
 		$this->assertFalse($map->isEmpty());
 		$t = $map->getType('T');

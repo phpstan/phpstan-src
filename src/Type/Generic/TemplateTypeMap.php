@@ -18,13 +18,15 @@ use function count;
  * types T and U resolve to in a particular context.
  *
  * Two kinds of type bindings are tracked:
- * - **types** (upper bounds): The concrete type inferred or declared for each template.
- *   For `@template T of Countable`, if T is inferred as `array`, types maps T → array.
- * - **lowerBoundTypes**: Types inferred from contravariant positions (e.g. parameter types).
- *   Used during type inference to narrow template types from below.
+ * - **types**: The concrete type inferred or declared for each template. During inference
+ *   these are lower bounds: `T[]` receiving `int[]` means T :> int.
+ * - **upperBoundTypes**: Types inferred from contravariant positions, such as the parameter
+ *   of `callable(T): void` receiving `callable(int): void`, which means T <: int.
+ *   A template is resolved to its lower bound when it has one, otherwise to its upper bound.
  *
  * TemplateTypeMap supports set operations (union, intersect, benevolentUnion) that combine
- * maps from different code paths, and resolveToBounds() which replaces unresolved template
+ * maps from different code paths: union() joins the lower bounds and meets the upper
+ * bounds, intersect() the other way around. resolveToBounds() replaces unresolved template
  * types with their declared bounds.
  *
  * Common usage: ParametersAcceptor::getTemplateTypeMap() returns the template declarations,
@@ -41,31 +43,32 @@ final class TemplateTypeMap
 
 	private ?TemplateTypeMap $resolvedToBounds = null;
 
+	/** @var array<string, Type> */
+	private array $upperBoundTypes;
+
 	/**
 	 * @api
-	 * @param array<string, Type> $types Concrete types for each template parameter (upper bounds)
-	 * @param array<string, Type> $lowerBoundTypes Types inferred from contravariant positions
+	 * @param array<string, Type> $types Concrete types for each template parameter, lower bounds during inference
+	 * @param array<string, Type> $lowerBoundTypes Upper bounds, inferred from contravariant positions (the name is kept for backward compatibility)
 	 */
-	public function __construct(private array $types, private array $lowerBoundTypes = [])
+	public function __construct(private array $types, array $lowerBoundTypes = [])
 	{
+		$this->upperBoundTypes = $lowerBoundTypes;
 	}
 
+	/**
+	 * The map inferred from a type in a contravariant position, such as the parameter of a
+	 * callable: its lower bounds become upper bounds and vice versa.
+	 */
+	public function swapBounds(): self
+	{
+		return new self($this->upperBoundTypes, $this->types);
+	}
+
+	/** @deprecated Use swapBounds() */
 	public function convertToLowerBoundTypes(): self
 	{
-		$lowerBoundTypes = $this->types;
-		foreach ($this->lowerBoundTypes as $name => $type) {
-			if (isset($lowerBoundTypes[$name])) {
-				$intersection = TypeCombinator::intersect($lowerBoundTypes[$name], $type);
-				if ($intersection instanceof NeverType) {
-					continue;
-				}
-				$lowerBoundTypes[$name] = $intersection;
-			} else {
-				$lowerBoundTypes[$name] = $type;
-			}
-		}
-
-		return new self([], $lowerBoundTypes);
+		return $this->swapBounds();
 	}
 
 	public static function createEmpty(): self
@@ -89,14 +92,14 @@ final class TemplateTypeMap
 
 	public function count(): int
 	{
-		return count($this->types + $this->lowerBoundTypes);
+		return count($this->types + $this->upperBoundTypes);
 	}
 
 	/** @return array<string, Type> */
 	public function getTypes(): array
 	{
 		$types = $this->types;
-		foreach ($this->lowerBoundTypes as $name => $type) {
+		foreach ($this->upperBoundTypes as $name => $type) {
 			if (array_key_exists($name, $types)) {
 				continue;
 			}
@@ -124,16 +127,16 @@ final class TemplateTypeMap
 		}
 
 		$types = $this->types;
-		$lowerBoundTypes = $this->lowerBoundTypes;
+		$upperBoundTypes = $this->upperBoundTypes;
 
 		unset($types[$name]);
-		unset($lowerBoundTypes[$name]);
+		unset($upperBoundTypes[$name]);
 
-		if (count($types) === 0 && count($lowerBoundTypes) === 0) {
+		if (count($types) === 0 && count($upperBoundTypes) === 0) {
 			return self::createEmpty();
 		}
 
-		return new self($types, $lowerBoundTypes);
+		return new self($types, $upperBoundTypes);
 	}
 
 	public function union(self $other): self
@@ -148,20 +151,22 @@ final class TemplateTypeMap
 			}
 		}
 
-		$resultLowerBoundTypes = $this->lowerBoundTypes;
-		foreach ($other->lowerBoundTypes as $name => $type) {
-			if (isset($resultLowerBoundTypes[$name])) {
-				$intersection = TypeCombinator::intersect($resultLowerBoundTypes[$name], $type);
+		$resultUpperBoundTypes = $this->upperBoundTypes;
+		foreach ($other->upperBoundTypes as $name => $type) {
+			if (isset($resultUpperBoundTypes[$name])) {
+				$intersection = TypeCombinator::intersect($resultUpperBoundTypes[$name], $type);
 				if ($intersection instanceof NeverType) {
+					// conflicting upper bounds: the first one wins, so that the argument
+					// checked against it reports the conflict in terms of real types
 					continue;
 				}
-				$resultLowerBoundTypes[$name] = $intersection;
+				$resultUpperBoundTypes[$name] = $intersection;
 			} else {
-				$resultLowerBoundTypes[$name] = $type;
+				$resultUpperBoundTypes[$name] = $type;
 			}
 		}
 
-		return new self($result, $resultLowerBoundTypes);
+		return new self($result, $resultUpperBoundTypes);
 	}
 
 	public function benevolentUnion(self $other): self
@@ -176,20 +181,22 @@ final class TemplateTypeMap
 			}
 		}
 
-		$resultLowerBoundTypes = $this->lowerBoundTypes;
-		foreach ($other->lowerBoundTypes as $name => $type) {
-			if (isset($resultLowerBoundTypes[$name])) {
-				$intersection = TypeCombinator::intersect($resultLowerBoundTypes[$name], $type);
+		$resultUpperBoundTypes = $this->upperBoundTypes;
+		foreach ($other->upperBoundTypes as $name => $type) {
+			if (isset($resultUpperBoundTypes[$name])) {
+				$intersection = TypeCombinator::intersect($resultUpperBoundTypes[$name], $type);
 				if ($intersection instanceof NeverType) {
+					// conflicting upper bounds: the first one wins, so that the argument
+					// checked against it reports the conflict in terms of real types
 					continue;
 				}
-				$resultLowerBoundTypes[$name] = $intersection;
+				$resultUpperBoundTypes[$name] = $intersection;
 			} else {
-				$resultLowerBoundTypes[$name] = $type;
+				$resultUpperBoundTypes[$name] = $type;
 			}
 		}
 
-		return new self($result, $resultLowerBoundTypes);
+		return new self($result, $resultUpperBoundTypes);
 	}
 
 	/**
@@ -222,16 +229,16 @@ final class TemplateTypeMap
 			}
 		}
 
-		$resultLowerBoundTypes = $this->lowerBoundTypes;
-		foreach ($other->lowerBoundTypes as $name => $type) {
-			if (isset($resultLowerBoundTypes[$name])) {
-				$resultLowerBoundTypes[$name] = TypeCombinator::union($resultLowerBoundTypes[$name], $type);
+		$resultUpperBoundTypes = $this->upperBoundTypes;
+		foreach ($other->upperBoundTypes as $name => $type) {
+			if (isset($resultUpperBoundTypes[$name])) {
+				$resultUpperBoundTypes[$name] = TypeCombinator::union($resultUpperBoundTypes[$name], $type);
 			} else {
-				$resultLowerBoundTypes[$name] = $type;
+				$resultUpperBoundTypes[$name] = $type;
 			}
 		}
 
-		return new self($result, $resultLowerBoundTypes);
+		return new self($result, $resultUpperBoundTypes);
 	}
 
 	/** @param callable(string,Type):Type $cb */

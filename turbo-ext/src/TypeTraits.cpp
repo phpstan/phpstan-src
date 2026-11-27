@@ -3399,9 +3399,9 @@ zv::Val pt_callable_infer_template_types_on_parameters_acceptor(zend_object *sel
 			zend_type_error("phpstan_turbo: inferTemplateTypes() must return an object");
 			return zv::Val();
 		}
-		zv::Val lower = pt_type_call(Z_OBJ_P(inferred.raw()), PT_LC("converttolowerboundtypes"), 0, NULL);
-		if (UNEXPECTED(lower.isUndef())) return zv::Val();
-		typeMap = pt_callable_type_map_union(std::move(typeMap), lower.raw());
+		zv::Val swapped = pt_type_call(Z_OBJ_P(inferred.raw()), PT_LC("swapbounds"), 0, NULL);
+		if (UNEXPECTED(swapped.isUndef())) return zv::Val();
+		typeMap = pt_callable_type_map_union(std::move(typeMap), swapped.raw());
 		if (UNEXPECTED(typeMap.isUndef())) return zv::Val();
 	}
 	/* $typeMap = $typeMap->union(CallableAssertionsHelper::inferTemplateTypesOnAsserts($this, $parametersAcceptor)) */

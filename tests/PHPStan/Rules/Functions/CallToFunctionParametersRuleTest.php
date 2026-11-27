@@ -3698,4 +3698,9 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/float-constant-loop-generalize.php'], []);
 	}
 
+	public function testTemplateBoundsVariance(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/template-bounds-variance.php'], []);
+	}
+
 }

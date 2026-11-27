@@ -17,6 +17,7 @@ $polyfills = [
 ];
 
 $pinnedToSupportPhp72 = [
+	'symfony/deprecation-contracts',
 	'symfony/service-contracts',
 	'symfony/string',
 ];

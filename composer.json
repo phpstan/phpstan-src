@@ -43,6 +43,7 @@
 		"react/stream": "^1.1",
 		"sebastian/diff": "^6.0.2 || ^7",
 		"symfony/console": "^5.4.3",
+		"symfony/deprecation-contracts": "^2.5",
 		"symfony/finder": "^5.4.3",
 		"symfony/polyfill-intl-grapheme": "^1.23",
 		"symfony/polyfill-intl-normalizer": "^1.23",

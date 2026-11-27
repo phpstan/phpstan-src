@@ -56,7 +56,9 @@ function twoStoredAndNarrowings($x, $y): void
 			assertType(A::class, $x);
 			assertType(A::class, $y);
 		} else {
-			assertType(A::class, $x);
+			// unreachable: $xBothA and $yBothA are the same condition; the
+			// stored `$xBothA` decomposition ($y is A => $x is not A) sees it
+			assertType('*NEVER*', $x);
 			assertType(A::class, $y);
 		}
 	}

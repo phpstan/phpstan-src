@@ -1144,9 +1144,10 @@ final class ScopeOps
 	 *
 	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
 	 * @param array<string, ExpressionTypeHolder> $specifiedExpressions
+	 * @param array<string, ExpressionTypeHolder> $scopeExpressionTypes
 	 * @return array{array<string, ConditionalExpressionHolder[]>, array<string, ExpressionTypeHolder>}
 	 */
-	public static function matchConditionalExpressions(array $conditionalExpressions, array $specifiedExpressions): array
+	public static function matchConditionalExpressions(array $conditionalExpressions, array $specifiedExpressions, array $scopeExpressionTypes = []): array
 	{
 		$conditions = [];
 		if ($specifiedExpressions === []) {
@@ -1194,14 +1195,32 @@ final class ScopeOps
 					if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
 						continue;
 					}
+					$matchesSpecified = false;
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+						if (!array_key_exists($holderExprString, $specifiedExpressions)) {
+							// a guard of a multi-guard holder narrowed before this batch -
+							// `$either` in `if ($either && $x === null)` - still holds
+							// when the scope already guarantees it
+							if (
+								!array_key_exists($holderExprString, $scopeExpressionTypes)
+								|| !$conditionalTypeHolder->getCertainty()->yes()
+								|| !$scopeExpressionTypes[$holderExprString]->getCertainty()->yes()
+								|| !$conditionalTypeHolder->getType()->isSuperTypeOf($scopeExpressionTypes[$holderExprString]->getType())->yes()
+							) {
+								continue 2;
+							}
+							continue;
+						}
 						if (
-							!array_key_exists($holderExprString, $specifiedExpressions)
-							|| !$conditionalTypeHolder->getCertainty()->equals($specifiedExpressions[$holderExprString]->getCertainty())
+							!$conditionalTypeHolder->getCertainty()->equals($specifiedExpressions[$holderExprString]->getCertainty())
 							|| !$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedExpressions[$holderExprString]->getType())->yes()
 						) {
 							continue 2;
 						}
+						$matchesSpecified = true;
+					}
+					if (!$matchesSpecified) {
+						continue;
 					}
 
 					$conditions[$conditionalExprString][] = $conditionalExpression;

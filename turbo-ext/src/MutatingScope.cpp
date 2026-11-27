@@ -8219,7 +8219,7 @@ public:
 			|| !requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes"))) {
 			return zv::Val();
 		}
-		zv::Val matched = pt_scope_ops_match_conditional_expressions(Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()), specifiedExpressions);
+		zv::Val matched = pt_scope_ops_match_conditional_expressions(Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw()), specifiedExpressions, Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()));
 		if (UNEXPECTED(matched.isUndef())) return zv::Val();
 		zval *conditions = zend_hash_index_find(Z_ARRVAL_P(matched.raw()), 0);
 		if (UNEXPECTED(conditions == NULL || Z_TYPE_P(conditions) != IS_ARRAY)) {

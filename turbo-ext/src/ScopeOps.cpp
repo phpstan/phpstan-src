@@ -1290,7 +1290,7 @@ public:
 	 * with an exact-match pass and a supertype-match pass per expression.
 	 * Returns [conditions, specifiedExpressions].
 	 */
-	static zv::Val matchConditionalExpressions(zv::TableRef conditionalExpressions, zv::TableRef specifiedInput)
+	static zv::Val matchConditionalExpressions(zv::TableRef conditionalExpressions, zv::TableRef specifiedInput, HashTable *scopeExpressionTypes)
 	{
 		zv::Arr conditions = zv::Arr::create(0);
 		zv::Arr specified = zv::Arr::adoptTable(zend_array_dup(specifiedInput.table()));
@@ -1366,11 +1366,32 @@ public:
 					zv::Ref conditionHolders = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_CONDS);
 					if (UNEXPECTED(!conditionHolders.isArray())) continue;
 					bool all = true;
+					bool matchesSpecified = false;
 					for (auto conditionEntry : zv::TableRef(conditionHolders.asArrayTable())) {
 						zval *specifiedSlot = pt_ht_find(specified.table(), conditionEntry.stringKeyOrNull(), conditionEntry.indexKey());
 						if (specifiedSlot == NULL) {
-							all = false;
-							break;
+							/* a guard narrowed before this batch still holds when
+							 * the scope already guarantees it */
+							zval *scopeSlot = scopeExpressionTypes != NULL ? pt_ht_find(scopeExpressionTypes, conditionEntry.stringKeyOrNull(), conditionEntry.indexKey()) : NULL;
+							if (scopeSlot == NULL) {
+								all = false;
+								break;
+							}
+							zv::Ref conditionHolder = conditionEntry.value().deref();
+							zv::Ref scopeHolder = zv::Ref(scopeSlot).deref();
+							if (UNEXPECTED(!pt_check_holder(conditionHolder.raw()) || !pt_check_holder(scopeHolder.raw()))) return zv::Val();
+							if (pt_holder_certainty_value(conditionHolder.asObject()) != PT_TRI_YES
+								|| pt_holder_certainty_value(scopeHolder.asObject()) != PT_TRI_YES) {
+								all = false;
+								break;
+							}
+							zend_long scopeSuperTypeOf;
+							if (UNEXPECTED(!isSuperTypeOfValue(holderType(conditionHolder), holderType(scopeHolder), &scopeSuperTypeOf))) return zv::Val();
+							if (scopeSuperTypeOf != PT_TRI_YES) {
+								all = false;
+								break;
+							}
+							continue;
 						}
 						zv::Ref conditionHolder = conditionEntry.value().deref();
 						zv::Ref specifiedHolder = zv::Ref(specifiedSlot).deref();
@@ -1388,8 +1409,9 @@ public:
 							all = false;
 							break;
 						}
+						matchesSpecified = true;
 					}
-					if (!all) continue;
+					if (!all || !matchesSpecified) continue;
 
 					recordMatchedCondition(conditions, specified, conditionalKey, conditionalIdx, holder, typeHolder);
 				}
@@ -2281,9 +2303,9 @@ PT_MINIT_REGISTRATION(pt_register_scope_ops)
 	});
 
 	cls.method(sigs::matchConditionalExpressions, [](INTERNAL_FUNCTION_PARAMETERS) {
-		HashTable *conditional, *specified_input;
-		if (!zp::parse<zp::Ht, zp::Ht>(execute_data, conditional, specified_input)) RETURN_THROWS();
-		zv::Val result = ScopeOps::matchConditionalExpressions(zv::TableRef(conditional), zv::TableRef(specified_input));
+		HashTable *conditional, *specified_input, *scope_expression_types = NULL;
+		if (!zp::parse<zp::Ht, zp::Ht, zp::Opt<zp::Ht>>(execute_data, conditional, specified_input, scope_expression_types)) RETURN_THROWS();
+		zv::Val result = ScopeOps::matchConditionalExpressions(zv::TableRef(conditional), zv::TableRef(specified_input), scope_expression_types);
 		if (UNEXPECTED(result.isUndef())) RETURN_THROWS();
 		result.intoReturnValue(return_value);
 	});
@@ -2431,9 +2453,9 @@ zv::Val pt_scope_ops_intertwined_ref_root_variable_name(zend_object *expr)
 	return ScopeOps::getIntertwinedRefRootVariableName(expr);
 }
 
-zv::Val pt_scope_ops_match_conditional_expressions(HashTable *conditionalExpressions, HashTable *specifiedExpressions)
+zv::Val pt_scope_ops_match_conditional_expressions(HashTable *conditionalExpressions, HashTable *specifiedExpressions, HashTable *scopeExpressionTypes)
 {
-	return ScopeOps::matchConditionalExpressions(zv::TableRef(conditionalExpressions), zv::TableRef(specifiedExpressions));
+	return ScopeOps::matchConditionalExpressions(zv::TableRef(conditionalExpressions), zv::TableRef(specifiedExpressions), scopeExpressionTypes);
 }
 
 zv::Val pt_scope_ops_merge_variable_holders(HashTable *ourVariableTypeHolders, HashTable *theirVariableTypeHolders, HashTable *differingKeys)

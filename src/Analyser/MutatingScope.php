@@ -4206,7 +4206,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	private function processConditionalExpressionsAfterSpecifying(array $specifiedExpressions): self
 	{
 		$scope = $this;
-		[$conditions] = ScopeOps::matchConditionalExpressions($scope->conditionalExpressions, $specifiedExpressions);
+		[$conditions] = ScopeOps::matchConditionalExpressions($scope->conditionalExpressions, $specifiedExpressions, $scope->expressionTypes);
 
 		foreach ($conditions as $conditionalExprString => $expressions) {
 			$certainty = TrinaryLogic::lazyExtremeIdentity($expressions, static fn (ConditionalExpressionHolder $holder) => $holder->getTypeHolder()->getCertainty());

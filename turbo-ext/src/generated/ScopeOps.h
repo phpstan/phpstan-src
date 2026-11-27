@@ -96,7 +96,8 @@ inline constexpr char strings[] =
 	"shouldInvalidateExpression\0" /* 1395 */
 	"isPropertyFetchChainOn\0" /* 1422 */
 	"specifiedExpressions\0" /* 1445 */
-	"matchConditionalExpressions"; /* 1466 */
+	"scopeExpressionTypes\0" /* 1466 */
+	"matchConditionalExpressions"; /* 1487 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* nodeKey $node */
 	reg::packed(25, 0, 37), /* nodeKey $exprPrinter */
@@ -204,6 +205,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(70, MAY_BE_BOOL), /* isPropertyFetchChainOn return */
 	reg::packed(292, MAY_BE_ARRAY), /* matchConditionalExpressions $conditionalExpressions */
 	reg::packed(1445, MAY_BE_ARRAY), /* matchConditionalExpressions $specifiedExpressions */
+	reg::packed(1466, MAY_BE_ARRAY, reg::NoString, false, false, 513), /* matchConditionalExpressions $scopeExpressionTypes */
 	reg::packed(70, MAY_BE_ARRAY), /* matchConditionalExpressions return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -233,7 +235,7 @@ inline constexpr sigtab::Sig invalidateExpressionEntries = { { 1253 /* invalidat
 inline constexpr sigtab::Sig containsExpressionToInvalidate = { { 1347 /* containsExpressionToInvalidate */, 5, 83, 5, 88, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig shouldInvalidateExpression = { { 1395 /* shouldInvalidateExpression */, 6, 89, 10, 99, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig isPropertyFetchChainOn = { { 1422 /* isPropertyFetchChainOn */, 3, 100, 3, 103, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig matchConditionalExpressions = { { 1466 /* matchConditionalExpressions */, 2, 104, 2, 106, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig matchConditionalExpressions = { { 1487 /* matchConditionalExpressions */, 2, 104, 3, 107, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::ScopeOps

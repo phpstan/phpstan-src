@@ -784,7 +784,7 @@ public:
 					if (UNEXPECTED(recordedEndPair == NULL)) return zv::Val();
 					zval *recordedEnd = entryState(recordedEndPair);
 					zend_long endOffset = zval_get_long(entryOffset(recordedEndPair));
-					if (replayTarget != NULL && previousRecording != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, endOffset, replayTarget, storage, scope))) return zv::Val();
+					if (replayTarget != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, endOffset, replayTarget, storage, scope))) return zv::Val();
 					if (!finalWalk) {
 						// the previous pass's entries accumulated its own
 						// points before statement $i: rebase them onto this pass's
@@ -813,7 +813,7 @@ public:
 				bool reWalk = differingRoots.isNull();
 				if (!reWalk && UNEXPECTED(!statementMentionsDifferingState(stmt, OBJ_PROP_NUM(stateObject, stateSlots::scope), OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope), differingRoots.raw(), true, reWalk))) return zv::Val();
 				if (!reWalk) {
-					if (replayTarget != NULL && previousRecording != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, nextOffset, replayTarget, storage, scope))) return zv::Val();
+					if (replayTarget != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, nextOffset, replayTarget, storage, scope))) return zv::Val();
 					zend_long exitPointCount = zend_hash_num_elements(Z_ARRVAL_P(OBJ_PROP_NUM(stateObject, stateSlots::exitPoints)));
 					zend_long throwPointCount = zend_hash_num_elements(Z_ARRVAL_P(OBJ_PROP_NUM(stateObject, stateSlots::throwPoints)));
 					if (UNEXPECTED(!appendRecordedStatementResults(state.raw(), recordedEntry, recordedExit))) return zv::Val();

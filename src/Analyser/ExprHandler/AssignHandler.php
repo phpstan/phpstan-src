@@ -1324,6 +1324,7 @@ final class AssignHandler implements ExprHandler
 						: $this->defaultNarrowingHelper->specifyTypesForNode($scope, $assignedExpr, TypeSpecifierContext::createTruthy());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($nodeScopeResolver, $scope, $storage, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr, $storedAssignedExprResult);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($nodeScopeResolver, $scope, $storage, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr, $storedAssignedExprResult);
+					$conditionalExpressions = $this->processDecompositionHoldersAfterAssign($scope, $var->name, $conditionalExpressions, $truthySpecifiedTypes, $truthyType, $impurePoints, $assignedExpr);
 
 					$falseyType = TypeCombinator::intersect($type, StaticTypeFactory::falsey());
 					$falseySpecifiedTypes = $storedAssignedExprResult !== null
@@ -1331,6 +1332,7 @@ final class AssignHandler implements ExprHandler
 						: $this->defaultNarrowingHelper->specifyTypesForNode($scope, $assignedExpr, TypeSpecifierContext::createFalsey());
 					$conditionalExpressions = $this->processSureTypesForConditionalExpressionsAfterAssign($nodeScopeResolver, $scope, $storage, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $storedAssignedExprResult);
 					$conditionalExpressions = $this->processSureNotTypesForConditionalExpressionsAfterAssign($nodeScopeResolver, $scope, $storage, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr, $storedAssignedExprResult);
+					$conditionalExpressions = $this->processDecompositionHoldersAfterAssign($scope, $var->name, $conditionalExpressions, $falseySpecifiedTypes, $falseyType, $impurePoints, $assignedExpr);
 				}
 
 				foreach ([null, false, 0, 0.0, '', '0', []] as $falseyScalar) {
@@ -2161,6 +2163,46 @@ final class AssignHandler implements ExprHandler
 				TypeCombinator::remove($this->currentTypeForConditionalHolder($nodeScopeResolver, $scope, $storage, $expr, $assignedExpr, $assignedValueResult), $exprType),
 				TrinaryLogic::createYes(),
 			);
+		}
+
+		return $conditionalExpressions;
+	}
+
+	/**
+	 * The boolean-decomposition holders of the assigned condition - `$x !== null
+	 * || $y !== null` asserted true holds "if $x is null then $y is string" -
+	 * guarded also by the variable holding that value, so `$either && $x === null`
+	 * narrows $y like the inline condition does. Only the sure parts are projected
+	 * above; these are the part a disjunction keeps beyond them.
+	 *
+	 * @param array<string, ConditionalExpressionHolder[]> $conditionalExpressions
+	 * @param ImpurePoint[] $rhsImpurePoints
+	 * @return array<string, ConditionalExpressionHolder[]>
+	 */
+	private function processDecompositionHoldersAfterAssign(MutatingScope $scope, string $variableName, array $conditionalExpressions, SpecifiedTypes $specifiedTypes, Type $variableType, array $rhsImpurePoints, Expr $assignedExpr): array
+	{
+		$decompositionHolders = $specifiedTypes->getNewConditionalExpressionHolders();
+		foreach ($specifiedTypes->getConditionalExpressionHolderRecipes() as $recipe) {
+			$decompositionHolders = $this->mergeConditionalExpressions($decompositionHolders, $recipe->evaluate($scope));
+		}
+
+		$variableGuard = ExpressionTypeHolder::createYes(new Variable($variableName), $variableType);
+		foreach ($decompositionHolders as $exprString => $holders) {
+			foreach ($holders as $holder) {
+				$target = $holder->getTypeHolder();
+				if (!$this->isExprSafeToProjectThroughVariable($target->getExpr(), $variableName, $rhsImpurePoints, $assignedExpr)) {
+					continue;
+				}
+				$guards = $holder->getConditionExpressionTypeHolders();
+				foreach ($guards as $guard) {
+					if (!$this->isExprSafeToProjectThroughVariable($guard->getExpr(), $variableName, $rhsImpurePoints, $assignedExpr)) {
+						continue 2;
+					}
+				}
+
+				$storedHolder = new ConditionalExpressionHolder(['$' . $variableName => $variableGuard] + $guards, $target);
+				$conditionalExpressions[$exprString][$storedHolder->getKey()] = $storedHolder;
+			}
 		}
 
 		return $conditionalExpressions;

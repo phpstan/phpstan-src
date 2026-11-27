@@ -526,7 +526,7 @@ final class StatementsHandler
 				if ($differingRoots === [] && $i > $lastWalked) {
 					// converged with the previous pass: the rest of it stands
 					[$recordedEnd, $endOffset] = $previous[0][$stmtCount];
-					if ($replayTarget !== null && $previousRecording !== null) {
+					if ($replayTarget !== null) {
 						$nodeScopeResolver->replayRecordingRange($previousRecording, $offset, $endOffset, $replayTarget, $storage, $scope);
 					}
 					if (!$finalWalk) {
@@ -547,7 +547,7 @@ final class StatementsHandler
 					return [$state->toResult(), $entries];
 				}
 				if ($differingRoots !== null && !$this->statementMentionsDifferingState($stmts[$i], $state->scope, $recordedEntry->scope, $differingRoots, true)) {
-					if ($replayTarget !== null && $previousRecording !== null) {
+					if ($replayTarget !== null) {
 						$nodeScopeResolver->replayRecordingRange($previousRecording, $offset, $nextOffset, $replayTarget, $storage, $scope);
 					}
 					$exitPointCount = count($state->exitPoints);

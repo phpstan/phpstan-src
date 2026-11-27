@@ -1639,7 +1639,7 @@ zv::Val pt_scope_ops_scope_with(zval *scope, HashTable *expressionTypes, HashTab
 zv::Val pt_scope_ops_invalidate_expression_entries(zval *scope, zval *exprPrinter, zend_string *exprStringToInvalidate, zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions, bool keepPropertyFetches, HashTable *preservedPropertyNames = NULL);
 zv::Val pt_scope_ops_invalidate_methods_on_expression(zval *exprPrinter, zend_string *exprStringToInvalidate, HashTable *expressionTypes, HashTable *nativeExpressionTypes, HashTable *conditionalExpressions);
 zv::Val pt_scope_ops_intertwined_ref_root_variable_name(zend_object *expr);
-zv::Val pt_scope_ops_match_conditional_expressions(HashTable *conditionalExpressions, HashTable *specifiedExpressions);
+zv::Val pt_scope_ops_match_conditional_expressions(HashTable *conditionalExpressions, HashTable *specifiedExpressions, HashTable *scopeExpressionTypes);
 zv::Val pt_scope_ops_merge_variable_holders(HashTable *ourVariableTypeHolders, HashTable *theirVariableTypeHolders, HashTable *differingKeys);
 zv::Val pt_scope_ops_finish_merge(HashTable *mergedExpressionTypes, HashTable *ourExpressionTypes, HashTable *theirExpressionTypes, HashTable *ourNativeExpressionTypes, HashTable *theirNativeExpressionTypes);
 zv::Val pt_scope_ops_intersect_conditional_expressions(HashTable *ourConditionalExpressions, HashTable *theirConditionalExpressions);

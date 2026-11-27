@@ -2048,6 +2048,7 @@ private:
 				}
 				AH_OKB(processSureTypesForConditionalExpressionsAfterAssign(nsr, scope.raw(), storage, varName, conditionalExpressions, truthySpecifiedTypes.raw(), truthyType.raw(), impurePoints.raw(), assignedExpr.raw(), stored));
 				AH_OKB(processSureNotTypesForConditionalExpressionsAfterAssign(nsr, scope.raw(), storage, varName, conditionalExpressions, truthySpecifiedTypes.raw(), truthyType.raw(), impurePoints.raw(), assignedExpr.raw(), stored));
+				AH_OKB(processDecompositionHoldersAfterAssign(scope.raw(), varName, conditionalExpressions, truthySpecifiedTypes.raw(), truthyType.raw(), impurePoints.raw(), assignedExpr.raw()));
 
 				AH_VALB(falseyStatic, pt_static_type_factory_falsey());
 				zv::Args intersectArgs{type.raw(), falseyStatic.raw()};
@@ -2064,6 +2065,7 @@ private:
 				}
 				AH_OKB(processSureTypesForConditionalExpressionsAfterAssign(nsr, scope.raw(), storage, varName, conditionalExpressions, falseySpecifiedTypes.raw(), falseyType.raw(), impurePoints.raw(), assignedExpr.raw(), stored));
 				AH_OKB(processSureNotTypesForConditionalExpressionsAfterAssign(nsr, scope.raw(), storage, varName, conditionalExpressions, falseySpecifiedTypes.raw(), falseyType.raw(), impurePoints.raw(), assignedExpr.raw(), stored));
+				AH_OKB(processDecompositionHoldersAfterAssign(scope.raw(), varName, conditionalExpressions, falseySpecifiedTypes.raw(), falseyType.raw(), impurePoints.raw(), assignedExpr.raw()));
 			}
 
 			for (int falseyIndex = 0; falseyIndex < 7; falseyIndex++) {
@@ -2488,6 +2490,73 @@ private:
 				AH_SETB(holderType, pt_type_combinator_remove(currentType.raw(), exprType));
 			}
 			AH_OKB(addConditionalExpressionHolder(conditionalExpressions, variableName, variableType, expr, exprString.get(), holderType.raw(), PT_TRI_YES));
+		}
+
+		return true;
+	}
+
+	/* Mirrors processDecompositionHoldersAfterAssign(): the boolean-decomposition
+	 * holders (and evaluated recipes) of the assigned condition, guarded also by
+	 * the variable holding that value */
+	[[nodiscard]] bool processDecompositionHoldersAfterAssign(zval *scope, zend_string *variableName, zv::Val &conditionalExpressions, zval *specifiedTypes, zval *variableType, zval *rhsImpurePoints, zval *assignedExpr)
+	{
+		if (UNEXPECTED(Z_TYPE_P(specifiedTypes) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function getNewConditionalExpressionHolders() on %s", zend_zval_value_name(specifiedTypes));
+			return false;
+		}
+		AH_VALB(newHolders, pt_specified_types_get_new_conditional_expression_holders(Z_OBJ_P(specifiedTypes)));
+		zv::Val decompositionHolders = zv::Val::copyOf(zv::Ref(newHolders.raw()));
+		AH_VALB(recipes, pt_specified_types_get_conditional_expression_holder_recipes(Z_OBJ_P(specifiedTypes)));
+		for (auto recipeEntry : zv::TableRef(Z_ARRVAL_P(recipes.raw()))) {
+			zval *recipe = recipeEntry.value().deref().raw();
+			AH_VALB(evaluated, pt_conditional_expression_holder_recipe_evaluate(Z_OBJ_P(recipe), scope));
+			mergeConditionalExpressions(decompositionHolders, evaluated.raw());
+		}
+		if (zend_hash_num_elements(Z_ARRVAL_P(decompositionHolders.raw())) == 0) return true;
+
+		AH_VALB(variable, newVariable(variableName));
+		AH_VALB(variableGuard, newExpressionTypeHolder(variable.raw(), variableType, PT_TRI_YES));
+		zv::Str variableKey = zv::Str::adopt(zend_string_concat2(PT_LC("$"), ZSTR_VAL(variableName), ZSTR_LEN(variableName)));
+		for (auto entry : zv::TableRef(Z_ARRVAL_P(decompositionHolders.raw()))) {
+			zend_string *stringKey = entry.stringKeyOrNull();
+			zv::Str exprString = stringKey != NULL ? zv::Str::copyOf(stringKey) : zv::Str::adopt(zend_long_to_str((zend_long) entry.indexKey()));
+			for (auto holderEntry : zv::TableRef(Z_ARRVAL_P(entry.value().deref().raw()))) {
+				zv::Ref holder = holderEntry.value().deref();
+				if (UNEXPECTED(!holder.instanceOf(pt_ce_cond_expr_holder))) {
+					zend_type_error("phpstan_turbo: expected ConditionalExpressionHolder");
+					return false;
+				}
+				zval *target = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER).raw();
+				zval *targetExpr = zv::ObjRef(Z_OBJ_P(target)).propAt(PT_ETH_PROP_EXPR).raw();
+				bool safe;
+				AH_OKB(isExprSafeToProjectThroughVariable(targetExpr, variableName, rhsImpurePoints, assignedExpr, safe));
+				if (!safe) continue;
+				zval *guards = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_CONDS).raw();
+				bool guardsSafe = true;
+				for (auto guardEntry : zv::TableRef(Z_ARRVAL_P(guards))) {
+					zval *guard = guardEntry.value().deref().raw();
+					zval *guardExpr = zv::ObjRef(Z_OBJ_P(guard)).propAt(PT_ETH_PROP_EXPR).raw();
+					AH_OKB(isExprSafeToProjectThroughVariable(guardExpr, variableName, rhsImpurePoints, assignedExpr, guardsSafe));
+					if (!guardsSafe) break;
+				}
+				if (!guardsSafe) continue;
+
+				/* ['$var' => $variableGuard] + $guards */
+				zv::Val conditions = ahEmptyArray();
+				ahSetKey(conditions, variableKey.get(), variableGuard.raw());
+				for (auto guardEntry : zv::TableRef(Z_ARRVAL_P(guards))) {
+					zval *guard = guardEntry.value().raw();
+					Z_TRY_ADDREF_P(guard);
+					bool added = guardEntry.stringKeyOrNull() != NULL
+						? zend_hash_add(Z_ARRVAL_P(conditions.raw()), guardEntry.stringKey(), guard) != NULL
+						: zend_hash_index_add(Z_ARRVAL_P(conditions.raw()), guardEntry.indexKey(), guard) != NULL;
+					if (!added) Z_TRY_DELREF_P(guard);
+				}
+				AH_VALB(storedHolder, newConditionalExpressionHolder(conditions.raw(), target));
+				zv::Str holderKey = zv::Str::adopt(conditionalHolderKey(storedHolder.raw()));
+				AH_OKB(!holderKey.isNull());
+				nestedSet(conditionalExpressions, exprString.get(), holderKey.get(), storedHolder.raw());
+			}
 		}
 
 		return true;

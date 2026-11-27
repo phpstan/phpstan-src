@@ -19,7 +19,6 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use function array_intersect_key;
 use function array_key_exists;
 use function array_keys;
 use function array_last;
@@ -91,22 +90,17 @@ final class GenericParametersAcceptorResolver
 	}
 
 	/**
-	 * The accumulators of a callable parameter - the templates it both passes
-	 * to the closure and receives back from it, as the TCarry in
-	 * callable(TCarry, T): TCarry - each with the type the argument types
-	 * determine. Without the closure among $argTypes this is the seed of the
-	 * accumulator's fixed point, with the closure typed by the previous round
-	 * it is the next round. An empty array when the parameter has no
-	 * accumulator, null when the arguments do not determine one.
+	 * The templates a callable parameter passes to the closure given for it
+	 * (the T in callable(T): U) and the templates it receives back from it
+	 * (the U), as two sets of template names.
 	 *
-	 * @param array<int|string, Type> $argTypes
-	 * @return array<string, Type>|null
+	 * @return array{array<string, true>, array<string, true>}
 	 */
-	public static function resolveAccumulatorTemplateTypes(array $argTypes, ParametersAcceptor $parametersAcceptor, ParameterReflection $parameter): ?array
+	public static function getCallableTemplateFlow(ParameterReflection $parameter): array
 	{
 		$parameterType = $parameter->getType();
 		if (!$parameterType->hasTemplateOrLateResolvableType()) {
-			return [];
+			return [[], []];
 		}
 
 		$passed = [];
@@ -119,7 +113,26 @@ final class GenericParametersAcceptorResolver
 				$returned[$name] = true;
 			}
 		}
-		$accumulators = array_intersect_key($passed, $returned);
+
+		return [$passed, $returned];
+	}
+
+	/**
+	 * The accumulators - templates that callable parameters pass to their
+	 * closures and receive back from them, as the TCarry in
+	 * callable(TCarry, T): TCarry, or the T and U of callable(T): U and
+	 * callable(U): T together (see getCallableTemplateFlow()) - each with the
+	 * type the argument types determine. Without the closures among $argTypes
+	 * this is the seed of the accumulators' fixed point, with the closures
+	 * typed by the previous round it is the next round. An accumulator the
+	 * arguments do not determine is left out.
+	 *
+	 * @param array<int|string, Type> $argTypes
+	 * @param array<string, true> $accumulators
+	 * @return array<string, Type>
+	 */
+	public static function resolveAccumulatorTemplateTypes(array $argTypes, ParametersAcceptor $parametersAcceptor, array $accumulators): array
+	{
 		if ($accumulators === []) {
 			return [];
 		}
@@ -129,7 +142,7 @@ final class GenericParametersAcceptorResolver
 		foreach (array_keys($accumulators) as $name) {
 			$type = $resolvedTemplateTypeMap->getType($name);
 			if ($type === null || $type instanceof ErrorType) {
-				return null;
+				continue;
 			}
 			$types[$name] = $type;
 		}

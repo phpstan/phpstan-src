@@ -44,6 +44,32 @@ function apply(array $list, callable $fn): array
 	return array_map($fn, $list);
 }
 
+/**
+ * @template T
+ * @template U
+ * @param T $init
+ * @param callable(T): U $f
+ * @param callable(U): T $g
+ * @return T
+ */
+function pingPong($init, callable $f, callable $g)
+{
+	return $init;
+}
+
+/**
+ * @template T
+ * @template U
+ * @param callable(U): T $g
+ * @param callable(T): U $f
+ * @param T $init
+ * @return T
+ */
+function pongPing(callable $g, callable $f, $init)
+{
+	return $init;
+}
+
 /** @param list<int> $ints */
 function test(array $ints): void
 {
@@ -72,4 +98,15 @@ function test(array $ints): void
 
 	// without a seed only the closure's return determines the accumulator, as before
 	assertType('int|null', reduceWithoutInit($ints, static fn ($carry, $x) => $x));
+
+	// a cycle through two closures is solved together, in the order its data flows
+	assertType('int<0, max>', pingPong(0, static function (int $t) {
+		assertType('int<0, max>', $t);
+		return [$t];
+	}, static function (array $u) {
+		assertType('array{int<0, max>}', $u);
+		return $u[0] + 1;
+	}));
+	assertType('int<0, max>', pongPing(static fn (array $u) => $u[0] + 1, static fn (int $t) => [$t], 0));
+	assertType('0|2', pingPong(0, static fn ($t) => [$t], static fn ($u) => count($u) + 1));
 }

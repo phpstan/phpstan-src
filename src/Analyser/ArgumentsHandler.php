@@ -62,6 +62,9 @@ use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\TypeUtils;
+use function array_diff_key;
+use function array_intersect_key;
+use function array_key_first;
 use function array_keys;
 use function array_last;
 use function array_map;
@@ -224,6 +227,7 @@ final class ArgumentsHandler
 		$argResults = [];
 		$byRefArguments = [];
 		$countStableMetadataAcceptor = null;
+		$solvedClosureTypes = null;
 		foreach ($processingOrder as $i) {
 			$arg = $args[$i];
 
@@ -235,9 +239,19 @@ final class ArgumentsHandler
 				// contribution (a TValue from its return) participates in the final
 				// resolution (see gatherClosureArgType()).
 				$originalArgForGather = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
-				$gatheredArgTypeByIndex[$i] = $typeDrivenAcceptorSelection
-					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope, $gatheredTypes, $originalArgForGather, $gatheredUnpack, $gatheredHasName)
-					: $this->closureTypeResolver->getClosureType($scope, $arg->value, true, $storage);
+				if ($typeDrivenAcceptorSelection) {
+					// closures sort last, so every non-closure sibling seeding an
+					// accumulator is gathered by the first closure
+					if ($solvedClosureTypes === null) {
+						$solvedClosureTypes = $this->solveClosureAccumulatorTypes($parametersAcceptors, $args, $processingOrder, $scope, $gatheredTypes, $gatheredUnpack, $gatheredHasName);
+						// the bodies of the closures walked before the rest are
+						// gathered resolve their parameters from the solution too
+						$gatheredArgTypeByIndex += $solvedClosureTypes;
+					}
+					$gatheredArgTypeByIndex[$i] = $solvedClosureTypes[$i] ?? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope, $gatheredTypes);
+				} else {
+					$gatheredArgTypeByIndex[$i] = $this->closureTypeResolver->getClosureType($scope, $arg->value, true, $storage);
+				}
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
 			}
 
@@ -1073,60 +1087,146 @@ final class ArgumentsHandler
 	 * resolved (the T in callable(T): U from list<T> $xs), so the closure's
 	 * inferred return type - its contribution to U - comes from the same
 	 * parameter types its body is later walked with. Templates the closure
-	 * returns itself stay unresolved (see resolveParameterFromSiblings()),
-	 * except an accumulator the siblings seed, as the TCarry of
-	 * callable(TCarry, T): TCarry from $initial: the closure is typed with
-	 * the seed, its return joins the seed, and the rounds repeat until the
-	 * accumulator stops growing, generalized as a loop generalizes the
-	 * variables it writes. Without a fixed point within as many rounds as a
-	 * loop takes, the accumulator stays unresolved.
+	 * returns itself stay unresolved (see resolveParameterFromSiblings())
+	 * unless solveClosureAccumulatorTypes() finds their fixed point.
 	 *
 	 * @param ParametersAcceptor[] $parametersAcceptors
 	 * @param array<int|string, Type> $siblingTypes
+	 * @param array<string, Type> $accumulatorTypes
 	 */
-	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope, array $siblingTypes, Node\Arg $originalArg, bool $unpack, bool $hasName): Type
+	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope, array $siblingTypes, array $accumulatorTypes = []): Type
 	{
-		$rawParameter = null;
-		if (count($parametersAcceptors) === 1) {
-			$rawParameters = $parametersAcceptors[0]->getParameters();
-			if (isset($rawParameters[$i])) {
-				$rawParameter = $rawParameters[$i];
-			} elseif (count($rawParameters) > 0 && $parametersAcceptors[0]->isVariadic()) {
-				$rawParameter = array_last($rawParameters);
-			}
-		}
-
+		$rawParameter = $this->findClosureRawParameter($parametersAcceptors, $i);
 		if ($rawParameter === null) {
 			return $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope);
 		}
 
-		$parameter = $siblingTypes !== []
-			? GenericParametersAcceptorResolver::resolveParameterFromSiblings($siblingTypes, $parametersAcceptors[0], $rawParameter)
+		$parameter = $siblingTypes !== [] || $accumulatorTypes !== []
+			? GenericParametersAcceptorResolver::resolveParameterFromSiblings($siblingTypes, $parametersAcceptors[0], $rawParameter, $accumulatorTypes)
 			: $rawParameter;
-		$closureType = $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope->pushInFunctionCall(null, $parameter, false));
-		if ($siblingTypes === []) {
-			return $closureType;
+
+		return $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope->pushInFunctionCall(null, $parameter, false));
+	}
+
+	/**
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 */
+	private function findClosureRawParameter(array $parametersAcceptors, int $i): ?ParameterReflection
+	{
+		if (count($parametersAcceptors) !== 1) {
+			return null;
 		}
 
-		$accumulatorTypes = GenericParametersAcceptorResolver::resolveAccumulatorTemplateTypes($siblingTypes, $parametersAcceptors[0], $rawParameter);
-		if ($accumulatorTypes === null || $accumulatorTypes === []) {
-			return $closureType;
+		$rawParameters = $parametersAcceptors[0]->getParameters();
+		if (isset($rawParameters[$i])) {
+			return $rawParameters[$i];
+		}
+		if (count($rawParameters) > 0 && $parametersAcceptors[0]->isVariadic()) {
+			return array_last($rawParameters);
+		}
+
+		return null;
+	}
+
+	/**
+	 * Types the closure/arrow function arguments that feed templates back to
+	 * closures - the TCarry of callable(TCarry, T): TCarry, or the T and U of
+	 * callable(T): U and callable(U): T passed together - to a fixed point of
+	 * those accumulators. The non-closure siblings seed them, each round types
+	 * the closures in processing order with the accumulators known so far and
+	 * joins what their returns add, and the rounds repeat until the
+	 * accumulators stop growing, generalized as a loop generalizes the
+	 * variables it writes. Closures not taking part, and all of them without
+	 * a seed or without a fixed point within as many rounds as a loop takes,
+	 * are left out for gatherClosureArgType() alone.
+	 *
+	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param Node\Arg[] $args
+	 * @param list<int> $processingOrder
+	 * @param array<int|string, Type> $siblingTypes
+	 * @return array<int, Type>
+	 */
+	private function solveClosureAccumulatorTypes(array $parametersAcceptors, array $args, array $processingOrder, MutatingScope $scope, array $siblingTypes, bool $unpack, bool $hasName): array
+	{
+		if ($siblingTypes === []) {
+			return [];
+		}
+
+		$closureParameters = [];
+		$passed = [];
+		$returned = [];
+		foreach ($processingOrder as $i) {
+			$value = $args[$i]->value;
+			if (!$value instanceof Expr\Closure && !$value instanceof Expr\ArrowFunction) {
+				continue;
+			}
+			$rawParameter = $this->findClosureRawParameter($parametersAcceptors, $i);
+			if ($rawParameter === null) {
+				continue;
+			}
+			[$parameterPassed, $parameterReturned] = GenericParametersAcceptorResolver::getCallableTemplateFlow($rawParameter);
+			if ($parameterPassed === [] && $parameterReturned === []) {
+				continue;
+			}
+			$closureParameters[$i] = [$parameterPassed, $parameterReturned];
+			$passed += $parameterPassed;
+			$returned += $parameterReturned;
+		}
+
+		$accumulators = array_intersect_key($passed, $returned);
+		if ($accumulators === []) {
+			return [];
+		}
+		foreach ($closureParameters as $i => [$parameterPassed, $parameterReturned]) {
+			if (array_intersect_key($parameterPassed + $parameterReturned, $accumulators) !== []) {
+				continue;
+			}
+			unset($closureParameters[$i]);
+		}
+
+		$accumulatorTypes = GenericParametersAcceptorResolver::resolveAccumulatorTemplateTypes($siblingTypes, $parametersAcceptors[0], $accumulators);
+		if ($accumulatorTypes === []) {
+			return [];
 		}
 
 		for ($iteration = 0; $iteration < NodeScopeResolver::LOOP_SCOPE_ITERATIONS; $iteration++) {
-			$parameter = GenericParametersAcceptorResolver::resolveParameterFromSiblings($siblingTypes, $parametersAcceptors[0], $rawParameter, $accumulatorTypes);
-			$iterationClosureType = $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope->pushInFunctionCall(null, $parameter, false));
-
 			$argTypes = $siblingTypes;
-			$this->addGatheredArgType($argTypes, $unpack, $hasName, $originalArg, $i, $iterationClosureType);
-			$nextAccumulatorTypes = GenericParametersAcceptorResolver::resolveAccumulatorTemplateTypes($argTypes, $parametersAcceptors[0], $rawParameter);
-			if ($nextAccumulatorTypes === null) {
-				return $closureType;
+			$roundUnpack = $unpack;
+			$roundHasName = $hasName;
+			$roundAccumulatorTypes = $accumulatorTypes;
+			$closureTypes = [];
+			$pending = $closureParameters;
+			while ($pending !== []) {
+				// a closure whose passed accumulators are all known goes first,
+				// so an order of the arguments against the flow guesses nothing
+				$i = array_key_first($pending);
+				foreach ($pending as $j => [$parameterPassed]) {
+					if (array_diff_key(array_intersect_key($parameterPassed, $accumulators), $roundAccumulatorTypes) === []) {
+						$i = $j;
+						break;
+					}
+				}
+				unset($pending[$i]);
+				$closureTypes[$i] = $this->gatherClosureArgType($parametersAcceptors, $i, $args[$i]->value, $scope, $siblingTypes, $roundAccumulatorTypes);
+				$this->addGatheredArgType($argTypes, $roundUnpack, $roundHasName, $args[$i]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $args[$i], $i, $closureTypes[$i]);
+				// only what the closure returns grows - its parameters bound
+				// the templates passed to it from above, they do not feed them
+				$returnedAccumulators = array_intersect_key($closureParameters[$i][1], $accumulators);
+				foreach (GenericParametersAcceptorResolver::resolveAccumulatorTemplateTypes($argTypes, $parametersAcceptors[0], $returnedAccumulators) as $name => $type) {
+					$roundAccumulatorTypes[$name] = isset($roundAccumulatorTypes[$name])
+						? TypeCombinator::union($roundAccumulatorTypes[$name], $type)
+						: $type;
+				}
 			}
 
 			$changed = false;
-			foreach ($accumulatorTypes as $name => $previousType) {
-				$nextType = TypeCombinator::union($nextAccumulatorTypes[$name] ?? $previousType, $previousType);
+			foreach ($roundAccumulatorTypes as $name => $nextType) {
+				if (!isset($accumulatorTypes[$name])) {
+					$accumulatorTypes[$name] = $nextType;
+					$changed = true;
+					continue;
+				}
+				$previousType = $accumulatorTypes[$name];
 				if ($nextType->equals($previousType)) {
 					continue;
 				}
@@ -1138,11 +1238,11 @@ final class ArgumentsHandler
 			}
 
 			if (!$changed) {
-				return $iterationClosureType;
+				return $closureTypes;
 			}
 		}
 
-		return $closureType;
+		return [];
 	}
 
 	/**

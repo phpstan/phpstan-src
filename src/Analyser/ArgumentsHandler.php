@@ -197,8 +197,8 @@ final class ArgumentsHandler
 			$bOriginalArg = $args[$b]->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE);
 			$aValue = $aOriginalArg !== null ? $aOriginalArg->value : $args[$a]->value;
 			$bValue = $bOriginalArg !== null ? $bOriginalArg->value : $args[$b]->value;
-			$aIsClosure = $aValue instanceof Expr\Closure || $aValue instanceof Expr\ArrowFunction;
-			$bIsClosure = $bValue instanceof Expr\Closure || $bValue instanceof Expr\ArrowFunction;
+			$aIsClosure = self::isClosureOrClosureArray($aValue);
+			$bIsClosure = self::isClosureOrClosureArray($bValue);
 			if ($aIsClosure !== $bIsClosure) {
 				// closures sort after non-closures so every sibling feeding an
 				// intrinsic override / generic callable(T) is in scope first
@@ -1017,6 +1017,33 @@ final class ArgumentsHandler
 	 * in-function-call stack and the nested closure types itself from there).
 	 * Every other argument only reads variant-stable facts off its parameter.
 	 */
+	/**
+	 * A closure, or an array literal holding only closures (with literal keys),
+	 * has no side effects when created, so it can be processed after its siblings.
+	 */
+	private static function isClosureOrClosureArray(Expr $expr): bool
+	{
+		if ($expr instanceof Expr\Closure || $expr instanceof Expr\ArrowFunction) {
+			return true;
+		}
+		if (!$expr instanceof Expr\Array_ || $expr->items === []) {
+			return false;
+		}
+		foreach ($expr->items as $item) {
+			if ($item->byRef || $item->unpack) {
+				return false;
+			}
+			if ($item->key !== null && !$item->key instanceof Node\Scalar\String_ && !$item->key instanceof Node\Scalar\Int_) {
+				return false;
+			}
+			if (!self::isClosureOrClosureArray($item->value)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	private function argConsumesResolvedParameterType(Expr $value): bool
 	{
 		if ($value instanceof Expr\Closure || $value instanceof Expr\ArrowFunction) {

@@ -5288,6 +5288,19 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$constantIntegers['b'] = [];
 		}
 
+		// the empty array stays apart, as in TypeCombinator::union(): merged
+		// key by key with the other shapes, it would make all their keys optional
+		$emptyArrays = [];
+		foreach (['a', 'b'] as $key) {
+			foreach ($constantArrays[$key] as $i => $type) {
+				if (!$type->isIterableAtLeastOnce()->no()) {
+					continue;
+				}
+				$emptyArrays[] = $type;
+				unset($constantArrays[$key][$i]);
+			}
+		}
+
 		$entryIntegerMin = PHP_INT_MAX;
 		$entryIntegerMax = PHP_INT_MIN;
 		$entryFloatMin = INF;
@@ -5681,7 +5694,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			TypeUtils::getAccessoryTypes($a),
 		);
 
-		$combined = TypeCombinator::union(...$resultTypes, ...$otherTypes);
+		$combined = TypeCombinator::union(...$resultTypes, ...$emptyArrays, ...$otherTypes);
 		if ($wrapBenevolent) {
 			$combined = TypeUtils::toBenevolentUnion($combined);
 		}

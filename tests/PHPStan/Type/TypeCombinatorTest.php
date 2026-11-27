@@ -3470,6 +3470,33 @@ class TypeCombinatorTest extends PHPStanTestCase
 			UnionType::class,
 			'weight of Account|weight of User',
 		];
+		// legacy shapes, which isSuperTypeOf() lets hold shapes with more keys
+		$string = new StringType();
+		$emptyOrOne = new UnionType([
+			new ConstantArrayType([], []),
+			new ConstantArrayType([new ConstantIntegerType(0)], [$string], [1], [], TrinaryLogic::createYes()),
+		]);
+		$oneOrTwo = new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [$string, $string], [1, 2], [1], TrinaryLogic::createYes());
+		$l1 = new ConstantStringType('l1');
+		$l2 = new ConstantStringType('l2');
+		// array{}|array{string} at l1 holds no list of two
+		yield [
+			[
+				new ConstantArrayType([$l1, $l2], [$oneOrTwo, $emptyOrOne]),
+				new ConstantArrayType([$l1, $l2], [$emptyOrOne, new UnionType([new ConstantArrayType([], []), $oneOrTwo])]),
+			],
+			UnionType::class,
+			'array{l1: array{0: string, 1?: string}, l2: array{}|array{string}}|array{l1: array{}|array{string}, l2: array{}|array{0: string, 1?: string}}',
+		];
+		// the list of the lengths of both would also hold list{array{string, string}, int}
+		yield [
+			[
+				new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [new ConstantArrayType([new ConstantIntegerType(0)], [$string], [1], [], TrinaryLogic::createYes()), new IntegerType()], [1, 2], [1], TrinaryLogic::createYes()),
+				new ConstantArrayType([new ConstantIntegerType(0)], [new ConstantArrayType([new ConstantIntegerType(0), new ConstantIntegerType(1)], [$string, $string], [2], [], TrinaryLogic::createYes())], [1], [], TrinaryLogic::createYes()),
+			],
+			UnionType::class,
+			'array{0: array{string}, 1?: int}|array{array{string, string}}',
+		];
 	}
 
 	/** A subclass of StringType holding the names of the properties of a class, as Larastan's model property of X. */

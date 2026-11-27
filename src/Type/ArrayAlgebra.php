@@ -542,14 +542,32 @@ final class ArrayAlgebra
 		if ($hasDifferentValues) {
 			return null;
 		}
-		if (!$biggerRequiresOtherKey && $bigger->isSuperTypeOf($smaller)->yes()) {
+		if (!$biggerRequiresOtherKey && self::holdsShape($bigger, $smaller)) {
 			return $bigger;
 		}
-		if ($matchedKeys === count($bigger->getKeyTypes()) && $smaller->isSuperTypeOf($bigger)->yes()) {
+		if ($matchedKeys === count($bigger->getKeyTypes()) && self::holdsShape($smaller, $bigger)) {
 			return $smaller;
 		}
 
 		return null;
+	}
+
+	/**
+	 * Whether the union of the shapes is $holder, which has every key of $held.
+	 * isSuperTypeOf() alone does not tell: it lets a shape hold one with more
+	 * keys, so at a key holding shapes, `array{}|array{string}` would hold
+	 * `array{0: string, 1?: string}` and the union would lose the lists of two.
+	 * Merging $held into $holder unions their values at each key exactly.
+	 */
+	private static function holdsShape(ConstantArrayType $holder, ConstantArrayType $held): bool
+	{
+		return $holder->isSuperTypeOf($held)->yes() && $holder->mergeWith($held)->equals($holder);
+	}
+
+	/** Whether the union of the values is $holder, see holdsShape(). */
+	private static function holdsValue(Type $holder, Type $held): bool
+	{
+		return $holder->isSuperTypeOf($held)->yes() && TypeCombinator::union($holder, $held)->equals($holder);
 	}
 
 	/**
@@ -674,8 +692,8 @@ final class ArrayAlgebra
 			$i = $length - 1;
 			if ($i < $smallerMax && !$biggerValueTypes[$i]->equals($smallerValueTypes[$i])) {
 				$differingPositions++;
-				$biggerHoldsSmaller = $biggerHoldsSmaller && $biggerValueTypes[$i]->isSuperTypeOf($smallerValueTypes[$i])->yes();
-				$smallerHoldsBigger = $smallerHoldsBigger && $smallerValueTypes[$i]->isSuperTypeOf($biggerValueTypes[$i])->yes();
+				$biggerHoldsSmaller = $biggerHoldsSmaller && self::holdsValue($biggerValueTypes[$i], $smallerValueTypes[$i]);
+				$smallerHoldsBigger = $smallerHoldsBigger && self::holdsValue($smallerValueTypes[$i], $biggerValueTypes[$i]);
 			}
 			if ($length < $minLength) {
 				continue;

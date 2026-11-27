@@ -1712,6 +1712,8 @@ foreach ($ttmPhpMaps as $ttmLabel => $ttmPhp) {
 		check(($ttmPhp->unsetType($ttmName) === $ttmPhp) === ($ttmNative->unsetType($ttmName) === $ttmNative), "TemplateTypeMap $ttmLabel unsetType($ttmName) returns \$this on both sides or neither");
 		check(($ttmPhp->unsetType($ttmName) === \PHPStan\Type\Generic\TemplateTypeMap::createEmpty()) === ($ttmNative->unsetType($ttmName) === \PHPStanTurbo\TemplateTypeMap::createEmpty()), "TemplateTypeMap $ttmLabel unsetType($ttmName) returns the empty singleton on both sides or neither");
 	}
+	check($ttmView($ttmPhp->getUpperBoundTypes()) === $ttmView($ttmNative->getUpperBoundTypes()), "TemplateTypeMap $ttmLabel getUpperBoundTypes()");
+	check($ttmView($ttmPhp->swapBounds()->getUpperBoundTypes()) === $ttmView($ttmNative->swapBounds()->getUpperBoundTypes()), "TemplateTypeMap $ttmLabel swapBounds() getUpperBoundTypes()");
 	check($ttmView($ttmPhp->swapBounds()->getTypes()) === $ttmView($ttmNative->swapBounds()->getTypes()), "TemplateTypeMap $ttmLabel swapBounds()");
 	check($ttmView($ttmPhp->swapBounds()->swapBounds()->getTypes()) === $ttmView($ttmNative->swapBounds()->swapBounds()->getTypes()), "TemplateTypeMap $ttmLabel swapBounds() twice");
 	check($ttmView($ttmPhp->convertToLowerBoundTypes()->getTypes()) === $ttmView($ttmNative->convertToLowerBoundTypes()->getTypes()), "TemplateTypeMap $ttmLabel convertToLowerBoundTypes()");

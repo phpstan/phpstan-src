@@ -174,6 +174,14 @@ public:
 		return zv::Val(std::move(result));
 	}
 
+	/* getUpperBoundTypes(): $this->upperBoundTypes; UNDEF = pending exception */
+	zv::Val getUpperBoundTypes() const
+	{
+		zval *upper = this->upperBoundTypes();
+		if (UNEXPECTED(upper == NULL)) return zv::Val();
+		return zv::Val::copyOf(zv::Ref(upper));
+	}
+
 	/* array_key_exists($name, $this->getTypes()); false = pending exception */
 	[[nodiscard]] bool hasType(zend_string *name, bool &out) const
 	{
@@ -545,6 +553,11 @@ PT_MINIT_REGISTRATION(pt_register_template_type_map)
 		PT_RETURN_VAL(PT_TTM_THIS.getTypes());
 	});
 	cls.op<PT_OP_GET_TYPES, &TemplateTypeMap::getTypes>();
+
+	cls.method(sigs::getUpperBoundTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(PT_TTM_THIS.getUpperBoundTypes());
+	});
 
 	cls.method(sigs::hasType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zend_string *name;

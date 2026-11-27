@@ -174,6 +174,7 @@ final class GenericParametersAcceptorResolver
 		$resolvedTemplateTypeMap = new TemplateTypeMap(array_merge(
 			$parametersAcceptor->getTemplateTypeMap()->map(static fn (string $name, Type $type): Type => new ErrorType())->getTypes(),
 			$typeMap->getTypes(),
+			self::resolveContravariantReturnTemplateTypes($returnType, $typeMap->getUpperBoundTypes()),
 		));
 
 		$originalParametersAcceptor = $parametersAcceptor;
@@ -229,6 +230,42 @@ final class GenericParametersAcceptorResolver
 		}
 
 		return $result;
+	}
+
+	/**
+	 * A template that occurs in the return type only in contravariant positions, such as
+	 * the T in callable(T): void, makes the return type more precise the larger it is, so it
+	 * resolves to its upper bound rather than to the lower bound getTypes() prefers.
+	 *
+	 * @param array<string, Type> $upperBoundTypes
+	 * @return array<string, Type>
+	 */
+	private static function resolveContravariantReturnTemplateTypes(Type $returnType, array $upperBoundTypes): array
+	{
+		if ($upperBoundTypes === []) {
+			return [];
+		}
+
+		$contravariantOnly = [];
+		foreach ($returnType->getReferencedTemplateTypes(TemplateTypeVariance::createCovariant()) as $reference) {
+			$name = $reference->getType()->getName();
+			if (!array_key_exists($name, $upperBoundTypes)) {
+				continue;
+			}
+
+			$contravariantOnly[$name] = ($contravariantOnly[$name] ?? true) && $reference->getPositionVariance()->contravariant();
+		}
+
+		$resolved = [];
+		foreach ($contravariantOnly as $name => $isContravariantOnly) {
+			if (!$isContravariantOnly) {
+				continue;
+			}
+
+			$resolved[$name] = $upperBoundTypes[$name];
+		}
+
+		return $resolved;
 	}
 
 	/**

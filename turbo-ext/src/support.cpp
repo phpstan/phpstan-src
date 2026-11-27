@@ -265,6 +265,7 @@ static const pt_class_template pt_class_templates[PT_CLASS_COUNT] = {
 	/* PT_CLASS_VAR_TAG_CHANGED_EXPRESSION_TYPE_NODE */ {"varTagChangedExpressionTypeNode", "PHPStan\\Node\\VarTagChangedExpressionTypeNode"},
 	/* PT_CLASS_PROPERTY_HOOK_STATEMENT_NODE */ {"propertyHookStatementNode", "PHPStan\\Node\\PropertyHookStatementNode"},
 	/* PT_CLASS_TEMPLATE_ARGUMENT_STATS */ {"templateArgumentStats", "PHPStan\\Analyser\\Generics\\TemplateArgumentStats"},
+	/* PT_CLASS_CLOSURE_WALK_TEMPLATE_TYPES */ {"closureWalkTemplateTypes", "PHPStan\\Analyser\\ExprHandler\\Helper\\ClosureWalkTemplateTypes"},
 	/* PT_CLASS_INVALIDATE_EXPR_NODE */ {"invalidateExprNode", "PHPStan\\Node\\InvalidateExprNode"},
 	/* PT_CLASS_TERNARY_EXPR */ {"ternaryExpr", "PhpParser\\Node\\Expr\\Ternary"},
 	/* PT_CLASS_BINARY_OP_MINUS */ {"binaryOpMinus", "PhpParser\\Node\\Expr\\BinaryOp\\Minus"},

@@ -3693,6 +3693,12 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-15843.php'], []);
 	}
 
+	public function testBug13164(): void
+	{
+		$this->checkExplicitMixed = true;
+		$this->analyse([__DIR__ . '/data/bug-13164.php'], []);
+	}
+
 	public function testFloatConstantLoopGeneralize(): void
 	{
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/float-constant-loop-generalize.php'], []);

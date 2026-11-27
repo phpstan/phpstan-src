@@ -156,7 +156,7 @@ function testF($arrayOfInt, $callableOrNull)
 	assertType('Closure(mixed): string', function ($a): string {
 		return (string)$a;
 	});
-	assertType('array<string>', f($arrayOfInt, function ($a): string {
+	assertType('array<decimal-int-string>', f($arrayOfInt, function ($a): string {
 		return (string)$a;
 	}));
 	assertType('array<int>', f($arrayOfInt, function ($a) {

@@ -20,6 +20,7 @@ use PHPStan\Rules\RuleErrorBuilder;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\FileTypeMapper;
 use PHPStan\Type\Generic\GenericObjectType;
+use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeVariance;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
@@ -110,7 +111,9 @@ final class VarTagTypeRuleHelper
 		$exprNativeType = $constantType ?? $scope->getScopeNativeType($expr);
 		$containsPhpStanType = $this->containsPhpStanType($varTagType);
 
-		$isValidSuperTypeOfExpr = $this->isValidSuperTypeOfExpr($scope, $expr, $exprNativeType, $varTagType);
+		// a native type carries template types only through static and $this,
+		// standing for whatever the object holds, so a @var narrowing them is fine
+		$isValidSuperTypeOfExpr = $this->isValidSuperTypeOfExpr($scope, $expr, TemplateTypeHelper::resolveToBounds($exprNativeType), $varTagType);
 		if (!$isValidSuperTypeOfExpr->yes()) {
 			$verbosity = VerbosityLevel::getRecommendedLevelByType($exprNativeType, $varTagType);
 			$errors[] = RuleErrorBuilder::message(sprintf(
@@ -220,6 +223,13 @@ final class VarTagTypeRuleHelper
 			$isAtLeastMaybeSuperTypeOf = $this->isAtLeastMaybeSuperTypeOfVarType($scope, $type, $varTagType);
 			if ($isAtLeastMaybeSuperTypeOf->no()) {
 				return $isAtLeastMaybeSuperTypeOf;
+			}
+
+			// the outer type already proves the @var narrows it; comparing iterable
+			// value types now could only produce false positives, e.g. native
+			// static(Foo<T>) iterates T while @var static<string> iterates string
+			if ($type->isSuperTypeOf($varTagType)->yes()) {
+				return IsSuperTypeOfResult::createYes();
 			}
 
 			$innerType = $type->getIterableValueType();

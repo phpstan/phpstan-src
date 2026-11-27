@@ -4,7 +4,7 @@
     "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
     "This file is @generated automatically"
   ],
-  "content-hash": "1d606471b686936d0b51dbe3d329603c",
+  "content-hash": "22e979b691cb46fc51f9a80cd14ee3aa",
   "packages": [
     {
       "name": "clue/ndjson-react",
@@ -1549,16 +1549,16 @@
     },
     {
       "name": "phpstan/php-8-stubs",
-      "version": "0.4.45",
+      "version": "0.4.46",
       "source": {
         "type": "git",
         "url": "https://github.com/phpstan/php-8-stubs.git",
-        "reference": "9d74723c231e1c530f202bd377dd2be407429585"
+        "reference": "8d8fbd320431b7f13edc4175d6fdad0cc8287962"
       },
       "dist": {
         "type": "zip",
-        "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/9d74723c231e1c530f202bd377dd2be407429585",
-        "reference": "9d74723c231e1c530f202bd377dd2be407429585",
+        "url": "https://api.github.com/repos/phpstan/php-8-stubs/zipball/8d8fbd320431b7f13edc4175d6fdad0cc8287962",
+        "reference": "8d8fbd320431b7f13edc4175d6fdad0cc8287962",
         "shasum": ""
       },
       "type": "library",
@@ -1575,9 +1575,10 @@
       "description": "PHP stubs extracted from php-src",
       "support": {
         "issues": "https://github.com/phpstan/php-8-stubs/issues",
-        "source": "https://github.com/phpstan/php-8-stubs/tree/0.4.45"
+        "source": "https://github.com/phpstan/php-8-stubs/tree/0.4.46"
       },
-      "time": "2026-11-13T09:05:42+00:00"
+      "time": "2026-11-27T00:21:26+00:00",
+      "published-time": "2026-11-27T00:21:34+00:00"
     },
     {
       "name": "phpstan/phpdoc-parser",

@@ -48,7 +48,7 @@ function constantSplit(string $delimiterUnion, string $stringUnion, int $limitUn
 	assertType("array{'a', 'b'}", explode(',', 'a,b,c', -1));
 	assertType('array{}', explode(',', 'a,b', -5));
 
-	assertType("array{'a', 'b'}|array{'a,b'|'x;y;z'}|array{'x', 'y', 'z'}", explode($delimiterUnion, $stringUnion));
+	assertType("array{'a', 'b'}|array{'a,b'}|array{'x', 'y', 'z'}|array{'x;y;z'}", explode($delimiterUnion, $stringUnion));
 	assertType("array{'a', 'b'}|array{'x;y;z'}", explode(',', $stringUnion));
 	assertType("array{'a', 'b,c'}|array{'a,b,c'}", explode(',', 'a,b,c', $limitUnion));
 	assertType("array{'a', 'b', 'c'}|array{'a', 'b,c'}|array{'a,b,c'}", explode(',', 'a,b,c', $limitRange));
@@ -79,7 +79,7 @@ function constantSplitLimits(string $twoDelimiters, string $twoStrings, int $lim
 {
 	// the clamping collapses int<1, 4> into the two limits that matter for a
 	// two-part split, so this stays within CONSTANT_COMBINATION_LIMIT
-	assertType("array{'a', 'b;c'}|array{'a,b', 'c'}|array{'a,b;c'|'x,y;z'}|array{'x', 'y;z'}|array{'x,y', 'z'}", explode($twoDelimiters, $twoStrings, $limitRangeAtLimit));
+	assertType("array{'a', 'b;c'}|array{'a,b', 'c'}|array{'a,b;c'}|array{'x', 'y;z'}|array{'x,y', 'z'}|array{'x,y;z'}", explode($twoDelimiters, $twoStrings, $limitRangeAtLimit));
 
 	// 20 limits that are not collapsed by the clamping are over the limit, so the exact result is not computed
 	assertType('non-empty-list<lowercase-string>', explode(',', 'a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t', $limitRangeOverLimit));

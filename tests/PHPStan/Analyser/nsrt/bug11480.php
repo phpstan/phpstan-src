@@ -17,25 +17,25 @@ class HelloWorld
 		}
 
 		if (count($x) > 0) {
-			assertType("array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+			assertType("array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		} else {
 			assertType("array{}", $x);
 		}
-		assertType("array{}|array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 
 		if (count($x) > 1) {
 			assertType("array{'ab', 'xy'}", $x);
 		} else {
-			assertType("array{}|array{'ab'|'xy'}", $x);
+			assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		}
-		assertType("array{}|array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 
 		if (count($x) >= 1) {
-			assertType("array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+			assertType("array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		} else {
 			assertType("array{}", $x);
 		}
-		assertType("array{}|array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 	}
 
 	public function arraySmallerThan(): void
@@ -51,16 +51,16 @@ class HelloWorld
 		if (count($x) < 1) {
 			assertType("array{}", $x);
 		} else {
-			assertType("array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+			assertType("array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		}
-		assertType("array{}|array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 
 		if (count($x) <= 1) {
-			assertType("array{}|array{'ab'|'xy'}", $x);
+			assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		} else {
 			assertType("array{'ab', 'xy'}", $x);
 		}
-		assertType("array{}|array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 	}
 
 	public function intUnionCount(): void
@@ -80,13 +80,13 @@ class HelloWorld
 
 		assertType('1|2', $count);
 
-		assertType("array{}|array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		if (count($x) >= $count) {
-			assertType("array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+			assertType("array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		} else {
 			assertType("array{}", $x);
 		}
-		assertType("array{}|array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 	}
 
 	/**
@@ -102,12 +102,12 @@ class HelloWorld
 			$x[] = 'xy';
 		}
 
-		assertType("array{}|array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		if (count($x) >= $count) {
-			assertType("array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+			assertType("array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		} else {
-			assertType("array{}|array{'ab'|'xy'}", $x);
+			assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 		}
-		assertType("array{}|array{'ab', 'xy'}|array{'ab'|'xy'}", $x);
+		assertType("array{}|array{'xy'}|array{0: 'ab', 1?: 'xy'}", $x);
 	}
 }

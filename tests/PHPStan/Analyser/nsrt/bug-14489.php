@@ -35,14 +35,14 @@ function () {
 	$cData = [];
 	while (rand(0, 1)) {
 		if (array_key_exists($c, $cData)) {
-			assertType('non-empty-array{c1?: array{1|4}, c2?: array{1|4}}', $cData);
-			assertType('array{1|4}', $cData[$c]);
+			assertType('non-empty-array{c1?: array{1}|array{4}, c2?: array{1}|array{4}}', $cData);
+			assertType('array{1}|array{4}', $cData[$c]);
 			$cData[$c] = $cData[$c];
 		} else {
 			$cData[$c] = $ids;
 		}
 	}
-	assertType('array{c1?: array{1|4}, c2?: array{1|4}}', $cData);
+	assertType('array{c1?: array{1}|array{4}, c2?: array{1}|array{4}}', $cData);
 };
 
 /**

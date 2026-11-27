@@ -11,7 +11,7 @@ class HelloWorld
 	 */
 	public function sayHello(array $values): void
 	{
-		assertType('array{name: BackedEnum|string}', $values);
+		assertType('array{name: BackedEnum}|array{name: string}', $values);
 		if ($this->testShape($values)) {
 			assertType('array{name: string}', $values);
 		} else {

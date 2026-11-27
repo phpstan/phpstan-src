@@ -38,7 +38,7 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/sort-param-castable-to-string-functions.php'], $this->hackParameterNames([
 			[
-				'Parameter #1 $array of function array_unique expects an array of values castable to string, array<int, array<int, string>> given.',
+				'Parameter #1 $array of function array_unique expects an array of values castable to string, array<int, list<string>> given.',
 				16,
 			],
 			[
@@ -97,7 +97,7 @@ class SortParameterCastableToStringRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/sort-param-castable-to-string-functions-named-args.php'], [
 			[
-				'Parameter $array of function array_unique expects an array of values castable to string, array<int, array<int, string>> given.',
+				'Parameter $array of function array_unique expects an array of values castable to string, array<int, list<string>> given.',
 				7,
 			],
 			[

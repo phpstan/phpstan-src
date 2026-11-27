@@ -115,7 +115,7 @@ function hasOffsetValueKeys(array $hasB, array $mixedArray, array $hasC): void {
 	} else {
 		$differentCs = ['c' => 20];
 	}
-	assertType('array{c: 10|20}', $differentCs);
+	assertType('array{c: 10}|array{c: 20}', $differentCs);
 	assertType('array{c: 10|20, ...}', array_merge($mixedArray, $differentCs));
 	assertType('array{c: mixed, ...}', array_merge($differentCs, $mixedArray));
 

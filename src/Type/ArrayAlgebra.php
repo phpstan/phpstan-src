@@ -287,10 +287,11 @@ final class ArrayAlgebra
 			$hasOffset = $otherArray->hasOffsetValueType($keyType);
 			if ($hasOffset->no()) {
 				// a shape that may have keys it does not list answers No for them too
-				if (
-					!$constArray->isOptionalKey($k)
-					&& ($otherConstantArray === null || !$otherConstantArray->isUnsealed()->maybe())
-				) {
+				if ($otherConstantArray !== null && $otherConstantArray->isUnsealed()->maybe()) {
+					$newArray->setOffsetValueType($keyType, $valueTypes[$k], $constArray->isOptionalKey($k));
+					continue;
+				}
+				if (!$constArray->isOptionalKey($k)) {
 					return new NeverType();
 				}
 				continue;
@@ -300,6 +301,16 @@ final class ArrayAlgebra
 				TypeCombinator::intersect($valueTypes[$k], $otherArray->getOffsetValueType($keyType)),
 				$constArray->isOptionalKey($k) && !$hasOffset->yes(),
 			);
+		}
+		if ($otherConstantArray !== null && $constArray->isUnsealed()->maybe()) {
+			// keys the shape does not list keep the other shape's values
+			$otherValueTypes = $otherConstantArray->getValueTypes();
+			foreach ($otherConstantArray->getKeyTypes() as $k => $keyType) {
+				if (!$constArray->hasOffsetValueType($keyType)->no()) {
+					continue;
+				}
+				$newArray->setOffsetValueType($keyType, $otherValueTypes[$k], $otherConstantArray->isOptionalKey($k));
+			}
 		}
 		$newArrayType = $newArray->getArray();
 		if ($constArray->isList()->yes()) {

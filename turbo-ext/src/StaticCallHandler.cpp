@@ -506,7 +506,8 @@ public:
 			currentScope = zv::Val::copyOf(zv::Ref(borrowed));
 		}
 
-		if (classIsExpr) {
+		// Resolved methods get their throw point below using the actual arguments.
+		if (classIsExpr && methodReflection.isNull()) {
 			// the class expr was processed above as the receiver; read its
 			// already-computed result instead of re-walking via Scope::getType().
 			zv::Val classResultType = pt_expression_result_get_type(classResult.raw());

@@ -120,4 +120,20 @@ class Foo
 		}
 	}
 
+	/** @param class-string<Foo> $class */
+	public function doFooWithClassString(string $class)
+	{
+		try {
+			$doesNotThrow = $class::staticThrowOrNot(false);
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createYes(), $doesNotThrow);
+		}
+
+		try {
+			$canThrow = $class::staticThrowOrNot(true);
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $canThrow);
+		}
+	}
+
 }

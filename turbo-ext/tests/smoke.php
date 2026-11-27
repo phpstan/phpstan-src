@@ -1677,12 +1677,12 @@ $ttmMaps = static function (bool $native) use ($ttmClass, $ttmScope): array {
 	$absorbed = new ($c(\PHPStan\Type\Generic\AbsorbedTemplateArgumentType::class))(); /* shadowed: each side its own class */
 	return [
 		'empty' => $mapClass::createEmpty(),
-		'upper' => new $mapClass(['T' => $int, 'U' => $string]),
-		'lower' => new $mapClass([], ['T' => $string, 'V' => $constInt]),
+		'lower' => new $mapClass(['T' => $int, 'U' => $string]),
+		'upper' => new $mapClass([], ['T' => $string, 'V' => $constInt]),
 		'both' => new $mapClass(['T' => $int, 'V' => $string], ['T' => $constInt, 'U' => $int]),
 		'templates' => new $mapClass(['T' => $t, 'U' => $u]),
 		'absorbed' => new $mapClass(['T' => $absorbed, 'U' => $int]),
-		'disjoint lower' => new $mapClass(['T' => $int], ['U' => $never]),
+		'disjoint upper' => new $mapClass(['T' => $int], ['U' => $never]),
 	];
 };
 $ttmPhpMaps = $ttmMaps(false);
@@ -1712,6 +1712,8 @@ foreach ($ttmPhpMaps as $ttmLabel => $ttmPhp) {
 		check(($ttmPhp->unsetType($ttmName) === $ttmPhp) === ($ttmNative->unsetType($ttmName) === $ttmNative), "TemplateTypeMap $ttmLabel unsetType($ttmName) returns \$this on both sides or neither");
 		check(($ttmPhp->unsetType($ttmName) === \PHPStan\Type\Generic\TemplateTypeMap::createEmpty()) === ($ttmNative->unsetType($ttmName) === \PHPStanTurbo\TemplateTypeMap::createEmpty()), "TemplateTypeMap $ttmLabel unsetType($ttmName) returns the empty singleton on both sides or neither");
 	}
+	check($ttmView($ttmPhp->swapBounds()->getTypes()) === $ttmView($ttmNative->swapBounds()->getTypes()), "TemplateTypeMap $ttmLabel swapBounds()");
+	check($ttmView($ttmPhp->swapBounds()->swapBounds()->getTypes()) === $ttmView($ttmNative->swapBounds()->swapBounds()->getTypes()), "TemplateTypeMap $ttmLabel swapBounds() twice");
 	check($ttmView($ttmPhp->convertToLowerBoundTypes()->getTypes()) === $ttmView($ttmNative->convertToLowerBoundTypes()->getTypes()), "TemplateTypeMap $ttmLabel convertToLowerBoundTypes()");
 	check($ttmPhp->convertToLowerBoundTypes()->count() === $ttmNative->convertToLowerBoundTypes()->count(), "TemplateTypeMap $ttmLabel convertToLowerBoundTypes() count");
 	check($ttmView($ttmPhp->resolveToBounds()->getTypes()) === $ttmView($ttmNative->resolveToBounds()->getTypes()), "TemplateTypeMap $ttmLabel resolveToBounds(): " . json_encode($ttmView($ttmNative->resolveToBounds()->getTypes())));
@@ -1735,11 +1737,11 @@ foreach ($ttmPhpMaps as $ttmLabel => $ttmPhp) {
 			$ttmPhpResult = $ttmPhp->$ttmOp($ttmOtherPhp);
 			$ttmNativeResult = $ttmNative->$ttmOp($ttmOtherNative);
 			check($ttmView($ttmPhpResult->getTypes()) === $ttmView($ttmNativeResult->getTypes()) && $ttmPhpResult->count() === $ttmNativeResult->count(), "TemplateTypeMap $ttmLabel $ttmOp $ttmOtherLabel: " . json_encode($ttmView($ttmPhpResult->getTypes())) . ' vs ' . json_encode($ttmView($ttmNativeResult->getTypes())));
-			// the lower bounds of a result are not converted here: the never
+			// the upper bounds of a result are not swapped here: the never
 			// TypeCombinator::intersect() answers for disjoint bounds is the PHP
 			// NeverType in this prefixed declaration, which the native map cannot
 			// tell from any other type — observed under the real names in
-			// tests/type-family.php ("template map ... convertToLowerBoundTypes")
+			// tests/type-family.php ("... swapped")
 		}
 	}
 }

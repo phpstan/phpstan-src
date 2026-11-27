@@ -531,6 +531,10 @@ public:
 
 		zv::Val otherTypes = templateTypeList(Z_OBJ_P(ancestorClassReflection.raw()), PT_LC("getactivetemplatetypemap"));
 		if (UNEXPECTED(otherTypes.isUndef())) return zv::Val();
+		zv::Val typeList = templateTypeList(Z_OBJ_P(ancestorClassReflection.raw()), PT_LC("gettemplatetypemap"));
+		if (UNEXPECTED(typeList.isUndef())) return zv::Val();
+		zval *variances = this->variances();
+		if (UNEXPECTED(variances == NULL)) return zv::Val();
 		zv::Val typeMap = emptyTemplateTypeMap();
 		if (UNEXPECTED(typeMap.isUndef())) return zv::Val();
 
@@ -556,6 +560,33 @@ public:
 			}
 			zv::Val inferred = pt_type_call(type.asObject(), PT_LC("infertemplatetypes"), 1, other.raw());
 			if (UNEXPECTED(inferred.isUndef())) return zv::Val();
+			if (UNEXPECTED(!zv::Ref(inferred.raw()).isObject())) {
+				zend_type_error("phpstan_turbo: inferTemplateTypes() must return an object");
+				return zv::Val();
+			}
+
+			zv::Val effectiveVariance = varianceAt(Z_ARRVAL_P(variances), entry);
+			if (UNEXPECTED(effectiveVariance.isUndef())) return zv::Val();
+			bool invariant;
+			if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(effectiveVariance.raw()), PT_LC("invariant"), 0, NULL, invariant))) return zv::Val();
+			if (invariant) {
+				zval *templateType = findKey(Z_ARRVAL_P(typeList.raw()), entry);
+				if (templateType != NULL && Z_TYPE_P(templateType) != IS_NULL) {
+					bool isTemplate;
+					if (UNEXPECTED(!pt_type_instanceof(templateType, PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+					if (isTemplate) {
+						effectiveVariance = pt_type_call(Z_OBJ_P(templateType), PT_LC("getvariance"), 0, NULL);
+						if (UNEXPECTED(effectiveVariance.isUndef())) return zv::Val();
+					}
+				}
+			}
+			bool contravariant;
+			if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(effectiveVariance.raw()), PT_LC("contravariant"), 0, NULL, contravariant))) return zv::Val();
+			if (contravariant) {
+				inferred = pt_type_call(Z_OBJ_P(inferred.raw()), PT_LC("swapbounds"), 0, NULL);
+				if (UNEXPECTED(inferred.isUndef())) return zv::Val();
+			}
+
 			typeMap = pt_type_call(Z_OBJ_P(typeMap.raw()), PT_LC("union"), 1, inferred.raw());
 			if (UNEXPECTED(typeMap.isUndef())) return zv::Val();
 			if (UNEXPECTED(!zv::Ref(typeMap.raw()).isObject())) {

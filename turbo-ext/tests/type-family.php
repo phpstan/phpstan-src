@@ -4971,13 +4971,17 @@ require_once __DIR__ . '/type-family-typehint-fixture.php';
 	$generic = new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$t, $u], null, $arrayObjectReflection);
 	$concrete = new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$int, $string], null, $arrayObjectReflection);
 	$inferred = $generic->inferTemplateTypes($concrete);
+	$contravariantGeneric = new \PHPStan\Type\Generic\GenericObjectType(\ArrayObject::class, [$t, $u], null, $arrayObjectReflection, [\PHPStan\Type\Generic\TemplateTypeVariance::createContravariant(), \PHPStan\Type\Generic\TemplateTypeVariance::createInvariant()]);
+	$contravariantInferred = $contravariantGeneric->inferTemplateTypes($concrete);
 	$arrayInferred = (new \PHPStan\Type\ArrayType($t, $u))->inferTemplateTypes(new \PHPStan\Type\Constant\ConstantArrayType([new \PHPStan\Type\Constant\ConstantIntegerType(0)], [$string]));
 	$maps = [
 		'inferred' => $inferred,
+		'contravariant inferred' => $contravariantInferred,
+		'contravariant inferred joined' => $contravariantInferred->union($inferred),
 		'array inferred' => $arrayInferred,
 		'declared' => new \PHPStan\Type\Generic\TemplateTypeMap(['T' => $t, 'U' => $u]),
-		'lower' => new \PHPStan\Type\Generic\TemplateTypeMap(['T' => $int], ['T' => $string, 'U' => $int]),
-		'disjoint lower' => new \PHPStan\Type\Generic\TemplateTypeMap([], ['T' => $int, 'U' => $string, 'V' => $string]),
+		'upper' => new \PHPStan\Type\Generic\TemplateTypeMap(['T' => $int], ['T' => $string, 'U' => $int]),
+		'disjoint upper' => new \PHPStan\Type\Generic\TemplateTypeMap([], ['T' => $int, 'U' => $string, 'V' => $string]),
 		'empty' => \PHPStan\Type\Generic\TemplateTypeMap::createEmpty(),
 	];
 	foreach ($maps as $label => $map) {
@@ -4986,13 +4990,15 @@ require_once __DIR__ . '/type-family-typehint-fixture.php';
 		$r["$label count"] = $map->count();
 		$r["$label resolveToBounds"] = $view($map->resolveToBounds()->getTypes());
 		$r["$label resolveToBounds identity"] = $map->resolveToBounds() === $map->resolveToBounds();
+		$r["$label swapBounds"] = $view($map->swapBounds()->getTypes());
+		$r["$label swapBounds twice"] = $view($map->swapBounds()->swapBounds()->getTypes());
 		$r["$label convertToLowerBoundTypes"] = $view($map->convertToLowerBoundTypes()->getTypes());
 		foreach ($maps as $otherLabel => $other) {
 			$r["$label union $otherLabel"] = $view($map->union($other)->getTypes());
 			$r["$label benevolentUnion $otherLabel"] = $view($map->benevolentUnion($other)->getTypes());
 			$r["$label intersect $otherLabel"] = $view($map->intersect($other)->getTypes());
-			$r["$label union $otherLabel lower bounds"] = $view($map->union($other)->convertToLowerBoundTypes()->getTypes());
-			$r["$label intersect $otherLabel lower bounds"] = $view($map->intersect($other)->convertToLowerBoundTypes()->getTypes());
+			$r["$label union $otherLabel swapped"] = $view($map->union($other)->swapBounds()->getTypes());
+			$r["$label intersect $otherLabel swapped"] = $view($map->intersect($other)->swapBounds()->getTypes());
 		}
 	}
 	$r['generic variances'] = $view($generic->getVariances());

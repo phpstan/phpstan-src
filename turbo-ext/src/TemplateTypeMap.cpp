@@ -71,53 +71,49 @@ static void pt_ttm_set(zv::Arr &array, const zv::ArrayEntry &entry, zv::Val valu
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Type\Generic\TemplateTypeMap. State lives in the PHP
- * object's $types, $lowerBoundTypes and $resolvedToBounds. */
+ * object's $types, $upperBoundTypes and $resolvedToBounds. */
 class TemplateTypeMap
 {
 public:
 	explicit TemplateTypeMap(zend_object *self) : self(self) {}
 
-	/* $this->types / $this->lowerBoundTypes, borrowed; NULL with an Error
+	/* $this->types / $this->upperBoundTypes, borrowed; NULL with an Error
 	 * pending when uninitialized */
 	[[nodiscard]] zval *types() const { return arraySlot(slots::types, "types"); }
-	zval *lowerBoundTypes() const { return arraySlot(slots::lowerBoundTypes, "lowerBoundTypes"); }
+	zval *upperBoundTypes() const { return arraySlot(slots::upperBoundTypes, "upperBoundTypes"); }
 
-	/* __construct($types, $lowerBoundTypes = []) — $lowerBoundTypes NULL
-	 * for the default */
-	void construct(zval *types, zval *lowerBoundTypes)
+	/* __construct($types, $lowerBoundTypes = []) — the second argument is
+	 * stored in $upperBoundTypes, NULL for the default */
+	void construct(zval *types, zval *upperBoundTypes)
 	{
 		zv::ObjRef ref(self);
 		ref.propAtWrite(slots::types, zv::Val::copyOf(zv::Ref(types)));
-		if (lowerBoundTypes != NULL) {
-			ref.propAtWrite(slots::lowerBoundTypes, zv::Val::copyOf(zv::Ref(lowerBoundTypes)));
+		if (upperBoundTypes != NULL) {
+			ref.propAtWrite(slots::upperBoundTypes, zv::Val::copyOf(zv::Ref(upperBoundTypes)));
 		} else {
-			ref.propAtWrite(slots::lowerBoundTypes, zv::Val(zv::Arr::empty()));
+			ref.propAtWrite(slots::upperBoundTypes, zv::Val(zv::Arr::empty()));
 		}
 	}
 
-	/* new self($types, $lowerBoundTypes) ($lowerBoundTypes NULL for []);
+	/* new self($types, $upperBoundTypes) ($upperBoundTypes NULL for []);
 	 * UNDEF = pending exception */
-	static zv::Val create(zval *types, zval *lowerBoundTypes)
+	static zv::Val create(zval *types, zval *upperBoundTypes)
 	{
 		zval object;
 		if (UNEXPECTED(object_init_ex(&object, pt_ce_template_type_map) != SUCCESS)) return zv::Val();
-		TemplateTypeMap(Z_OBJ(object)).construct(types, lowerBoundTypes);
+		TemplateTypeMap(Z_OBJ(object)).construct(types, upperBoundTypes);
 		return zv::Val::adopt(object);
 	}
 
-	/* new self([], $lowerBoundTypes) with the lower bounds intersected
-	 * into the types; UNDEF = pending exception */
-	zv::Val convertToLowerBoundTypes() const
+	/* swapBounds(): new self($this->upperBoundTypes, $this->types); UNDEF
+	 * = pending exception */
+	zv::Val swapBounds() const
 	{
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return zv::Val();
-		zval *lower = this->lowerBoundTypes();
-		if (UNEXPECTED(lower == NULL)) return zv::Val();
-		zv::Arr lowerBoundTypes = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(types)));
-		if (UNEXPECTED(!intersectLowerBoundsInto(lowerBoundTypes, lower))) return zv::Val();
-		zval emptyArray;
-		ZVAL_EMPTY_ARRAY(&emptyArray);
-		return create(&emptyArray, lowerBoundTypes.raw());
+		zval *upper = this->upperBoundTypes();
+		if (UNEXPECTED(upper == NULL)) return zv::Val();
+		return create(upper, types);
 	}
 
 	/* self::$empty ??= new self([], []) — the singleton, borrowed; NULL =
@@ -146,15 +142,15 @@ public:
 		return count == 0 ? 1 : 0;
 	}
 
-	/* count($this->types + $this->lowerBoundTypes); -1 = pending exception */
+	/* count($this->types + $this->upperBoundTypes); -1 = pending exception */
 	[[nodiscard]] zend_long count() const
 	{
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return -1;
-		zval *lower = this->lowerBoundTypes();
-		if (UNEXPECTED(lower == NULL)) return -1;
+		zval *upper = this->upperBoundTypes();
+		if (UNEXPECTED(upper == NULL)) return -1;
 		zend_long count = (zend_long) zend_hash_num_elements(Z_ARRVAL_P(types));
-		for (zv::ArrayEntry entry : zv::ArrRef(lower)) {
+		for (zv::ArrayEntry entry : zv::ArrRef(upper)) {
 			if (pt_ttm_find(Z_ARRVAL_P(types), entry) == NULL) {
 				count++;
 			}
@@ -162,16 +158,16 @@ public:
 		return count;
 	}
 
-	/* getTypes(): the types with the lower bounds of the names they lack;
+	/* getTypes(): the types with the upper bounds of the names they lack;
 	 * UNDEF = pending exception */
 	zv::Val getTypes() const
 	{
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return zv::Val();
-		zval *lower = this->lowerBoundTypes();
-		if (UNEXPECTED(lower == NULL)) return zv::Val();
+		zval *upper = this->upperBoundTypes();
+		if (UNEXPECTED(upper == NULL)) return zv::Val();
 		zv::Arr result = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(types)));
-		for (zv::ArrayEntry entry : zv::ArrRef(lower)) {
+		for (zv::ArrayEntry entry : zv::ArrRef(upper)) {
 			if (pt_ttm_find(Z_ARRVAL_P(types), entry) != NULL) continue;
 			pt_ttm_set(result, entry, zv::Val::copyOf(entry.value()));
 		}
@@ -183,9 +179,9 @@ public:
 	{
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return false;
-		zval *lower = this->lowerBoundTypes();
-		if (UNEXPECTED(lower == NULL)) return false;
-		out = zend_symtable_exists(Z_ARRVAL_P(types), name) || zend_symtable_exists(Z_ARRVAL_P(lower), name);
+		zval *upper = this->upperBoundTypes();
+		if (UNEXPECTED(upper == NULL)) return false;
+		out = zend_symtable_exists(Z_ARRVAL_P(types), name) || zend_symtable_exists(Z_ARRVAL_P(upper), name);
 		return true;
 	}
 
@@ -196,9 +192,9 @@ public:
 		if (UNEXPECTED(types == NULL)) return zv::Val();
 		zval *found = zend_symtable_find(Z_ARRVAL_P(types), name);
 		if (found == NULL) {
-			zval *lower = this->lowerBoundTypes();
-			if (UNEXPECTED(lower == NULL)) return zv::Val();
-			found = zend_symtable_find(Z_ARRVAL_P(lower), name);
+			zval *upper = this->upperBoundTypes();
+			if (UNEXPECTED(upper == NULL)) return zv::Val();
+			found = zend_symtable_find(Z_ARRVAL_P(upper), name);
 			if (found == NULL) return zv::Val::null();
 		}
 		ZVAL_DEREF(found);
@@ -218,41 +214,41 @@ public:
 			return zv::Val::copyOf(zv::Ref(&selfZv));
 		}
 		zv::Arr types = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(this->types())));
-		zv::Arr lowerBoundTypes = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(this->lowerBoundTypes())));
+		zv::Arr upperBoundTypes = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(this->upperBoundTypes())));
 		types.separate();
 		zend_symtable_del(types.table(), name);
-		lowerBoundTypes.separate();
-		zend_symtable_del(lowerBoundTypes.table(), name);
-		if (zend_hash_num_elements(types.table()) == 0 && zend_hash_num_elements(lowerBoundTypes.table()) == 0) {
+		upperBoundTypes.separate();
+		zend_symtable_del(upperBoundTypes.table(), name);
+		if (zend_hash_num_elements(types.table()) == 0 && zend_hash_num_elements(upperBoundTypes.table()) == 0) {
 			zval *empty = createEmpty();
 			if (UNEXPECTED(empty == NULL)) return zv::Val();
 			return zv::Val::copyOf(zv::Ref(empty));
 		}
-		return create(types.raw(), lowerBoundTypes.raw());
+		return create(types.raw(), upperBoundTypes.raw());
 	}
 
-	/* union(): the types combined by TypeCombinator::union(), the lower
+	/* union(): the types combined by TypeCombinator::union(), the upper
 	 * bounds intersected; UNDEF = pending exception */
 	zv::Val union_(zend_object *other) const { return unionWith(other, false); }
 
 	/* benevolentUnion(): the types combined by
-	 * TypeUtils::toBenevolentUnion(TypeCombinator::union()), the lower
+	 * TypeUtils::toBenevolentUnion(TypeCombinator::union()), the upper
 	 * bounds intersected; UNDEF = pending exception */
 	zv::Val benevolentUnion(zend_object *other) const { return unionWith(other, true); }
 
-	/* intersect(): the types intersected, the lower bounds unioned; UNDEF
+	/* intersect(): the types intersected, the upper bounds unioned; UNDEF
 	 * = pending exception */
 	zv::Val intersect(zend_object *other) const
 	{
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return zv::Val();
-		zval *lower = this->lowerBoundTypes();
-		if (UNEXPECTED(lower == NULL)) return zv::Val();
+		zval *upper = this->upperBoundTypes();
+		if (UNEXPECTED(upper == NULL)) return zv::Val();
 		TemplateTypeMap otherMap(other);
 		zval *otherTypes = otherMap.types();
 		if (UNEXPECTED(otherTypes == NULL)) return zv::Val();
-		zval *otherLower = otherMap.lowerBoundTypes();
-		if (UNEXPECTED(otherLower == NULL)) return zv::Val();
+		zval *otherUpper = otherMap.upperBoundTypes();
+		if (UNEXPECTED(otherUpper == NULL)) return zv::Val();
 
 		zv::Arr result = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(types)));
 		zv::Val otherTypesCopy = zv::Val::copyOf(zv::Ref(otherTypes));
@@ -267,20 +263,20 @@ public:
 			}
 		}
 
-		zv::Arr resultLowerBoundTypes = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(lower)));
-		zv::Val otherLowerCopy = zv::Val::copyOf(zv::Ref(otherLower));
-		for (zv::ArrayEntry entry : zv::ArrRef(otherLowerCopy.raw())) {
-			zval *existing = pt_ttm_isset(resultLowerBoundTypes.table(), entry) ? pt_ttm_find(resultLowerBoundTypes.table(), entry) : NULL;
+		zv::Arr resultUpperBoundTypes = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(upper)));
+		zv::Val otherUpperCopy = zv::Val::copyOf(zv::Ref(otherUpper));
+		for (zv::ArrayEntry entry : zv::ArrRef(otherUpperCopy.raw())) {
+			zval *existing = pt_ttm_isset(resultUpperBoundTypes.table(), entry) ? pt_ttm_find(resultUpperBoundTypes.table(), entry) : NULL;
 			if (existing != NULL) {
 				zval unioned;
 				if (UNEXPECTED(!pt_type_combinator_binary(PT_LC("union"), existing, entry.value().raw(), &unioned))) return zv::Val();
-				pt_ttm_set(resultLowerBoundTypes, entry, zv::Val::adopt(unioned));
+				pt_ttm_set(resultUpperBoundTypes, entry, zv::Val::adopt(unioned));
 			} else {
-				pt_ttm_set(resultLowerBoundTypes, entry, zv::Val::copyOf(entry.value()));
+				pt_ttm_set(resultUpperBoundTypes, entry, zv::Val::copyOf(entry.value()));
 			}
 		}
 
-		return create(result.raw(), resultLowerBoundTypes.raw());
+		return create(result.raw(), resultUpperBoundTypes.raw());
 	}
 
 	/* map(): new self($cb($name, $type) for every name of getTypes());
@@ -338,13 +334,13 @@ private:
 		return value;
 	}
 
-	/* the shared lower-bound loop of convertToLowerBoundTypes(), union()
-	 * and benevolentUnion(): every lower bound intersected into $into,
-	 * skipped when the intersection is never; false = pending exception */
-	[[nodiscard]] static bool intersectLowerBoundsInto(zv::Arr &into, zval *lowerBoundTypes)
+	/* the upper-bound loop of union() and benevolentUnion(): every upper
+	 * bound intersected into $into, skipped when the intersection is never;
+	 * false = pending exception */
+	[[nodiscard]] static bool intersectUpperBoundsInto(zv::Arr &into, zval *upperBoundTypes)
 	{
-		zv::Val lowerCopy = zv::Val::copyOf(zv::Ref(lowerBoundTypes));
-		for (zv::ArrayEntry entry : zv::ArrRef(lowerCopy.raw())) {
+		zv::Val upperCopy = zv::Val::copyOf(zv::Ref(upperBoundTypes));
+		for (zv::ArrayEntry entry : zv::ArrRef(upperCopy.raw())) {
 			zval *existing = pt_ttm_isset(into.table(), entry) ? pt_ttm_find(into.table(), entry) : NULL;
 			if (existing != NULL) {
 				zval intersection;
@@ -380,13 +376,13 @@ private:
 	{
 		zval *types = this->types();
 		if (UNEXPECTED(types == NULL)) return zv::Val();
-		zval *lower = this->lowerBoundTypes();
-		if (UNEXPECTED(lower == NULL)) return zv::Val();
+		zval *upper = this->upperBoundTypes();
+		if (UNEXPECTED(upper == NULL)) return zv::Val();
 		TemplateTypeMap otherMap(other);
 		zval *otherTypes = otherMap.types();
 		if (UNEXPECTED(otherTypes == NULL)) return zv::Val();
-		zval *otherLower = otherMap.lowerBoundTypes();
-		if (UNEXPECTED(otherLower == NULL)) return zv::Val();
+		zval *otherUpper = otherMap.upperBoundTypes();
+		if (UNEXPECTED(otherUpper == NULL)) return zv::Val();
 
 		zv::Arr result = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(types)));
 		zv::Val otherTypesCopy = zv::Val::copyOf(zv::Ref(otherTypes));
@@ -401,10 +397,10 @@ private:
 			}
 		}
 
-		zv::Arr resultLowerBoundTypes = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(lower)));
-		if (UNEXPECTED(!intersectLowerBoundsInto(resultLowerBoundTypes, otherLower))) return zv::Val();
+		zv::Arr resultUpperBoundTypes = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(upper)));
+		if (UNEXPECTED(!intersectUpperBoundsInto(resultUpperBoundTypes, otherUpper))) return zv::Val();
 
-		return create(result.raw(), resultLowerBoundTypes.raw());
+		return create(result.raw(), resultUpperBoundTypes.raw());
 	}
 };
 
@@ -422,13 +418,13 @@ bool pt_template_type_map_empty(zval *out)
 	return true;
 }
 
-bool pt_template_type_map_new(zval *out, zval *types, zval *lowerBoundTypes)
+bool pt_template_type_map_new(zval *out, zval *types, zval *upperBoundTypes)
 {
-	if (UNEXPECTED(Z_TYPE_P(types) != IS_ARRAY || (lowerBoundTypes != NULL && Z_TYPE_P(lowerBoundTypes) != IS_ARRAY))) {
-		zend_type_error("%s::__construct(): Argument #%d ($%s) must be of type array, %s given", pt_ce_template_type_map != NULL ? ZSTR_VAL(pt_ce_template_type_map->name) : "PHPStan\\Type\\Generic\\TemplateTypeMap", Z_TYPE_P(types) != IS_ARRAY ? 1 : 2, Z_TYPE_P(types) != IS_ARRAY ? "types" : "lowerBoundTypes", zend_zval_value_name(Z_TYPE_P(types) != IS_ARRAY ? types : lowerBoundTypes));
+	if (UNEXPECTED(Z_TYPE_P(types) != IS_ARRAY || (upperBoundTypes != NULL && Z_TYPE_P(upperBoundTypes) != IS_ARRAY))) {
+		zend_type_error("%s::__construct(): Argument #%d ($%s) must be of type array, %s given", pt_ce_template_type_map != NULL ? ZSTR_VAL(pt_ce_template_type_map->name) : "PHPStan\\Type\\Generic\\TemplateTypeMap", Z_TYPE_P(types) != IS_ARRAY ? 1 : 2, Z_TYPE_P(types) != IS_ARRAY ? "types" : "lowerBoundTypes", zend_zval_value_name(Z_TYPE_P(types) != IS_ARRAY ? types : upperBoundTypes));
 		return false;
 	}
-	zv::Val map = TemplateTypeMap::create(types, lowerBoundTypes);
+	zv::Val map = TemplateTypeMap::create(types, upperBoundTypes);
 	if (UNEXPECTED(map.isUndef())) return false;
 	map.intoReturnValue(out);
 	return true;
@@ -468,10 +464,10 @@ zv::Val pt_template_type_map_map(zval *map, zval *cb)
 	return pt_type_call(Z_OBJ_P(map), PT_LC("map"), 1, cb);
 }
 
-zv::Val pt_type_template_type_map_new(zval *types, zval *lowerBoundTypes)
+zv::Val pt_type_template_type_map_new(zval *types, zval *upperBoundTypes)
 {
 	zval out;
-	if (UNEXPECTED(!pt_template_type_map_new(&out, types, lowerBoundTypes))) return zv::Val();
+	if (UNEXPECTED(!pt_template_type_map_new(&out, types, upperBoundTypes))) return zv::Val();
 	return zv::Val::adopt(out);
 }
 
@@ -502,10 +498,10 @@ PT_MINIT_REGISTRATION(pt_register_template_type_map)
 	ptdecl::TemplateTypeMap::declareClass(cls);
 	cls.privateStaticTypedClassPropertyDefaultNull("empty", "self");
 	/* the instance slots in the twin's declaration order: "resolvedToBounds"
-	 * (slot 0), then the promoted "types" (1) and "lowerBoundTypes" (2) */
+	 * (slot 0), "upperBoundTypes" (1), then the promoted "types" (2) */
 	cls.privateTypedClassPropertyDefaultNull("resolvedToBounds", "self");
+	cls.privateTypedProperty("upperBoundTypes", MAY_BE_ARRAY);
 	cls.privateTypedProperty("types", MAY_BE_ARRAY);
-	cls.privateTypedProperty("lowerBoundTypes", MAY_BE_ARRAY);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *types, *lowerBoundTypes = NULL;
@@ -513,9 +509,14 @@ PT_MINIT_REGISTRATION(pt_register_template_type_map)
 		PT_TTM_THIS.construct(types, lowerBoundTypes);
 	});
 
+	cls.method(sigs::swapBounds, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(PT_TTM_THIS.swapBounds());
+	});
+
 	cls.method(sigs::convertToLowerBoundTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
-		PT_RETURN_VAL(PT_TTM_THIS.convertToLowerBoundTypes());
+		PT_RETURN_VAL(PT_TTM_THIS.swapBounds());
 	});
 
 	cls.method(sigs::createEmpty, [](INTERNAL_FUNCTION_PARAMETERS) {

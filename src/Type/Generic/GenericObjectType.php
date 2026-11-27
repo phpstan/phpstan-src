@@ -307,11 +307,22 @@ class GenericObjectType extends ObjectType
 		}
 
 		$otherTypes = $ancestorClassReflection->typeMapToList($ancestorClassReflection->getActiveTemplateTypeMap());
+		$typeList = $ancestorClassReflection->typeMapToList($ancestorClassReflection->getTemplateTypeMap());
 		$typeMap = TemplateTypeMap::createEmpty();
 
 		foreach ($this->getTypes() as $i => $type) {
 			$other = $otherTypes[$i] ?? new ErrorType();
-			$typeMap = $typeMap->union($type->inferTemplateTypes($other));
+			$inferred = $type->inferTemplateTypes($other);
+
+			$effectiveVariance = $this->variances[$i] ?? TemplateTypeVariance::createInvariant();
+			if ($effectiveVariance->invariant() && isset($typeList[$i]) && $typeList[$i] instanceof TemplateType) {
+				$effectiveVariance = $typeList[$i]->getVariance();
+			}
+			if ($effectiveVariance->contravariant()) {
+				$inferred = $inferred->swapBounds();
+			}
+
+			$typeMap = $typeMap->union($inferred);
 		}
 
 		return $typeMap;

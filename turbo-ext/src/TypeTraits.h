@@ -1074,10 +1074,10 @@ zv::Val pt_type_template_type_variance(zend_long value);
 zv::Val pt_type_template_type_variance_map_empty();
 zv::Val pt_type_template_type_variance_map_new(zval *variances);
 /* TemplateTypeMap::createEmpty() / new TemplateTypeMap($types, $lowerBoundTypes)
- * (the arrays borrowed, $lowerBoundTypes NULL for []); UNDEF = pending
+ * (the arrays borrowed, $upperBoundTypes NULL for []); UNDEF = pending
  * exception */
 zv::Val pt_type_template_type_map_empty();
-zv::Val pt_type_template_type_map_new(zval *types, zval *lowerBoundTypes = NULL);
+zv::Val pt_type_template_type_map_new(zval *types, zval *upperBoundTypes = NULL);
 /* TemplateTypeHelper::resolveTemplateTypes() / resolveToDefaults() /
  * resolveToBounds() / toArgument() / removeFinalByKeywordOverrides() (the
  * arguments borrowed); UNDEF = pending exception */

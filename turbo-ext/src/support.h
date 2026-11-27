@@ -1312,10 +1312,10 @@ bool pt_template_type_variance_map_new(zval *out, zval *variances);
 /* TemplateTypeMap::createEmpty() / new TemplateTypeMap($types,
  * $lowerBoundTypes) — the twin's singleton (held in its static $empty) and
  * a fresh instance (the arrays borrowed, checked as the twin's `array`
- * parameters; $lowerBoundTypes NULL for the default []); false = pending
- * exception */
+ * parameters; the second one, stored as the upper bounds, NULL for the
+ * default []); false = pending exception */
 [[nodiscard]] bool pt_template_type_map_empty(zval *out);
-bool pt_template_type_map_new(zval *out, zval *types, zval *lowerBoundTypes = NULL);
+bool pt_template_type_map_new(zval *out, zval *types, zval *upperBoundTypes = NULL);
 /* new TemplateTypeScope($className, $functionName) — the twin's private
  * constructor behind its create*() factories (NULL for null, the strings
  * borrowed); false = pending exception */

@@ -811,7 +811,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 				$argType = new NeverType();
 			}
 
-			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType)->convertToLowerBoundTypes());
+			$typeMap = $typeMap->union($paramType->inferTemplateTypes($argType)->swapBounds());
 		}
 
 		$typeMap = $typeMap->union(CallableAssertionsHelper::inferTemplateTypesOnAsserts($this, $parametersAcceptor));

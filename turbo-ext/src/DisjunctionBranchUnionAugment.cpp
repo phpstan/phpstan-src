@@ -73,6 +73,63 @@ int typeEquals(zval *type, zval *other)
 
 } // namespace
 
+/* Mirrors the private keepNativeValuesOutsidePhpDoc() of both disjunction
+ * augments: where the PHPDoc type of the subject describes more than its
+ * native type, the subject's sure entry becomes the alternative of the union
+ * and of whatever the PHPDoc type does not describe, so the native type keeps
+ * every value the PHPDoc type rules out */
+zv::Val pt_disjunction_keep_native_values_outside_phpdoc(zval *nodeScopeResolver, zval *created, zval *scope, zval *targetExpr, zval *phpDocType)
+{
+	if (UNEXPECTED(Z_TYPE_P(created) != IS_OBJECT || Z_TYPE_P(scope) != IS_OBJECT)) {
+		zend_throw_error(NULL, "phpstan_turbo: keepNativeValuesOutsidePhpDoc() needs a SpecifiedTypes and a scope");
+		return zv::Val();
+	}
+	zv::Val nativeScope = pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope));
+	if (UNEXPECTED(nativeScope.isUndef())) return zv::Val();
+	zv::Val nativeType = pt_node_scope_resolver_find_scope_state_type(nodeScopeResolver, targetExpr, nativeScope.raw());
+	if (UNEXPECTED(nativeType.isUndef())) return zv::Val();
+	if (!nativeType.isNull()) {
+		int describesNative = isSuperTypeOfYes(phpDocType, nativeType.raw());
+		if (UNEXPECTED(describesNative < 0)) return zv::Val();
+		if (describesNative) return zv::Val::copyOf(zv::Ref(created));
+	}
+
+	zv::Val exprString = pt_type_call(Z_OBJ_P(scope), PT_LC("getnodekey"), 1, targetExpr);
+	if (UNEXPECTED(exprString.isUndef())) return zv::Val();
+	if (UNEXPECTED(Z_TYPE_P(exprString.raw()) != IS_STRING)) {
+		zend_type_error("MutatingScope::getNodeKey(): Return value must be of type string, %s returned", zend_zval_value_name(exprString.raw()));
+		return zv::Val();
+	}
+	zend_string *key = Z_STR_P(exprString.raw());
+
+	zv::Val sureTypes = pt_specified_types_get_sure_types(Z_OBJ_P(created));
+	if (UNEXPECTED(sureTypes.isUndef())) return zv::Val();
+	zval *sureEntry = Z_TYPE_P(sureTypes.raw()) == IS_ARRAY ? zend_symtable_find(Z_ARRVAL_P(sureTypes.raw()), key) : NULL;
+	if (sureEntry == NULL) return zv::Val::copyOf(zv::Ref(created));
+
+	// (new SpecifiedTypes([$exprString => $sureTypes[$exprString]]))
+	//     ->intersectWith(new SpecifiedTypes(sureNotTypes: [$exprString => [$targetExpr, $phpDocType]]))
+	zv::Arr sure = zv::Arr::create(1);
+	sure.set(key, zv::Val::copyOf(zv::Ref(sureEntry)));
+	zv::Arr phpDocEntry = zv::Arr::create(2);
+	phpDocEntry.push(zv::Ref(targetExpr));
+	phpDocEntry.push(zv::Ref(phpDocType));
+	zv::Arr sureNot = zv::Arr::create(1);
+	sureNot.set(key, zv::Val(std::move(phpDocEntry)));
+	zv::Val sureHold = zv::Val(std::move(sure));
+	zv::Val sureNotHold = zv::Val(std::move(sureNot));
+	zv::Val unionSide = pt_specified_types_new(sureHold.raw(), NULL);
+	if (UNEXPECTED(unionSide.isUndef())) return zv::Val();
+	zv::Val phpDocSide = pt_specified_types_new(NULL, sureNotHold.raw());
+	if (UNEXPECTED(phpDocSide.isUndef())) return zv::Val();
+	zv::Val alternative = pt_specified_types_intersect_with(Z_OBJ_P(unionSide.raw()), phpDocSide.raw());
+	if (UNEXPECTED(alternative.isUndef())) return zv::Val();
+
+	zv::Val removed = pt_specified_types_remove_expr(Z_OBJ_P(created), key);
+	if (UNEXPECTED(removed.isUndef())) return zv::Val();
+	return pt_specified_types_union_with(Z_OBJ_P(removed.raw()), alternative.raw());
+}
+
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Analyser\DisjunctionBranchUnionAugment. */
@@ -167,6 +224,8 @@ public:
 			zval *defaultNarrowingHelper = slot(slots::defaultNarrowingHelper);
 			if (UNEXPECTED(Z_TYPE_P(defaultNarrowingHelper) != IS_OBJECT)) return uninitialized("defaultNarrowingHelper");
 			zv::Val created = createForSubject(defaultNarrowingHelper, targetExpr, unionType.raw(), context, scope);
+			if (UNEXPECTED(created.isUndef())) return zv::Val();
+			created = pt_disjunction_keep_native_values_outside_phpdoc(nodeScopeResolver, created.raw(), scope, targetExpr, originalType.raw());
 			if (UNEXPECTED(created.isUndef())) return zv::Val();
 			if (Z_TYPE_P(result.raw()) == IS_NULL) {
 				result = std::move(created);

@@ -244,6 +244,8 @@ public:
 				if (UNEXPECTED(Z_TYPE_P(defaultNarrowingHelper) != IS_OBJECT)) return uninitialized("defaultNarrowingHelper");
 				zv::Val created = createSubjectTypes(defaultNarrowingHelper, scope, targetExpr.raw(), unionType.raw(), context);
 				if (UNEXPECTED(created.isUndef())) return zv::Val();
+				created = pt_disjunction_keep_native_values_outside_phpdoc(nodeScopeResolver, created.raw(), scope, targetExpr.raw(), origType.raw());
+				if (UNEXPECTED(created.isUndef())) return zv::Val();
 				if (Z_TYPE_P(result.raw()) == IS_NULL) {
 					result = std::move(created);
 					continue;

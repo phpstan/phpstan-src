@@ -1430,4 +1430,15 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13325.php'], []);
 	}
 
+	public function testAcceptsMergedShapes(): void
+	{
+		$this->analyse([__DIR__ . '/data/accepts-merged-shapes.php'], [
+			[
+				"Method AcceptsMergedShapes\\Foo::notAccepted() should return array{type: 'boolean', name: string}|array{type: 'date', name: string, format: string}|array{type: 'keyword', name: string, fields?: array<string, array<string, string>>} but returns array{type: 'boolean'|'text', name: string}.",
+				43,
+				"• Type #1 from the union: Offset 'type' ('boolean') does not accept type 'boolean'|'text'.\n• Type #2 from the union: Offset 'type' ('date') does not accept type 'boolean'|'text'.\n• Type #3 from the union: Offset 'type' ('keyword') does not accept type 'boolean'|'text'.",
+			],
+		]);
+	}
+
 }

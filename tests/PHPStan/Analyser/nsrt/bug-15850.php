@@ -56,6 +56,21 @@ class HandlerList {
 	}
 }
 
+function test(): void
+{
+	$items_c = 0;
+	$save_item_flag = 0;
+	while (rand(0, 1)) {
+		while (rand(0, 1)) {
+			if ($save_item_flag == 0) {
+				$items_c++;
+			}
+		}
+		$save_item_flag++;
+	}
+	assertType('int<0, max>', $items_c);
+}
+
 class Node
 {
 	public ?Node $parent = null;

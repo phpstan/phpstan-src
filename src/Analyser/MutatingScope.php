@@ -5059,7 +5059,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$this->getNamespace(),
 			$variableTypeHolders,
 			$nativeTypes,
-			self::withoutWidenedConditionalExpressions($otherScope->conditionalExpressions, $otherScope->expressionTypes, $variableTypeHolders),
+			self::withoutWidenedConditionalExpressions(ScopeOps::intersectConditionalExpressions($otherScope->conditionalExpressions, $this->conditionalExpressions), $otherScope->expressionTypes, $variableTypeHolders),
 			$this->inClosureBindScopeClasses,
 			$this->anonymousFunctionReflection,
 			$this->inFirstLevelStatement,
@@ -5078,7 +5078,10 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 * Widening replaces a variable's type with a coarser one meant to cover the
 	 * passes not walked yet. The holders come from the new pass's state: one the
 	 * previous pass derived may no longer hold, and kept here it would narrow the
-	 * next pass's entry by itself, never contradicted again. A holder targeting a
+	 * next pass's entry by itself, never contradicted again. Only the holders
+	 * both passes derived are kept: one that still changes, like a target type
+	 * growing by one literal per pass, is dropped as a changing variable is
+	 * widened, so the holders cannot keep the loop from converging. A holder targeting a
 	 * widened variable was derived from the type before widening, and applying it
 	 * would narrow the variable back for the states its guards match - so holders
 	 * of widened targets are dropped; the next pass derives them again if they

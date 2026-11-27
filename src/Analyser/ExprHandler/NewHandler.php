@@ -217,19 +217,17 @@ final class NewHandler implements ExprHandler
 			// the not-yet-stored New_ node, which would re-enter this handler.
 			$objectClasses = $classResult->getType()->getObjectTypeOrClassStringObjectType()->getObjectClassNames();
 			if (count($objectClasses) === 1) {
-				$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($objectClasses[0]), attributes: [TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE => true]), $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
 				$className = $objectClasses[0];
-				$additionalThrowPoints = $objectExprResult->getThrowPoints();
-			} else {
-				$additionalThrowPoints = [InternalThrowPoint::createImplicit($scope, $expr)];
-			}
-
-			$throwPoints = array_merge($throwPoints, $additionalThrowPoints);
-
-			if ($className !== null) {
 				[$constructorReflection, $classReflection, $parametersAcceptor] = $this->processConstructorReflection($className, $expr);
 				$deferredConstructorImpureIsDynamic = true;
+
+				// a resolved constructor gets its throw point from the actual arguments below
+				if ($constructorReflection === null) {
+					$objectExprResult = $nodeScopeResolver->processExprNode($stmt, new New_(new Name($className), attributes: [TemplateArgumentFrame::SYNTHETIC_SITE_ATTRIBUTE => true]), $scope, $storage, new NoopNodeCallback(), $context->enterDeep()->withoutTemplateArgumentResolution());
+					$throwPoints = array_merge($throwPoints, $objectExprResult->getThrowPoints());
+				}
 			} else {
+				$throwPoints[] = InternalThrowPoint::createImplicit($scope, $expr);
 				$impurePoints[] = new ImpurePoint(
 					$scope,
 					$expr,

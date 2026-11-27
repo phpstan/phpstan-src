@@ -42,7 +42,8 @@ class StaticMethodThrowTypeExtension implements DynamicStaticMethodThrowTypeExte
 
 	public function isStaticMethodSupported(MethodReflection $methodReflection): bool
 	{
-		return $methodReflection->getDeclaringClass()->getName() === Foo::class && $methodReflection->getName() === 'staticThrowOrNot';
+		return ($methodReflection->getDeclaringClass()->getName() === Foo::class && $methodReflection->getName() === 'staticThrowOrNot')
+			|| ($methodReflection->getDeclaringClass()->getName() === ConstructorThrowOrNot::class && $methodReflection->getName() === '__construct');
 	}
 
 	public function getThrowTypeFromStaticMethodCall(MethodReflection $methodReflection, StaticCall $methodCall, Scope $scope): ?Type
@@ -117,6 +118,77 @@ class Foo
 			$result = self::staticThrowOrNot(false);
 		} finally {
 			assertVariableCertainty(TrinaryLogic::createYes(), $result);
+		}
+	}
+
+	public function doFoo5()
+	{
+		$class = self::class;
+		try {
+			$result = $class::staticThrowOrNot(false);
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createYes(), $result);
+		}
+	}
+
+	public function doFoo6()
+	{
+		try {
+			$result = $this::staticThrowOrNot(false);
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createYes(), $result);
+		}
+	}
+
+	public function doFoo7()
+	{
+		$class = self::class;
+		try {
+			$result = $class::staticThrowOrNot(true);
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $result);
+		}
+	}
+
+}
+
+class ConstructorThrowOrNot
+{
+
+	/** @throws \Exception */
+	public function __construct(bool $need = true)
+	{
+		if ($need) {
+			throw new \Exception();
+		}
+	}
+
+	public function doFoo1()
+	{
+		try {
+			$result = new self(false);
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createYes(), $result);
+		}
+	}
+
+	public function doFoo2()
+	{
+		$class = self::class;
+		try {
+			$result = new $class(false);
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createYes(), $result);
+		}
+	}
+
+	public function doFoo3()
+	{
+		$class = self::class;
+		try {
+			$result = new $class(true);
+		} finally {
+			assertVariableCertainty(TrinaryLogic::createMaybe(), $result);
 		}
 	}
 

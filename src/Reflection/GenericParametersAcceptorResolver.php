@@ -31,6 +31,60 @@ final class GenericParametersAcceptorResolver
 {
 
 	/**
+	 * The parameter with the templates that the sibling argument types
+	 * determine resolved, for typing a closure passed to it before its own
+	 * type is known. A template that also occurs in a non-covariant position
+	 * of the parameter (the T in callable(T): T, an accumulator) is fed by
+	 * the closure's own return, so it stays unresolved.
+	 *
+	 * @param array<int|string, Type> $siblingTypes
+	 */
+	public static function resolveParameterFromSiblings(array $siblingTypes, ParametersAcceptor $parametersAcceptor, ParameterReflection $parameter): ParameterReflection
+	{
+		$parameterType = $parameter->getType();
+		if (!$parameterType->hasTemplateOrLateResolvableType()) {
+			return $parameter;
+		}
+
+		$siblingTemplateTypes = [];
+		foreach (self::resolve($siblingTypes, $parametersAcceptor)->getResolvedTemplateTypeMap()->getTypes() as $name => $type) {
+			if ($type instanceof ErrorType) {
+				continue;
+			}
+			$siblingTemplateTypes[$name] = $type;
+		}
+		foreach ($parameterType->getReferencedTemplateTypes(TemplateTypeVariance::createContravariant()) as $reference) {
+			if ($reference->getPositionVariance()->covariant()) {
+				continue;
+			}
+			unset($siblingTemplateTypes[$reference->getType()->getName()]);
+		}
+		if ($siblingTemplateTypes === []) {
+			return $parameter;
+		}
+
+		$parameterType = TemplateTypeHelper::resolveTemplateTypes($parameterType, new TemplateTypeMap($siblingTemplateTypes), TemplateTypeVarianceMap::createEmpty(), TemplateTypeVariance::createContravariant());
+
+		return new ExtendedDummyParameter(
+			$parameter->getName(),
+			$parameterType,
+			$parameter->isOptional(),
+			$parameter->passedByReference(),
+			$parameter->isVariadic(),
+			$parameter->getDefaultValue(),
+			$parameter instanceof ExtendedParameterReflection ? $parameter->getNativeType() : new MixedType(),
+			$parameterType,
+			null,
+			TrinaryLogic::createMaybe(),
+			null,
+			[],
+			null,
+			TrinaryLogic::createNo(),
+			TrinaryLogic::createNo(),
+		);
+	}
+
+	/**
 	 * @api
 	 * @param array<int|string, Type> $argTypes
 	 */

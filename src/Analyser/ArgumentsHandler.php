@@ -31,6 +31,7 @@ use PHPStan\Reflection\Callables\SimpleImpurePoint;
 use PHPStan\Reflection\ExtendedMethodReflection;
 use PHPStan\Reflection\ExtendedParameterReflection;
 use PHPStan\Reflection\FunctionReflection;
+use PHPStan\Reflection\GenericParametersAcceptorResolver;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\ParametersAcceptor;
@@ -235,7 +236,7 @@ final class ArgumentsHandler
 				// resolution (see gatherClosureArgType()).
 				$originalArgForGather = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 				$gatheredArgTypeByIndex[$i] = $typeDrivenAcceptorSelection
-					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope)
+					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope, $gatheredTypes)
 					: $this->closureTypeResolver->getClosureType($scope, $arg->value, true, $storage);
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
 			}
@@ -1067,16 +1068,17 @@ final class ArgumentsHandler
 
 	/**
 	 * Resolves the type of a closure/arrow function argument for the generic
-	 * gather, mirroring ParametersAcceptorSelector::selectFromArgs(): the closure
-	 * type is read with the RAW (un-generic-resolved) acceptor parameter pushed
-	 * onto the in-function-call stack, so its body sees the template parameter
-	 * (effectively mixed for an untyped param) rather than a parameter already
-	 * resolved from sibling args. That keeps the inferred return type (the U in
-	 * callable(T): U) faithful to the closure's own declaration.
+	 * gather: the acceptor parameter is pushed onto the in-function-call stack
+	 * with the templates the already gathered sibling arguments determine
+	 * resolved (the T in callable(T): U from list<T> $xs), so the closure's
+	 * inferred return type - its contribution to U - comes from the same
+	 * parameter types its body is later walked with. Templates the closure
+	 * returns itself stay unresolved (see resolveParameterFromSiblings()).
 	 *
 	 * @param ParametersAcceptor[] $parametersAcceptors
+	 * @param array<int|string, Type> $siblingTypes
 	 */
-	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope): Type
+	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope, array $siblingTypes): Type
 	{
 		$rawParameter = null;
 		if (count($parametersAcceptors) === 1) {
@@ -1089,6 +1091,9 @@ final class ArgumentsHandler
 		}
 
 		if ($rawParameter !== null) {
+			if ($siblingTypes !== []) {
+				$rawParameter = GenericParametersAcceptorResolver::resolveParameterFromSiblings($siblingTypes, $parametersAcceptors[0], $rawParameter);
+			}
 			$scope = $scope->pushInFunctionCall(null, $rawParameter, false);
 		}
 

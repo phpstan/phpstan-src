@@ -547,6 +547,9 @@ inline zv::Val selectorSelectFromTypes(zval *types, zval *parametersAcceptors, b
  * the callee */
 pt_method_site pt_ah_callee_is_builtin_site;
 
+/* GenericParametersAcceptorResolver::resolveParameterFromSiblings($siblingTypes, $acceptor, $parameter) */
+pt_method_site pt_ah_resolve_parameter_from_siblings_site;
+
 /* the parameter getters: pt_parameter_reflection_call() (ParameterValues.h —
  * the value classes' slots, the native parameter reflections' bodies, a
  * cached site per member otherwise) */
@@ -1060,7 +1063,7 @@ private:
 	}
 
 	/* Mirrors gatherClosureArgType() */
-	zv::Val gatherClosureArgType(HashTable *parametersAcceptors, zend_ulong i, zval *closureExpr, zval *scope) const
+	zv::Val gatherClosureArgType(HashTable *parametersAcceptors, zend_ulong i, zval *closureExpr, zval *scope, zval *siblingTypes) const
 	{
 		zv::Val rawParametersHold;
 		zval *rawParameter = NULL;
@@ -1084,7 +1087,16 @@ private:
 		}
 
 		zv::Val pushedScope;
+		zv::Val siblingParameterHold;
 		if (rawParameter != NULL && Z_TYPE_P(rawParameter) != IS_NULL) {
+			if (zend_hash_num_elements(Z_ARRVAL_P(siblingTypes)) > 0) {
+				zval *acceptor = readIndex(parametersAcceptors, 0);
+				if (UNEXPECTED(acceptor == NULL)) return zv::Val();
+				zv::Args argv{siblingTypes, acceptor, rawParameter};
+				siblingParameterHold = pt_call_static_cached(pt_ah_resolve_parameter_from_siblings_site, PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER, PT_LC("resolveparameterfromsiblings"), 3, argv);
+				if (UNEXPECTED(siblingParameterHold.isUndef())) return zv::Val();
+				rawParameter = siblingParameterHold.raw();
+			}
 			zval null;
 			ZVAL_NULL(&null);
 			pushedScope = pt_mutating_scope_push_in_function_call(Z_OBJ_P(scope), &null, rawParameter, false);
@@ -2522,7 +2534,7 @@ private:
 		// the evolving scope, before the body is processed
 		zval *originalArgForGather = originalArgOf(record.arg);
 		zv::Val gathered = w.typeDrivenAcceptorSelection
-			? gatherClosureArgType(Z_ARRVAL_P(w.parametersAcceptors), record.key, value, w.scope.raw())
+			? gatherClosureArgType(Z_ARRVAL_P(w.parametersAcceptors), record.key, value, w.scope.raw(), w.gatheredTypes.raw())
 			: closureTypeResolverGetClosureType(slot(slots::closureTypeResolver), w.scope.raw(), value, true, w.storage);
 		if (UNEXPECTED(gathered.isUndef())) return false;
 		zval_ptr_dtor(&record.gathered);

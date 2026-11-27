@@ -109,7 +109,7 @@ class ImplodeParameterCastableToStringRuleTest extends RuleTestCase
 	{
 		$this->analyse([__DIR__ . '/data/bug-12146.php'], [
 			[
-				'Parameter #2 $array of function implode expects array<string>, array<int|stdClass> given.',
+				'Parameter #2 $array of function implode expects array<string>, array<int>|array<stdClass> given.',
 				28,
 			],
 		]);

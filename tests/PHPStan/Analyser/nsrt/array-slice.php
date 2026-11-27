@@ -16,7 +16,7 @@ class Foo
 	{
 		assertType('array', array_slice($a, 1));
 		assertType('list', array_slice($b, 1));
-		assertType('array<int|string>', array_slice($c, 1));
+		assertType('array<int>|list<string>', array_slice($c, 1));
 	}
 
 	/**

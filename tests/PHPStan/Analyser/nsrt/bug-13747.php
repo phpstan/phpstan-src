@@ -113,10 +113,10 @@ class HelloWorld
 		}
 
 		if (2 <= count($list)) {
-			assertType('non-empty-list<int|string>&hasOffsetValue(1, int|string)', $list);
+			assertType('(non-empty-list<int>&hasOffsetValue(1, int))|(non-empty-list<string>&hasOffsetValue(1, string))', $list);
 			assertType('int<2, max>', count($list));
 		} else {
-			assertType('list<int|string>', $list);
+			assertType('list<int>|non-empty-list<string>', $list);
 			assertType('int<0, 1>', count($list));
 		}
 	}
@@ -134,10 +134,10 @@ class HelloWorld
 		}
 
 		if (2 <= count($listOrArray)) {
-			assertType('non-empty-array<int|string>', $listOrArray);
+			assertType('non-empty-array<int>|non-empty-list<string>', $listOrArray);
 			assertType('int<2, max>', count($listOrArray));
 		} else {
-			assertType('array<int|string>', $listOrArray);
+			assertType('array<int>|non-empty-list<string>', $listOrArray);
 			assertType('int<0, 1>', count($listOrArray));
 		}
 	}

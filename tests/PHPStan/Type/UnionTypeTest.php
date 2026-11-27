@@ -782,7 +782,7 @@ class UnionTypeTest extends PHPStanTestCase
 				'\'aaa\'|array{a: int, b: float}|array{a: string, b: bool}',
 				'\'aaa\'|array{a: int, b: float}|array{a: string, b: bool}',
 				'\'aaa\'|array{a: int, b: float}|array{a: string, b: bool}',
-				'array<string, bool|float|int|string>|string',
+				'array<string, bool|string>|array<string, float|int>|string',
 			],
 			[
 				TypeCombinator::union(
@@ -805,7 +805,7 @@ class UnionTypeTest extends PHPStanTestCase
 				'\'aaa\'|array{a: string, b: bool}|array{b: int, c: float}',
 				'\'aaa\'|array{a: string, b: bool}|array{b: int, c: float}',
 				'\'aaa\'|array{a: string, b: bool}|array{b: int, c: float}',
-				'array<string, bool|float|int|string>|string',
+				'array<string, bool|string>|array<string, float|int>|string',
 			],
 			[
 				TypeCombinator::union(
@@ -828,7 +828,7 @@ class UnionTypeTest extends PHPStanTestCase
 				'\'aaa\'|array{a: string, b: bool}|array{c: int, d: float}',
 				'\'aaa\'|array{a: string, b: bool}|array{c: int, d: float}',
 				'\'aaa\'|array{a: string, b: bool}|array{c: int, d: float}',
-				'array<string, bool|float|int|string>|string',
+				'array<string, bool|string>|array<string, float|int>|string',
 			],
 			[
 				TypeCombinator::union(
@@ -850,7 +850,7 @@ class UnionTypeTest extends PHPStanTestCase
 				'array{int, bool, float}|array{string}',
 				'array{int, bool, float}|array{string}',
 				'array{int, bool, float}|array{string}',
-				'array<int, bool|float|int|string>',
+				'array<int, bool|float|int>|array<int, string>',
 			],
 			[
 				TypeCombinator::union(
@@ -1680,7 +1680,8 @@ class UnionTypeTest extends PHPStanTestCase
 					),
 				),
 				[
-					'array<int, int|RecursionCallable\Foo|stdClass|string>',
+					'array{RecursionCallable\Foo, stdClass}',
+					'array<int, int|string>',
 				],
 			],
 		];

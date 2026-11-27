@@ -9,7 +9,7 @@ function (): void {
 	$data = [];
 
 	foreach ($data as $key => $value) {
-		assertType('array<int<0, max>|string, array<string>|string>', $data[$key]);
+		assertType('array<string, array<string>|string>|list<string>', $data[$key]);
 		if ($key === 'classmap') {
 			assertType('list<string>', $data[$key]);
 			assertType('list<string>', $value);

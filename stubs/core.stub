@@ -393,7 +393,7 @@ function get_headers(string $url, bool $associative = false, ?resource $context 
  * @param array<string> $long_options
  * @param mixed $rest_index
  * @param-out positive-int $rest_index
- * @return __benevolent<array<string,string>|array<string,false>|array<string,list<mixed>>|false>
+ * @return __benevolent<array<string,string|false|list<mixed>>|false>
  */
 function getopt(string $short_options, array $long_options = [], &$rest_index = null) {}
 

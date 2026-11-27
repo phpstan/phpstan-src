@@ -21,7 +21,7 @@
  */
 return [
 	'new' => [
-		'array_combine' => ['associative-array', 'keys'=>'string[]|int[]', 'values'=>'array'],
+		'array_combine' => ['associative-array', 'keys'=>'array<string|int>', 'values'=>'array'],
 		'base64_decode' => ['string', 'string'=>'string', 'strict='=>'false'],
 		'base64_decode\'1' => ['string|false', 'string'=>'string', 'strict='=>'true'],
 		'bcdiv' => ['string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
@@ -46,7 +46,7 @@ return [
 		'error_log' => ['bool', 'message'=>'string', 'message_type='=>'0|1|3|4', 'destination='=>'string', 'extra_headers='=>'string'],
 		'explode' => ['list<string>', 'separator'=>'non-empty-string', 'str'=>'string', 'limit='=>'int'],
 		'fdiv' => ['float', 'dividend'=>'float', 'divisor'=>'float'],
-		'fgetcsv' => ['non-empty-list<string>|list{null}|false', 'fp'=>'resource', 'length='=>'0|positive-int|null', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
+		'fgetcsv' => ['non-empty-list<string|null>|false', 'fp'=>'resource', 'length='=>'0|positive-int|null', 'delimiter='=>'string', 'enclosure='=>'string', 'escape='=>'string'],
 		'filter_input' => ['mixed', 'type'=>'INPUT_GET|INPUT_POST|INPUT_COOKIE|INPUT_SERVER|INPUT_ENV', 'variable_name'=>'string', 'filter='=>'int', 'options='=>'array|int'],
 		'filter_input_array' => ['array|false|null', 'type'=>'INPUT_GET|INPUT_POST|INPUT_COOKIE|INPUT_SERVER|INPUT_ENV', 'definition='=>'int|array', 'add_empty='=>'bool'],
 		'floor' => ['float', 'number'=>'float'],
@@ -104,7 +104,7 @@ return [
 		'PDOStatement::fetchAll\'2' => ['array', 'mode'=>'int', 'class'=>'string', 'constructorArgs='=>'?array'],
 		'PDOStatement::fetchAll\'3' => ['array', 'mode'=>'int', 'callback'=>'callable'],
 		'PhpToken::tokenize' => ['list<PhpToken>', 'code'=>'string', 'flags='=>'int'],
-		'PhpToken::is' => ['bool', 'kind'=>'string|int|string[]|int[]'],
+		'PhpToken::is' => ['bool', 'kind'=>'string|int|array<string|int>'],
 		'PhpToken::isIgnorable' => ['bool'],
 		'PhpToken::getTokenName' => ['non-falsy-string'],
 		'preg_match_all' => ['0|positive-int|false', 'pattern'=>'string', 'subject'=>'string', '&w_subpatterns='=>'array', 'flags='=>'int', 'offset='=>'int'],
@@ -181,7 +181,7 @@ return [
 		'xmlwriter_write_raw' => ['bool', 'xmlwriter'=>'XMLWriter', 'content'=>'string'],
 	],
 	'old' => [
-		'array_combine' => ['associative-array|false', 'keys'=>'string[]|int[]', 'values'=>'array'],
+		'array_combine' => ['associative-array|false', 'keys'=>'array<string|int>', 'values'=>'array'],
 		'bcdiv' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcmod' => ['?string', 'dividend'=>'string', 'divisor'=>'string', 'scale='=>'int'],
 		'bcpowmod' => ['?string', 'base'=>'string', 'exponent'=>'string', 'modulus'=>'string', 'scale='=>'int'],

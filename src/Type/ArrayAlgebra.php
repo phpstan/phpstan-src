@@ -460,7 +460,18 @@ final class ArrayAlgebra
 		}
 
 		if ($differingKeys === 1 && $smallerKeys !== []) {
-			return $bigger->mergeWith($smaller);
+			$merged = $bigger->mergeWith($smaller);
+			if (
+				count($biggerValueTypes) === 1
+				&& $merged->getValueTypes()[0] instanceof UnionType
+				&& $biggerValueTypes[0]->isSuperTypeOf($smallerValueTypes[0])->no()
+			) {
+				// `array{'a'}|array{'b'}` stays apart: functions that make keys of the
+				// values, such as array_fill_keys(), tell the shapes apart by them
+				return null;
+			}
+
+			return $merged;
 		}
 
 		if (self::areListsOfOneLengthRange($bigger, $smaller)) {

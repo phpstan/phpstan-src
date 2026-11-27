@@ -19,11 +19,11 @@ class HelloWorld
 			$arr[] = 'C';
 		}
 
-		assertType("array{}|array{'A'|'B', 'C'}|array{'A'|'B'|'C'}|array{0: 'A', 1: 'B', 2?: 'C'}", $arr);
+		assertType("array{}|array{'C'}|array{0: 'B', 1?: 'C'}|list{0: 'A', 1?: 'B'|'C', 2?: 'C'}", $arr);
 
 		if (count($arr) >= 2 && $arr[0] === 'A') {
 			if (array_key_exists(1, $arr) && $arr[1] === 'C') {
-				assertType("array{'A', 'C'}", $arr);
+				assertType("array{0: 'A', 1: 'C', 2?: 'C'}", $arr);
 			}
 		}
 	}

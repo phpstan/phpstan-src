@@ -561,7 +561,7 @@ class Foo
 		assertType('bool', array_key_exists('foo', $generalArray));
 		assertType('string', sprintf($string, $string, 1));
 		assertType('\'foo bar\'', sprintf('%s %s', 'foo', 'bar'));
-		assertType('array{}|array{\'password\'|\'username\'}|array{\'username\', \'password\'}', $coalesceArray);
+		assertType('array{}|array{\'password\'}|array{0: \'username\', 1?: \'password\'}', $coalesceArray);
 		assertType('array{1, 2, 3}', $arrayToBeUnset);
 		assertType('array{1, 2, 3}', $arrayToBeUnset2);
 		assertType('array{0?: 1, 1?: 2, 2?: 3}', $arrayToBeUnset3);

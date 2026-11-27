@@ -623,7 +623,16 @@ final class ArgumentsHandler
 					$scopeToPass = $scopeToPass->enterExpressionAssign($arg->value);
 				}
 				$argContext = $context->enterDeep();
-				if (!$arg->unpack && $arg->value instanceof Expr\Array_) {
+				if (
+					!$arg->unpack
+					&& (
+						$arg->value instanceof Expr\Array_
+						// their closure operands are the passed value
+						|| $arg->value instanceof Expr\Ternary
+						|| $arg->value instanceof Expr\Match_
+						|| $arg->value instanceof Expr\BinaryOp\Coalesce
+					)
+				) {
 					$argContext = $argContext->enterPassedToType($parameterType, $parameterNativeType);
 					if ($passedToTypeResolver !== null) {
 						$argContext = $argContext->enterPassedToTypeResolver($passedToTypeResolver);

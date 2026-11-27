@@ -2442,7 +2442,12 @@ private:
 		if (!unpack) {
 			bool isArray = false;
 			if (UNEXPECTED(!isA(value, PT_CLASS_ARRAY_EXPR, isArray))) return false;
-			if (isArray) {
+			// a ternary, match or coalesce: their closure operands are the passed value
+			bool passesOperands = false;
+			if (!isArray && UNEXPECTED(!isA(value, PT_CLASS_TERNARY_EXPR, passesOperands))) return false;
+			if (!isArray && !passesOperands && UNEXPECTED(!isA(value, PT_CLASS_MATCH, passesOperands))) return false;
+			if (!isArray && !passesOperands && UNEXPECTED(!isA(value, PT_CLASS_COALESCE_EXPR, passesOperands))) return false;
+			if (isArray || passesOperands) {
 				zv::Val passed = pt_expression_context_enter_passed_to_type(argContext.raw(), a.parameterType.isUndef() ? NULL : a.parameterType.raw(), a.parameterNativeType.isUndef() ? NULL : a.parameterNativeType.raw());
 				if (UNEXPECTED(passed.isUndef())) return false;
 				argContext = std::move(passed);

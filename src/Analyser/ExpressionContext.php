@@ -90,10 +90,13 @@ final class ExpressionContext
 		return new self($this->isDeep, $this->inAssignRightSideVariableName, $this->inAssignRightSideExpr, $this->inThrow, $this->inAssignRightSideType, $this->inAssignRightSideNativeType, $this->resolveTemplateArguments);
 	}
 
-	/** Match arms allow void expressions, but still feed the enclosing value. */
+	/**
+	 * Match arms allow void expressions, but still feed the enclosing value -
+	 * and a closure arm is passed wherever the match is.
+	 */
 	public function enterMatchArm(): self
 	{
-		return new self(false, null, null, resolveTemplateArguments: $this->resolveTemplateArguments, valueFlowTarget: $this->valueFlowTarget, valueConsumed: $this->isValueConsumed());
+		return new self(false, null, null, resolveTemplateArguments: $this->resolveTemplateArguments, passedToType: $this->passedToType, nativePassedToType: $this->nativePassedToType, valueFlowTarget: $this->valueFlowTarget, valueConsumed: $this->isValueConsumed());
 	}
 
 	public function isValueConsumed(): bool

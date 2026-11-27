@@ -8174,40 +8174,6 @@ public:
 		return found != NULL && Z_TYPE_P(found) != IS_NULL;
 	}
 
-	/* $this->hasEqualNativeType($exprString): tracked in both tables with
-	 * equal types; false = pending exception */
-	[[nodiscard]] bool hasEqualNativeType(zend_string *exprString, bool &out)
-	{
-		out = false;
-		zval *phpDoc = zend_symtable_find(Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()), exprString);
-		if (phpDoc == NULL) return true;
-		zval *native = zend_symtable_find(Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()), exprString);
-		if (native == NULL) return true;
-		ZVAL_DEREF(phpDoc);
-		ZVAL_DEREF(native);
-		return pt_holder_equal_types(phpDoc, native, &out);
-	}
-
-	/* $this->narrowsNativeTypeByHolders($exprString, $holders); false = pending
-	 * exception */
-	[[nodiscard]] bool narrowsNativeTypeByHolders(zend_string *exprString, HashTable *holders, bool &out)
-	{
-		if (UNEXPECTED(!requireSlot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES, "nativeExpressionTypes"))) return false;
-		if (UNEXPECTED(!hasEqualNativeType(exprString, out))) return false;
-		if (!out) return true;
-		for (auto holderEntry : zv::TableRef(holders)) {
-			zv::Val conditions = conditionalConditions(holderEntry.value());
-			if (UNEXPECTED(conditions.isUndef())) return false;
-			for (auto conditionEntry : zv::TableRef(Z_ARRVAL_P(conditions.raw()))) {
-				zend_string *skey = conditionEntry.stringKeyOrNull();
-				zv::Str guardExprString = zv::Str::adopt(skey != NULL ? zend_string_copy(skey) : zend_long_to_str((zend_long) conditionEntry.indexKey()));
-				if (UNEXPECTED(!hasEqualNativeType(guardExprString.get(), out))) return false;
-				if (!out) return true;
-			}
-		}
-		return true;
-	}
-
 	/*
 	 * private (twin 4283) — matches the registered conditional expressions
 	 * against the just-specified holders and applies the consequences.
@@ -8294,27 +8260,6 @@ public:
 				zv::Val intersected = intersectTypes(type.raw(), holderTypeValue.raw());
 				if (UNEXPECTED(intersected.isUndef())) return zv::Val();
 				type = std::move(intersected);
-			}
-			/* the holders narrow the native type too where the target and every
-			 * guard have equal native and PHPDoc types */
-			bool narrowsNative;
-			if (UNEXPECTED(!narrowsNativeTypeByHolders(conditionalExprString.get(), holders, narrowsNative))) return zv::Val();
-			if (narrowsNative) {
-				zval *nativeExisting = zend_symtable_find(Z_ARRVAL_P(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES).raw()), conditionalExprString.get());
-				zv::Val nativeExpr = holderExpr(zv::Ref(nativeExisting));
-				zv::Val nativeType = holderType(zv::Ref(nativeExisting));
-				if (UNEXPECTED(nativeExpr.isUndef() || nativeType.isUndef())) return zv::Val();
-				zend_long nativeCertainty = holderCertainty(zv::Ref(nativeExisting));
-				if (UNEXPECTED(nativeCertainty < 0)) return zv::Val();
-				zv::Val nativeIntersected = intersectTypes(nativeType.raw(), type.raw());
-				if (UNEXPECTED(nativeIntersected.isUndef())) return zv::Val();
-				zval nativeHolder;
-				pt_holder_create(&nativeHolder, nativeExpr.raw(), nativeIntersected.raw(), nativeCertainty);
-				zv::Val nativeHolderValue = zv::Val::adopt(nativeHolder);
-				if (UNEXPECTED(!writeScopeTable(self, PT_MS_PROP_NATIVE_EXPRESSION_TYPES, PT_LC("nativeExpressionTypes"), conditionalExprString.get(), nativeHolderValue.raw()))) {
-					return zv::Val();
-				}
-				existing = zend_symtable_find(Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).raw()), conditionalExprString.get());
 			}
 			zv::Val existingExpr = holderExpr(zv::Ref(existing));
 			zv::Val existingType = holderType(zv::Ref(existing));

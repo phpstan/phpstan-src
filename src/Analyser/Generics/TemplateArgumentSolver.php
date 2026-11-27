@@ -221,7 +221,7 @@ final class TemplateArgumentSolver
 		// a covariant template already accepts every subtype - a known initial
 		// type is never clamped
 		if (!$templateVariance->covariant() || $acceptsAnything) {
-			$covariantFallback = null;
+			$upperBounds = [];
 			$markerFallback = null;
 			foreach ($observation['sends'] as [$sent, $variance]) {
 				if ($variance->covariant()) {
@@ -236,7 +236,7 @@ final class TemplateArgumentSolver
 						$markerFallback ??= $sent;
 						continue;
 					}
-					$covariantFallback ??= $this->substituteResolutions($sent);
+					$upperBounds[] = $this->substituteResolutions($sent);
 					continue;
 				}
 				$sent = $this->substituteResolutions($sent);
@@ -260,7 +260,17 @@ final class TemplateArgumentSolver
 				return $sent;
 			}
 
-			if ($covariantFallback === null && $markerFallback !== null) {
+			// like JLS 18.4: lower bounds are the most precise answer; failing
+			// them, the argument must satisfy every upper bound - their
+			// intersection, unless they contradict each other, in which case
+			// the first one stands and the second pass reports the others
+			$covariantFallback = null;
+			if ($lowerBounds === [] && $upperBounds !== []) {
+				$covariantFallback = TypeCombinator::intersect(...$upperBounds);
+				if ($covariantFallback instanceof NeverType) {
+					$covariantFallback = $upperBounds[0];
+				}
+			} elseif ($lowerBounds === [] && $markerFallback !== null) {
 				$covariantFallback = $this->substituteResolutions($markerFallback);
 			}
 			if ($covariantFallback !== null) {

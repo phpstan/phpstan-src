@@ -216,8 +216,8 @@ function invariantIntoCovariant(): void
 	$b->add(2);
 	$z = freezeColls($a, $b);
 	takesBoxOfInt($z);
-	assertType('TemplateArgumentMultipleSites\Coll<int>', $a);
-	assertType('TemplateArgumentMultipleSites\Box<int>', $z);
+	assertType('TemplateArgumentMultipleSites\Coll<1|2>', $a);
+	assertType('TemplateArgumentMultipleSites\Box<1|2>', $z);
 }
 
 function contravariant(): void

@@ -454,7 +454,7 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ArrayType(new MixedType(), new IntegerType()),
 				],
 				UnionType::class,
-				'array<int>|array<string>|ArrayIterator|ArrayObject',
+				'array<int|string>|ArrayIterator|ArrayObject',
 			],
 			[
 				[
@@ -561,24 +561,24 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new ArrayType(new MixedType(), new IntegerType()),
 					new ArrayType(new MixedType(), new StringType()),
 				],
-				UnionType::class,
-				'array<int>|array<string>',
+				ArrayType::class,
+				'array<int|string>',
 			],
 			[
 				[
 					new ArrayType(new MixedType(), new IntegerType()),
 					new ArrayType(new IntegerType(), new StringType()),
 				],
-				UnionType::class,
-				'array<int, string>|array<int>',
+				ArrayType::class,
+				'array<int|string>',
 			],
 			[
 				[
 					new ArrayType(new StringType(), new IntegerType()),
 					new ArrayType(new IntegerType(), new StringType()),
 				],
-				UnionType::class,
-				'array<int, string>|array<string, int>',
+				ArrayType::class,
+				'array<int|string, int|string>',
 			],
 			[
 				[
@@ -801,8 +801,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 						new IntegerType(),
 					]),
 				],
-				UnionType::class,
-				'array<int, stdClass>|array{bar: int, foo: DateTimeImmutable}',
+				ArrayType::class,
+				'array<\'bar\'|\'foo\'|int, DateTimeImmutable|int|stdClass>',
 			],
 			[
 				[
@@ -3182,8 +3182,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{...<int, string>}',
 				'array{...<string, string>}',
 			],
-			UnionType::class,
-			'array<int, string>|array<string, string>',
+			ArrayType::class,
+			'array<int|string, string>',
 		];
 
 		yield [
@@ -3191,8 +3191,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{...<int, string>}',
 				'array{...<int, int>}',
 			],
-			UnionType::class,
-			'array<int, int>|array<int, string>',
+			ArrayType::class,
+			'array<int, int|string>',
 		];
 
 		yield [
@@ -3227,8 +3227,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{a: int}',
 				'array{...<int, int>}',
 			],
-			UnionType::class,
-			'array<int, int>|array{a: int}',
+			ArrayType::class,
+			'array<\'a\'|int, int>',
 		];
 
 		yield [
@@ -3623,6 +3623,50 @@ class TypeCombinatorTest extends PHPStanTestCase
 
 		if ($hasSubtraction) {
 			return;
+		}
+	}
+
+	/**
+	 * @return iterable<array{list<string>, class-string<Type>, string}>
+	 */
+	public static function dataUnionOnBleedingEdge(): iterable
+	{
+		yield [['array<int>', 'array<string>'], UnionType::class, 'array<int>|array<string>'];
+		yield [['array<int>', 'array<int, string>'], UnionType::class, 'array<int, string>|array<int>'];
+		yield [['array<string, int>', 'array<int, string>'], UnionType::class, 'array<int, string>|array<string, int>'];
+		yield [['array<int, stdClass>', 'array{foo: DateTimeImmutable, bar: int}'], UnionType::class, 'array<int, stdClass>|array{bar: int, foo: DateTimeImmutable}'];
+		yield [['array{...<int, string>}', 'array{...<string, string>}'], UnionType::class, 'array<int, string>|array<string, string>'];
+		yield [['array{...<int, string>}', 'array{...<int, int>}'], UnionType::class, 'array<int, int>|array<int, string>'];
+		yield [['array{a: int}', 'array{...<int, int>}'], UnionType::class, 'array<int, int>|array{a: int}'];
+
+		// arrays not told apart by the kinds of their keys or values still merge
+		yield [['array<int>', 'array<int|string>'], ArrayType::class, 'array<int|string>'];
+		yield [['array<string>', 'array{foo: string}'], ArrayType::class, 'array<string>'];
+	}
+
+	/**
+	 * @param list<string> $types
+	 * @param class-string<Type> $expectedTypeClass
+	 */
+	#[DataProvider('dataUnionOnBleedingEdge')]
+	public function testUnionOnBleedingEdge(array $types, string $expectedTypeClass, string $expectedTypeDescription): void
+	{
+		$typeStringResolver = self::getContainer()->getByType(TypeStringResolver::class);
+		foreach ([$types, array_reverse($types)] as $typeStrings) {
+			// describing the type for the test unions its members again
+			[$actualType, $actualDescription] = BleedingEdgeToggle::withBleedingEdge(true, static function () use ($typeStrings, $typeStringResolver): array {
+				// the memoized unions of the default container were made without bleeding edge
+				TypeCombinator::clearCache();
+				try {
+					$type = TypeCombinator::union(...array_map(static fn (string $type): Type => $typeStringResolver->resolve($type, null), $typeStrings));
+
+					return [$type, self::describeForIntersectTest($type)];
+				} finally {
+					TypeCombinator::clearCache();
+				}
+			});
+			$this->assertSame($expectedTypeDescription, $actualDescription, implode(', ', $typeStrings));
+			$this->assertInstanceOf($expectedTypeClass, $actualType);
 		}
 	}
 

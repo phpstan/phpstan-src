@@ -1352,7 +1352,13 @@ class ReturnTypeRuleTest extends RuleTestCase
 
 	public function testBug7976(): void
 	{
-		$this->analyse([__DIR__ . '/data/bug-7976.php'], []);
+		// Arr's iterator comes from the generic-less ArrayObject, so the keys may be ints too
+		$this->analyse([__DIR__ . '/data/bug-7976.php'], [
+			[
+				'Method Bug7976\\HelloWorld::sayHello() should return ArrayObject<int|string, array<string, mixed>> but returns ArrayObject<int|string, array<mixed>>.',
+				54,
+			],
+		]);
 	}
 
 	public function testBug12704(): void

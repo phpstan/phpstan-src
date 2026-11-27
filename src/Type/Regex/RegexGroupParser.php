@@ -93,13 +93,14 @@ final class RegexGroupParser
 				}
 			}
 
+			$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);
 			if (str_contains($modifiers, 'x')) {
 				// in freespacing mode the # character starts a comment and runs until the end of the line
 				// but \# is an escaped literal hash, and (?#...) is an inline comment - neither starts a line comment
-				$regex = preg_replace('/(?<!\\\\)(?<!\(\?)#.*/', '', $regex) ?? '';
+				// strip comments only after removing the delimiters, which can be # too
+				$rawRegex = preg_replace('/(?<!\\\\)(?<!\(\?)#.*/', '', $rawRegex) ?? '';
 			}
 
-			$rawRegex = $this->regexExpressionHelper->removeDelimitersAndModifiers($regex);
 			try {
 				$ast = self::$parser->parse(StringSource::createFromString($rawRegex));
 			} catch (ParserExceptionInterface | RegexSyntaxException) {

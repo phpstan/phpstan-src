@@ -6,8 +6,10 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use function array_merge;
+use function array_slice;
 use function array_unique;
 use function array_values;
+use function count;
 
 /**
  * Result of a Type::accepts() check — whether one type accepts another.
@@ -30,6 +32,14 @@ use function array_values;
 final class AcceptsResult
 {
 
+	/**
+	 * Every member of a union that rejects a type adds its own reasons, so the
+	 * reasons of nested unions multiply with every level they are nested in.
+	 * Only the first ones are kept, which bounds both the work spent building
+	 * them and the tip they end up in.
+	 */
+	public const REASONS_LIMIT = 10;
+
 	private static self $YES;
 
 	private static self $MAYBE;
@@ -42,10 +52,14 @@ final class AcceptsResult
 	 */
 	public function __construct(
 		public readonly TrinaryLogic $result,
-		public readonly array $reasons,
+		array $reasons,
 	)
 	{
+		$this->reasons = count($reasons) > self::REASONS_LIMIT ? array_slice($reasons, 0, self::REASONS_LIMIT) : $reasons;
 	}
+
+	/** @var list<string> */
+	public readonly array $reasons;
 
 	/**
 	 * @phpstan-assert-if-true =false $this->no()

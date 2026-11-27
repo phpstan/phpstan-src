@@ -357,6 +357,7 @@ final class ArgumentsNormalizer
 			return array_values($callArgs);
 		}
 
+		$callArgsAreList = array_is_list($callArgs);
 		foreach ($callArgs as $arg) {
 			if ($arg->unpack) {
 				// the number of parameters an unpacked argument fills is unknown here,
@@ -381,6 +382,7 @@ final class ArgumentsNormalizer
 		$reorderedArgs = [];
 		$additionalNamedArgs = [];
 		$appendArgs = [];
+		$lastReorderedArgPosition = -1;
 		foreach ($callArgs as $i => $arg) {
 			if ($arg->name === null) {
 				// add regular args as is
@@ -394,6 +396,9 @@ final class ArgumentsNormalizer
 					$attributes,
 					null,
 				);
+				if ($i > $lastReorderedArgPosition) {
+					$lastReorderedArgPosition = $i;
+				}
 			} elseif (array_key_exists($arg->name->toString(), $argumentPositions)) {
 				$argName = $arg->name->toString();
 				// order named args into the position the signature expects them
@@ -409,6 +414,9 @@ final class ArgumentsNormalizer
 					$attributes,
 					null,
 				);
+				if ($argumentPositions[$argName] > $lastReorderedArgPosition) {
+					$lastReorderedArgPosition = $argumentPositions[$argName];
+				}
 			} else {
 				if (!$hasVariadic) {
 					$attributes = $arg->getAttributes();
@@ -442,7 +450,13 @@ final class ArgumentsNormalizer
 		}
 
 		foreach ($additionalNamedArgs as $i => $additionalNamedArg) {
-			$reorderedArgs[$additionalNamedArgsOffset + $i] = $additionalNamedArg;
+			$position = $additionalNamedArgsOffset + $i;
+			$reorderedArgs[$position] = $additionalNamedArg;
+			if ($position <= $lastReorderedArgPosition) {
+				continue;
+			}
+
+			$lastReorderedArgPosition = $position;
 		}
 
 		if (count($reorderedArgs) === 0) {
@@ -453,7 +467,10 @@ final class ArgumentsNormalizer
 		}
 
 		// fill up all holes with default values until the last given argument
-		for ($j = 0; $j < max(array_keys($reorderedArgs)); $j++) {
+		if (!$callArgsAreList) {
+			$lastReorderedArgPosition = max(array_keys($reorderedArgs));
+		}
+		for ($j = 0; $j < $lastReorderedArgPosition; $j++) {
 			if (array_key_exists($j, $reorderedArgs)) {
 				continue;
 			}
@@ -482,8 +499,18 @@ final class ArgumentsNormalizer
 			);
 		}
 
-		ksort($reorderedArgs);
+		if ($callArgsAreList) {
+			$orderedArgs = [];
+			for ($j = 0; $j <= $lastReorderedArgPosition; $j++) {
+				$orderedArgs[] = $reorderedArgs[$j];
+			}
+			foreach ($appendArgs as $arg) {
+				$orderedArgs[] = $arg;
+			}
+			return $orderedArgs;
+		}
 
+		ksort($reorderedArgs);
 		foreach ($appendArgs as $arg) {
 			$reorderedArgs[] = $arg;
 		}

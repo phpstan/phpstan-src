@@ -136,6 +136,8 @@ final class SubsumptionUnionRule implements UnionRule
 
 				[$a, $b] = $merged;
 				if ($a !== null) {
+					// a member a tryUnion() made has not met the members before $j yet
+					$isNew = $a !== $types[$i];
 					$types[$i] = $a;
 					$groupIds[$i] = self::getGroupId($groupsByType, $inTwoGroups, $a);
 					unset($types[$j], $others[$j]);
@@ -148,12 +150,17 @@ final class SubsumptionUnionRule implements UnionRule
 						$i = -1;
 						continue 2;
 					}
+					if ($isNew) {
+						$i = -1;
+						continue 2;
+					}
 					continue;
 				}
 				if ($b === null) {
 					continue;
 				}
 
+				$isNew = $b !== $types[$j];
 				$types[$j] = $b;
 				$groupIds[$j] = self::getGroupId($groupsByType, $inTwoGroups, $b);
 				unset($types[$i], $others[$i]);
@@ -162,6 +169,8 @@ final class SubsumptionUnionRule implements UnionRule
 					$classes[$j] = self::OTHER;
 					$others[$j] = true;
 					ksort($others);
+					$i = -1;
+				} elseif ($isNew) {
 					$i = -1;
 				}
 				continue 2;

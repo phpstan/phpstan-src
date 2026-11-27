@@ -75,7 +75,7 @@ class Foo
 			assertType('(ThisSubtractable\Bar&hasMethod(test123))|(ThisSubtractable\Baz&hasMethod(test123))', $s);
 		}
 
-		assertType('(ThisSubtractable\Baz&hasMethod(test123))|(ThisSubtractable\Foo~ThisSubtractable\Baz&hasMethod(test123))', $s);
+		assertType('ThisSubtractable\Foo&hasMethod(test123)', $s);
 	}
 
 	/**

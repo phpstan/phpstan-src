@@ -33,6 +33,7 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVarianceMap;
+use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\MixedType;
@@ -1394,7 +1395,7 @@ final class ParametersAcceptorSelector
 		$callbackConstants = [
 			'CURLOPT_WRITEFUNCTION' => [[new StringType()], new IntegerType()],
 			'CURLOPT_HEADERFUNCTION' => [[new StringType()], new IntegerType()],
-			'CURLOPT_READFUNCTION' => [[new ResourceType(), new IntegerType()], new StringType()],
+			'CURLOPT_READFUNCTION' => [[new ResourceType(), new IntegerType()], new UnionType([new StringType(), IntegerRangeType::fromInterval(0, null)])],
 			'CURLOPT_PROGRESSFUNCTION' => [[new IntegerType(), new IntegerType(), new IntegerType(), new IntegerType()], new IntegerType()],
 			'CURLOPT_XFERINFOFUNCTION' => [[new IntegerType(), new IntegerType(), new IntegerType(), new IntegerType()], new IntegerType()],
 			'CURLOPT_PREREQFUNCTION' => [[new StringType(), new StringType(), new IntegerType(), new IntegerType()], new IntegerType()],

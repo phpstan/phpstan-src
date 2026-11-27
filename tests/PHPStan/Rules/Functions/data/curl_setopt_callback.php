@@ -17,9 +17,9 @@ class HelloWorld
 		curl_setopt($ch, CURLOPT_HEADERFUNCTION, function ($ch, string $data): bool {
 			return true;
 		});
-		// READFUNCTION expects a callback returning string
-		curl_setopt($ch, CURLOPT_READFUNCTION, function ($ch, $stream, int $length): int {
-			return 0;
+		// READFUNCTION expects a callback returning string|int<0, max>
+		curl_setopt($ch, CURLOPT_READFUNCTION, function ($ch, $stream, int $length): bool {
+			return false;
 		});
 		// PROGRESSFUNCTION expects a callback returning int
 		curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function ($ch, int $a, int $b, int $c, int $d): bool {
@@ -28,6 +28,10 @@ class HelloWorld
 		// XFERINFOFUNCTION expects a callback returning int
 		curl_setopt($ch, CURLOPT_XFERINFOFUNCTION, function ($ch, int $a, int $b, int $c, int $d): string {
 			return '';
+		});
+		// READFUNCTION returns the read length, a negative int is invalid
+		curl_setopt($ch, CURLOPT_READFUNCTION, function ($ch, $stream, int $length): int {
+			return -1;
 		});
 	}
 
@@ -43,6 +47,14 @@ class HelloWorld
 		});
 		curl_setopt($ch, CURLOPT_READFUNCTION, function ($ch, $stream, int $length): string {
 			return '';
+		});
+		// CURL_READFUNC_PAUSE and CURL_READFUNC_ABORT are returned as int
+		curl_setopt($ch, CURLOPT_READFUNCTION, function ($ch, $stream, int $length): int {
+			return CURL_READFUNC_PAUSE;
+		});
+		// 0 signals the end of the data
+		curl_setopt($ch, CURLOPT_READFUNCTION, function ($ch, $stream, int $length): int {
+			return 0;
 		});
 		curl_setopt($ch, CURLOPT_PROGRESSFUNCTION, function ($ch, int $a, int $b, int $c, int $d): int {
 			return 0;

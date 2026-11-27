@@ -1704,7 +1704,7 @@ private:
 				case 2:
 					params[0] = resource();
 					params[1] = integer();
-					return curlCallbackType(curlHandleType.raw(), params, 2, pt_type_new_string_type());
+					return curlCallbackType(curlHandleType.raw(), params, 2, unionTypeOf(pt_type_new_string_type(), pt_integer_range_from_interval(NullableLong::of(0), NullableLong::null(), 0)));
 				case 3:
 				case 4:
 					for (int k = 0; k < 4; k++) {

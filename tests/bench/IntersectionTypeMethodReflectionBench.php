@@ -58,8 +58,8 @@ final class IntersectionTypeMethodReflectionBench
 	 * @return list<ExtendedParametersAcceptor>
 	 */
 	#[DataProvider(method: 'methods')]
-	#[ExpectedFor(dataSet: 'methods-2', instructions: '186.4K', cycles: '493.4K', memory: '5.094KiB')]
-	#[ExpectedFor(dataSet: 'methods-8', instructions: '1.070M', cycles: '1.642M', memory: '7.250KiB')]
+	#[ExpectedFor(dataSet: 'methods-2', instructions: '153.7K', cycles: '396.2K', memory: '3.469KiB')]
+	#[ExpectedFor(dataSet: 'methods-8', instructions: '939.1K', cycles: '1.409M', memory: '3.688KiB')]
 	public function benchGetVariants(int $methods): array
 	{
 		if ($this->method === null) {

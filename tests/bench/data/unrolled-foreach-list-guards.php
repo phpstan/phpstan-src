@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 1.703B
- * cycles: 2.039B
- * memory: 3.947MiB
+ * instructions: 1.954B
+ * cycles: 2.345B
+ * memory: 3.033MiB
  */
 
 namespace UnrolledForeachListGuards;

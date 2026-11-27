@@ -79,8 +79,8 @@ final class ConstantArrayTypeBuilderBench
 	 * A list of closures that return 0, 1, 2, …, like an array of handlers, and the type of its values.
 	 */
 	#[DataProvider(method: 'closures')]
-	#[ExpectedFor(dataSet: 'closures-16', instructions: '13.03M', cycles: '17.98M', memory: '7.516KiB')]
-	#[ExpectedFor(dataSet: 'closures-64', instructions: '62.79M', cycles: '76.63M', memory: '1.507MiB')]
+	#[ExpectedFor(dataSet: 'closures-16', instructions: '13.22M', cycles: '18.27M', memory: '9.320KiB')]
+	#[ExpectedFor(dataSet: 'closures-64', instructions: '66.07M', cycles: '80.71M', memory: '1.572MiB')]
 	public function benchListOfClosures(int $closures): Type
 	{
 		if ($this->closures === []) {

@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 216.9M
- * cycles: 281.6M
- * memory: 1.051MiB
+ * instructions: 213.5M
+ * cycles: 266.5M
+ * memory: 962.3KiB
  */
 
 namespace BenchNestedNullableShapeAccepts;

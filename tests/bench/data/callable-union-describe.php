@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 19.75B
- * cycles: 24.51B
- * memory: 26.08MiB
+ * instructions: 17.11B
+ * cycles: 21.48B
+ * memory: 26.04MiB
  */
 namespace CallableUnionDescribe;
 class A1 {} class A2 {} class A3 {} class A4 {} class A5 {}

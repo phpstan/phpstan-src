@@ -111,12 +111,12 @@ final class NodeScopeResolverBench
 	}
 
 	#[DataProvider(method: 'statements')]
-	#[ExpectedFor(dataSet: 'assign-non-falsy', instructions: '9.434M', cycles: '13.90M', memory: '274.6KiB')]
-	#[ExpectedFor(dataSet: 'for-without-condition', instructions: '2.898M', cycles: '4.795M', memory: '63.11KiB')]
+	#[ExpectedFor(dataSet: 'assign-non-falsy', instructions: '9.783M', cycles: '14.28M', memory: '274.7KiB')]
+	#[ExpectedFor(dataSet: 'for-without-condition', instructions: '3.015M', cycles: '4.993M', memory: '63.49KiB')]
 	#[ExpectedFor(dataSet: 'func-call-args', instructions: '3.723M', cycles: '6.049M', memory: '146.5KiB')]
-	#[ExpectedFor(dataSet: 'match-with-default', instructions: '114.2M', cycles: '151.2M', memory: '424.5KiB')]
-	#[ExpectedFor(dataSet: 'nested-foreach', instructions: '23.87M', cycles: '33.01M', memory: '184.4KiB')]
-	#[ExpectedFor(dataSet: 'nested-while', instructions: '42.40M', cycles: '57.64M', memory: '331.3KiB')]
+	#[ExpectedFor(dataSet: 'match-with-default', instructions: '120.3M', cycles: '159.8M', memory: '433.4KiB')]
+	#[ExpectedFor(dataSet: 'nested-foreach', instructions: '24.18M', cycles: '33.33M', memory: '201.3KiB')]
+	#[ExpectedFor(dataSet: 'nested-while', instructions: '44.33M', cycles: '60.54M', memory: '334.2KiB')]
 	public function benchProcessStmtNodes(string $statements): StatementResult
 	{
 		if ($this->resolver === null || $this->scope === null || $this->function === null) {

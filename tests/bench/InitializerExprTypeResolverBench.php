@@ -53,8 +53,8 @@ final class InitializerExprTypeResolverBench
 	 * A ternary with both branches, `[...] ? 1 : 2`, does not need the type of its condition.
 	 */
 	#[DataProvider(method: 'items')]
-	#[ExpectedFor(dataSet: 'items-8', instructions: '57.59K', cycles: '235.1K', memory: '2.516KiB')]
-	#[ExpectedFor(dataSet: 'items-128', instructions: '57.59K', cycles: '236.1K', memory: '2.516KiB')]
+	#[ExpectedFor(dataSet: 'items-8', instructions: '74.53K', cycles: '265.4K', memory: '2.359KiB')]
+	#[ExpectedFor(dataSet: 'items-128', instructions: '74.52K', cycles: '264.8K', memory: '2.359KiB')]
 	public function benchTernary(int $items): Type
 	{
 		if ($this->ternary === null) {

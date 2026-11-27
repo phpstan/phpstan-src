@@ -92,9 +92,9 @@ final class UnionTypeBench
 	 * The value types of the member arrays are unioned.
 	 */
 	#[DataProvider(method: 'members')]
-	#[ExpectedFor(dataSet: 'members-16', instructions: '154.8K', cycles: '290.0K', memory: '4.680KiB')]
-	#[ExpectedFor(dataSet: 'members-64', instructions: '586.2K', cycles: '786.8K', memory: '12.18KiB')]
-	#[ExpectedFor(dataSet: 'members-256', instructions: '2.312M', cycles: '2.827M', memory: '62.18KiB')]
+	#[ExpectedFor(dataSet: 'members-16', instructions: '167.0K', cycles: '296.3K', memory: '3.547KiB')]
+	#[ExpectedFor(dataSet: 'members-64', instructions: '619.3K', cycles: '810.3K', memory: '9.891KiB')]
+	#[ExpectedFor(dataSet: 'members-256', instructions: '2.425M', cycles: '2.888M', memory: '53.14KiB')]
 	public function benchGetIterableValueType(int $members): Type
 	{
 		if ($this->arrays === null) {

@@ -55,7 +55,7 @@ final class EnumTypesBench
 	 * A member that is one enum case is set aside; whether the intersection with the enum is one
 	 * does not need all of its cases.
 	 */
-	#[Expected(instructions: '158.4K', cycles: '488.2K', memory: '4.328KiB')]
+	#[Expected(instructions: '106.1K', cycles: '394.1K', memory: '4.141KiB')]
 	public function benchUnionWithIntersection(): Type
 	{
 		if ($this->unionMembers === []) {

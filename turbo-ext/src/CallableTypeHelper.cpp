@@ -3,7 +3,7 @@
  * PHPStan\Type\CallableTypeHelper.
  *
  * Declared as PHPStan\Type\CallableTypeHelper itself at activation: final,
- * one static helper. isParametersAcceptorSuperTypeOf() walks the two
+ * with static helpers. isParametersAcceptorSuperTypeOf() walks the two
  * acceptors' parameter lists exactly as the twin does — the acceptors, the
  * parameter reflections and the types they hold are PHP objects (or the
  * shadowed Type classes) answering through their own methods; the result
@@ -437,6 +437,12 @@ PT_MINIT_REGISTRATION(pt_register_callable_type_helper)
 	reg::Class cls("PHPStan\\Type\\CallableTypeHelper");
 	ptdecl::CallableTypeHelper::declareClass(cls);
 	ptdecl::CallableTypeHelper::declareProperties(cls);
+
+	cls.method(sigs::inferReturnTemplateTypes, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expected, *received, *typeMap;
+		if (!zp::parse<zp::Obj, zp::Obj, zp::Obj>(execute_data, expected, received, typeMap)) RETURN_THROWS();
+		PT_RETURN_VAL(pt_callable_infer_return_template_types(expected, received, typeMap));
+	});
 
 	cls.method(sigs::isParametersAcceptorSuperTypeOf, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *ours, *theirs;

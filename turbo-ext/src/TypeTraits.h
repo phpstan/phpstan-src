@@ -800,6 +800,8 @@ zv::Val pt_callable_type_node(const char *identifier, size_t identifierLen, bool
 [[nodiscard]] bool pt_callable_parameters_or_asserts_have_template(zval *parameters, zval *assertions, const char *lcHas, size_t hasLen, bool &out);
 /* the getReferencedTemplateTypes() body; UNDEF = pending exception */
 zv::Val pt_callable_referenced_template_types(zend_object *self, pt_callable_this_getter getReturnType, pt_callable_this_getter getParameters, zval *assertions, zval *positionVariance);
+/* CallableTypeHelper::inferReturnTemplateTypes(); UNDEF = pending exception */
+zv::Val pt_callable_infer_return_template_types(zval *expected, zval *received, zval *typeMap);
 /* the private inferTemplateTypesOnParametersAcceptor() body; UNDEF =
  * pending exception */
 zv::Val pt_callable_infer_template_types_on_parameters_acceptor(zend_object *self, pt_callable_this_getter getParameters, pt_callable_this_getter getReturnType, zval *parametersAcceptor);

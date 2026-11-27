@@ -816,7 +816,7 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 
 		$typeMap = $typeMap->union(CallableAssertionsHelper::inferTemplateTypesOnAsserts($this, $parametersAcceptor));
 
-		return $typeMap->union($this->getReturnType()->inferTemplateTypes($returnType));
+		return CallableTypeHelper::inferReturnTemplateTypes($this->getReturnType(), $returnType, $typeMap);
 	}
 
 	public function getReferencedTemplateTypes(TemplateTypeVariance $positionVariance): array

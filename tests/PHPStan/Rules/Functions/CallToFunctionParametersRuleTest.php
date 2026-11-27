@@ -1552,7 +1552,7 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 				17,
 			],
 			[
-				'Parameter #3 $value of function curl_setopt expects (callable(CurlHandle, resource, int): string)|null, Closure(mixed, mixed, int): 0 given.',
+				'Parameter #3 $value of function curl_setopt expects (callable(CurlHandle, resource, int): (int|string))|null, Closure(mixed, mixed, int): false given.',
 				21,
 			],
 			[

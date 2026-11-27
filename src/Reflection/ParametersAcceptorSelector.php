@@ -1394,7 +1394,7 @@ final class ParametersAcceptorSelector
 		$callbackConstants = [
 			'CURLOPT_WRITEFUNCTION' => [[new StringType()], new IntegerType()],
 			'CURLOPT_HEADERFUNCTION' => [[new StringType()], new IntegerType()],
-			'CURLOPT_READFUNCTION' => [[new ResourceType(), new IntegerType()], new StringType()],
+			'CURLOPT_READFUNCTION' => [[new ResourceType(), new IntegerType()], new UnionType([new StringType(), new IntegerType()])],
 			'CURLOPT_PROGRESSFUNCTION' => [[new IntegerType(), new IntegerType(), new IntegerType(), new IntegerType()], new IntegerType()],
 			'CURLOPT_XFERINFOFUNCTION' => [[new IntegerType(), new IntegerType(), new IntegerType(), new IntegerType()], new IntegerType()],
 			'CURLOPT_PREREQFUNCTION' => [[new StringType(), new StringType(), new IntegerType(), new IntegerType()], new IntegerType()],

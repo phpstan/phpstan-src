@@ -33,6 +33,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -165,7 +166,7 @@ final class ClosureProcessor
 					// a call's type is carried by the context (see
 					// ExpressionContext::enterAssignRightSideCallArgs()); a closure
 					// right side resolves through the closure type resolver
-					$inAssignRightSideType = $context->getInAssignRightSideType() ?? $this->closureParameterResolver->resolveCallableTypeForScope($inAssignRightSideExpr, $scope);
+					$inAssignRightSideType = $context->getInAssignRightSideType() ?? $this->resolveAssignedClosureType($inAssignRightSideExpr, $expr, $scope, $inAssignRightSideVariableName);
 					if ($inAssignRightSideType instanceof ClosureType) {
 						$variableType = $inAssignRightSideType;
 					} else {
@@ -176,7 +177,7 @@ final class ClosureProcessor
 							$variableType = TypeCombinator::union($scope->getVariableType($inAssignRightSideVariableName), $inAssignRightSideType);
 						}
 					}
-					$inAssignRightSideNativeType = $context->getInAssignRightSideNativeType() ?? $this->closureParameterResolver->resolveCallableTypeForScope($inAssignRightSideExpr, $scope->doNotTreatPhpDocTypesAsCertain());
+					$inAssignRightSideNativeType = $context->getInAssignRightSideNativeType() ?? $this->resolveAssignedClosureType($inAssignRightSideExpr, $expr, $scope->doNotTreatPhpDocTypesAsCertain(), $inAssignRightSideVariableName);
 					if ($inAssignRightSideNativeType instanceof ClosureType) {
 						$variableNativeType = $inAssignRightSideNativeType;
 					} else {
@@ -692,6 +693,43 @@ final class ClosureProcessor
 		}
 
 		return $closureScope;
+	}
+
+	/**
+	 * The type of the right side of an assignment that a closure captures by
+	 * reference. When the right side is the closure itself, as in
+	 * `$f = function () use (&$f)`, its body calls the very closure being
+	 * typed: without a declared return type, the variable starts as the
+	 * closure returning never, each round types the body with the previous
+	 * round's closure and joins its return, and the rounds repeat until the
+	 * return stops growing, generalized as a loop generalizes the variables
+	 * it writes - the least fixed point, where starting from the enclosing
+	 * scope's variable settles on whatever its calls already returned.
+	 * Without a fixed point within as many rounds as a loop takes, the type
+	 * the enclosing scope resolves stays.
+	 */
+	private function resolveAssignedClosureType(Expr $rightSideExpr, Expr\Closure $expr, MutatingScope $scope, string $variableName): Type
+	{
+		$type = $this->closureParameterResolver->resolveCallableTypeForScope($rightSideExpr, $scope);
+		if ($rightSideExpr !== $expr || $expr->returnType !== null || !$type instanceof ClosureType) {
+			return $type;
+		}
+
+		$returnType = new NeverType();
+		for ($iteration = 0; $iteration < NodeScopeResolver::LOOP_SCOPE_ITERATIONS; $iteration++) {
+			$seed = new ClosureType($type->getParameters(), $returnType, $type->isVariadic());
+			$iterationType = $this->closureTypeResolver->getClosureType($scope, $expr, false, $scope->getCurrentExpressionResultStorage(), null, [$variableName => $seed]);
+			$nextReturnType = TypeCombinator::union($returnType, $iterationType->getReturnType());
+			if ($nextReturnType->equals($returnType)) {
+				return $iterationType;
+			}
+			if ($iteration >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
+				$nextReturnType = $scope->generalizeIteratedType($returnType, $nextReturnType);
+			}
+			$returnType = $nextReturnType;
+		}
+
+		return $type;
 	}
 
 	/**

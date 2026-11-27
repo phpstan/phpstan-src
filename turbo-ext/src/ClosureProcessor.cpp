@@ -1191,15 +1191,13 @@ private:
 			return false;
 		}
 		zend_string *name = Z_STR_P(inAssignRightSideVariableName.raw());
-		zval *closureParameterResolver = slot(slots::closureParameterResolver);
-
 		// a call's type is carried by the context (see
 		// ExpressionContext::enterAssignRightSideCallArgs()); a closure
 		// right side resolves through the closure type resolver
 		zv::Val inAssignRightSideType = pt_expression_context_get_in_assign_right_side_type(w.context);
 		if (UNEXPECTED(inAssignRightSideType.isUndef())) return false;
 		if (inAssignRightSideType.isNull()) {
-			inAssignRightSideType = pt_closure_parameter_resolver_resolve_callable_type_for_scope(closureParameterResolver, inAssignRightSideExpr.raw(), w.scope.raw());
+			inAssignRightSideType = resolveAssignedClosureType(inAssignRightSideExpr.raw(), w.expr, w.scope.raw(), name);
 			if (UNEXPECTED(inAssignRightSideType.isUndef())) return false;
 		}
 		zv::Val variableType = rightSideVariableType(w.scope.raw(), name, inAssignRightSideType.raw());
@@ -1210,7 +1208,7 @@ private:
 		if (inAssignRightSideNativeType.isNull()) {
 			zv::Val nativeScope = pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(w.scope.raw()));
 			if (UNEXPECTED(nativeScope.isUndef())) return false;
-			inAssignRightSideNativeType = pt_closure_parameter_resolver_resolve_callable_type_for_scope(closureParameterResolver, inAssignRightSideExpr.raw(), nativeScope.raw());
+			inAssignRightSideNativeType = resolveAssignedClosureType(inAssignRightSideExpr.raw(), w.expr, nativeScope.raw(), name);
 			if (UNEXPECTED(inAssignRightSideNativeType.isUndef())) return false;
 		}
 		zv::Val variableNativeType = rightSideVariableType(w.scope.raw(), name, inAssignRightSideNativeType.raw());
@@ -1220,6 +1218,57 @@ private:
 		if (UNEXPECTED(assigned.isUndef())) return false;
 		w.scope = std::move(assigned);
 		return true;
+	}
+
+	/* Mirrors resolveAssignedClosureType(); UNDEF = pending exception */
+	zv::Val resolveAssignedClosureType(zval *rightSideExpr, zval *expr, zval *scope, zend_string *variableName) const
+	{
+		zv::Val type = pt_closure_parameter_resolver_resolve_callable_type_for_scope(slot(slots::closureParameterResolver), rightSideExpr, scope);
+		if (UNEXPECTED(type.isUndef())) return zv::Val();
+		if (Z_TYPE_P(rightSideExpr) != IS_OBJECT || Z_OBJ_P(rightSideExpr) != Z_OBJ_P(expr)) return type;
+		zval *returnTypeNode = ptclosure::prop(ptclosure::returnTypeSite, expr, PT_LC("returnType"));
+		if (UNEXPECTED(returnTypeNode == NULL)) return zv::Val();
+		if (Z_TYPE_P(returnTypeNode) != IS_NULL) return type;
+		if (Z_TYPE_P(type.raw()) != IS_OBJECT || !instanceof_function(Z_OBJCE_P(type.raw()), pt_ce_closure_type)) return type;
+
+		zv::Val parameters = pt_type_call(Z_OBJ_P(type.raw()), PT_LC("getparameters"), 0, NULL);
+		if (UNEXPECTED(parameters.isUndef())) return zv::Val();
+		zv::Val variadic = pt_type_call(Z_OBJ_P(type.raw()), PT_LC("isvariadic"), 0, NULL);
+		if (UNEXPECTED(variadic.isUndef())) return zv::Val();
+		zval neverType;
+		if (UNEXPECTED(!pt_never_type_new(&neverType))) return zv::Val();
+		zv::Val returnType = zv::Val::adopt(neverType);
+		for (zend_long iteration = 0; iteration < PT_CP_LOOP_SCOPE_ITERATIONS_LIMIT; iteration++) {
+			zval seedZval;
+			if (UNEXPECTED(!pt_closure_type_new(&seedZval, parameters.raw(), returnType.raw(), Z_TYPE_P(variadic.raw()) == IS_TRUE))) return zv::Val();
+			zv::Val seed = zv::Val::adopt(seedZval);
+			zv::Arr byRefUseTypes = zv::Arr::empty();
+			byRefUseTypes.separate();
+			Z_ADDREF_P(seed.raw());
+			zend_symtable_update(byRefUseTypes.table(), variableName, seed.raw());
+			zv::Val storage = pt_mutating_scope_get_current_expression_result_storage(Z_OBJ_P(scope));
+			if (UNEXPECTED(storage.isUndef())) return zv::Val();
+			zv::Val iterationType = pt_closure_type_resolver_get_closure_type(slot(slots::closureTypeResolver), scope, expr, false, storage.raw(), NULL, byRefUseTypes.raw());
+			if (UNEXPECTED(iterationType.isUndef())) return zv::Val();
+			zv::Val iterationReturnType = pt_type_call(Z_OBJ_P(iterationType.raw()), PT_LC("getreturntype"), 0, NULL);
+			if (UNEXPECTED(iterationReturnType.isUndef())) return zv::Val();
+
+			zval unioned;
+			if (UNEXPECTED(!pt_type_combinator_binary(PT_LC("union"), returnType.raw(), iterationReturnType.raw(), &unioned))) return zv::Val();
+			zv::Val nextReturnType = zv::Val::adopt(unioned);
+			zv::Args equalsArgs{returnType.raw()};
+			zv::Val equal = pt_type_call(Z_OBJ_P(nextReturnType.raw()), PT_LC("equals"), 1, equalsArgs);
+			if (UNEXPECTED(equal.isUndef())) return zv::Val();
+			if (Z_TYPE_P(equal.raw()) == IS_TRUE) return iterationType;
+			if (iteration >= PT_CP_GENERALIZE_AFTER_ITERATION_LIMIT) {
+				zv::Args generalizeArgs{returnType.raw(), nextReturnType.raw()};
+				nextReturnType = pt_type_call(Z_OBJ_P(scope), PT_LC("generalizeiteratedtype"), 2, generalizeArgs);
+				if (UNEXPECTED(nextReturnType.isUndef())) return zv::Val();
+			}
+			returnType = std::move(nextReturnType);
+		}
+
+		return type;
 	}
 
 	/* $rightSideType instanceof ClosureType ? $rightSideType :

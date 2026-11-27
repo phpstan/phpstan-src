@@ -4731,7 +4731,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 						$ourGuards,
 						new ExpressionTypeHolder(
 							$ourTypeHolder->getExpr(),
-							TypeCombinator::union($ourTypeHolder->getType(), $theirTypeHolder->getType()),
+							TypeCombinator::widen(TypeCombinator::union($ourTypeHolder->getType(), $theirTypeHolder->getType())),
 							$ourTypeHolder->getCertainty(),
 						),
 					);

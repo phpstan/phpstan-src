@@ -8961,7 +8961,10 @@ public:
 					zv::Val theirType = holderType(theirTypeHolder.ref());
 					zv::Val ourExpr = holderExpr(ourTypeHolder.ref());
 					if (UNEXPECTED(ourType.isUndef() || theirType.isUndef() || ourExpr.isUndef())) return zv::Val();
-					zv::Val united = unionTypes(ourType.raw(), theirType.raw());
+					/* TypeCombinator::widen(TypeCombinator::union(...)): a join of branches, widened like the joins of scopes */
+					zv::Val joined = unionTypes(ourType.raw(), theirType.raw());
+					if (UNEXPECTED(joined.isUndef())) return zv::Val();
+					zv::Val united = pt_type_combinator_call(PT_LC("widen"), 1, joined.raw());
 					if (UNEXPECTED(united.isUndef())) return zv::Val();
 					zval typeHolder;
 					pt_holder_create(&typeHolder, ourExpr.raw(), united.raw(), ourCertainty);

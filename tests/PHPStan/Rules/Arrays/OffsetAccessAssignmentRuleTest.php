@@ -235,4 +235,28 @@ class OffsetAccessAssignmentRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.0.0')]
+	public function testBug8549(): void
+	{
+		$this->checkUnionTypes = true;
+		$this->analyse([__DIR__ . '/data/bug-8549.php'], [
+			[
+				'Cannot assign offset \'nope\' to Bug8549\Options<array<string, int|string>>.',
+				64,
+			],
+			[
+				'Cannot assign new offset to Bug8549\Options<array<string, int|string>>.',
+				65,
+			],
+			[
+				'Cannot assign offset 1 to Bug8549\Options<array<string, mixed>>.',
+				75,
+			],
+			[
+				'Cannot assign offset \'name\'|\'nope\' to Bug8549\Options<array<string, int|string>>.',
+				110,
+			],
+		]);
+	}
+
 }

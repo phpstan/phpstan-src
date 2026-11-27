@@ -90,6 +90,16 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testTemplateArgumentUpperBounds(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/template-argument-upper-bounds.php'], [
+			[
+				'Parameter #1 $b of function TemplateArgumentUpperBounds\\onlyBool expects TemplateArgumentUpperBounds\\Box<covariant bool>, TemplateArgumentUpperBounds\\Box<int|string> given.',
+				95,
+			],
+		]);
+	}
+
 	public function testTemplateArgumentReduceIterator(): void
 	{
 		$this->analyse([__DIR__ . '/data/template-argument-reduce-iterator.php'], []);

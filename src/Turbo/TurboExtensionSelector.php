@@ -3,15 +3,22 @@
 namespace PHPStan\Turbo;
 
 use Phar;
+use function basename;
 use function dirname;
+use function explode;
 use function file_get_contents;
+use function function_exists;
 use function get_cfg_var;
+use function in_array;
 use function is_dir;
 use function is_file;
 use function is_string;
 use function php_uname;
+use function preg_match;
+use function readlink;
 use function sprintf;
 use function strpos;
+use function version_compare;
 use const PHP_DEBUG;
 use const PHP_MAJOR_VERSION;
 use const PHP_MINOR_VERSION;
@@ -160,7 +167,8 @@ final class TurboExtensionSelector
 	 * The directory of turbo-ext/ next to the running phar that holds the
 	 * binaries for this platform, whether it exists or not. Null when no
 	 * binary is built for this runtime: PHP older than the minimum, a debug
-	 * build, a run from source, or a platform without binaries.
+	 * build, a run from source, or a platform without binaries. Also null
+	 * on Linux when shouldTryLinuxBinaries() finds a reason to skip them.
 	 */
 	private static function getPlatformDirectoryNextToPhar(?string $pharPath = null): ?string
 	{
@@ -176,9 +184,19 @@ final class TurboExtensionSelector
 			return null;
 		}
 
-		$platform = self::resolvePlatformDirectory(PHP_OS_FAMILY, php_uname('m'), self::isMusl());
+		$selfMaps = @file_get_contents('/proc/self/maps');
+		$platform = self::resolvePlatformDirectory(PHP_OS_FAMILY, php_uname('m'), self::resolveIsMusl($selfMaps, is_file('/etc/alpine-release')));
 		if ($platform === null) {
 			return null;
+		}
+		if (PHP_OS_FAMILY === 'Linux') {
+			$executable = function_exists('readlink')
+				? @readlink('/proc/self/exe')
+				: false;
+
+			if (!self::shouldTryLinuxBinaries($selfMaps, $executable)) {
+				return null;
+			}
 		}
 
 		return sprintf('%s/turbo-ext/%s', dirname($pharPath), $platform);
@@ -231,6 +249,74 @@ final class TurboExtensionSelector
 	public static function isMusl(): bool
 	{
 		return self::resolveIsMusl(@file_get_contents('/proc/self/maps'), is_file('/etc/alpine-release'));
+	}
+
+	/**
+	 * Whether to try the bundled Linux binaries, judged from the file-backed
+	 * mappings of the running process. True means no reason to skip them was
+	 * found, not that they will load. Unreadable or empty maps keep the
+	 * current behaviour. If the executable cannot be identified, the
+	 * static-layout check is skipped; a recognizable old-glibc mapping can
+	 * still be rejected.
+	 *
+	 * The binaries are skipped when
+	 * - a mapped libc has a versioned name older than 2.34 (libc-2.31.so),
+	 *   which glibc used for its own files before 2.34, the version the
+	 *   binaries are built against
+	 * - the PHP binary is mapped and no other executable file is, matching
+	 *   the layouts of the fully static musl builds of Laravel Herd Lite and
+	 *   static-php-cli (UPX-packed) tested here, which fail to load any
+	 *   extension with "Dynamic loading not supported". Those captures
+	 *   include an executable /memfd:upx (deleted) or /dev/zero (deleted)
+	 *   mapping (the latter is the opcache JIT buffer), which do not count
+	 *   as another executable file. A fully static glibc build looks the
+	 *   same and is skipped too, but none was tested.
+	 *
+	 * @param string|false $executable the target of /proc/self/exe
+	 */
+	public static function shouldTryLinuxBinaries(string|false $selfMaps, string|false $executable): bool
+	{
+		if ($selfMaps === false) {
+			return true;
+		}
+
+		$executableMapped = false;
+		$otherExecutableMapped = false;
+		foreach (explode("\n", $selfMaps) as $line) {
+			// address perms offset dev inode pathname, the pathname may contain
+			// spaces and ends with " (deleted)" when the file was replaced, the
+			// same as the /proc/self/exe target then
+			if (preg_match('~^\S+\s+(\S+)\s+\S+\s+\S+\s+\S+\s+(/.*)~', $line, $matches) !== 1) {
+				continue;
+			}
+
+			$path = $matches[2];
+			if (
+				preg_match('~\Alibc-(\d+\.\d+)(?:\.\d+)*\.so(?: \(deleted\))?\z~', basename($path), $versionMatches) === 1
+				&& version_compare($versionMatches[1], '2.34', '<')
+			) {
+				return false;
+			}
+
+			if ($path === $executable) {
+				$executableMapped = true;
+				continue;
+			}
+
+			if (strpos($matches[1], 'x') === false) {
+				continue;
+			}
+
+			// executable-memory mappings observed in the tested UPX and
+			// OPcache builds, not every unlinked backing file
+			if (in_array($path, ['/memfd:upx (deleted)', '/dev/zero (deleted)'], true)) {
+				continue;
+			}
+
+			$otherExecutableMapped = true;
+		}
+
+		return !$executableMapped || $otherExecutableMapped;
 	}
 
 	public static function resolveIsMusl(string|false $selfMaps, bool $hasAlpineRelease): bool

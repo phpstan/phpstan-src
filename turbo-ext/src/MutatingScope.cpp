@@ -9825,6 +9825,24 @@ public:
 			constantIntegers.list[1] = zv::Arr::create(0);
 		}
 
+		/* the empty array stays apart, as in TypeCombinator::union(): merged
+		 * key by key with the other shapes, it would make all their keys optional */
+		zv::Arr emptyArrays = zv::Arr::create(0);
+		for (int side = 0; side < 2; side++) {
+			zv::Arr kept = zv::Arr::create(constantArrays.count(side));
+			for (auto entry : zv::TableRef(constantArrays.table(side))) {
+				zv::Ref type = entry.value().deref();
+				zend_long isIterableAtLeastOnce = typeOpTrinary(type.asObject(), PT_OP_IS_ITERABLE_AT_LEAST_ONCE, 0, NULL);
+				if (UNEXPECTED(isIterableAtLeastOnce < 0)) return zv::Val();
+				if (isIterableAtLeastOnce == PT_TRI_NO) {
+					emptyArrays.push(type);
+				} else {
+					kept.push(type);
+				}
+			}
+			constantArrays.list[side] = std::move(kept);
+		}
+
 		zend_long entryIntegerMin = ZEND_LONG_MAX, entryIntegerMax = ZEND_LONG_MIN;
 		double entryFloatMin = HUGE_VAL, entryFloatMax = -HUGE_VAL;
 		if (entryType != NULL) {
@@ -10357,6 +10375,7 @@ public:
 			generalizedAccessories.push(std::move(generalized));
 		}
 
+		for (auto entry : zv::TableRef(emptyArrays.table())) resultTypes.push(entry.value().deref());
 		zv::Val combined = unionOfLists(resultTypes.table(), otherTypes.table());
 		if (UNEXPECTED(combined.isUndef())) return zv::Val();
 		if (wrapBenevolent) {

@@ -1,5 +1,11 @@
 <?php declare(strict_types = 1);
 
+/*
+ * instructions: 22.08B
+ * cycles: 25.64B
+ * memory: 8.009MiB
+ */
+
 namespace Bug15862;
 
 /** @param array<mixed> $rows */

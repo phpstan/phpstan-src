@@ -49,9 +49,8 @@ class Foo
 		if (array_is_list($optStr)) {
 			assertType('array{}', $optStr);
 		} else {
-			// array_is_list()'s false branch is not narrowed, so `a` stays optional
-			// here rather than being refined to array{a: string}.
-			assertType('array{a?: string}', $optStr);
+			// an array that is not a list is not empty, so `a` is there
+			assertType('array{a: string}', $optStr);
 		}
 	}
 

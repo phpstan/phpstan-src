@@ -169,6 +169,8 @@ final class ForHandler implements StmtHandler
 
 		$bodyScope = $initScope;
 		$isIterableAtLeastOnce = TrinaryLogic::createYes();
+		// a loop without a condition is iterable at least once and never reads this
+		$firstCondFalseyScope = $initScope;
 		$lastCondExpr = array_last($stmt->cond);
 		if (count($stmt->cond) > 0) {
 			$storage = $originalStorage->duplicate();
@@ -184,6 +186,7 @@ final class ForHandler implements StmtHandler
 					if ($condExpr === $lastCondExpr) {
 						$condTruthiness = ($this->treatPhpDocTypesAsCertain ? $condResult->getType() : $condResult->getNativeType())->toBoolean();
 						$isIterableAtLeastOnce = $isIterableAtLeastOnce->and($condTruthiness->isTrue());
+						$firstCondFalseyScope = $condResult->getFalseyScope();
 					}
 
 					$hasYield = $hasYield || $condResult->hasYield();
@@ -372,7 +375,9 @@ final class ForHandler implements StmtHandler
 			if ($this->polluteScopeWithLoopInitialAssignments) {
 				$finalScope = $finalScope->mergeWith($initScope, true);
 			} else {
-				$finalScope = $finalScope->mergeWith($scope, true);
+				// the loop may exit on its first condition, with the values
+				// the initial assignments wrote - they are only possibly defined
+				$finalScope = $finalScope->mergeWith($firstCondFalseyScope->mergeWith($scope, true), true);
 			}
 		} else {
 			if (!$this->polluteScopeWithLoopInitialAssignments) {

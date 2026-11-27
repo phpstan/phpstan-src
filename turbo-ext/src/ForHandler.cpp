@@ -155,6 +155,8 @@ public:
 
 		zv::Val bodyScope = zv::Val::copyOf(initScope.ref());
 		zend_long isIterableAtLeastOnce = PT_TRI_YES;
+		// a loop without a condition is iterable at least once and never reads this
+		zv::Val firstCondFalseyScope = zv::Val::copyOf(initScope.ref());
 		zval *cond = readList(pt_fh_cond_site, stmt, PT_LC("cond"));
 		if (UNEXPECTED(cond == NULL)) return zv::Val();
 		zv::Val condHold = zv::Val::copyOf(zv::Ref(cond));
@@ -199,6 +201,8 @@ public:
 						ptlh::ConditionBoolean condTruthiness;
 						if (UNEXPECTED(!ptlh::conditionBoolean(condResult.raw(), treatPhpDocTypesAsCertain, condTruthiness))) return;
 						isIterableAtLeastOnce &= condTruthiness.isTrue;
+						firstCondFalseyScope = pt_expression_result_get_falsey_scope(condResult.raw());
+						if (UNEXPECTED(firstCondFalseyScope.isUndef())) return;
 					}
 
 					if (UNEXPECTED(!absorbExpressionResult(condResult.raw(), NULL, NULL, hasYield, throwPoints, impurePoints))) return;
@@ -480,7 +484,15 @@ public:
 		if (resetToEntry) {
 			finalScope = zv::Val::copyOf(zv::Ref(polluteScopeWithLoopInitialAssignments ? initScope.raw() : scope));
 		} else if (isIterableAtLeastOnce == PT_TRI_MAYBE) {
-			finalScope = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), polluteScopeWithLoopInitialAssignments ? initScope.raw() : scope, true);
+			if (polluteScopeWithLoopInitialAssignments) {
+				finalScope = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), initScope.raw(), true);
+			} else {
+				// the loop may exit on its first condition, with the values
+				// the initial assignments wrote - they are only possibly defined
+				zv::Val zeroIterationsScope = pt_mutating_scope_merge_with(Z_OBJ_P(firstCondFalseyScope.raw()), scope, true);
+				if (UNEXPECTED(zeroIterationsScope.isUndef())) return zv::Val();
+				finalScope = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), zeroIterationsScope.raw(), true);
+			}
 			if (UNEXPECTED(finalScope.isUndef())) return zv::Val();
 		} else if (!polluteScopeWithLoopInitialAssignments) {
 			finalScope = pt_mutating_scope_merge_with(Z_OBJ_P(finalScope.raw()), scope, true);

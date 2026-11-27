@@ -6369,6 +6369,39 @@ class TypeCombinatorTest extends PHPStanTestCase
 			ConstantFloatType::class,
 			'0.0',
 		];
+		// shapes that may have keys they do not list keep the keys of both
+		yield [
+			[
+				new ConstantArrayType(
+					[new ConstantStringType('label'), new ConstantStringType('column'), new ConstantStringType('reportData'), new ConstantStringType('metadata')],
+					[
+						new StringType(),
+						new StringType(),
+						new IntegerType(),
+						new ConstantArrayType(
+							[new ConstantStringType('metrics'), new ConstantStringType('dimension'), new ConstantStringType('columns')],
+							[new ArrayType(new StringType(), new StringType()), new StringType(), new ArrayType(new StringType(), new StringType())],
+							[0],
+							[2],
+						),
+					],
+					[0],
+					[0, 1],
+				),
+				new ConstantArrayType(
+					[new ConstantStringType('column'), new ConstantStringType('metadata')],
+					[
+						new StringType(),
+						new ConstantArrayType(
+							[new ConstantStringType('columns')],
+							[new ArrayType(new StringType(), new StringType())],
+						),
+					],
+				),
+			],
+			ConstantArrayType::class,
+			'array{column: string, label?: string, metadata: array{columns: array<string, string>, dimension: string, metrics: array<string, string>}, reportData: int}',
+		];
 	}
 
 	/**

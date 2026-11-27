@@ -546,7 +546,7 @@ final class StatementsHandler
 
 					return [$state->toResult(), $entries];
 				}
-				if ($differingRoots !== null && !$this->statementMentionsAnyVariable($stmts[$i], $this->withByRefClosureHolders($state->scope, $differingRoots))) {
+				if ($differingRoots !== null && !$this->statementMentionsDifferingState($stmts[$i], $state->scope, $recordedEntry->scope, $differingRoots, true)) {
 					if ($replayTarget !== null && $previousRecording !== null) {
 						$nodeScopeResolver->replayRecordingRange($previousRecording, $offset, $nextOffset, $replayTarget, $storage, $scope);
 					}
@@ -905,7 +905,7 @@ final class StatementsHandler
 			$reWalk = $differingRoots === null
 				|| $hasLabels
 				|| $frame->ownsSiteInStatement($i)
-				|| $this->statementMentionsAnyVariable($stmt, $differingRoots);
+				|| $this->statementMentionsDifferingState($stmt, $state->scope, $recordedEntry->scope, $differingRoots, false);
 			if ($this->debugTemplateArguments) {
 				echo sprintf(
 					"[template-arguments] %s:%d statement %d: %s (differing: %s)\n",
@@ -1030,7 +1030,7 @@ final class StatementsHandler
 						$differingRoots === null
 						|| $hasLabels
 						|| $frame->ownsSiteInStatement($i)
-						|| $this->statementMentionsAnyVariable($stmt, $differingRoots)
+						|| $this->statementMentionsDifferingState($stmt, $state->scope, $recordedEntry->scope, $differingRoots, false)
 					) {
 						$from = $walkRecording->count();
 						$this->processStatementStep($nodeScopeResolver, $parentNode, $stmts, $i, $stmt, $state, $walkStorage, $walkRecording, $context, true);
@@ -1677,7 +1677,7 @@ final class StatementsHandler
 					$differingRoots === null
 					|| $hasLabels
 					|| $frame->ownsSiteInStatement($i)
-					|| $this->statementMentionsAnyVariable($stmt, $differingRoots)
+					|| $this->statementMentionsDifferingState($stmt, $state->scope, $recordedEntry->scope, $differingRoots, false)
 				) {
 					if (TemplateArgumentStats::$enabled) {
 						TemplateArgumentStats::increment('closureObservationStatements');
@@ -1840,6 +1840,27 @@ final class StatementsHandler
 			$flows[] = VariableFlow::mention($name);
 		}
 		return VariableFlow::sequence(...$flows);
+	}
+
+	/**
+	 * Whether the statement mentions a variable whose state differs between
+	 * $scope and $recordedScope, or a guard of a conditional expression only one
+	 * of them has. The guards are looked up only for a statement the differing
+	 * variables would let replay.
+	 *
+	 * @param list<string> $differingRoots
+	 */
+	private function statementMentionsDifferingState(Node\Stmt $stmt, MutatingScope $scope, MutatingScope $recordedScope, array $differingRoots, bool $withByRefClosureHolders): bool
+	{
+		if ($this->statementMentionsAnyVariable($stmt, $withByRefClosureHolders ? $this->withByRefClosureHolders($scope, $differingRoots) : $differingRoots)) {
+			return true;
+		}
+		$guardRoots = $scope->getDifferingConditionalGuardRoots($recordedScope);
+		if ($guardRoots === null) {
+			return true;
+		}
+
+		return $this->statementMentionsAnyVariable($stmt, $withByRefClosureHolders ? $this->withByRefClosureHolders($scope, $guardRoots) : $guardRoots);
 	}
 
 	/**

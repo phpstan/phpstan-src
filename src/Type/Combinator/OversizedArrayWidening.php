@@ -11,6 +11,7 @@ use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\ConstantScalarType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
@@ -68,13 +69,34 @@ final class OversizedArrayWidening implements WideningStep
 			return [...$emptyArrays, ...$results];
 		}
 
+		// a value type holding shapes, such as `int|array{a: int}`, merges
+		// its arrays only, and the rest of it stays beside them
+		$arrays = [];
+		$otherTypes = [];
+		$emptyMembers = [];
+		foreach ($results as $result) {
+			$members = $result instanceof UnionType && !$result instanceof TemplateType ? $result->getTypes() : [$result];
+			foreach ($members as $member) {
+				if (!$member->isArray()->yes()) {
+					$otherTypes[] = $member;
+				} elseif ($member->isConstantArray()->yes() && $member->isIterableAtLeastOnce()->no()) {
+					$emptyMembers[] = $member;
+				} else {
+					$arrays[] = $member;
+				}
+			}
+		}
+		if ($arrays === []) {
+			return [...$emptyArrays, ...$results];
+		}
+
 		$eachIsList = true;
 		$keyTypes = [];
 		$valueTypes = [];
-		foreach ($results as $result) {
-			$keyTypes[] = $result->getIterableKeyType();
-			$valueTypes[] = $result->getIterableValueType();
-			if ($result->isList()->yes()) {
+		foreach ($arrays as $array) {
+			$keyTypes[] = $array->getIterableKeyType();
+			$valueTypes[] = $array->getIterableValueType();
+			if ($array->isList()->yes()) {
 				continue;
 			}
 			$eachIsList = false;
@@ -87,7 +109,7 @@ final class OversizedArrayWidening implements WideningStep
 			$valueType = $valueType->generalize(GeneralizePrecision::lessSpecific());
 		}
 
-		return [...$emptyArrays, self::oversizedArray($keyType, $valueType, $eachIsList)];
+		return [...$emptyArrays, ...$emptyMembers, ...$otherTypes, self::oversizedArray($keyType, $valueType, $eachIsList)];
 	}
 
 	private static function degrade(ConstantArrayType $type): Type

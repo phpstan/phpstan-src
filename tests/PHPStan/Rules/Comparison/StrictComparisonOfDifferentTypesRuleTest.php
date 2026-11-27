@@ -694,6 +694,12 @@ class StrictComparisonOfDifferentTypesRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-14904.php'], []);
 	}
 
+	public function testBug15852(): void
+	{
+		$this->treatPhpDocTypesAsCertain = false;
+		$this->analyse([__DIR__ . '/data/bug-15852.php'], []);
+	}
+
 	public function testBug8736(): void
 	{
 		$this->analyse([__DIR__ . '/data/bug-8736.php'], []);

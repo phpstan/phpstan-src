@@ -34,11 +34,12 @@ final class FoldedShapeUnionRule implements UnionRule
 		}
 
 		$shapes = [];
-		foreach ($arrays as $array) {
+		foreach ($arrays as $i => $array) {
 			$constantArrays = $array->getConstantArrays();
-			// GeneralArrayUnionRule merged the arrays among which is a general one
+			// the general arrays are bounded by GeneralArrayUnionRule
 			if ($constantArrays === []) {
-				return $types;
+				unset($arrays[$i]);
+				continue;
 			}
 			if (!$array->isConstantArray()->yes()) {
 				$shapes[] = $array;
@@ -47,6 +48,10 @@ final class FoldedShapeUnionRule implements UnionRule
 			foreach ($constantArrays as $constantArray) {
 				$shapes[] = $constantArray;
 			}
+		}
+
+		if ($shapes === []) {
+			return $types;
 		}
 
 		$accessoryTypes = ArrayUnion::getCommonAccessoryTypes(array_values($arrays));

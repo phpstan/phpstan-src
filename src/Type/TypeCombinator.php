@@ -231,7 +231,10 @@ final class TypeCombinator
 			return $type;
 		}
 
-		if (self::countConstantArrayValueTypes($arrayTypes) <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT) {
+		if (
+			self::countConstantArrayValueTypes($arrayTypes) <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
+			&& count(GeneralArrayUnionRule::getGeneralArrays($arrayTypes)) <= GeneralArrayUnionRule::GENERAL_ARRAYS_LIMIT
+		) {
 			return $type;
 		}
 
@@ -279,8 +282,8 @@ final class TypeCombinator
 	private static function createWidenRules(): array
 	{
 		return [
-			new GeneralArrayUnionRule(),
 			new FoldedShapeUnionRule(),
+			new GeneralArrayUnionRule(),
 		];
 	}
 

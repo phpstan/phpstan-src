@@ -44,21 +44,22 @@ inline constexpr char strings[] =
 	"isEmpty\0" /* 123 */
 	"count\0" /* 131 */
 	"getTypes\0" /* 137 */
-	"name\0" /* 146 */
-	"hasType\0" /* 151 */
-	"PHPStan\\Type\\Type\0" /* 159 */
-	"getType\0" /* 177 */
-	"unsetType\0" /* 185 */
-	"other\0" /* 195 */
-	"union\0" /* 201 */
-	"benevolentUnion\0" /* 207 */
-	"a\0" /* 223 */
-	"b\0" /* 225 */
-	"cb\0" /* 227 */
-	"combine\0" /* 230 */
-	"intersect\0" /* 238 */
-	"map\0" /* 248 */
-	"resolveToBounds"; /* 252 */
+	"getUpperBoundTypes\0" /* 146 */
+	"name\0" /* 165 */
+	"hasType\0" /* 170 */
+	"PHPStan\\Type\\Type\0" /* 178 */
+	"getType\0" /* 196 */
+	"unsetType\0" /* 204 */
+	"other\0" /* 214 */
+	"union\0" /* 220 */
+	"benevolentUnion\0" /* 226 */
+	"a\0" /* 242 */
+	"b\0" /* 244 */
+	"cb\0" /* 246 */
+	"combine\0" /* 249 */
+	"intersect\0" /* 257 */
+	"map\0" /* 267 */
+	"resolveToBounds"; /* 271 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $types */
 	reg::packed(6, MAY_BE_ARRAY, reg::NoString, false, false, 22), /* __construct $lowerBoundTypes */
@@ -68,23 +69,24 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(37, MAY_BE_BOOL), /* isEmpty return */
 	reg::packed(37, MAY_BE_LONG), /* count return */
 	reg::packed(37, MAY_BE_ARRAY), /* getTypes return */
-	reg::packed(146, MAY_BE_STRING), /* hasType $name */
+	reg::packed(37, MAY_BE_ARRAY), /* getUpperBoundTypes return */
+	reg::packed(165, MAY_BE_STRING), /* hasType $name */
 	reg::packed(37, MAY_BE_BOOL), /* hasType return */
-	reg::packed(146, MAY_BE_STRING), /* getType $name */
-	reg::packed(37, MAY_BE_NULL, 159), /* getType return */
-	reg::packed(146, MAY_BE_STRING), /* unsetType $name */
+	reg::packed(165, MAY_BE_STRING), /* getType $name */
+	reg::packed(37, MAY_BE_NULL, 178), /* getType return */
+	reg::packed(165, MAY_BE_STRING), /* unsetType $name */
 	reg::packed(37, 0, 38), /* unsetType return */
-	reg::packed(195, 0, 38), /* union $other */
+	reg::packed(214, 0, 38), /* union $other */
 	reg::packed(37, 0, 38), /* union return */
-	reg::packed(195, 0, 38), /* benevolentUnion $other */
+	reg::packed(214, 0, 38), /* benevolentUnion $other */
 	reg::packed(37, 0, 38), /* benevolentUnion return */
-	reg::packed(223, 0, 159), /* combine $a */
-	reg::packed(225, 0, 159), /* combine $b */
-	reg::packed(227, MAY_BE_CALLABLE), /* combine $cb */
-	reg::packed(37, 0, 159), /* combine return */
-	reg::packed(195, 0, 38), /* intersect $other */
+	reg::packed(242, 0, 178), /* combine $a */
+	reg::packed(244, 0, 178), /* combine $b */
+	reg::packed(246, MAY_BE_CALLABLE), /* combine $cb */
+	reg::packed(37, 0, 178), /* combine return */
+	reg::packed(214, 0, 38), /* intersect $other */
 	reg::packed(37, 0, 38), /* intersect return */
-	reg::packed(227, MAY_BE_CALLABLE), /* map $cb */
+	reg::packed(246, MAY_BE_CALLABLE), /* map $cb */
 	reg::packed(37, 0, 38), /* map return */
 	reg::packed(37, 0, 38), /* resolveToBounds return */
 };
@@ -100,15 +102,16 @@ inline constexpr sigtab::Sig createEmpty = { { 111 /* createEmpty */, 0, 4, 0, 4
 inline constexpr sigtab::Sig isEmpty = { { 123 /* isEmpty */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig count = { { 131 /* count */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getTypes = { { 137 /* getTypes */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasType = { { 151 /* hasType */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getType = { { 177 /* getType */, 1, 10, 1, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig unsetType = { { 185 /* unsetType */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig union_ = { { 201 /* union */, 1, 14, 1, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig benevolentUnion = { { 207 /* benevolentUnion */, 1, 16, 1, 17, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig combine = { { 230 /* combine */, 3, 18, 3, 21, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig intersect = { { 238 /* intersect */, 1, 22, 1, 23, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig map = { { 248 /* map */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig resolveToBounds = { { 252 /* resolveToBounds */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getUpperBoundTypes = { { 146 /* getUpperBoundTypes */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasType = { { 170 /* hasType */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getType = { { 196 /* getType */, 1, 11, 1, 12, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig unsetType = { { 204 /* unsetType */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig union_ = { { 220 /* union */, 1, 15, 1, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig benevolentUnion = { { 226 /* benevolentUnion */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig combine = { { 249 /* combine */, 3, 19, 3, 22, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intersect = { { 257 /* intersect */, 1, 23, 1, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig map = { { 267 /* map */, 1, 25, 1, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig resolveToBounds = { { 271 /* resolveToBounds */, 0, 27, 0, 27, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeMap

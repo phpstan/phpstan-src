@@ -110,6 +110,17 @@ final class TemplateTypeMap
 		return $types;
 	}
 
+	/**
+	 * The upper bounds alone, including those of templates that also have a lower bound,
+	 * which getTypes() prefers.
+	 *
+	 * @return array<string, Type>
+	 */
+	public function getUpperBoundTypes(): array
+	{
+		return $this->upperBoundTypes;
+	}
+
 	public function hasType(string $name): bool
 	{
 		return array_key_exists($name, $this->getTypes());

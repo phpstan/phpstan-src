@@ -4990,6 +4990,7 @@ require_once __DIR__ . '/type-family-typehint-fixture.php';
 		$r["$label count"] = $map->count();
 		$r["$label resolveToBounds"] = $view($map->resolveToBounds()->getTypes());
 		$r["$label resolveToBounds identity"] = $map->resolveToBounds() === $map->resolveToBounds();
+		$r["$label getUpperBoundTypes"] = $view($map->getUpperBoundTypes());
 		$r["$label swapBounds"] = $view($map->swapBounds()->getTypes());
 		$r["$label swapBounds twice"] = $view($map->swapBounds()->swapBounds()->getTypes());
 		$r["$label convertToLowerBoundTypes"] = $view($map->convertToLowerBoundTypes()->getTypes());
@@ -4997,6 +4998,8 @@ require_once __DIR__ . '/type-family-typehint-fixture.php';
 			$r["$label union $otherLabel"] = $view($map->union($other)->getTypes());
 			$r["$label benevolentUnion $otherLabel"] = $view($map->benevolentUnion($other)->getTypes());
 			$r["$label intersect $otherLabel"] = $view($map->intersect($other)->getTypes());
+			$r["$label union $otherLabel upper bounds"] = $view($map->union($other)->getUpperBoundTypes());
+			$r["$label intersect $otherLabel upper bounds"] = $view($map->intersect($other)->getUpperBoundTypes());
 			$r["$label union $otherLabel swapped"] = $view($map->union($other)->swapBounds()->getTypes());
 			$r["$label intersect $otherLabel swapped"] = $view($map->intersect($other)->swapBounds()->getTypes());
 		}

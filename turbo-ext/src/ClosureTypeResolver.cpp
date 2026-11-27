@@ -359,8 +359,9 @@ public:
 		writeSlot(slots::cachedTypes, zv::Val(zv::Arr::empty()));
 	}
 
-	/* Mirrors getClosureType() ($storage, $passedToType NULL for null) */
-	zv::Val getClosureType(zval *scope, zval *expr, bool shallow, zval *storage, zval *passedToType = NULL)
+	/* Mirrors getClosureType() ($storage, $passedToType NULL for null,
+	 * $byRefUseTypes NULL for the default []) */
+	zv::Val getClosureType(zval *scope, zval *expr, bool shallow, zval *storage, zval *passedToType = NULL, zval *byRefUseTypes = NULL)
 	{
 		zv::Str templateSuffix = zv::Str::adopt(zend_strpprintf(0, "@%u", Z_OBJ_HANDLE_P(expr)));
 		Parameters p;
@@ -373,6 +374,11 @@ public:
 		zv::Val cachedTypes = findCachedTypes(expr);
 		zv::Str cacheKey = closureContextCacheKey(scope, expr, p.callableParameters.isNull() ? NULL : p.callableParameters.raw(), p.parameters.raw());
 		if (UNEXPECTED(cacheKey.isNull())) return zv::Val();
+		if (byRefUseTypes != NULL && zend_hash_num_elements(Z_ARRVAL_P(byRefUseTypes)) == 0) byRefUseTypes = NULL;
+		if (byRefUseTypes != NULL) {
+			cacheKey = byRefUseCacheKey(cacheKey.get(), byRefUseTypes);
+			if (UNEXPECTED(cacheKey.isNull())) return zv::Val();
+		}
 		zval *cached = zend_symtable_find(Z_ARRVAL_P(cachedTypes.raw()), cacheKey.get());
 		if (cached != NULL) {
 			ZVAL_DEREF(cached);
@@ -387,7 +393,34 @@ public:
 		int isArrowFunction = ptclosure::instanceOf(expr, PT_CLASS_ARROW_FUNCTION);
 		if (UNEXPECTED(isArrowFunction < 0)) return zv::Val();
 		if (isArrowFunction) return walkTemplateTypesRestore(walkArrowFunction(scope, expr, p, cacheKey.get()), templateSuffix.get());
-		return walkTemplateTypesRestore(walkClosure(scope, expr, p, cacheKey.get()), templateSuffix.get());
+		return walkTemplateTypesRestore(walkClosure(scope, expr, p, cacheKey.get(), byRefUseTypes), templateSuffix.get());
+	}
+
+	/* $cacheKey . '/&$' . $name . '=' . $type->describe(VerbosityLevel::cache())
+	 * for each of $byRefUseTypes; null = pending exception */
+	static zv::Str byRefUseCacheKey(zend_string *cacheKey, zval *byRefUseTypes)
+	{
+		zval *cacheLevel = pt_verbosity_level_singleton(PT_VERBOSITY_LEVEL_CACHE);
+		if (UNEXPECTED(cacheLevel == NULL)) return zv::Str();
+		smart_str key = {0};
+		smart_str_append(&key, cacheKey);
+		for (zv::ArrayEntry entry : zv::ArrRef(byRefUseTypes)) {
+			zv::Val description = describeType(entry.value().deref().raw(), cacheLevel);
+			if (UNEXPECTED(description.isUndef())) {
+				smart_str_free(&key);
+				return zv::Str();
+			}
+			smart_str_appendl(&key, "/&$", 3);
+			zend_string *name = entry.stringKeyOrNull();
+			if (name != NULL) {
+				smart_str_append(&key, name);
+			} else {
+				smart_str_append_unsigned(&key, entry.indexKey());
+			}
+			smart_str_appendc(&key, '=');
+			smart_str_append(&key, Z_STR_P(description.raw()));
+		}
+		return zv::Str::adopt(smart_str_extract(&key));
 	}
 
 	/* Mirrors buildClosureTypeForClosure() (the nullable ones NULL for null) */
@@ -1442,7 +1475,7 @@ private:
 	}
 
 	/* the closure body walk of getClosureType() */
-	zv::Val walkClosure(zval *scope, zval *expr, Parameters &p, zend_string *cacheKey)
+	zv::Val walkClosure(zval *scope, zval *expr, Parameters &p, zend_string *cacheKey, zval *byRefUseTypes)
 	{
 		pt_ctr_resolve_closure_type_depth++;
 		int cappedBefore = pt_ctr_capped_closure_type_walks;
@@ -1454,6 +1487,16 @@ private:
 		if (UNEXPECTED(!closureScope.ref().isObject())) {
 			zend_throw_error(NULL, "Call to a member function pushExpressionResultStorage() on %s", zend_zval_value_name(closureScope.raw()));
 			return zv::Val();
+		}
+		if (byRefUseTypes != NULL) {
+			for (zv::ArrayEntry entry : zv::ArrRef(byRefUseTypes)) {
+				zend_string *name = entry.stringKeyOrNull();
+				zv::Str nameHold = name != NULL ? zv::Str::copyOf(name) : zv::Str::adopt(zend_ulong_to_str(entry.indexKey()));
+				zval *byRefUseType = entry.value().deref().raw();
+				zv::Val assigned = pt_mutating_scope_assign_variable(Z_OBJ_P(closureScope.raw()), nameHold.get(), byRefUseType, byRefUseType, pt_trinary_singleton(PT_TRI_YES));
+				if (UNEXPECTED(assigned.isUndef())) return zv::Val();
+				closureScope = std::move(assigned);
+			}
 		}
 		zv::Val closureReturnStatements = ptsh::newArrayReference();
 		zv::Val closureYieldStatements = ptsh::newArrayReference();
@@ -1516,17 +1559,21 @@ using phpstanturbo::ClosureTypeResolver;
 
 /* {{{ direct entries (support.h) */
 
-zv::Val pt_closure_type_resolver_get_closure_type(zval *resolver, zval *scope, zval *expr, bool shallow, zval *storage, zval *passedToType)
+zv::Val pt_closure_type_resolver_get_closure_type(zval *resolver, zval *scope, zval *expr, bool shallow, zval *storage, zval *passedToType, zval *byRefUseTypes)
 {
 	if (storage != NULL && Z_TYPE_P(storage) == IS_NULL) storage = NULL;
 	if (passedToType != NULL && Z_TYPE_P(passedToType) == IS_NULL) passedToType = NULL;
-	if (EXPECTED(Z_TYPE_P(resolver) == IS_OBJECT && Z_OBJCE_P(resolver) == pt_ce_closure_type_resolver)) return ClosureTypeResolver(Z_OBJ_P(resolver)).getClosureType(scope, expr, shallow, storage, passedToType);
+	if (EXPECTED(Z_TYPE_P(resolver) == IS_OBJECT && Z_OBJCE_P(resolver) == pt_ce_closure_type_resolver)) return ClosureTypeResolver(Z_OBJ_P(resolver)).getClosureType(scope, expr, shallow, storage, passedToType, byRefUseTypes);
 	if (UNEXPECTED(Z_TYPE_P(resolver) != IS_OBJECT)) {
 		zend_throw_error(NULL, "Call to a member function getClosureType() on %s", zend_zval_value_name(resolver));
 		return zv::Val();
 	}
 	zval null;
 	ZVAL_NULL(&null);
+	if (byRefUseTypes != NULL) {
+		zv::Args argv{scope, expr, shallow, storage != NULL ? storage : &null, passedToType != NULL ? passedToType : &null, byRefUseTypes};
+		return pt_type_call(Z_OBJ_P(resolver), PT_LC("getclosuretype"), 6, argv);
+	}
 	zv::Args argv{scope, expr, shallow, storage != NULL ? storage : &null, passedToType != NULL ? passedToType : &null};
 	return pt_type_call(Z_OBJ_P(resolver), PT_LC("getclosuretype"), 5, argv);
 }
@@ -1626,18 +1673,19 @@ PT_MINIT_REGISTRATION(pt_register_closure_type_resolver)
 	});
 
 	cls.method(sigs::getClosureType, [](INTERNAL_FUNCTION_PARAMETERS) {
-		zval *scope, *expr, *storage = NULL, *passedToType = NULL;
+		zval *scope, *expr, *storage = NULL, *passedToType = NULL, *byRefUseTypes = NULL;
 		bool shallow = false;
-		ZEND_PARSE_PARAMETERS_START(2, 5)
+		ZEND_PARSE_PARAMETERS_START(2, 6)
 			Z_PARAM_OBJECT_OF_CLASS(scope, pt_ce_mutating_scope)
 			Z_PARAM_OBJECT(expr)
 			Z_PARAM_OPTIONAL
 			Z_PARAM_BOOL(shallow)
 			Z_PARAM_OBJECT_OR_NULL(storage)
 			Z_PARAM_OBJECT_OR_NULL(passedToType)
+			Z_PARAM_ARRAY(byRefUseTypes)
 		ZEND_PARSE_PARAMETERS_END();
 		if (UNEXPECTED(!isClosureLike(expr, false, false))) RETURN_THROWS();
-		PT_RETURN_VAL(ClosureTypeResolver(Z_OBJ_P(ZEND_THIS)).getClosureType(scope, expr, shallow, storage, passedToType));
+		PT_RETURN_VAL(ClosureTypeResolver(Z_OBJ_P(ZEND_THIS)).getClosureType(scope, expr, shallow, storage, passedToType, byRefUseTypes));
 	});
 
 	cls.method(sigs::buildClosureTypeForClosure, [](INTERNAL_FUNCTION_PARAMETERS) {

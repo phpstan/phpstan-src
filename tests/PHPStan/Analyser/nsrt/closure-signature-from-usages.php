@@ -692,7 +692,7 @@ class Foo
 			return $n * $fact($n - 1);
 		};
 		$fact(5);
-		assertType('Closure(float|int): (float|int)', $fact);
+		assertType('Closure(float|int): (NAN|float<1.0000000000000002, max>|int<1, max>)', $fact);
 	}
 
 	public function recursionThroughByRefUse(\stdClass $o): void

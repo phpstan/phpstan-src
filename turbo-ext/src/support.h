@@ -3389,7 +3389,7 @@ zv::Val pt_closure_type_get_by_ref_use_types(zval *closureType);
  * / ->getDeclaredClosureType($scope, $expr) — the native bodies for the
  * shadowing class, the methods otherwise (the nullable ones NULL or IS_NULL
  * for null, everything borrowed); UNDEF = pending exception */
-zv::Val pt_closure_type_resolver_get_closure_type(zval *resolver, zval *scope, zval *expr, bool shallow, zval *storage, zval *passedToType = NULL);
+zv::Val pt_closure_type_resolver_get_closure_type(zval *resolver, zval *scope, zval *expr, bool shallow, zval *storage, zval *passedToType = NULL, zval *byRefUseTypes = NULL);
 zv::Val pt_closure_type_resolver_build_closure_type_for_closure(zval *resolver, zval *scope, zval *expr, zval *returnStatements, zval *yieldStatements, zval *executionEnds, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, bool native = false, zval *storage = NULL, zval *passedToType = NULL, zval *nativePassedToType = NULL);
 zv::Val pt_closure_type_resolver_build_closure_type_for_arrow_function(zval *resolver, zval *scope, zval *expr, zval *arrowScope, zval *throwPoints, zval *impurePoints, zval *invalidateExpressions, bool native = false, zval *storage = NULL, zval *passedToType = NULL, zval *nativePassedToType = NULL);
 zv::Val pt_closure_type_resolver_get_declared_closure_type(zval *resolver, zval *scope, zval *expr);

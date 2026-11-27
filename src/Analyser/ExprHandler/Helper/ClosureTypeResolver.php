@@ -133,6 +133,11 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 	 *
 	 * $passedToType types the parameters like a callable parameter the closure
 	 * is passed to does - FuncCallHandler passes the arguments of an invocation.
+	 * $byRefUseTypes types variables the closure uses by reference, which the
+	 * walk otherwise enters as mixed - ClosureProcessor's fixed point of a
+	 * closure calling itself through one.
+	 *
+	 * @param array<string, Type> $byRefUseTypes
 	 */
 	public function getClosureType(
 		MutatingScope $scope,
@@ -140,6 +145,7 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		bool $shallow = false,
 		?ExpressionResultStorage $storage = null,
 		?Type $passedToType = null,
+		array $byRefUseTypes = [],
 	): ClosureType
 	{
 		$templateSuffix = '@' . spl_object_id($expr);
@@ -163,6 +169,9 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 
 		$cachedTypes = $this->findCachedTypes($expr);
 		$cacheKey = $this->closureContextCacheKey($scope, $expr, $callableParameters, $parameters);
+		foreach ($byRefUseTypes as $name => $byRefUseType) {
+			$cacheKey .= '/&$' . $name . '=' . $byRefUseType->describe(VerbosityLevel::cache());
+		}
 		if (array_key_exists($cacheKey, $cachedTypes)) {
 			return ClosureWalkTemplateTypes::restore($this->createClosureTypeFromCache($scope, $expr, $parameters, $isVariadic, $cachedTypes[$cacheKey], $contextFree), $templateSuffix);
 		}
@@ -237,6 +246,9 @@ final class ClosureTypeResolver implements PerFileAnalysisResettable
 		$cappedBefore = self::$cappedClosureTypeWalks;
 
 		$closureScope = $scope->enterAnonymousFunctionWithoutReflection($expr, $callableParameters, $nativeCallableParameters);
+		foreach ($byRefUseTypes as $name => $byRefUseType) {
+			$closureScope = $closureScope->assignVariable($name, $byRefUseType, $byRefUseType, TrinaryLogic::createYes());
+		}
 		$closureReturnStatements = [];
 		$closureYieldStatements = [];
 		$closureExecutionEnds = [];

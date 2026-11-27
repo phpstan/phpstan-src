@@ -91,6 +91,13 @@ PT_MINIT_REGISTRATION(pt_register_nonexistent_parent_class_type)
 	ptdecl::NonexistentParentClassType::declareClass(cls);
 	ptdecl::NonexistentParentClassType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_OBJECT>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_OBJECT); });
+
 	cls.method(sigs::describe, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(1, 1);
 		RETURN_STRINGL("parent", 6);

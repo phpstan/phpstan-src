@@ -670,6 +670,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 		return TrinaryLogic::createNo();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::STRING | TypeKind::ARRAY | TypeKind::OBJECT;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -748,6 +753,11 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -916,6 +926,16 @@ class CallableType implements CompoundType, CallableParametersAcceptor
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createInvalid();
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

@@ -41,13 +41,14 @@ inline constexpr char strings[] =
 	"isNonEmptyString\0" /* 242 */
 	"isNonFalsyString\0" /* 259 */
 	"isLiteralString\0" /* 276 */
-	"isLowercaseString\0" /* 292 */
-	"isUppercaseString\0" /* 310 */
-	"isClassString\0" /* 328 */
-	"getClassStringObjectType\0" /* 342 */
-	"getObjectTypeOrClassStringObjectType\0" /* 367 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 404 */
-	"toPhpDocNode"; /* 443 */
+	"getStringRefinement\0" /* 292 */
+	"isLowercaseString\0" /* 312 */
+	"isUppercaseString\0" /* 330 */
+	"isClassString\0" /* 348 */
+	"getClassStringObjectType\0" /* 362 */
+	"getObjectTypeOrClassStringObjectType\0" /* 387 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 424 */
+	"toPhpDocNode"; /* 463 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 18), /* describe $level */
 	reg::packed(46, MAY_BE_STRING), /* describe return */
@@ -62,12 +63,13 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(46, 0, 173), /* isNonEmptyString return */
 	reg::packed(46, 0, 173), /* isNonFalsyString return */
 	reg::packed(46, 0, 173), /* isLiteralString return */
+	reg::packed(46, MAY_BE_NULL | MAY_BE_LONG), /* getStringRefinement return */
 	reg::packed(46, 0, 173), /* isLowercaseString return */
 	reg::packed(46, 0, 173), /* isUppercaseString return */
 	reg::packed(46, 0, 173), /* isClassString return */
 	reg::packed(46, 0, 61), /* getClassStringObjectType return */
 	reg::packed(46, 0, 61), /* getObjectTypeOrClassStringObjectType return */
-	reg::packed(46, 0, 404), /* toPhpDocNode return */
+	reg::packed(46, 0, 424), /* toPhpDocNode return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -84,12 +86,13 @@ inline constexpr sigtab::Sig isDecimalIntegerString = { { 219 /* isDecimalIntege
 inline constexpr sigtab::Sig isNonEmptyString = { { 242 /* isNonEmptyString */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isNonFalsyString = { { 259 /* isNonFalsyString */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isLiteralString = { { 276 /* isLiteralString */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isLowercaseString = { { 292 /* isLowercaseString */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isUppercaseString = { { 310 /* isUppercaseString */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isClassString = { { 328 /* isClassString */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getClassStringObjectType = { { 342 /* getClassStringObjectType */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 367 /* getObjectTypeOrClassStringObjectType */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 443 /* toPhpDocNode */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStringRefinement = { { 292 /* getStringRefinement */, 0, 13, 0, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isLowercaseString = { { 312 /* isLowercaseString */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isUppercaseString = { { 330 /* isUppercaseString */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isClassString = { { 348 /* isClassString */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClassStringObjectType = { { 362 /* getClassStringObjectType */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 387 /* getObjectTypeOrClassStringObjectType */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 463 /* toPhpDocNode */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ClassStringType

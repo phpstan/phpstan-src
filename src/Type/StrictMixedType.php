@@ -233,6 +233,11 @@ class StrictMixedType implements CompoundType
 		return $this;
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::ALL;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -311,6 +316,11 @@ class StrictMixedType implements CompoundType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -543,6 +553,16 @@ class StrictMixedType implements CompoundType
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createInvalid();
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

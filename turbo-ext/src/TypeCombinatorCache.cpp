@@ -6,8 +6,7 @@
  * extension is active. Roughly 91% of the calls in an analysis run repeat an
  * argument tuple whose result was already computed, so each operation is memoized
  * on a structural key of its arguments; a miss computes the operation through
- * the native TypeCombinator's doUnion() and friends (TypeCombinator.cpp) — a
- * direct C++ call, no engine frame.
+ * TypeCombinator's PHP doUnion() and friends (TypeCombinatorCalls.cpp).
  *
  * The results are NOT interned: no canonical instance per type value is kept, and
  * operations that arrive at the same value by different routes hand back
@@ -788,8 +787,8 @@ public:
 		REMOVE = 3,
 	};
 
-	/* the unmemoized computation of a miss: the native TypeCombinator's
-	 * do*() body over the argument vector */
+	/* the unmemoized computation of a miss: TypeCombinator's PHP do*()
+	 * body over the argument vector */
 	typedef zv::Val (*Compute)(uint32_t argc, zval *argv);
 
 	static zv::Val run(Op op, Compute compute, zval *args, uint32_t argc)

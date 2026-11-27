@@ -53,8 +53,8 @@ final class ConstantArrayTypeAcceptsBench
 	}
 
 	#[DataProvider(method: 'keys')]
-	#[ExpectedFor(dataSet: 'keys-16', instructions: '1.933M', cycles: '2.865M', memory: '17.70KiB')]
-	#[ExpectedFor(dataSet: 'keys-128', instructions: '15.28M', cycles: '20.69M', memory: '123.0KiB')]
+	#[ExpectedFor(dataSet: 'keys-16', instructions: '460.6K', cycles: '830.6K', memory: '5.445KiB')]
+	#[ExpectedFor(dataSet: 'keys-128', instructions: '2.980M', cycles: '4.042M', memory: '13.23KiB')]
 	public function benchAcceptsSharedValueType(int $keys): AcceptsResult
 	{
 		if ($this->accepting === null || $this->accepted === null) {

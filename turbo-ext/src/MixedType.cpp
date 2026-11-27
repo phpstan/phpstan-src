@@ -1509,6 +1509,9 @@ PT_MINIT_REGISTRATION(pt_register_mixed_type)
 	 * declared properties (slots::subtractedType, slots::isExplicitMixed) */
 	ptdecl::MixedType::declareProperties(cls);
 
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
+
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		bool isExplicitMixed = false;
 		zval *subtractedType = NULL;
@@ -1806,6 +1809,9 @@ PT_MINIT_REGISTRATION(pt_register_mixed_type)
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isList);
 	});
 	cls.op<PT_OP_IS_LIST, &MixedType::isList>();
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_ALL>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_ALL); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_mt_trinary(INTERNAL_FUNCTION_PARAM_PASSTHRU, &MixedType::isNull);
 	});

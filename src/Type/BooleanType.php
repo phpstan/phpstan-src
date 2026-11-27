@@ -135,6 +135,11 @@ class BooleanType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::BOOL;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -222,6 +227,16 @@ class BooleanType implements Type
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createBooleans(true, true);
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

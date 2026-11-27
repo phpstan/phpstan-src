@@ -21,53 +21,56 @@ inline constexpr char strings[] =
 	"level\0" /* 95 */
 	"PHPStan\\Type\\VerbosityLevel\0" /* 101 */
 	"describe\0" /* 129 */
-	"isArgument\0" /* 138 */
-	"PHPStan\\Type\\Generic\\TemplateType\0" /* 149 */
-	"toArgument\0" /* 183 */
-	"a\0" /* 194 */
-	"b\0" /* 196 */
-	"strict\0" /* 198 */
-	"false\0" /* 205 */
-	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 211 */
-	"isValidVariance\0" /* 244 */
-	"typeToRemove\0" /* 260 */
-	"subtract\0" /* 273 */
-	"getTypeWithoutSubtractedType\0" /* 282 */
-	"subtractedType\0" /* 311 */
-	"changeSubtractedType\0" /* 326 */
-	"getSubtractedType\0" /* 347 */
-	"type\0" /* 365 */
-	"equals\0" /* 370 */
-	"acceptingType\0" /* 377 */
-	"strictTypes\0" /* 391 */
-	"PHPStan\\Type\\AcceptsResult\0" /* 403 */
-	"isAcceptedBy\0" /* 430 */
-	"accepts\0" /* 443 */
-	"isSuperTypeOf\0" /* 451 */
-	"isSubTypeOf\0" /* 465 */
-	"toArrayKey\0" /* 477 */
-	"toCoercedArgumentType\0" /* 488 */
-	"reflectionProvider\0" /* 510 */
-	"PHPStan\\Reflection\\ReflectionProvider\0" /* 529 */
-	"toClassConstantType\0" /* 567 */
-	"receivedType\0" /* 587 */
-	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 600 */
-	"inferTemplateTypes\0" /* 637 */
-	"positionVariance\0" /* 656 */
-	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 673 */
-	"getReferencedTemplateTypes\0" /* 715 */
-	"getVariance\0" /* 742 */
-	"PHPStan\\Type\\Generic\\TemplateTypeStrategy\0" /* 754 */
-	"getStrategy\0" /* 796 */
-	"cb\0" /* 808 */
-	"traverse\0" /* 811 */
-	"right\0" /* 820 */
-	"traverseSimultaneously\0" /* 826 */
-	"tryRemove\0" /* 849 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 859 */
-	"toPhpDocNode\0" /* 898 */
-	"hasTemplateOrLateResolvableType\0" /* 911 */
-	"hasUnresolvedTemplateArgumentType"; /* 943 */
+	"PHPStan\\Type\\NumberSet\0" /* 138 */
+	"toExactNumberSet\0" /* 161 */
+	"getStringRefinement\0" /* 178 */
+	"isArgument\0" /* 198 */
+	"PHPStan\\Type\\Generic\\TemplateType\0" /* 209 */
+	"toArgument\0" /* 243 */
+	"a\0" /* 254 */
+	"b\0" /* 256 */
+	"strict\0" /* 258 */
+	"false\0" /* 265 */
+	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 271 */
+	"isValidVariance\0" /* 304 */
+	"typeToRemove\0" /* 320 */
+	"subtract\0" /* 333 */
+	"getTypeWithoutSubtractedType\0" /* 342 */
+	"subtractedType\0" /* 371 */
+	"changeSubtractedType\0" /* 386 */
+	"getSubtractedType\0" /* 407 */
+	"type\0" /* 425 */
+	"equals\0" /* 430 */
+	"acceptingType\0" /* 437 */
+	"strictTypes\0" /* 451 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 463 */
+	"isAcceptedBy\0" /* 490 */
+	"accepts\0" /* 503 */
+	"isSuperTypeOf\0" /* 511 */
+	"isSubTypeOf\0" /* 525 */
+	"toArrayKey\0" /* 537 */
+	"toCoercedArgumentType\0" /* 548 */
+	"reflectionProvider\0" /* 570 */
+	"PHPStan\\Reflection\\ReflectionProvider\0" /* 589 */
+	"toClassConstantType\0" /* 627 */
+	"receivedType\0" /* 647 */
+	"PHPStan\\Type\\Generic\\TemplateTypeMap\0" /* 660 */
+	"inferTemplateTypes\0" /* 697 */
+	"positionVariance\0" /* 716 */
+	"PHPStan\\Type\\Generic\\TemplateTypeVariance\0" /* 733 */
+	"getReferencedTemplateTypes\0" /* 775 */
+	"getVariance\0" /* 802 */
+	"PHPStan\\Type\\Generic\\TemplateTypeStrategy\0" /* 814 */
+	"getStrategy\0" /* 856 */
+	"cb\0" /* 868 */
+	"traverse\0" /* 871 */
+	"right\0" /* 880 */
+	"traverseSimultaneously\0" /* 886 */
+	"tryRemove\0" /* 909 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 919 */
+	"toPhpDocNode\0" /* 958 */
+	"hasTemplateOrLateResolvableType\0" /* 971 */
+	"hasUnresolvedTemplateArgumentType"; /* 1003 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* getName return */
 	reg::packed(0, 0, 9), /* getScope return */
@@ -75,49 +78,51 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_NULL, 57), /* getDefault return */
 	reg::packed(95, 0, 101), /* describe $level */
 	reg::packed(0, MAY_BE_STRING), /* describe return */
+	reg::packed(0, MAY_BE_NULL, 138), /* toExactNumberSet return */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_LONG), /* getStringRefinement return */
 	reg::packed(0, MAY_BE_BOOL), /* isArgument return */
-	reg::packed(0, 0, 149), /* toArgument return */
-	reg::packed(194, 0, 57), /* isValidVariance $a */
-	reg::packed(196, 0, 57), /* isValidVariance $b */
-	reg::packed(198, MAY_BE_BOOL, reg::NoString, false, false, 205), /* isValidVariance $strict */
-	reg::packed(0, 0, 211), /* isValidVariance return */
-	reg::packed(260, 0, 57), /* subtract $typeToRemove */
+	reg::packed(0, 0, 209), /* toArgument return */
+	reg::packed(254, 0, 57), /* isValidVariance $a */
+	reg::packed(256, 0, 57), /* isValidVariance $b */
+	reg::packed(258, MAY_BE_BOOL, reg::NoString, false, false, 265), /* isValidVariance $strict */
+	reg::packed(0, 0, 271), /* isValidVariance return */
+	reg::packed(320, 0, 57), /* subtract $typeToRemove */
 	reg::packed(0, 0, 57), /* subtract return */
 	reg::packed(0, 0, 57), /* getTypeWithoutSubtractedType return */
-	reg::packed(311, MAY_BE_NULL, 57), /* changeSubtractedType $subtractedType */
+	reg::packed(371, MAY_BE_NULL, 57), /* changeSubtractedType $subtractedType */
 	reg::packed(0, 0, 57), /* changeSubtractedType return */
 	reg::packed(0, MAY_BE_NULL, 57), /* getSubtractedType return */
-	reg::packed(365, 0, 57), /* equals $type */
+	reg::packed(425, 0, 57), /* equals $type */
 	reg::packed(0, MAY_BE_BOOL), /* equals return */
-	reg::packed(377, 0, 57), /* isAcceptedBy $acceptingType */
-	reg::packed(391, MAY_BE_BOOL), /* isAcceptedBy $strictTypes */
-	reg::packed(0, 0, 403), /* isAcceptedBy return */
-	reg::packed(365, 0, 57), /* accepts $type */
-	reg::packed(391, MAY_BE_BOOL), /* accepts $strictTypes */
-	reg::packed(0, 0, 403), /* accepts return */
-	reg::packed(365, 0, 57), /* isSuperTypeOf $type */
-	reg::packed(0, 0, 211), /* isSuperTypeOf return */
-	reg::packed(365, 0, 57), /* isSubTypeOf $type */
-	reg::packed(0, 0, 211), /* isSubTypeOf return */
+	reg::packed(437, 0, 57), /* isAcceptedBy $acceptingType */
+	reg::packed(451, MAY_BE_BOOL), /* isAcceptedBy $strictTypes */
+	reg::packed(0, 0, 463), /* isAcceptedBy return */
+	reg::packed(425, 0, 57), /* accepts $type */
+	reg::packed(451, MAY_BE_BOOL), /* accepts $strictTypes */
+	reg::packed(0, 0, 463), /* accepts return */
+	reg::packed(425, 0, 57), /* isSuperTypeOf $type */
+	reg::packed(0, 0, 271), /* isSuperTypeOf return */
+	reg::packed(425, 0, 57), /* isSubTypeOf $type */
+	reg::packed(0, 0, 271), /* isSubTypeOf return */
 	reg::packed(0, 0, 57), /* toArrayKey return */
-	reg::packed(391, MAY_BE_BOOL), /* toCoercedArgumentType $strictTypes */
+	reg::packed(451, MAY_BE_BOOL), /* toCoercedArgumentType $strictTypes */
 	reg::packed(0, 0, 57), /* toCoercedArgumentType return */
-	reg::packed(510, 0, 529), /* toClassConstantType $reflectionProvider */
+	reg::packed(570, 0, 589), /* toClassConstantType $reflectionProvider */
 	reg::packed(0, 0, 57), /* toClassConstantType return */
-	reg::packed(587, 0, 57), /* inferTemplateTypes $receivedType */
-	reg::packed(0, 0, 600), /* inferTemplateTypes return */
-	reg::packed(656, 0, 673), /* getReferencedTemplateTypes $positionVariance */
+	reg::packed(647, 0, 57), /* inferTemplateTypes $receivedType */
+	reg::packed(0, 0, 660), /* inferTemplateTypes return */
+	reg::packed(716, 0, 733), /* getReferencedTemplateTypes $positionVariance */
 	reg::packed(0, MAY_BE_ARRAY), /* getReferencedTemplateTypes return */
-	reg::packed(0, 0, 673), /* getVariance return */
-	reg::packed(0, 0, 754), /* getStrategy return */
-	reg::packed(808, MAY_BE_CALLABLE), /* traverse $cb */
+	reg::packed(0, 0, 733), /* getVariance return */
+	reg::packed(0, 0, 814), /* getStrategy return */
+	reg::packed(868, MAY_BE_CALLABLE), /* traverse $cb */
 	reg::packed(0, 0, 57), /* traverse return */
-	reg::packed(820, 0, 57), /* traverseSimultaneously $right */
-	reg::packed(808, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
+	reg::packed(880, 0, 57), /* traverseSimultaneously $right */
+	reg::packed(868, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(0, 0, 57), /* traverseSimultaneously return */
-	reg::packed(260, 0, 57), /* tryRemove $typeToRemove */
+	reg::packed(320, 0, 57), /* tryRemove $typeToRemove */
 	reg::packed(0, MAY_BE_NULL, 57), /* tryRemove return */
-	reg::packed(0, 0, 859), /* toPhpDocNode return */
+	reg::packed(0, 0, 919), /* toPhpDocNode return */
 	reg::packed(0, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 	reg::packed(0, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
 };
@@ -131,31 +136,33 @@ inline constexpr sigtab::Sig getScope = { { 48 /* getScope */, 0, 1, 0, 1, ZEND_
 inline constexpr sigtab::Sig getBound = { { 75 /* getBound */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getDefault = { { 84 /* getDefault */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig describe = { { 129 /* describe */, 1, 4, 1, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isArgument = { { 138 /* isArgument */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toArgument = { { 183 /* toArgument */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isValidVariance = { { 244 /* isValidVariance */, 2, 8, 3, 11, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig subtract = { { 273 /* subtract */, 1, 12, 1, 13, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getTypeWithoutSubtractedType = { { 282 /* getTypeWithoutSubtractedType */, 0, 14, 0, 14, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig changeSubtractedType = { { 326 /* changeSubtractedType */, 1, 15, 1, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getSubtractedType = { { 347 /* getSubtractedType */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig equals = { { 370 /* equals */, 1, 18, 1, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isAcceptedBy = { { 430 /* isAcceptedBy */, 2, 20, 2, 22, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig accepts = { { 443 /* accepts */, 2, 23, 2, 25, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isSuperTypeOf = { { 451 /* isSuperTypeOf */, 1, 26, 1, 27, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isSubTypeOf = { { 465 /* isSubTypeOf */, 1, 28, 1, 29, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toArrayKey = { { 477 /* toArrayKey */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toCoercedArgumentType = { { 488 /* toCoercedArgumentType */, 1, 31, 1, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toClassConstantType = { { 567 /* toClassConstantType */, 1, 33, 1, 34, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig inferTemplateTypes = { { 637 /* inferTemplateTypes */, 1, 35, 1, 36, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 715 /* getReferencedTemplateTypes */, 1, 37, 1, 38, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getVariance = { { 742 /* getVariance */, 0, 39, 0, 39, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getStrategy = { { 796 /* getStrategy */, 0, 40, 0, 40, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverse = { { 811 /* traverse */, 1, 41, 1, 42, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig traverseSimultaneously = { { 826 /* traverseSimultaneously */, 2, 43, 2, 45, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryRemove = { { 849 /* tryRemove */, 1, 46, 1, 47, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 898 /* toPhpDocNode */, 0, 48, 0, 48, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 911 /* hasTemplateOrLateResolvableType */, 0, 49, 0, 49, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 943 /* hasUnresolvedTemplateArgumentType */, 0, 50, 0, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toExactNumberSet = { { 161 /* toExactNumberSet */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStringRefinement = { { 178 /* getStringRefinement */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isArgument = { { 198 /* isArgument */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toArgument = { { 243 /* toArgument */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isValidVariance = { { 304 /* isValidVariance */, 2, 10, 3, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig subtract = { { 333 /* subtract */, 1, 14, 1, 15, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getTypeWithoutSubtractedType = { { 342 /* getTypeWithoutSubtractedType */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig changeSubtractedType = { { 386 /* changeSubtractedType */, 1, 17, 1, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSubtractedType = { { 407 /* getSubtractedType */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig equals = { { 430 /* equals */, 1, 20, 1, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isAcceptedBy = { { 490 /* isAcceptedBy */, 2, 22, 2, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig accepts = { { 503 /* accepts */, 2, 25, 2, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSuperTypeOf = { { 511 /* isSuperTypeOf */, 1, 28, 1, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isSubTypeOf = { { 525 /* isSubTypeOf */, 1, 30, 1, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toArrayKey = { { 537 /* toArrayKey */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toCoercedArgumentType = { { 548 /* toCoercedArgumentType */, 1, 33, 1, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toClassConstantType = { { 627 /* toClassConstantType */, 1, 35, 1, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig inferTemplateTypes = { { 697 /* inferTemplateTypes */, 1, 37, 1, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getReferencedTemplateTypes = { { 775 /* getReferencedTemplateTypes */, 1, 39, 1, 40, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getVariance = { { 802 /* getVariance */, 0, 41, 0, 41, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStrategy = { { 856 /* getStrategy */, 0, 42, 0, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverse = { { 871 /* traverse */, 1, 43, 1, 44, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig traverseSimultaneously = { { 886 /* traverseSimultaneously */, 2, 45, 2, 47, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryRemove = { { 909 /* tryRemove */, 1, 48, 1, 49, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 958 /* toPhpDocNode */, 0, 50, 0, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 971 /* hasTemplateOrLateResolvableType */, 0, 51, 0, 51, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 1003 /* hasUnresolvedTemplateArgumentType */, 0, 52, 0, 52, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::TemplateTypeTrait

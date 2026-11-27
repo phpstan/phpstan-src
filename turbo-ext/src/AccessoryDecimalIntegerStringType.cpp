@@ -558,6 +558,19 @@ PT_MINIT_REGISTRATION(pt_register_accessory_decimal_integer_string_type)
 	ptdecl::AccessoryDecimalIntegerStringType::declareClass(cls);
 	/* "inverse" must stay the first declared property (slots::inverse) */
 	ptdecl::AccessoryDecimalIntegerStringType::declareProperties(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		bool inverse;
+		if (!PT_THIS.inverse(inverse)) RETURN_THROWS();
+		constexpr zend_long decimal = PT_STRING_CELL_ZERO | PT_STRING_CELL_DECIMAL;
+		RETURN_LONG(pt_string_cells_of(inverse ? PT_STRING_CELLS_VALUES & ~decimal : decimal));
+	});
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 
@@ -671,6 +684,9 @@ PT_MINIT_REGISTRATION(pt_register_accessory_decimal_integer_string_type)
 
 	cls.method<&AccessoryDecimalIntegerStringType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_STRING>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_STRING); });
 	cls.method(sigs::isNull, adisNo0);
 	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, adisMaybe0);

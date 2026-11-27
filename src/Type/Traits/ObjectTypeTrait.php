@@ -28,6 +28,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\UnionType;
 use function count;
 
@@ -214,6 +215,11 @@ trait ObjectTypeTrait
 		return TrinaryLogic::createYes();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::OBJECT;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -292,6 +298,11 @@ trait ObjectTypeTrait
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic

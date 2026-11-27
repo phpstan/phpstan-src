@@ -30,8 +30,10 @@ if (!is_file($manifestFile) || !is_file($classMapFile)) {
 $manifest = json_decode(file_get_contents($manifestFile), true, 8, JSON_THROW_ON_ERROR);
 $classMap = require $classMapFile;
 
-// the referenced classes are the real PHP classes here
-\PHPStanTurbo\Runtime::configure($classMap);
+// the referenced classes are the real PHP classes here, but TypeCombinator,
+// which the native code combines its types with: a copy over the prefixed
+// classes (prefixed-type-combinator.php)
+\PHPStanTurbo\Runtime::configure((require __DIR__ . '/prefixed-type-combinator.php')($manifest, $classMap));
 
 if (!\PHPStanTurbo\Runtime::isShadowing()) {
 	\PHPStanTurbo\Runtime::activateShadowing([], 'PHPStanTurbo\\');

@@ -618,35 +618,6 @@ public:
 		return fromInterval(0.0, -min >= max ? -min : max);
 	}
 
-	/* the merged range when the two touch or overlap, the other type for
-	 * a plain FloatType, null otherwise; UNDEF = pending exception */
-	zv::Val tryUnion(zval *otherType) const
-	{
-		bool found;
-		zend_long otherMin = 0, otherMax = 0;
-		if (UNEXPECTED(!getOrdinalBounds(otherType, found, otherMin, otherMax))) return zv::Val();
-		if (found) {
-			zend_long min = 0, max = 0;
-			if (UNEXPECTED(!ordinalBounds(min, max))) return zv::Val();
-			/* touching ranges merge: nothing lies between $max and $max + 1 */
-			if (otherMax < min - 1 || max + 1 < otherMin) return zv::Val::null();
-
-			return fromInterval(fromOrdinal(min < otherMin ? min : otherMin), fromOrdinal(max > otherMax ? max : otherMax));
-		}
-
-		/* get_class($otherType) === parent::class */
-		if (Z_OBJCE_P(otherType) == pt_ce_float_type) return zv::Val::copyOf(zv::Ref(otherType));
-
-		/* float is float<min, max>|NAN */
-		if (instanceof_function(Z_OBJCE_P(otherType), pt_ce_constant_float_type)) {
-			double min = 0.0, max = 0.0;
-			if (UNEXPECTED(!bounds(min, max))) return zv::Val();
-			if (min == -HUGE_VAL && max == HUGE_VAL) return pt_val_of<pt_float_type_new>();
-		}
-
-		return zv::Val::null();
-	}
-
 	/* the common range (never when disjoint), never for NAN, $this for a
 	 * plain FloatType, null otherwise; UNDEF = pending exception */
 	zv::Val tryIntersect(zval *otherType) const
@@ -1069,10 +1040,6 @@ PT_MINIT_REGISTRATION(pt_register_float_range_type)
 	cls.method<&FloatRangeType::toString>(sigs::toString);
 
 	cls.method<&FloatRangeType::toAbsoluteNumber>(sigs::toAbsoluteNumber);
-
-	cls.method(sigs::tryUnion, [](INTERNAL_FUNCTION_PARAMETERS) {
-		pt_frt_try(INTERNAL_FUNCTION_PARAM_PASSTHRU, &FloatRangeType::tryUnion);
-	});
 
 	cls.method(sigs::tryIntersect, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_frt_try(INTERNAL_FUNCTION_PARAM_PASSTHRU, &FloatRangeType::tryIntersect);

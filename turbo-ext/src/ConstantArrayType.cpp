@@ -1142,6 +1142,13 @@ public:
 			zend_type_error("phpstan_turbo: TypeCombinator::union() must return %s", ptcls::type);
 			return zv::Val();
 		}
+		/* TypeCombinator::widen($valueType): a join of every value */
+		{
+			zval valueTypeZv;
+			ZVAL_COPY_VALUE(&valueTypeZv, valueType.raw());
+			valueType = pt_type_combinator_call(PT_LC("widen"), 1, &valueTypeZv);
+			if (UNEXPECTED(valueType.isUndef())) return zv::Val();
+		}
 		zv::ObjRef(self).propAtWrite(slots::iterableValueType, zv::Val::copyOf(zv::Ref(valueType.raw())));
 		return valueType;
 	}
@@ -2720,7 +2727,10 @@ public:
 		if (all && unsealedness != PT_TRI_YES) return thisGetIterableValueType();
 
 		if (matchingValueTypes.arrRef().size() > 0) {
-			zv::Val type = combinatorSpread(PT_LC("union"), matchingValueTypes.table());
+			zv::Val unionType = combinatorSpread(PT_LC("union"), matchingValueTypes.table());
+			if (UNEXPECTED(unionType.isUndef())) return zv::Val();
+			/* TypeCombinator::widen(TypeCombinator::union(...$matchingValueTypes)) */
+			zv::Val type = pt_type_combinator_call(PT_LC("widen"), 1, unionType.raw());
 			if (UNEXPECTED(type.isUndef())) return zv::Val();
 			bool isError;
 			if (UNEXPECTED(!isInstance(type.raw(), pt_ce_error_type, isError))) return zv::Val();
@@ -7545,6 +7555,10 @@ PT_MINIT_REGISTRATION(pt_register_constant_array_type)
 
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantArrayType");
 	ptdecl::ConstantArrayType::declareClass(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_constant_array_try_union_handler);
+	cls.method(sigs::tryIntersect, pt_type_constant_array_try_intersect_handler);
 	/* the slots PT_CAT_PROP_*: the eleven class-body properties first, the
 	 * four promoted constructor properties after them, then the memos of
 	 * getOffsetValueType()'s normalized values and of generalize() (unused

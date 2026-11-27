@@ -122,6 +122,8 @@ $boolOthers = static fn (string $bool, string $constBool): array => [
 			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
 			$r["$name equals $otherName"] = $subject->equals($other);
 			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+			$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			$r["$name looseCompare $otherName"] = $view($subject->looseCompare($other, $boolPhpVersion));
 			$r["$name isSmallerThan $otherName"] = $view($subject->isSmallerThan($other, $boolPhpVersion));
 			$r["$name isSmallerThanOrEqual $otherName"] = $view($subject->isSmallerThanOrEqual($other, $boolPhpVersion));
@@ -131,7 +133,7 @@ $boolOthers = static fn (string $bool, string $constBool): array => [
 			$r["$name exponentiate $otherName"] = $view($subject->exponentiate($other));
 		}
 		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
@@ -273,6 +275,8 @@ $intOthers = static fn (string $int, string $constInt, string $range): array => 
 			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
 			$r["$name equals $otherName"] = $subject->equals($other);
 			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+			$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			foreach ($intPhpVersions as $vi => $phpVersion) {
 				$r["$name looseCompare $otherName $vi"] = $view($subject->looseCompare($other, $phpVersion));
 				$r["$name isSmallerThan $otherName $vi"] = $view($subject->isSmallerThan($other, $phpVersion));
@@ -294,12 +298,11 @@ $intOthers = static fn (string $int, string $constInt, string $range): array => 
 					$r["$name isGreaterThan $otherName $vi"] = $view($subject->isGreaterThan($other, $phpVersion));
 					$r["$name isGreaterThanOrEqual $otherName $vi"] = $view($subject->isGreaterThanOrEqual($other, $phpVersion));
 				}
-				$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
 				$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			}
 		}
 		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
@@ -533,6 +536,8 @@ $stringOthers = static fn (string $string, string $constString, string $classStr
 			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
 			$r["$name equals $otherName"] = $subject->equals($other);
 			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+			$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			foreach ($stringPhpVersions as $vi => $phpVersion) {
 				$r["$name looseCompare $otherName $vi"] = $view($subject->looseCompare($other, $phpVersion));
 				$r["$name isSmallerThan $otherName $vi"] = $view($subject->isSmallerThan($other, $phpVersion));
@@ -557,7 +562,7 @@ $stringOthers = static fn (string $string, string $constString, string $classStr
 			}
 		}
 		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
@@ -773,7 +778,6 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 		if ($subject instanceof \PHPStan\Type\FloatRangeType) {
 			$r["$name bounds"] = [$subject->getMin(), $subject->getMax()];
 			foreach ($others as $otherName => $other) {
-				$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
 				$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 				// the private ordinal helpers the interval operations run on
 				$r["$name getOrdinalBounds $otherName"] = (static fn () => self::getOrdinalBounds($other))->bindTo(null, \PHPStan\Type\FloatRangeType::class)();
@@ -788,6 +792,8 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
 			$r["$name equals $otherName"] = $subject->equals($other);
 			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+			$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			foreach ($floatPhpVersions as $vi => $phpVersion) {
 				$r["$name looseCompare $otherName $vi"] = $view($subject->looseCompare($other, $phpVersion));
 				$r["$name isSmallerThan $otherName $vi"] = $view($subject->isSmallerThan($other, $phpVersion));
@@ -812,7 +818,7 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 		// raise the engine's warning on both sides; silenced so the
 		// observations stay the last line of stdout
 		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
@@ -1170,6 +1176,8 @@ $mixedOthers = static fn (string $never, string $mixed, string $strictMixed): ar
 			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
 			$r["$name equals $otherName"] = $subject->equals($other);
 			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+			$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			foreach ($mixedPhpVersions as $vi => $phpVersion) {
 				$r["$name looseCompare $otherName $vi"] = $view($subject->looseCompare($other, $phpVersion));
 				$r["$name isSmallerThan $otherName $vi"] = $view($subject->isSmallerThan($other, $phpVersion));
@@ -1207,7 +1215,7 @@ $mixedOthers = static fn (string $never, string $mixed, string $strictMixed): ar
 			}
 		}
 		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
@@ -1549,6 +1557,8 @@ $objectOthers = static fn (string $object, string $static, string $thisType, str
 			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
 			$r["$name equals $otherName"] = $subject->equals($other);
 			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+			$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			foreach ($objectPhpVersions as $vi => $phpVersion) {
 				$r["$name looseCompare $otherName $vi"] = $view($subject->looseCompare($other, $phpVersion));
 				$r["$name isSmallerThan $otherName $vi"] = $view($subject->isSmallerThan($other, $phpVersion));
@@ -1581,7 +1591,7 @@ $objectOthers = static fn (string $object, string $static, string $thisType, str
 			}
 		}
 		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
@@ -1999,6 +2009,8 @@ $arrayOthers = static fn (string $array, string $nonEmpty, string $list, string 
 			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
 			$r["$name equals $otherName"] = $subject->equals($other);
 			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+			$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			foreach ($arrayPhpVersions as $vi => $phpVersion) {
 				$r["$name looseCompare $otherName $vi"] = $view($subject->looseCompare($other, $phpVersion));
 				$r["$name isSmallerThan $otherName $vi"] = $view($subject->isSmallerThan($other, $phpVersion));
@@ -2036,7 +2048,7 @@ $arrayOthers = static fn (string $array, string $nonEmpty, string $list, string 
 			}
 		}
 		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
@@ -2495,6 +2507,8 @@ $objectOthers = static fn (string $object, string $generic, string $case): array
 			$r["$name accepts-loose $otherName"] = $attempt(static fn () => $subject->accepts($other, false));
 			$r["$name equals $otherName"] = $subject->equals($other);
 			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+			$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			$r["$name subtract $otherName"] = $view($subject->subtract($other));
 			$r["$name changeSubtractedType $otherName"] = $view($subject->changeSubtractedType($other));
 			$r["$name describeSubtractedType $otherName"] = $subject->describeSubtractedType($other, \PHPStan\Type\VerbosityLevel::precise());
@@ -2524,7 +2538,7 @@ $objectOthers = static fn (string $object, string $generic, string $case): array
 			$r["$name isInstanceOf $ancestorName"] = $view($subject->isInstanceOf($ancestorName));
 		}
 		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
@@ -2994,7 +3008,7 @@ $callableOthers = static fn (): array => [
 		$r["$name getObjectClassReflections"] = $cv($subject->getObjectClassReflections());
 		$r["$name getConstantStrings"] = $cv($subject->getConstantStrings());
 		$r["$name hasTemplateOrLateResolvableType"] = $subject->hasTemplateOrLateResolvableType();
-		foreach (['isNull', 'isConstantValue', 'isConstantScalarValue', 'isTrue', 'isFalse', 'isBoolean', 'isFloat', 'isInteger', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'isScalar', 'isObject', 'isEnum', 'isIterable', 'isIterableAtLeastOnce', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'isCloneable', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isCallable'] as $trinaryMethod) {
+		foreach (['isNull', 'isConstantValue', 'isConstantScalarValue', 'isTrue', 'isFalse', 'isBoolean', 'isFloat', 'isInteger', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement', 'isScalar', 'isObject', 'isEnum', 'isIterable', 'isIterableAtLeastOnce', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'isCloneable', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isCallable'] as $trinaryMethod) {
 			$r["$name $trinaryMethod"] = $cv($subject->$trinaryMethod());
 		}
 		foreach (['toNumber', 'toString', 'toInteger', 'toFloat', 'toAbsoluteNumber', 'toBitwiseNotType', 'toArray', 'toArrayKey', 'toBoolean', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck', 'getEnumCases', 'getEnumCaseObject', 'getFiniteTypes', 'getConstantScalarTypes', 'getConstantScalarValues', 'getArrays', 'getConstantArrays', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'getClassStringType', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType', 'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'getArraySize', 'getKeysArray', 'getValuesArray', 'popArray', 'shiftArray', 'flipArray', 'shuffleArray', 'filterArrayRemovingFalsey', 'makeListMaybe', 'makeAllArrayKeysOptional'] as $unaryMethod) {
@@ -3366,7 +3380,7 @@ $callableOthers = static fn (): array => [
 		}
 		foreach (['isSealed', 'isUnsealed', 'getUnsealedTypes', 'dropUnsealedTypes', 'getConstantArrays', 'getReferencedClasses', 'getIterableKeyType', 'getIterableValueType', 'getKeyType', 'getItemType', 'isConstantValue', 'getNextAutoIndexes', 'getOptionalKeys', 'getAllArrays', 'getKeyTypes', 'getValueTypes', 'sortKeys', 'isCallable', 'findTypeAndMethodNames',
 			'popArray', 'shiftArray', 'shuffleArray', 'flipArray', 'isIterableAtLeastOnce', 'getArraySize', 'getFirstIterableKeyType', 'getLastIterableKeyType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isConstantArray', 'isList', 'toBoolean', 'toInteger', 'toFloat', 'generalizeValues', 'getKeysArray', 'getValuesArray', 'makeList', 'makeListMaybe', 'makeAllArrayKeysOptional', 'filterArrayRemovingFalsey', 'toPhpDocNode', 'getFiniteTypes', 'hasTemplateOrLateResolvableType', 'hasUnresolvedTemplateArgumentType',
-			'toNumber', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck', 'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'toNumber', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck', 'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'isObject', 'isEnum', 'getArrays', 'getConstantStrings', 'getObjectClassNames', 'getObjectClassReflections', 'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isArray', 'isOversizedArray', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getEnumCases', 'getEnumCaseObject', 'isCloneable'] as $method) {
 			$r["$name $method"] = $catch(static fn () => $subject->$method());
 			// the memoized answers must read back the same
@@ -3725,6 +3739,8 @@ $compoundOthers = static fn (string $union, string $benevolent, string $intersec
 			$r["$name accepts-loose $otherName"] = $view($subject->accepts($other, false));
 			$r["$name equals $otherName"] = $subject->equals($other);
 			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+			$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			$r["$name isSubTypeOf $otherName"] = $view($subject->isSubTypeOf($other));
 			$r["$name isAcceptedBy $otherName"] = $view($subject->isAcceptedBy($other, true));
 			$r["$name isAcceptedBy-loose $otherName"] = $view($subject->isAcceptedBy($other, false));
@@ -3761,7 +3777,7 @@ $compoundOthers = static fn (string $union, string $benevolent, string $intersec
 			$r["$name exponentiate $otherName"] = $view($subject->exponentiate($other));
 		}
 		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getReferencedClasses', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
@@ -4240,6 +4256,8 @@ $smallOthers = static fn (): array => [
 			$r["$otherName isSuperTypeOf $name"] = $view($other->isSuperTypeOf($subject));
 			$r["$otherName accepts $name"] = [$view($other->accepts($subject, true)), $view($other->accepts($subject, false))];
 			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+			$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			$r["$name looseCompare $otherName"] = $view($subject->looseCompare($other, $smallPhpVersion));
 			$r["$name union $otherName"] = $view(\PHPStan\Type\TypeCombinator::union($subject, $other));
 			$r["$name intersect $otherName"] = $view(\PHPStan\Type\TypeCombinator::intersect($subject, $other));
@@ -4675,7 +4693,6 @@ require_once __DIR__ . '/type-family-typehint-fixture.php';
 // unions and arrays, subtracted types, offset accessories against constant
 // arrays, object shapes against HasPropertyType; the compound section's
 // reflection provider stays registered
-$observations['native PHPStan\Type\TypeCombinator'] = (new ReflectionMethod(\PHPStan\Type\TypeCombinator::class, 'union'))->isInternal();
 {
 	$tc = \PHPStan\Type\TypeCombinator::class;
 	$r = [];
@@ -5277,7 +5294,7 @@ $lateOthers = static fn (array $subjects): array => [
 			$r["$name inferTemplateTypes $otherName"] = $attempt(static fn () => $subject->inferTemplateTypes($other));
 		}
 		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',
@@ -5735,6 +5752,8 @@ $templateMapView = static fn (\PHPStan\Type\Generic\TemplateTypeMap $map) => arr
 			$r["$otherName isSuperTypeOf $name"] = $view($other->isSuperTypeOf($subject));
 			$r["$otherName accepts $name"] = [$view($other->accepts($subject, true)), $view($other->accepts($subject, false))];
 			$r["$name tryRemove $otherName"] = $view($subject->tryRemove($other));
+			$r["$name tryUnion $otherName"] = $view($subject->tryUnion($other));
+			$r["$name tryIntersect $otherName"] = $view($subject->tryIntersect($other));
 			$r["$name subtract $otherName"] = $view($subject->subtract($other));
 			$r["$name inferTemplateTypes $otherName"] = $templateMapView($subject->inferTemplateTypes($other));
 			try {
@@ -6539,7 +6558,7 @@ $templateMapView = static fn (\PHPStan\Type\Generic\TemplateTypeMap $map) => arr
 			$r["$name unsetOffset $otherName"] = $catching(static fn () => $subject->unsetOffset($other));
 		}
 		foreach (['toBoolean', 'toNumber', 'toInteger', 'toFloat', 'toString', 'toArray', 'toArrayKey', 'toBitwiseNotType', 'toAbsoluteNumber', 'toGetClassResultType', 'toObjectTypeForInstanceofCheck',
-			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid',
+			'isTrue', 'isFalse', 'isBoolean', 'isScalar', 'isNull', 'isInteger', 'isFloat', 'isString', 'isNumericString', 'isDecimalIntegerString', 'isNonEmptyString', 'isNonFalsyString', 'isLiteralString', 'isLowercaseString', 'isUppercaseString', 'isClassString', 'isVoid', 'getKindMask', 'getStringRefinement',
 			'isConstantValue', 'isConstantScalarValue', 'getConstantScalarTypes', 'getConstantScalarValues', 'getFiniteTypes', 'isObject', 'isEnum', 'getArrays', 'getConstantArrays', 'getConstantStrings', 'getObjectClassNames', 'getObjectClassReflections',
 			'getClassStringType', 'getClassStringObjectType', 'getObjectTypeOrClassStringObjectType', 'canAccessProperties', 'canCallMethods', 'canAccessConstants', 'isIterable', 'isIterableAtLeastOnce', 'getArraySize', 'getIterableKeyType', 'getFirstIterableKeyType', 'getLastIterableKeyType',
 			'getIterableValueType', 'getFirstIterableValueType', 'getLastIterableValueType', 'isArray', 'isConstantArray', 'isOversizedArray', 'isList', 'isOffsetAccessible', 'isOffsetAccessLegal', 'getKeysArray', 'getValuesArray', 'flipArray', 'popArray', 'shiftArray', 'shuffleArray',

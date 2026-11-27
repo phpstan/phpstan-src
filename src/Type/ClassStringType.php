@@ -72,6 +72,12 @@ class ClassStringType extends StringType
 		return TrinaryLogic::createMaybe();
 	}
 
+	/** Class names are not a refinement of the string accessories. */
+	public function getStringRefinement(): ?int
+	{
+		return null;
+	}
+
 	public function isLowercaseString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();

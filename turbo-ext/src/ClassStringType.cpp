@@ -108,6 +108,9 @@ PT_MINIT_REGISTRATION(pt_register_class_string_type)
 	ptdecl::ClassStringType::declareClass(cls);
 	ptdecl::ClassStringType::declareProperties(cls);
 
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
+
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		/* parent::__construct() — StringType's empty constructor */

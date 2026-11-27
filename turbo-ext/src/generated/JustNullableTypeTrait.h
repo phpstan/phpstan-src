@@ -44,12 +44,13 @@ inline constexpr char strings[] =
 	"isNonEmptyString\0" /* 437 */
 	"isNonFalsyString\0" /* 454 */
 	"isLiteralString\0" /* 471 */
-	"isLowercaseString\0" /* 487 */
-	"isClassString\0" /* 505 */
-	"isUppercaseString\0" /* 519 */
-	"getClassStringObjectType\0" /* 537 */
-	"getObjectTypeOrClassStringObjectType\0" /* 562 */
-	"isVoid"; /* 599 */
+	"getStringRefinement\0" /* 487 */
+	"isLowercaseString\0" /* 507 */
+	"isClassString\0" /* 525 */
+	"isUppercaseString\0" /* 539 */
+	"getClassStringObjectType\0" /* 557 */
+	"getObjectTypeOrClassStringObjectType\0" /* 582 */
+	"isVoid"; /* 619 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* getReferencedClasses return */
 	reg::packed(0, MAY_BE_ARRAY), /* getObjectClassNames return */
@@ -82,6 +83,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 233), /* isNonEmptyString return */
 	reg::packed(0, 0, 233), /* isNonFalsyString return */
 	reg::packed(0, 0, 233), /* isLiteralString return */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_LONG), /* getStringRefinement return */
 	reg::packed(0, 0, 233), /* isLowercaseString return */
 	reg::packed(0, 0, 233), /* isClassString return */
 	reg::packed(0, 0, 233), /* isUppercaseString return */
@@ -118,12 +120,13 @@ inline constexpr sigtab::Sig isDecimalIntegerString = { { 414 /* isDecimalIntege
 inline constexpr sigtab::Sig isNonEmptyString = { { 437 /* isNonEmptyString */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isNonFalsyString = { { 454 /* isNonFalsyString */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isLiteralString = { { 471 /* isLiteralString */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isLowercaseString = { { 487 /* isLowercaseString */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isClassString = { { 505 /* isClassString */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isUppercaseString = { { 519 /* isUppercaseString */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getClassStringObjectType = { { 537 /* getClassStringObjectType */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 562 /* getObjectTypeOrClassStringObjectType */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isVoid = { { 599 /* isVoid */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStringRefinement = { { 487 /* getStringRefinement */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isLowercaseString = { { 507 /* isLowercaseString */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isClassString = { { 525 /* isClassString */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isUppercaseString = { { 539 /* isUppercaseString */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClassStringObjectType = { { 557 /* getClassStringObjectType */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 582 /* getObjectTypeOrClassStringObjectType */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVoid = { { 619 /* isVoid */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::JustNullableTypeTrait

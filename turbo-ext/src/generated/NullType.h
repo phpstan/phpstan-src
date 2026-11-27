@@ -89,47 +89,51 @@ inline constexpr char strings[] =
 	"traverse\0" /* 793 */
 	"right\0" /* 802 */
 	"traverseSimultaneously\0" /* 808 */
-	"isNull\0" /* 831 */
-	"isConstantValue\0" /* 838 */
-	"isConstantScalarValue\0" /* 854 */
-	"getConstantScalarTypes\0" /* 876 */
-	"getConstantScalarValues\0" /* 899 */
-	"isTrue\0" /* 923 */
-	"isFalse\0" /* 930 */
-	"isBoolean\0" /* 938 */
-	"isFloat\0" /* 948 */
-	"isInteger\0" /* 956 */
-	"isString\0" /* 966 */
-	"isNumericString\0" /* 975 */
-	"isDecimalIntegerString\0" /* 991 */
-	"isNonEmptyString\0" /* 1014 */
-	"isNonFalsyString\0" /* 1031 */
-	"isLiteralString\0" /* 1048 */
-	"isLowercaseString\0" /* 1064 */
-	"isUppercaseString\0" /* 1082 */
-	"isClassString\0" /* 1100 */
-	"getClassStringObjectType\0" /* 1114 */
-	"getObjectTypeOrClassStringObjectType\0" /* 1139 */
-	"isVoid\0" /* 1176 */
-	"isScalar\0" /* 1183 */
-	"PHPStan\\Type\\BooleanType\0" /* 1192 */
-	"looseCompare\0" /* 1217 */
-	"getSmallerType\0" /* 1230 */
-	"getSmallerOrEqualType\0" /* 1245 */
-	"getGreaterType\0" /* 1267 */
-	"getGreaterOrEqualType\0" /* 1282 */
-	"getFiniteTypes\0" /* 1304 */
-	"exponent\0" /* 1319 */
-	"arithmeticPower\0" /* 1328 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1344 */
-	"toPhpDocNode\0" /* 1383 */
-	"position\0" /* 1396 */
-	"PHPStan\\Type\\NativeTypePosition\0" /* 1405 */
-	"toNativePhpTypeNode\0" /* 1437 */
-	"hasTemplateOrLateResolvableType\0" /* 1457 */
-	"hasUnresolvedTemplateArgumentType\0" /* 1489 */
-	"PHPStan\\Type\\ValueSet\0" /* 1523 */
-	"toValueSet"; /* 1545 */
+	"getKindMask\0" /* 831 */
+	"isNull\0" /* 843 */
+	"isConstantValue\0" /* 850 */
+	"isConstantScalarValue\0" /* 866 */
+	"getConstantScalarTypes\0" /* 888 */
+	"getConstantScalarValues\0" /* 911 */
+	"isTrue\0" /* 935 */
+	"isFalse\0" /* 942 */
+	"isBoolean\0" /* 950 */
+	"isFloat\0" /* 960 */
+	"isInteger\0" /* 968 */
+	"isString\0" /* 978 */
+	"isNumericString\0" /* 987 */
+	"isDecimalIntegerString\0" /* 1003 */
+	"isNonEmptyString\0" /* 1026 */
+	"isNonFalsyString\0" /* 1043 */
+	"isLiteralString\0" /* 1060 */
+	"getStringRefinement\0" /* 1076 */
+	"isLowercaseString\0" /* 1096 */
+	"isUppercaseString\0" /* 1114 */
+	"isClassString\0" /* 1132 */
+	"getClassStringObjectType\0" /* 1146 */
+	"getObjectTypeOrClassStringObjectType\0" /* 1171 */
+	"isVoid\0" /* 1208 */
+	"isScalar\0" /* 1215 */
+	"PHPStan\\Type\\BooleanType\0" /* 1224 */
+	"looseCompare\0" /* 1249 */
+	"getSmallerType\0" /* 1262 */
+	"getSmallerOrEqualType\0" /* 1277 */
+	"getGreaterType\0" /* 1299 */
+	"getGreaterOrEqualType\0" /* 1314 */
+	"getFiniteTypes\0" /* 1336 */
+	"exponent\0" /* 1351 */
+	"arithmeticPower\0" /* 1360 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1376 */
+	"toPhpDocNode\0" /* 1415 */
+	"position\0" /* 1428 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 1437 */
+	"toNativePhpTypeNode\0" /* 1469 */
+	"hasTemplateOrLateResolvableType\0" /* 1489 */
+	"hasUnresolvedTemplateArgumentType\0" /* 1521 */
+	"PHPStan\\Type\\ValueSet\0" /* 1555 */
+	"toValueSet\0" /* 1577 */
+	"tryUnion\0" /* 1588 */
+	"tryIntersect"; /* 1597 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, MAY_BE_ARRAY), /* getReferencedClasses return */
 	reg::packed(12, MAY_BE_ARRAY), /* getObjectClassNames return */
@@ -184,6 +188,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(802, 0, 151), /* traverseSimultaneously $right */
 	reg::packed(790, MAY_BE_CALLABLE), /* traverseSimultaneously $cb */
 	reg::packed(12, 0, 151), /* traverseSimultaneously return */
+	reg::packed(12, MAY_BE_LONG), /* getKindMask return */
 	reg::packed(12, 0, 330), /* isNull return */
 	reg::packed(12, 0, 330), /* isConstantValue return */
 	reg::packed(12, 0, 330), /* isConstantScalarValue return */
@@ -200,6 +205,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 330), /* isNonEmptyString return */
 	reg::packed(12, 0, 330), /* isNonFalsyString return */
 	reg::packed(12, 0, 330), /* isLiteralString return */
+	reg::packed(12, MAY_BE_NULL | MAY_BE_LONG), /* getStringRefinement return */
 	reg::packed(12, 0, 330), /* isLowercaseString return */
 	reg::packed(12, 0, 330), /* isUppercaseString return */
 	reg::packed(12, 0, 330), /* isClassString return */
@@ -209,7 +215,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, 0, 330), /* isScalar return */
 	reg::packed(180, 0, 151), /* looseCompare $type */
 	reg::packed(296, 0, 307), /* looseCompare $phpVersion */
-	reg::packed(12, 0, 1192), /* looseCompare return */
+	reg::packed(12, 0, 1224), /* looseCompare return */
 	reg::packed(296, 0, 307), /* getSmallerType $phpVersion */
 	reg::packed(12, 0, 151), /* getSmallerType return */
 	reg::packed(296, 0, 307), /* getSmallerOrEqualType $phpVersion */
@@ -219,14 +225,18 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(296, 0, 307), /* getGreaterOrEqualType $phpVersion */
 	reg::packed(12, 0, 151), /* getGreaterOrEqualType return */
 	reg::packed(12, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(1319, 0, 151), /* arithmeticPower $exponent */
+	reg::packed(1351, 0, 151), /* arithmeticPower $exponent */
 	reg::packed(296, 0, 307), /* arithmeticPower $phpVersion */
 	reg::packed(12, 0, 151), /* arithmeticPower return */
-	reg::packed(12, 0, 1344), /* toPhpDocNode return */
-	reg::packed(1396, 0, 1405), /* toNativePhpTypeNode $position */
+	reg::packed(12, 0, 1376), /* toPhpDocNode return */
+	reg::packed(1428, 0, 1437), /* toNativePhpTypeNode $position */
 	reg::packed(12, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 	reg::packed(12, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
-	reg::packed(12, 0, 1523), /* toValueSet return */
+	reg::packed(12, 0, 1555), /* toValueSet return */
+	reg::packed(286, 0, 151), /* tryUnion $otherType */
+	reg::packed(12, MAY_BE_NULL, 151), /* tryUnion return */
+	reg::packed(286, 0, 151), /* tryIntersect $otherType */
+	reg::packed(12, MAY_BE_NULL, 151), /* tryIntersect return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -265,41 +275,45 @@ inline constexpr sigtab::Sig setExistingOffsetValueType = { { 751 /* setExisting
 inline constexpr sigtab::Sig unsetOffset = { { 778 /* unsetOffset */, 1, 46, 1, 47, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig traverse = { { 793 /* traverse */, 1, 48, 1, 49, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig traverseSimultaneously = { { 808 /* traverseSimultaneously */, 2, 50, 2, 52, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isNull = { { 831 /* isNull */, 0, 53, 0, 53, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isConstantValue = { { 838 /* isConstantValue */, 0, 54, 0, 54, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isConstantScalarValue = { { 854 /* isConstantScalarValue */, 0, 55, 0, 55, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getConstantScalarTypes = { { 876 /* getConstantScalarTypes */, 0, 56, 0, 56, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getConstantScalarValues = { { 899 /* getConstantScalarValues */, 0, 57, 0, 57, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isTrue = { { 923 /* isTrue */, 0, 58, 0, 58, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isFalse = { { 930 /* isFalse */, 0, 59, 0, 59, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isBoolean = { { 938 /* isBoolean */, 0, 60, 0, 60, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isFloat = { { 948 /* isFloat */, 0, 61, 0, 61, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isInteger = { { 956 /* isInteger */, 0, 62, 0, 62, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isString = { { 966 /* isString */, 0, 63, 0, 63, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isNumericString = { { 975 /* isNumericString */, 0, 64, 0, 64, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isDecimalIntegerString = { { 991 /* isDecimalIntegerString */, 0, 65, 0, 65, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isNonEmptyString = { { 1014 /* isNonEmptyString */, 0, 66, 0, 66, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isNonFalsyString = { { 1031 /* isNonFalsyString */, 0, 67, 0, 67, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isLiteralString = { { 1048 /* isLiteralString */, 0, 68, 0, 68, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isLowercaseString = { { 1064 /* isLowercaseString */, 0, 69, 0, 69, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isUppercaseString = { { 1082 /* isUppercaseString */, 0, 70, 0, 70, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isClassString = { { 1100 /* isClassString */, 0, 71, 0, 71, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getClassStringObjectType = { { 1114 /* getClassStringObjectType */, 0, 72, 0, 72, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 1139 /* getObjectTypeOrClassStringObjectType */, 0, 73, 0, 73, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isVoid = { { 1176 /* isVoid */, 0, 74, 0, 74, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isScalar = { { 1183 /* isScalar */, 0, 75, 0, 75, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig looseCompare = { { 1217 /* looseCompare */, 2, 76, 2, 78, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getSmallerType = { { 1230 /* getSmallerType */, 1, 79, 1, 80, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getSmallerOrEqualType = { { 1245 /* getSmallerOrEqualType */, 1, 81, 1, 82, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getGreaterType = { { 1267 /* getGreaterType */, 1, 83, 1, 84, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getGreaterOrEqualType = { { 1282 /* getGreaterOrEqualType */, 1, 85, 1, 86, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 1304 /* getFiniteTypes */, 0, 87, 0, 87, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticPower = { { 1328 /* arithmeticPower */, 2, 88, 2, 90, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 1383 /* toPhpDocNode */, 0, 91, 0, 91, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toNativePhpTypeNode = { { 1437 /* toNativePhpTypeNode */, 1, 92, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1457 /* hasTemplateOrLateResolvableType */, 0, 93, 0, 93, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 1489 /* hasUnresolvedTemplateArgumentType */, 0, 94, 0, 94, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toValueSet = { { 1545 /* toValueSet */, 0, 95, 0, 95, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getKindMask = { { 831 /* getKindMask */, 0, 53, 0, 53, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNull = { { 843 /* isNull */, 0, 54, 0, 54, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isConstantValue = { { 850 /* isConstantValue */, 0, 55, 0, 55, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isConstantScalarValue = { { 866 /* isConstantScalarValue */, 0, 56, 0, 56, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantScalarTypes = { { 888 /* getConstantScalarTypes */, 0, 57, 0, 57, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstantScalarValues = { { 911 /* getConstantScalarValues */, 0, 58, 0, 58, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isTrue = { { 935 /* isTrue */, 0, 59, 0, 59, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFalse = { { 942 /* isFalse */, 0, 60, 0, 60, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isBoolean = { { 950 /* isBoolean */, 0, 61, 0, 61, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFloat = { { 960 /* isFloat */, 0, 62, 0, 62, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isInteger = { { 968 /* isInteger */, 0, 63, 0, 63, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isString = { { 978 /* isString */, 0, 64, 0, 64, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNumericString = { { 987 /* isNumericString */, 0, 65, 0, 65, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isDecimalIntegerString = { { 1003 /* isDecimalIntegerString */, 0, 66, 0, 66, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNonEmptyString = { { 1026 /* isNonEmptyString */, 0, 67, 0, 67, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNonFalsyString = { { 1043 /* isNonFalsyString */, 0, 68, 0, 68, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isLiteralString = { { 1060 /* isLiteralString */, 0, 69, 0, 69, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStringRefinement = { { 1076 /* getStringRefinement */, 0, 70, 0, 70, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isLowercaseString = { { 1096 /* isLowercaseString */, 0, 71, 0, 71, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isUppercaseString = { { 1114 /* isUppercaseString */, 0, 72, 0, 72, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isClassString = { { 1132 /* isClassString */, 0, 73, 0, 73, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClassStringObjectType = { { 1146 /* getClassStringObjectType */, 0, 74, 0, 74, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 1171 /* getObjectTypeOrClassStringObjectType */, 0, 75, 0, 75, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVoid = { { 1208 /* isVoid */, 0, 76, 0, 76, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isScalar = { { 1215 /* isScalar */, 0, 77, 0, 77, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig looseCompare = { { 1249 /* looseCompare */, 2, 78, 2, 80, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSmallerType = { { 1262 /* getSmallerType */, 1, 81, 1, 82, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSmallerOrEqualType = { { 1277 /* getSmallerOrEqualType */, 1, 83, 1, 84, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterType = { { 1299 /* getGreaterType */, 1, 85, 1, 86, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterOrEqualType = { { 1314 /* getGreaterOrEqualType */, 1, 87, 1, 88, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 1336 /* getFiniteTypes */, 0, 89, 0, 89, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 1360 /* arithmeticPower */, 2, 90, 2, 92, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 1415 /* toPhpDocNode */, 0, 93, 0, 93, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 1469 /* toNativePhpTypeNode */, 1, 94, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1489 /* hasTemplateOrLateResolvableType */, 0, 95, 0, 95, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 1521 /* hasUnresolvedTemplateArgumentType */, 0, 96, 0, 96, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 1577 /* toValueSet */, 0, 97, 0, 97, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryUnion = { { 1588 /* tryUnion */, 1, 98, 1, 99, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 1597 /* tryIntersect */, 1, 100, 1, 101, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::NullType

@@ -83,39 +83,40 @@ inline constexpr char strings[] =
 	"isNonEmptyString\0" /* 624 */
 	"isNonFalsyString\0" /* 641 */
 	"isLiteralString\0" /* 658 */
-	"isLowercaseString\0" /* 674 */
-	"isUppercaseString\0" /* 692 */
-	"offsetType\0" /* 710 */
-	"hasOffsetValueType\0" /* 721 */
-	"getOffsetValueType\0" /* 740 */
-	"valueType\0" /* 759 */
-	"unionValues\0" /* 769 */
-	"true\0" /* 781 */
-	"setOffsetValueType\0" /* 786 */
-	"setExistingOffsetValueType\0" /* 805 */
-	"otherString\0" /* 832 */
-	"PHPStan\\Type\\Constant\\ConstantStringType\0" /* 844 */
-	"append\0" /* 885 */
-	"precision\0" /* 892 */
-	"PHPStan\\Type\\GeneralizePrecision\0" /* 902 */
-	"generalize\0" /* 935 */
-	"phpVersion\0" /* 946 */
-	"PHPStan\\Php\\PhpVersion\0" /* 957 */
-	"getSmallerType\0" /* 980 */
-	"getSmallerOrEqualType\0" /* 995 */
-	"getGreaterType\0" /* 1017 */
-	"getGreaterOrEqualType\0" /* 1032 */
-	"canAccessConstants\0" /* 1054 */
-	"constantName\0" /* 1073 */
-	"hasConstant\0" /* 1086 */
-	"PHPStan\\Reflection\\ClassConstantReflection\0" /* 1098 */
-	"getConstant\0" /* 1141 */
-	"PHPStan\\Type\\ObjectType\0" /* 1153 */
-	"getObjectType\0" /* 1177 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1191 */
-	"toPhpDocNode\0" /* 1230 */
-	"PHPStan\\Type\\ValueSet\0" /* 1243 */
-	"toValueSet"; /* 1265 */
+	"getStringRefinement\0" /* 674 */
+	"isLowercaseString\0" /* 694 */
+	"isUppercaseString\0" /* 712 */
+	"offsetType\0" /* 730 */
+	"hasOffsetValueType\0" /* 741 */
+	"getOffsetValueType\0" /* 760 */
+	"valueType\0" /* 779 */
+	"unionValues\0" /* 789 */
+	"true\0" /* 801 */
+	"setOffsetValueType\0" /* 806 */
+	"setExistingOffsetValueType\0" /* 825 */
+	"otherString\0" /* 852 */
+	"PHPStan\\Type\\Constant\\ConstantStringType\0" /* 864 */
+	"append\0" /* 905 */
+	"precision\0" /* 912 */
+	"PHPStan\\Type\\GeneralizePrecision\0" /* 922 */
+	"generalize\0" /* 955 */
+	"phpVersion\0" /* 966 */
+	"PHPStan\\Php\\PhpVersion\0" /* 977 */
+	"getSmallerType\0" /* 1000 */
+	"getSmallerOrEqualType\0" /* 1015 */
+	"getGreaterType\0" /* 1037 */
+	"getGreaterOrEqualType\0" /* 1052 */
+	"canAccessConstants\0" /* 1074 */
+	"constantName\0" /* 1093 */
+	"hasConstant\0" /* 1106 */
+	"PHPStan\\Reflection\\ClassConstantReflection\0" /* 1118 */
+	"getConstant\0" /* 1161 */
+	"PHPStan\\Type\\ObjectType\0" /* 1173 */
+	"getObjectType\0" /* 1197 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 1211 */
+	"toPhpDocNode\0" /* 1250 */
+	"PHPStan\\Type\\ValueSet\0" /* 1263 */
+	"toValueSet"; /* 1285 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_STRING), /* __construct $value */
 	reg::packed(6, MAY_BE_BOOL, reg::NoString, false, false, 20), /* __construct $isClassString */
@@ -150,39 +151,40 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(38, 0, 67), /* isNonEmptyString return */
 	reg::packed(38, 0, 67), /* isNonFalsyString return */
 	reg::packed(38, 0, 67), /* isLiteralString return */
+	reg::packed(38, MAY_BE_NULL | MAY_BE_LONG), /* getStringRefinement return */
 	reg::packed(38, 0, 67), /* isLowercaseString return */
 	reg::packed(38, 0, 67), /* isUppercaseString return */
-	reg::packed(710, 0, 88), /* hasOffsetValueType $offsetType */
+	reg::packed(730, 0, 88), /* hasOffsetValueType $offsetType */
 	reg::packed(38, 0, 67), /* hasOffsetValueType return */
-	reg::packed(710, 0, 88), /* getOffsetValueType $offsetType */
+	reg::packed(730, 0, 88), /* getOffsetValueType $offsetType */
 	reg::packed(38, 0, 88), /* getOffsetValueType return */
-	reg::packed(710, MAY_BE_NULL, 88), /* setOffsetValueType $offsetType */
-	reg::packed(759, 0, 88), /* setOffsetValueType $valueType */
-	reg::packed(769, MAY_BE_BOOL, reg::NoString, false, false, 781), /* setOffsetValueType $unionValues */
+	reg::packed(730, MAY_BE_NULL, 88), /* setOffsetValueType $offsetType */
+	reg::packed(779, 0, 88), /* setOffsetValueType $valueType */
+	reg::packed(789, MAY_BE_BOOL, reg::NoString, false, false, 801), /* setOffsetValueType $unionValues */
 	reg::packed(38, 0, 88), /* setOffsetValueType return */
-	reg::packed(710, 0, 88), /* setExistingOffsetValueType $offsetType */
-	reg::packed(759, 0, 88), /* setExistingOffsetValueType $valueType */
+	reg::packed(730, 0, 88), /* setExistingOffsetValueType $offsetType */
+	reg::packed(779, 0, 88), /* setExistingOffsetValueType $valueType */
 	reg::packed(38, 0, 88), /* setExistingOffsetValueType return */
-	reg::packed(832, 0, 844), /* append $otherString */
-	reg::packed(38, 0, 844), /* append return */
-	reg::packed(892, 0, 902), /* generalize $precision */
+	reg::packed(852, 0, 864), /* append $otherString */
+	reg::packed(38, 0, 864), /* append return */
+	reg::packed(912, 0, 922), /* generalize $precision */
 	reg::packed(38, 0, 88), /* generalize return */
-	reg::packed(946, 0, 957), /* getSmallerType $phpVersion */
+	reg::packed(966, 0, 977), /* getSmallerType $phpVersion */
 	reg::packed(38, 0, 88), /* getSmallerType return */
-	reg::packed(946, 0, 957), /* getSmallerOrEqualType $phpVersion */
+	reg::packed(966, 0, 977), /* getSmallerOrEqualType $phpVersion */
 	reg::packed(38, 0, 88), /* getSmallerOrEqualType return */
-	reg::packed(946, 0, 957), /* getGreaterType $phpVersion */
+	reg::packed(966, 0, 977), /* getGreaterType $phpVersion */
 	reg::packed(38, 0, 88), /* getGreaterType return */
-	reg::packed(946, 0, 957), /* getGreaterOrEqualType $phpVersion */
+	reg::packed(966, 0, 977), /* getGreaterOrEqualType $phpVersion */
 	reg::packed(38, 0, 88), /* getGreaterOrEqualType return */
 	reg::packed(38, 0, 67), /* canAccessConstants return */
-	reg::packed(1073, MAY_BE_STRING), /* hasConstant $constantName */
+	reg::packed(1093, MAY_BE_STRING), /* hasConstant $constantName */
 	reg::packed(38, 0, 67), /* hasConstant return */
-	reg::packed(1073, MAY_BE_STRING), /* getConstant $constantName */
-	reg::packed(38, 0, 1098), /* getConstant return */
-	reg::packed(38, 0, 1153), /* getObjectType return */
-	reg::packed(38, 0, 1191), /* toPhpDocNode return */
-	reg::packed(38, 0, 1243), /* toValueSet return */
+	reg::packed(1093, MAY_BE_STRING), /* getConstant $constantName */
+	reg::packed(38, 0, 1118), /* getConstant return */
+	reg::packed(38, 0, 1173), /* getObjectType return */
+	reg::packed(38, 0, 1211), /* toPhpDocNode return */
+	reg::packed(38, 0, 1263), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -214,24 +216,25 @@ inline constexpr sigtab::Sig isDecimalIntegerString = { { 601 /* isDecimalIntege
 inline constexpr sigtab::Sig isNonEmptyString = { { 624 /* isNonEmptyString */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isNonFalsyString = { { 641 /* isNonFalsyString */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isLiteralString = { { 658 /* isLiteralString */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isLowercaseString = { { 674 /* isLowercaseString */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isUppercaseString = { { 692 /* isUppercaseString */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasOffsetValueType = { { 721 /* hasOffsetValueType */, 1, 35, 1, 36, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getOffsetValueType = { { 740 /* getOffsetValueType */, 1, 37, 1, 38, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig setOffsetValueType = { { 786 /* setOffsetValueType */, 2, 39, 3, 42, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig setExistingOffsetValueType = { { 805 /* setExistingOffsetValueType */, 2, 43, 2, 45, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig append = { { 885 /* append */, 1, 46, 1, 47, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig generalize = { { 935 /* generalize */, 1, 48, 1, 49, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getSmallerType = { { 980 /* getSmallerType */, 1, 50, 1, 51, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getSmallerOrEqualType = { { 995 /* getSmallerOrEqualType */, 1, 52, 1, 53, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getGreaterType = { { 1017 /* getGreaterType */, 1, 54, 1, 55, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getGreaterOrEqualType = { { 1032 /* getGreaterOrEqualType */, 1, 56, 1, 57, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig canAccessConstants = { { 1054 /* canAccessConstants */, 0, 58, 0, 58, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasConstant = { { 1086 /* hasConstant */, 1, 59, 1, 60, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getConstant = { { 1141 /* getConstant */, 1, 61, 1, 62, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getObjectType = { { 1177 /* getObjectType */, 0, 63, 0, 63, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 1230 /* toPhpDocNode */, 0, 64, 0, 64, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toValueSet = { { 1265 /* toValueSet */, 0, 65, 0, 65, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStringRefinement = { { 674 /* getStringRefinement */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isLowercaseString = { { 694 /* isLowercaseString */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isUppercaseString = { { 712 /* isUppercaseString */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasOffsetValueType = { { 741 /* hasOffsetValueType */, 1, 36, 1, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getOffsetValueType = { { 760 /* getOffsetValueType */, 1, 38, 1, 39, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setOffsetValueType = { { 806 /* setOffsetValueType */, 2, 40, 3, 43, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig setExistingOffsetValueType = { { 825 /* setExistingOffsetValueType */, 2, 44, 2, 46, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig append = { { 905 /* append */, 1, 47, 1, 48, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig generalize = { { 955 /* generalize */, 1, 49, 1, 50, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSmallerType = { { 1000 /* getSmallerType */, 1, 51, 1, 52, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getSmallerOrEqualType = { { 1015 /* getSmallerOrEqualType */, 1, 53, 1, 54, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterType = { { 1037 /* getGreaterType */, 1, 55, 1, 56, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getGreaterOrEqualType = { { 1052 /* getGreaterOrEqualType */, 1, 57, 1, 58, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig canAccessConstants = { { 1074 /* canAccessConstants */, 0, 59, 0, 59, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasConstant = { { 1106 /* hasConstant */, 1, 60, 1, 61, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getConstant = { { 1161 /* getConstant */, 1, 62, 1, 63, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectType = { { 1197 /* getObjectType */, 0, 64, 0, 64, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 1250 /* toPhpDocNode */, 0, 65, 0, 65, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 1285 /* toValueSet */, 0, 66, 0, 66, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ConstantStringType

@@ -318,6 +318,11 @@ class IterableType implements CompoundType
 		return $this->getItemType();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::ARRAY | TypeKind::OBJECT;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -396,6 +401,11 @@ class IterableType implements CompoundType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -574,6 +584,16 @@ class IterableType implements CompoundType
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createInvalid();
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return ArrayAlgebra::tryIntersectIterable($this, $otherType);
 	}
 
 }

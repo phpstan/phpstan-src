@@ -156,6 +156,125 @@ zend_long pt_type_trinary_value(zval *trinary)
 	return -1;
 }
 
+zend_long pt_type_kind_mask(zend_object *type)
+{
+	zv::Val mask = pt_type_op(type, PT_OP_GET_KIND_MASK, 0, NULL);
+	if (UNEXPECTED(mask.isUndef())) return -1;
+	/* the declared int return type: a PHP override returns an int too */
+	return Z_LVAL_P(mask.raw());
+}
+
+zv::Val pt_type_kind_mask_of_members(zend_object *self, bool intersect)
+{
+	zv::Val types = pt_type_op(self, PT_OP_GET_TYPES, 0, NULL);
+	if (UNEXPECTED(types.isUndef())) return zv::Val();
+	zend_long mask = intersect ? PT_KIND_ALL : 0;
+	for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
+		zend_long memberMask = pt_type_kind_mask(Z_OBJ_P(entry.value().raw()));
+		if (UNEXPECTED(memberMask < 0)) return zv::Val();
+		mask = intersect ? (mask & memberMask) : (mask | memberMask);
+	}
+	return zv::Val::integer(mask);
+}
+
+zv::Val pt_type_string_refinement_of_members(zend_object *self)
+{
+	zv::Val types = pt_type_op(self, PT_OP_GET_TYPES, 0, NULL);
+	if (UNEXPECTED(types.isUndef())) return zv::Val();
+	zend_long cells = PT_STRING_CELLS_ALL;
+	for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
+		zv::Val memberCells = pt_type_call(Z_OBJ_P(entry.value().raw()), PT_LC("getstringrefinement"), 0, NULL);
+		if (UNEXPECTED(memberCells.isUndef())) return zv::Val();
+		if (Z_TYPE_P(memberCells.raw()) != IS_LONG) return zv::Val::null();
+		cells &= Z_LVAL_P(memberCells.raw());
+	}
+	return zv::Val::integer(cells);
+}
+
+void ZEND_FASTCALL pt_type_null_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	RETURN_NULL();
+}
+
+void ZEND_FASTCALL pt_type_try_null_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zval *otherType;
+	ZEND_PARSE_PARAMETERS_START(1, 1)
+		Z_PARAM_OBJECT(otherType)
+	ZEND_PARSE_PARAMETERS_END();
+	(void) otherType;
+	RETURN_NULL();
+}
+
+static void algebraTry(INTERNAL_FUNCTION_PARAMETERS, int classIdx, const char *lcname, size_t len)
+{
+	zval *otherType;
+	ZEND_PARSE_PARAMETERS_START(1, 1)
+		Z_PARAM_OBJECT(otherType)
+	ZEND_PARSE_PARAMETERS_END();
+	zval argv[2];
+	ZVAL_OBJ(&argv[0], Z_OBJ_P(ZEND_THIS));
+	ZVAL_COPY_VALUE(&argv[1], otherType);
+	PT_RETURN_VAL(pt_type_call_static(classIdx, lcname, len, 2, argv));
+}
+
+void ZEND_FASTCALL pt_type_subtraction_try_union_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_SUBTRACTION_ALGEBRA, PT_LC("tryunion"));
+}
+
+void ZEND_FASTCALL pt_type_subtraction_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_SUBTRACTION_ALGEBRA, PT_LC("tryintersect"));
+}
+
+void ZEND_FASTCALL pt_type_constant_array_try_union_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_ARRAY_ALGEBRA, PT_LC("tryunionconstantarray"));
+}
+
+void ZEND_FASTCALL pt_type_has_offset_value_try_union_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_ARRAY_ALGEBRA, PT_LC("tryunionhasoffsetvalue"));
+}
+
+void ZEND_FASTCALL pt_type_intersection_try_union_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_INTERSECTION_ALGEBRA, PT_LC("tryunion"));
+}
+
+void ZEND_FASTCALL pt_type_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_ARRAY_ALGEBRA, PT_LC("tryintersectarray"));
+}
+
+void ZEND_FASTCALL pt_type_iterable_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_ARRAY_ALGEBRA, PT_LC("tryintersectiterable"));
+}
+
+void ZEND_FASTCALL pt_type_generic_class_string_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_CLASS_STRING_ALGEBRA, PT_LC("tryintersect"));
+}
+
+void ZEND_FASTCALL pt_type_constant_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_ARRAY_ALGEBRA, PT_LC("tryintersectconstantarray"));
+}
+
+void ZEND_FASTCALL pt_type_oversized_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	algebraTry(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_CLASS_ARRAY_ALGEBRA, PT_LC("tryintersectoversizedarray"));
+}
+
+void ZEND_FASTCALL pt_type_exact_number_set_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	PT_RETURN_VAL(pt_type_call(Z_OBJ_P(ZEND_THIS), PT_LC("tonumberset"), 0, NULL));
+}
+
 zv::Val pt_type_call_static(int classIdx, const char *lcname, size_t len, uint32_t argc, zval *argv)
 {
 	zend_class_entry *ce = pt_class(classIdx);
@@ -589,6 +708,7 @@ static zv::Val justNullableAccepts(zend_object *self, zval *type, bool strictTyp
 void pt_type_trait_just_nullable(reg::Class &cls)
 {
 	namespace sigs = ptdecl::JustNullableTypeTrait::sig;
+	cls.traitMethod(sigs::getStringRefinement, pt_type_null_handler);
 	cls.traitMethod(sigs::getReferencedClasses, emptyArray0);
 	cls.traitOp(PT_OP_GET_REFERENCED_CLASSES, PT_OP_LAMBDA { return pt_op_empty_array(); });
 	cls.traitMethod(sigs::getObjectClassNames, emptyArray0);
@@ -1604,6 +1724,8 @@ void ZEND_FASTCALL pt_type_trait_substractable_describe_subtracted_type(INTERNAL
 void pt_type_trait_substractable(reg::Class &cls)
 {
 	namespace sigs = ptdecl::SubstractableTypeTrait::sig;
+	cls.traitMethod(sigs::tryUnion, pt_type_subtraction_try_union_handler);
+	cls.traitMethod(sigs::tryIntersect, pt_type_subtraction_try_intersect_handler);
 	cls.traitMethod(sigs::describeSubtractedType, pt_type_trait_substractable_describe_subtracted_type);
 }
 
@@ -1775,6 +1897,7 @@ static void ZEND_FASTCALL trinaryMaybe1(INTERNAL_FUNCTION_PARAMETERS)
 void pt_type_trait_object(reg::Class &cls)
 {
 	namespace sigs = ptdecl::ObjectTypeTrait::sig;
+	cls.traitMethod(sigs::getStringRefinement, pt_type_null_handler);
 	cls.traitMethod(sigs::getTemplateType, [](INTERNAL_FUNCTION_PARAMETERS) {
 		PT_ARGS(2, 2);
 		PT_RETURN_VAL(pt_type_new_mixed_type());
@@ -1902,6 +2025,8 @@ void pt_type_trait_object(reg::Class &cls)
 
 	cls.traitMethod(sigs::getConstantStrings, emptyArray0);
 	cls.traitMethod(sigs::isCloneable, trinaryYes0);
+	cls.traitMethod(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_OBJECT>);
+	cls.traitOp(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_OBJECT); });
 	cls.traitMethod(sigs::isNull, trinaryNo0);
 	cls.traitOp(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.traitMethod(sigs::isConstantValue, trinaryNo0);
@@ -2353,6 +2478,7 @@ static void ZEND_FASTCALL arrayTraitChunkArray(INTERNAL_FUNCTION_PARAMETERS)
 void pt_type_trait_array(reg::Class &cls)
 {
 	namespace sigs = ptdecl::ArrayTypeTrait::sig;
+	cls.traitMethod(sigs::getStringRefinement, pt_type_null_handler);
 	/* ValueSet::createArrays($this) */
 	cls.traitMethod(sigs::toValueSet, PT_VALUE_SET_OF_ARRAYS);
 	cls.traitMethod(sigs::isArray, trinaryYes0);
@@ -2387,6 +2513,8 @@ void pt_type_trait_array(reg::Class &cls)
 	cls.traitMethod(sigs::toString, errorType0);
 	cls.traitMethod(sigs::isIterable, trinaryYes0);
 	cls.traitMethod(sigs::isOversizedArray, trinaryMaybe0);
+	cls.traitMethod(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_ARRAY>);
+	cls.traitOp(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_ARRAY); });
 	cls.traitMethod(sigs::isNull, trinaryNo0);
 	cls.traitOp(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.traitMethod(sigs::isTrue, trinaryNo0);
@@ -2648,6 +2776,7 @@ void pt_type_trait_maybe_object(reg::Class &cls)
 void pt_type_trait_maybe_string(reg::Class &cls)
 {
 	namespace sigs = ptdecl::MaybeStringTypeTrait::sig;
+	cls.traitMethod(sigs::getStringRefinement, pt_type_null_handler);
 	cls.traitMethod(sigs::getConstantStrings, emptyArray0);
 	cls.traitMethod(sigs::isString, trinaryMaybe0);
 	cls.traitOp(PT_OP_IS_STRING, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_MAYBE); });
@@ -3809,6 +3938,7 @@ static void ZEND_FASTCALL lrIsSuperTypeOfDefault(INTERNAL_FUNCTION_PARAMETERS)
 void pt_type_trait_late_resolvable(reg::Class &cls)
 {
 	namespace sigs = ptdecl::LateResolvableTypeTrait::sig;
+	cls.traitMethod(sigs::getStringRefinement, pt_type_null_handler);
 	/* the trait's `private ?Type $result = null`, bound behind the class's
 	 * own properties as PHP binds a trait's */
 	cls.privateTypedClassPropertyDefaultNull("result", ptcls::type);
@@ -3913,6 +4043,10 @@ void pt_type_trait_late_resolvable(reg::Class &cls)
 	cls.traitMethod(sigs::toCoercedArgumentType, lrDelegate);
 	cls.traitMethod(sigs::isSmallerThan, lrDelegate);
 	cls.traitMethod(sigs::isSmallerThanOrEqual, lrDelegate);
+	cls.traitMethod(sigs::getKindMask, lrDelegate);
+	cls.traitOp(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return LateResolvable(self, scope).delegateOp(PT_OP_GET_KIND_MASK, argc, argv); });
+	cls.traitMethod(sigs::tryUnion, pt_type_try_null_handler);
+	cls.traitMethod(sigs::tryIntersect, pt_type_try_null_handler);
 	cls.traitMethod(sigs::isNull, lrDelegate);
 	cls.traitMethod(sigs::isConstantValue, lrDelegate);
 	cls.traitMethod(sigs::isConstantScalarValue, lrDelegate);
@@ -4928,6 +5062,8 @@ static void ZEND_FASTCALL templateTypeThis0(INTERNAL_FUNCTION_PARAMETERS)
 void pt_type_trait_template_type(reg::Class &cls)
 {
 	namespace sigs = ptdecl::TemplateTypeTrait::sig;
+	cls.traitMethod(sigs::getStringRefinement, pt_type_null_handler);
+	cls.traitMethod(sigs::toExactNumberSet, pt_type_null_handler);
 	/* the trait's properties, in its order — the class's last slots */
 	cls.privateTypedProperty("name", MAY_BE_STRING);
 	cls.privateTypedClassProperty("scope", ptcls::templateTypeScope, false);
@@ -5553,6 +5689,7 @@ static int valueSetIsEmpty(zval *valueSet)
 void pt_type_trait_operator(reg::Class &cls)
 {
 	namespace sigs = ptdecl::OperatorTypeTrait::sig;
+	cls.traitMethod(sigs::toExactNumberSet, pt_type_null_handler);
 	/* $this->arithmeticPower($exponent, new PhpVersion(PhpVersionFactory::MAX_PHP_VERSION)) */
 	cls.traitMethod(sigs::exponentiate, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *exponent;

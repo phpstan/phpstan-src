@@ -6,7 +6,7 @@
  * property slots (generated declarations), evaluate() runs the
  * state-dependent math against the applying scope — the stored results'
  * getTypeOnScope() (ExpressionResult.cpp), the scope's getStateType()
- * (MutatingScope.cpp), the native TypeCombinator and Type ops — and builds
+ * (MutatingScope.cpp), TypeCombinator and the Type ops — and builds
  * the shadowing ExpressionTypeHolder / ConditionalExpressionHolder objects
  * directly.
  *

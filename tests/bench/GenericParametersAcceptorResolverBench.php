@@ -56,8 +56,8 @@ final class GenericParametersAcceptorResolverBench
 	 * resolved into an extended one with all of its parameters copied.
 	 */
 	#[DataProvider(method: 'parameters')]
-	#[ExpectedFor(dataSet: 'parameters-2', instructions: '91.12K', cycles: '317.5K', memory: '4.328KiB')]
-	#[ExpectedFor(dataSet: 'parameters-16', instructions: '1.002M', cycles: '1.510M', memory: '10.73KiB')]
+	#[ExpectedFor(dataSet: 'parameters-2', instructions: '92.05K', cycles: '298.2K', memory: '3.891KiB')]
+	#[ExpectedFor(dataSet: 'parameters-16', instructions: '953.1K', cycles: '1.380M', memory: '10.73KiB')]
 	public function benchResolve(int $parameters): ParametersAcceptor
 	{
 		if ($this->acceptor === null) {

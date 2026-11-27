@@ -122,9 +122,9 @@ function doOffsetCapture(string $s): void {
 
 function doUnknownFlags(string $s, int $flags): void {
 	if (preg_match('/(foo)(bar)(baz)/xyz', $s, $matches, $flags)) {
-		assertType('array<array{string|null, int<-1, max>}|string|null>', $matches);
+		assertType('array<array{\'\'|null, -1}|array{string, int<0, max>}|string|null>', $matches);
 	}
-	assertType('array<array{string|null, int<-1, max>}|string|null>', $matches);
+	assertType('array<array{\'\'|null, -1}|array{string, int<0, max>}|string|null>', $matches);
 }
 
 function doMultipleAlternativeCaptureGroupsWithSameNameWithModifier(string $s): void {
@@ -249,7 +249,7 @@ function doFoo2(string $row): void
 		return;
 	}
 
-	assertType("array{0: non-falsy-string, 1: string, branchCode: ''|numeric-string, 2: ''|numeric-string, accountNumber: numeric-string, 3: numeric-string, bankCode: non-falsy-string&numeric-string, 4: non-falsy-string&numeric-string}", $matches);
+	assertType("array{0: non-falsy-string, 1: ''|non-falsy-string, branchCode: ''|numeric-string, 2: ''|numeric-string, accountNumber: numeric-string, 3: numeric-string, bankCode: non-falsy-string&numeric-string, 4: non-falsy-string&numeric-string}", $matches);
 }
 
 function doFoo3(string $row): void
@@ -429,7 +429,7 @@ function (string $s, $mixed): void {
 
 function (string $s): void {
 	if (preg_match('/^%([0-9]*\$)?[0-9]*\.?[0-9]*([sbdeEfFgGhHouxX])$/', $s, $matches) === 1) {
-		assertType("array{non-falsy-string, string, 'b'|'d'|'E'|'e'|'F'|'f'|'G'|'g'|'H'|'h'|'o'|'s'|'u'|'X'|'x'}", $matches);
+		assertType("array{non-falsy-string, ''|non-falsy-string, 'b'|'d'|'E'|'e'|'F'|'f'|'G'|'g'|'H'|'h'|'o'|'s'|'u'|'X'|'x'}", $matches);
 	}
 };
 
@@ -519,7 +519,7 @@ function bug11323(string $s): void {
 		assertType('array{non-falsy-string, non-empty-string, "\n", "\n"}', $matches);
 	}
 	if (preg_match('/foo(*:first)|bar(*:second)([x])/', $s, $matches)) {
-		assertType("array{0: non-falsy-string, 1?: 'x', MARK?: 'first'|'second'}", $matches);
+		assertType("array{0: non-falsy-string, 1: 'x', MARK?: 'first'|'second'}|array{non-falsy-string}", $matches);
 	}
 }
 

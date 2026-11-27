@@ -158,7 +158,10 @@ inline constexpr char strings[] =
 	"tryRemove\0" /* 1823 */
 	"getFiniteTypes\0" /* 1833 */
 	"hasTemplateOrLateResolvableType\0" /* 1848 */
-	"hasUnresolvedTemplateArgumentType"; /* 1880 */
+	"hasUnresolvedTemplateArgumentType\0" /* 1880 */
+	"otherType\0" /* 1914 */
+	"tryUnion\0" /* 1924 */
+	"tryIntersect"; /* 1933 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 8), /* __construct $keyType */
 	reg::packed(26, 0, 8), /* __construct $itemType */
@@ -273,6 +276,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(90, MAY_BE_ARRAY), /* getFiniteTypes return */
 	reg::packed(90, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 	reg::packed(90, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
+	reg::packed(1914, 0, 8), /* tryUnion $otherType */
+	reg::packed(90, MAY_BE_NULL, 8), /* tryUnion return */
+	reg::packed(1914, 0, 8), /* tryIntersect $otherType */
+	reg::packed(90, MAY_BE_NULL, 8), /* tryIntersect return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -345,6 +352,8 @@ inline constexpr sigtab::Sig tryRemove = { { 1823 /* tryRemove */, 1, 108, 1, 10
 inline constexpr sigtab::Sig getFiniteTypes = { { 1833 /* getFiniteTypes */, 0, 110, 0, 110, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 1848 /* hasTemplateOrLateResolvableType */, 0, 111, 0, 111, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 1880 /* hasUnresolvedTemplateArgumentType */, 0, 112, 0, 112, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryUnion = { { 1924 /* tryUnion */, 1, 113, 1, 114, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 1933 /* tryIntersect */, 1, 115, 1, 116, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArrayType

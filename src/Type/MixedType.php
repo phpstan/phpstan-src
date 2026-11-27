@@ -940,6 +940,11 @@ class MixedType implements CompoundType, SubtractableType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::ALL;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		if ($this->subtractedType !== null) {
@@ -1114,6 +1119,11 @@ class MixedType implements CompoundType, SubtractableType
 		}
 
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic

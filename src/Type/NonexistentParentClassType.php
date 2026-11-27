@@ -55,6 +55,11 @@ class NonexistentParentClassType implements Type
 		return new ErrorType();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::OBJECT;
+	}
+
 	public function isObject(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
@@ -295,6 +300,16 @@ class NonexistentParentClassType implements Type
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createInvalid();
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

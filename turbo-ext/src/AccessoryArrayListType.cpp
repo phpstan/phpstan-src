@@ -359,6 +359,13 @@ PT_MINIT_REGISTRATION(pt_register_accessory_array_list_type)
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryArrayListType");
 	ptdecl::AccessoryArrayListType::declareClass(cls);
 	ptdecl::AccessoryArrayListType::declareProperties(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_ARRAYS);
 
@@ -502,6 +509,9 @@ PT_MINIT_REGISTRATION(pt_register_accessory_array_list_type)
 	cls.method(sigs::isOversizedArray, aalMaybe0);
 	cls.method(sigs::isList, aalYes0);
 	cls.op(PT_OP_IS_LIST, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_YES); });
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_ARRAY>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_ARRAY); });
 	cls.method(sigs::isNull, aalNo0);
 	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, aalMaybe0);

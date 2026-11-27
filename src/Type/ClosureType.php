@@ -934,6 +934,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 		);
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::OBJECT;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -1012,6 +1017,11 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -1143,6 +1153,16 @@ class ClosureType implements TypeWithClassName, CallableParametersAcceptor
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createObjects($this);
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

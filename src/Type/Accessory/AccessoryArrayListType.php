@@ -30,6 +30,7 @@ use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
@@ -383,6 +384,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 		return TrinaryLogic::createYes();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::ARRAY;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -461,6 +467,11 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -602,6 +613,16 @@ class AccessoryArrayListType implements CompoundType, AccessoryType
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createArrays($this);
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

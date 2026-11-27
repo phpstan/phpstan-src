@@ -33,34 +33,36 @@ inline constexpr char strings[] =
 	"toString\0" /* 308 */
 	"isIterable\0" /* 317 */
 	"isOversizedArray\0" /* 328 */
-	"isNull\0" /* 345 */
-	"isTrue\0" /* 352 */
-	"isFalse\0" /* 359 */
-	"isBoolean\0" /* 367 */
-	"isFloat\0" /* 377 */
-	"isInteger\0" /* 385 */
-	"isString\0" /* 395 */
-	"isNumericString\0" /* 404 */
-	"isDecimalIntegerString\0" /* 420 */
-	"isNonEmptyString\0" /* 443 */
-	"isNonFalsyString\0" /* 460 */
-	"isLiteralString\0" /* 477 */
-	"isLowercaseString\0" /* 493 */
-	"isUppercaseString\0" /* 511 */
-	"isClassString\0" /* 529 */
-	"getClassStringObjectType\0" /* 543 */
-	"getObjectTypeOrClassStringObjectType\0" /* 568 */
-	"isVoid\0" /* 605 */
-	"isScalar\0" /* 612 */
-	"exponent\0" /* 621 */
-	"phpVersion\0" /* 630 */
-	"PHPStan\\Php\\PhpVersion\0" /* 641 */
-	"arithmeticPower\0" /* 664 */
-	"lengthType\0" /* 680 */
-	"preserveKeys\0" /* 691 */
-	"chunkArray\0" /* 704 */
-	"PHPStan\\Type\\ValueSet\0" /* 715 */
-	"toValueSet"; /* 737 */
+	"getKindMask\0" /* 345 */
+	"isNull\0" /* 357 */
+	"isTrue\0" /* 364 */
+	"isFalse\0" /* 371 */
+	"isBoolean\0" /* 379 */
+	"isFloat\0" /* 389 */
+	"isInteger\0" /* 397 */
+	"isString\0" /* 407 */
+	"isNumericString\0" /* 416 */
+	"isDecimalIntegerString\0" /* 432 */
+	"isNonEmptyString\0" /* 455 */
+	"isNonFalsyString\0" /* 472 */
+	"isLiteralString\0" /* 489 */
+	"getStringRefinement\0" /* 505 */
+	"isLowercaseString\0" /* 525 */
+	"isUppercaseString\0" /* 543 */
+	"isClassString\0" /* 561 */
+	"getClassStringObjectType\0" /* 575 */
+	"getObjectTypeOrClassStringObjectType\0" /* 600 */
+	"isVoid\0" /* 637 */
+	"isScalar\0" /* 644 */
+	"exponent\0" /* 653 */
+	"phpVersion\0" /* 662 */
+	"PHPStan\\Php\\PhpVersion\0" /* 673 */
+	"arithmeticPower\0" /* 696 */
+	"lengthType\0" /* 712 */
+	"preserveKeys\0" /* 723 */
+	"chunkArray\0" /* 736 */
+	"PHPStan\\Type\\ValueSet\0" /* 747 */
+	"toValueSet"; /* 769 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 1), /* isArray return */
 	reg::packed(0, 0, 30), /* toArray return */
@@ -81,6 +83,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 30), /* toString return */
 	reg::packed(0, 0, 1), /* isIterable return */
 	reg::packed(0, 0, 1), /* isOversizedArray return */
+	reg::packed(0, MAY_BE_LONG), /* getKindMask return */
 	reg::packed(0, 0, 1), /* isNull return */
 	reg::packed(0, 0, 1), /* isTrue return */
 	reg::packed(0, 0, 1), /* isFalse return */
@@ -93,6 +96,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 1), /* isNonEmptyString return */
 	reg::packed(0, 0, 1), /* isNonFalsyString return */
 	reg::packed(0, 0, 1), /* isLiteralString return */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_LONG), /* getStringRefinement return */
 	reg::packed(0, 0, 1), /* isLowercaseString return */
 	reg::packed(0, 0, 1), /* isUppercaseString return */
 	reg::packed(0, 0, 1), /* isClassString return */
@@ -100,13 +104,13 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 30), /* getObjectTypeOrClassStringObjectType return */
 	reg::packed(0, 0, 1), /* isVoid return */
 	reg::packed(0, 0, 1), /* isScalar return */
-	reg::packed(621, 0, 30), /* arithmeticPower $exponent */
-	reg::packed(630, 0, 641), /* arithmeticPower $phpVersion */
+	reg::packed(653, 0, 30), /* arithmeticPower $exponent */
+	reg::packed(662, 0, 673), /* arithmeticPower $phpVersion */
 	reg::packed(0, 0, 30), /* arithmeticPower return */
-	reg::packed(680, 0, 30), /* chunkArray $lengthType */
-	reg::packed(691, 0, 1), /* chunkArray $preserveKeys */
+	reg::packed(712, 0, 30), /* chunkArray $lengthType */
+	reg::packed(723, 0, 1), /* chunkArray $preserveKeys */
 	reg::packed(0, 0, 30), /* chunkArray return */
-	reg::packed(0, 0, 715), /* toValueSet return */
+	reg::packed(0, 0, 747), /* toValueSet return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -131,28 +135,30 @@ inline constexpr sigtab::Sig toAbsoluteNumber = { { 291 /* toAbsoluteNumber */, 
 inline constexpr sigtab::Sig toString = { { 308 /* toString */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isIterable = { { 317 /* isIterable */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isOversizedArray = { { 328 /* isOversizedArray */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isNull = { { 345 /* isNull */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isTrue = { { 352 /* isTrue */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isFalse = { { 359 /* isFalse */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isBoolean = { { 367 /* isBoolean */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isFloat = { { 377 /* isFloat */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isInteger = { { 385 /* isInteger */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isString = { { 395 /* isString */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isNumericString = { { 404 /* isNumericString */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isDecimalIntegerString = { { 420 /* isDecimalIntegerString */, 0, 27, 0, 27, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isNonEmptyString = { { 443 /* isNonEmptyString */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isNonFalsyString = { { 460 /* isNonFalsyString */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isLiteralString = { { 477 /* isLiteralString */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isLowercaseString = { { 493 /* isLowercaseString */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isUppercaseString = { { 511 /* isUppercaseString */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isClassString = { { 529 /* isClassString */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getClassStringObjectType = { { 543 /* getClassStringObjectType */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 568 /* getObjectTypeOrClassStringObjectType */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isVoid = { { 605 /* isVoid */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isScalar = { { 612 /* isScalar */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticPower = { { 664 /* arithmeticPower */, 2, 38, 2, 40, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig chunkArray = { { 704 /* chunkArray */, 2, 41, 2, 43, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toValueSet = { { 737 /* toValueSet */, 0, 44, 0, 44, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getKindMask = { { 345 /* getKindMask */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNull = { { 357 /* isNull */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isTrue = { { 364 /* isTrue */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFalse = { { 371 /* isFalse */, 0, 22, 0, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isBoolean = { { 379 /* isBoolean */, 0, 23, 0, 23, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFloat = { { 389 /* isFloat */, 0, 24, 0, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isInteger = { { 397 /* isInteger */, 0, 25, 0, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isString = { { 407 /* isString */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNumericString = { { 416 /* isNumericString */, 0, 27, 0, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isDecimalIntegerString = { { 432 /* isDecimalIntegerString */, 0, 28, 0, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNonEmptyString = { { 455 /* isNonEmptyString */, 0, 29, 0, 29, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNonFalsyString = { { 472 /* isNonFalsyString */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isLiteralString = { { 489 /* isLiteralString */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStringRefinement = { { 505 /* getStringRefinement */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isLowercaseString = { { 525 /* isLowercaseString */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isUppercaseString = { { 543 /* isUppercaseString */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isClassString = { { 561 /* isClassString */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getClassStringObjectType = { { 575 /* getClassStringObjectType */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getObjectTypeOrClassStringObjectType = { { 600 /* getObjectTypeOrClassStringObjectType */, 0, 37, 0, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isVoid = { { 637 /* isVoid */, 0, 38, 0, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isScalar = { { 644 /* isScalar */, 0, 39, 0, 39, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 696 /* arithmeticPower */, 2, 40, 2, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig chunkArray = { { 736 /* chunkArray */, 2, 43, 2, 45, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 769 /* toValueSet */, 0, 46, 0, 46, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::ArrayTypeTrait

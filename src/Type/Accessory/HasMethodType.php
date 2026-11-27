@@ -41,6 +41,7 @@ use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function get_class;
@@ -189,6 +190,11 @@ class HasMethodType implements AccessoryType, CompoundType
 		}
 
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getKindMask(): int
+	{
+		return TypeKind::STRING | TypeKind::OBJECT;
 	}
 
 	public function isNull(): TrinaryLogic
@@ -368,6 +374,16 @@ class HasMethodType implements AccessoryType, CompoundType
 	public function hasUnresolvedTemplateArgumentType(): bool
 	{
 		return false;
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

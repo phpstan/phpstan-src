@@ -220,6 +220,11 @@ class StringType implements Type
 		return $this;
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::STRING;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -278,6 +283,11 @@ class StringType implements Type
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return StringRefinement::ALL;
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -373,6 +383,16 @@ class StringType implements Type
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createStrings($this);
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

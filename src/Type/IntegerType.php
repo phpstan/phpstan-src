@@ -66,6 +66,11 @@ class IntegerType implements Type
 		return new NumberSet([[null, null]], [], false);
 	}
 
+	public function toExactNumberSet(): ?NumberSet
+	{
+		return $this->toNumberSet();
+	}
+
 	public function toBitwiseNotType(): Type
 	{
 		return new IntegerType();
@@ -121,6 +126,11 @@ class IntegerType implements Type
 	public function isOffsetAccessLegal(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function getKindMask(): int
+	{
+		return TypeKind::INT;
 	}
 
 	public function isNull(): TrinaryLogic
@@ -229,6 +239,16 @@ class IntegerType implements Type
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createNumbers($this->toNumberSet());
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

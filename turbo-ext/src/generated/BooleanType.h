@@ -59,31 +59,35 @@ inline constexpr char strings[] =
 	"toCoercedArgumentType\0" /* 241 */
 	"PHPStan\\TrinaryLogic\0" /* 263 */
 	"isOffsetAccessLegal\0" /* 284 */
-	"isNull\0" /* 304 */
-	"isTrue\0" /* 311 */
-	"isFalse\0" /* 318 */
-	"isBoolean\0" /* 326 */
-	"isScalar\0" /* 336 */
-	"type\0" /* 345 */
-	"phpVersion\0" /* 350 */
-	"PHPStan\\Php\\PhpVersion\0" /* 361 */
-	"PHPStan\\Type\\BooleanType\0" /* 384 */
-	"looseCompare\0" /* 409 */
-	"typeToRemove\0" /* 422 */
-	"tryRemove\0" /* 435 */
-	"getFiniteTypes\0" /* 445 */
-	"exponent\0" /* 460 */
-	"arithmeticPower\0" /* 469 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 485 */
-	"toPhpDocNode\0" /* 524 */
-	"position\0" /* 537 */
-	"PHPStan\\Type\\NativeTypePosition\0" /* 546 */
-	"toNativePhpTypeNode\0" /* 578 */
-	"toTrinaryLogic\0" /* 598 */
-	"hasTemplateOrLateResolvableType\0" /* 613 */
-	"hasUnresolvedTemplateArgumentType\0" /* 645 */
-	"PHPStan\\Type\\ValueSet\0" /* 679 */
-	"toValueSet"; /* 701 */
+	"getKindMask\0" /* 304 */
+	"isNull\0" /* 316 */
+	"isTrue\0" /* 323 */
+	"isFalse\0" /* 330 */
+	"isBoolean\0" /* 338 */
+	"isScalar\0" /* 348 */
+	"type\0" /* 357 */
+	"phpVersion\0" /* 362 */
+	"PHPStan\\Php\\PhpVersion\0" /* 373 */
+	"PHPStan\\Type\\BooleanType\0" /* 396 */
+	"looseCompare\0" /* 421 */
+	"typeToRemove\0" /* 434 */
+	"tryRemove\0" /* 447 */
+	"getFiniteTypes\0" /* 457 */
+	"exponent\0" /* 472 */
+	"arithmeticPower\0" /* 481 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 497 */
+	"toPhpDocNode\0" /* 536 */
+	"position\0" /* 549 */
+	"PHPStan\\Type\\NativeTypePosition\0" /* 558 */
+	"toNativePhpTypeNode\0" /* 590 */
+	"toTrinaryLogic\0" /* 610 */
+	"hasTemplateOrLateResolvableType\0" /* 625 */
+	"hasUnresolvedTemplateArgumentType\0" /* 657 */
+	"PHPStan\\Type\\ValueSet\0" /* 691 */
+	"toValueSet\0" /* 713 */
+	"otherType\0" /* 724 */
+	"tryUnion\0" /* 734 */
+	"tryIntersect"; /* 743 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(12, MAY_BE_ARRAY), /* getConstantStrings return */
 	reg::packed(12, MAY_BE_ARRAY), /* getConstantScalarTypes return */
@@ -101,26 +105,31 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(229, MAY_BE_BOOL), /* toCoercedArgumentType $strictTypes */
 	reg::packed(12, 0, 122), /* toCoercedArgumentType return */
 	reg::packed(12, 0, 263), /* isOffsetAccessLegal return */
+	reg::packed(12, MAY_BE_LONG), /* getKindMask return */
 	reg::packed(12, 0, 263), /* isNull return */
 	reg::packed(12, 0, 263), /* isTrue return */
 	reg::packed(12, 0, 263), /* isFalse return */
 	reg::packed(12, 0, 263), /* isBoolean return */
 	reg::packed(12, 0, 263), /* isScalar return */
-	reg::packed(345, 0, 122), /* looseCompare $type */
-	reg::packed(350, 0, 361), /* looseCompare $phpVersion */
-	reg::packed(12, 0, 384), /* looseCompare return */
-	reg::packed(422, 0, 122), /* tryRemove $typeToRemove */
+	reg::packed(357, 0, 122), /* looseCompare $type */
+	reg::packed(362, 0, 373), /* looseCompare $phpVersion */
+	reg::packed(12, 0, 396), /* looseCompare return */
+	reg::packed(434, 0, 122), /* tryRemove $typeToRemove */
 	reg::packed(12, MAY_BE_NULL, 122), /* tryRemove return */
 	reg::packed(12, MAY_BE_ARRAY), /* getFiniteTypes return */
-	reg::packed(460, 0, 122), /* arithmeticPower $exponent */
-	reg::packed(350, 0, 361), /* arithmeticPower $phpVersion */
+	reg::packed(472, 0, 122), /* arithmeticPower $exponent */
+	reg::packed(362, 0, 373), /* arithmeticPower $phpVersion */
 	reg::packed(12, 0, 122), /* arithmeticPower return */
-	reg::packed(12, 0, 485), /* toPhpDocNode return */
-	reg::packed(537, 0, 546), /* toNativePhpTypeNode $position */
+	reg::packed(12, 0, 497), /* toPhpDocNode return */
+	reg::packed(549, 0, 558), /* toNativePhpTypeNode $position */
 	reg::packed(12, 0, 263), /* toTrinaryLogic return */
 	reg::packed(12, MAY_BE_BOOL), /* hasTemplateOrLateResolvableType return */
 	reg::packed(12, MAY_BE_BOOL), /* hasUnresolvedTemplateArgumentType return */
-	reg::packed(12, 0, 679), /* toValueSet return */
+	reg::packed(12, 0, 691), /* toValueSet return */
+	reg::packed(724, 0, 122), /* tryUnion $otherType */
+	reg::packed(12, MAY_BE_NULL, 122), /* tryUnion return */
+	reg::packed(724, 0, 122), /* tryIntersect $otherType */
+	reg::packed(12, MAY_BE_NULL, 122), /* tryIntersect return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -142,21 +151,24 @@ inline constexpr sigtab::Sig toArray = { { 210 /* toArray */, 0, 11, 0, 11, ZEND
 inline constexpr sigtab::Sig toArrayKey = { { 218 /* toArrayKey */, 0, 12, 0, 12, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toCoercedArgumentType = { { 241 /* toCoercedArgumentType */, 1, 13, 1, 14, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isOffsetAccessLegal = { { 284 /* isOffsetAccessLegal */, 0, 15, 0, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isNull = { { 304 /* isNull */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isTrue = { { 311 /* isTrue */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isFalse = { { 318 /* isFalse */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isBoolean = { { 326 /* isBoolean */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isScalar = { { 336 /* isScalar */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig looseCompare = { { 409 /* looseCompare */, 2, 21, 2, 23, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryRemove = { { 435 /* tryRemove */, 1, 24, 1, 25, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig getFiniteTypes = { { 445 /* getFiniteTypes */, 0, 26, 0, 26, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig arithmeticPower = { { 469 /* arithmeticPower */, 2, 27, 2, 29, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 524 /* toPhpDocNode */, 0, 30, 0, 30, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toNativePhpTypeNode = { { 578 /* toNativePhpTypeNode */, 1, 31, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toTrinaryLogic = { { 598 /* toTrinaryLogic */, 0, 32, 0, 32, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 613 /* hasTemplateOrLateResolvableType */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 645 /* hasUnresolvedTemplateArgumentType */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toValueSet = { { 701 /* toValueSet */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getKindMask = { { 304 /* getKindMask */, 0, 16, 0, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isNull = { { 316 /* isNull */, 0, 17, 0, 17, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isTrue = { { 323 /* isTrue */, 0, 18, 0, 18, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isFalse = { { 330 /* isFalse */, 0, 19, 0, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isBoolean = { { 338 /* isBoolean */, 0, 20, 0, 20, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isScalar = { { 348 /* isScalar */, 0, 21, 0, 21, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig looseCompare = { { 421 /* looseCompare */, 2, 22, 2, 24, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryRemove = { { 447 /* tryRemove */, 1, 25, 1, 26, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getFiniteTypes = { { 457 /* getFiniteTypes */, 0, 27, 0, 27, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig arithmeticPower = { { 481 /* arithmeticPower */, 2, 28, 2, 30, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 536 /* toPhpDocNode */, 0, 31, 0, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toNativePhpTypeNode = { { 590 /* toNativePhpTypeNode */, 1, 32, 1, reg::NoArg, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toTrinaryLogic = { { 610 /* toTrinaryLogic */, 0, 33, 0, 33, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasTemplateOrLateResolvableType = { { 625 /* hasTemplateOrLateResolvableType */, 0, 34, 0, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasUnresolvedTemplateArgumentType = { { 657 /* hasUnresolvedTemplateArgumentType */, 0, 35, 0, 35, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toValueSet = { { 713 /* toValueSet */, 0, 36, 0, 36, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryUnion = { { 734 /* tryUnion */, 1, 37, 1, 38, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 743 /* tryIntersect */, 1, 39, 1, 40, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::BooleanType

@@ -1622,6 +1622,117 @@ zv::Val pt_prototype_resolved_property(phpstanturbo::PrototypeKind kind, const p
 
 /* }}} */
 
+/* {{{ Type::getKindMask(): the TypeKind bits, with TypeKind's values */
+
+inline constexpr zend_long PT_KIND_NULL = 1;
+inline constexpr zend_long PT_KIND_FALSE = 2;
+inline constexpr zend_long PT_KIND_TRUE = 4;
+inline constexpr zend_long PT_KIND_INT = 8;
+inline constexpr zend_long PT_KIND_FLOAT = 16;
+inline constexpr zend_long PT_KIND_STRING = 32;
+inline constexpr zend_long PT_KIND_ARRAY = 64;
+inline constexpr zend_long PT_KIND_OBJECT = 128;
+inline constexpr zend_long PT_KIND_RESOURCE = 256;
+inline constexpr zend_long PT_KIND_BOOL = PT_KIND_FALSE | PT_KIND_TRUE;
+inline constexpr zend_long PT_KIND_ALL = PT_KIND_NULL | PT_KIND_BOOL | PT_KIND_INT | PT_KIND_FLOAT | PT_KIND_STRING | PT_KIND_ARRAY | PT_KIND_OBJECT | PT_KIND_RESOURCE;
+
+/* TypeKind::areDisjoint() */
+static zend_always_inline bool pt_type_kinds_disjoint(zend_long a, zend_long b)
+{
+	return (a & b) == 0 && a != 0 && b != 0;
+}
+
+/* $type->getKindMask(); -1 = pending exception */
+zend_long pt_type_kind_mask(zend_object *type);
+
+/* UnionType's / IntersectionType's getKindMask(): the members' masks OR-ed,
+ * or AND-ed when $intersect; UNDEF = pending exception */
+zv::Val pt_type_kind_mask_of_members(zend_object *self, bool intersect);
+
+/* getKindMask() returning a constant mask */
+template <zend_long Mask>
+void ZEND_FASTCALL pt_type_kind_mask_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	RETURN_LONG(Mask);
+}
+
+/* }}} */
+
+/* {{{ Type::getStringRefinement(): StringRefinement's cells, with its values */
+
+inline constexpr zend_long PT_STRING_CELL_EMPTY = 1;
+inline constexpr zend_long PT_STRING_CELL_ZERO = 2;
+inline constexpr zend_long PT_STRING_CELL_DECIMAL = 4;
+inline constexpr zend_long PT_STRING_CELL_NUMERIC = 8;
+inline constexpr zend_long PT_STRING_CELL_NUMERIC_LOWER = 16;
+inline constexpr zend_long PT_STRING_CELL_NUMERIC_UPPER = 32;
+inline constexpr zend_long PT_STRING_CELL_TEXT = 64;
+inline constexpr zend_long PT_STRING_CELL_TEXT_LOWER = 128;
+inline constexpr zend_long PT_STRING_CELL_TEXT_UPPER = 256;
+inline constexpr zend_long PT_STRING_CELL_NON_LITERAL_SHIFT = 10;
+inline constexpr zend_long PT_STRING_CELLS_VALUES = 1023;
+inline constexpr zend_long PT_STRING_CELLS_LITERAL = PT_STRING_CELLS_VALUES;
+inline constexpr zend_long PT_STRING_CELLS_ALL = PT_STRING_CELLS_VALUES | (PT_STRING_CELLS_VALUES << PT_STRING_CELL_NON_LITERAL_SHIFT);
+
+/* StringRefinement::of() */
+constexpr zend_long pt_string_cells_of(zend_long values)
+{
+	return values | (values << PT_STRING_CELL_NON_LITERAL_SHIFT);
+}
+
+/* getStringRefinement() returning constant cells */
+template <zend_long Cells>
+void ZEND_FASTCALL pt_type_string_refinement_handler(INTERNAL_FUNCTION_PARAMETERS)
+{
+	ZEND_PARSE_PARAMETERS_NONE();
+	RETURN_LONG(Cells);
+}
+
+/* IntersectionType's getStringRefinement(): the members' cells AND-ed, null
+ * when a member has none; UNDEF = pending exception */
+zv::Val pt_type_string_refinement_of_members(zend_object *self);
+
+/* a method without parameters returning null: getStringRefinement() and
+ * toExactNumberSet() of the types they do not describe */
+void ZEND_FASTCALL pt_type_null_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* tryUnion() and tryIntersect() of the types that merge with no other type:
+ * (Type $otherType) returning null */
+void ZEND_FASTCALL pt_type_try_null_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* tryUnion() and tryIntersect() of the subtractable types:
+ * SubtractionAlgebra::tryUnion($this, $otherType) / ::tryIntersect() */
+void ZEND_FASTCALL pt_type_subtraction_try_union_handler(INTERNAL_FUNCTION_PARAMETERS);
+void ZEND_FASTCALL pt_type_subtraction_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* tryUnion() of ConstantArrayType: ArrayAlgebra::tryUnionConstantArray($this, $otherType) */
+void ZEND_FASTCALL pt_type_constant_array_try_union_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* tryUnion() of HasOffsetValueType: ArrayAlgebra::tryUnionHasOffsetValue($this, $otherType) */
+void ZEND_FASTCALL pt_type_has_offset_value_try_union_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* tryUnion() of IntersectionType: IntersectionAlgebra::tryUnion($this, $otherType) */
+void ZEND_FASTCALL pt_type_intersection_try_union_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* tryIntersect() of ArrayType, IterableType and GenericClassStringType:
+ * ArrayAlgebra::tryIntersectArray($this, $otherType) / ::tryIntersectIterable(),
+ * ClassStringAlgebra::tryIntersect() */
+void ZEND_FASTCALL pt_type_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
+void ZEND_FASTCALL pt_type_iterable_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
+void ZEND_FASTCALL pt_type_generic_class_string_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* tryIntersect() of ConstantArrayType and OversizedArrayType:
+ * ArrayAlgebra::tryIntersectConstantArray($this, $otherType) / ::tryIntersectOversizedArray() */
+void ZEND_FASTCALL pt_type_constant_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
+void ZEND_FASTCALL pt_type_oversized_array_try_intersect_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* toExactNumberSet() of IntegerType, FloatType and IntegerRangeType:
+ * $this->toNumberSet(), which their subclasses override */
+void ZEND_FASTCALL pt_type_exact_number_set_handler(INTERNAL_FUNCTION_PARAMETERS);
+
+/* }}} */
+
 /* TypeUtils::resolveLateResolvableTypes($type) with the default
  * $resolveUnresolvableTypes = true — the shadowing class's body
  * (TypeUtils.cpp); UNDEF = pending exception */

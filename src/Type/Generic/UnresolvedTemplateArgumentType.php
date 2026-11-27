@@ -25,6 +25,7 @@ use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Type;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueSet;
@@ -782,6 +783,12 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 		return $this->getDelegate()->getConstantScalarValues();
 	}
 
+	/** A variable of its site: not yet the values of the type it stands for. */
+	public function getKindMask(): int
+	{
+		return TypeKind::ALL;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return $this->getDelegate()->isNull();
@@ -840,6 +847,11 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return $this->getDelegate()->isLiteralString();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -910,6 +922,16 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 	public function toAbsoluteNumber(): Type
 	{
 		return $this->getDelegate()->toAbsoluteNumber();
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

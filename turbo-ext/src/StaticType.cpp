@@ -984,6 +984,13 @@ PT_MINIT_REGISTRATION(pt_register_static_type)
 
 	reg::Class cls("PHPStan\\Type\\StaticType");
 	ptdecl::StaticType::declareClass(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_subtraction_try_union_handler);
+	cls.method(sigs::tryIntersect, pt_type_subtraction_try_intersect_handler);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createobjects"));
 	/* the slots must stay in this order (PT_ST_PROP_*) */
@@ -1268,6 +1275,9 @@ PT_MINIT_REGISTRATION(pt_register_static_type)
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("islist"), 0, 0);
 	});
 	cls.op(PT_OP_IS_LIST, PT_OP_LAMBDA { return StaticType(self).delegateOp(PT_OP_IS_LIST, argc, argv); });
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_OBJECT>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_OBJECT); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		stDelegate(INTERNAL_FUNCTION_PARAM_PASSTHRU, PT_LC("isnull"), 0, 0);
 	});

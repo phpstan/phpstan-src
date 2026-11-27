@@ -987,6 +987,11 @@ class UnionType implements CompoundType
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isLiteralString());
 	}
 
+	public function getStringRefinement(): ?int
+	{
+		return null;
+	}
+
 	public function isLowercaseString(): TrinaryLogic
 	{
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isLowercaseString());
@@ -1248,6 +1253,16 @@ class UnionType implements CompoundType
 	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		return $this->notBenevolentUnionResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThanOrEqual($otherType, $phpVersion));
+	}
+
+	public function getKindMask(): int
+	{
+		$mask = 0;
+		foreach ($this->types as $type) {
+			$mask |= $type->getKindMask();
+		}
+
+		return $mask;
 	}
 
 	public function isNull(): TrinaryLogic
@@ -1813,7 +1828,8 @@ class UnionType implements CompoundType
 			return $this;
 		}
 
-		return TypeCombinator::union(...$newTypes);
+		// a join of what the members answer, such as the values of all their arrays
+		return TypeCombinator::widen(TypeCombinator::union(...$newTypes));
 	}
 
 	/**
@@ -1920,6 +1936,16 @@ class UnionType implements CompoundType
 		}
 
 		return $valueSet;
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

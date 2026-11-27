@@ -2321,7 +2321,10 @@ public:
 			newTypes.push(std::move(newType));
 		}
 		if (!changed) return thisValue();
-		return combinatorUnion(newTypes.table());
+		/* TypeCombinator::widen(TypeCombinator::union(...$newTypes)): a join of what the members answer */
+		zv::Val unionType = combinatorUnion(newTypes.table());
+		if (UNEXPECTED(unionType.isUndef())) return zv::Val();
+		return pt_type_combinator_call(PT_LC("widen"), 1, unionType.raw());
 	}
 
 	zv::Val pickFromTypesImpl(const UnionMemberOp &op) const
@@ -3097,6 +3100,13 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 {
 	reg::Class cls("PHPStan\\Type\\UnionType");
 	ptdecl::UnionType::declareClass(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) { pt_value_set_of_members(INTERNAL_FUNCTION_PARAM_PASSTHRU, false); });
 	/* mirror getPossiblyLooselyEqualType() and getAlwaysLooselyEqualType(), memoized per PHP version */
@@ -3494,6 +3504,12 @@ PT_MINIT_REGISTRATION(pt_register_union_type)
 		pt_ut_trinary_type_version(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isSmallerThanOrEqual);
 	});
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(pt_type_kind_mask_of_members(Z_OBJ_P(ZEND_THIS), false));
+	});
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return pt_type_kind_mask_of_members(self, false); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_ut_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &UnionType::isNull);
 	});

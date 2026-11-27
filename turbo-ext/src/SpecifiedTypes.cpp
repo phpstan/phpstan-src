@@ -8,8 +8,8 @@
  * with*()/set*() copies are engine clones of the object with the changed
  * slots written, exactly the `$self = clone $this` of the twin. The merges
  * (intersectWith(), unionWith() and the private term algebra behind them)
- * run natively over the twin's arrays, calling the native TypeCombinator
- * and the Type ops directly; the deferred augments and conditional-holder
+ * run natively over the twin's arrays, calling TypeCombinator and the
+ * Type ops directly; the deferred augments and conditional-holder
  * recipes it carries stay opaque values, as in the twin.
  *
  * emptySpecifyCallback() hands out one process-wide Closure over a

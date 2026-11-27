@@ -467,6 +467,28 @@ public:
 		return create(remaining.raw(), optional.raw());
 	}
 
+	/* the shape with the property a HasPropertyType asserts made required,
+	 * null for anything else; UNDEF = pending exception */
+	zv::Val tryIntersect(zval *otherType) const
+	{
+		if (!instanceof_function(Z_OBJCE_P(otherType), pt_ce_has_property_type)) return zv::Val::null();
+		zv::Val propertyName = pt_type_call(Z_OBJ_P(otherType), PT_LC("getpropertyname"), 0, NULL);
+		if (UNEXPECTED(propertyName.isUndef())) return zv::Val();
+		if (UNEXPECTED(!zv::Ref(propertyName.raw()).isString())) {
+			zend_type_error("phpstan_turbo: getPropertyName() must return string");
+			return zv::Val();
+		}
+		zend_string *name = zv::Ref(propertyName.raw()).asString();
+		/* $this->hasInstanceProperty($name)->no() - through the object's class */
+		zval nameZv;
+		ZVAL_STR(&nameZv, name);
+		zv::Val has = pt_type_call(self, PT_LC("hasinstanceproperty"), 1, &nameZv);
+		if (UNEXPECTED(has.isUndef())) return zv::Val();
+		if (pt_trinary_value(Z_OBJ_P(has.raw())) == PT_TRI_NO) return zv::Val::null();
+		/* $this->makePropertyRequired($name) - through the object's class */
+		return pt_type_call(self, PT_LC("makepropertyrequired"), 1, &nameZv);
+	}
+
 	/* the shape with the property no longer optional, $this for an unknown
 	 * one; UNDEF = pending exception */
 	zv::Val makePropertyRequired(zend_string *propertyName) const
@@ -1261,6 +1283,10 @@ PT_MINIT_REGISTRATION(pt_register_object_shape_type)
 	/* "properties" and "optionalProperties" must stay the first two
 	 * declared properties (slots::properties, slots::optionalProperties) */
 	ptdecl::ObjectShapeType::declareProperties(cls);
+
+	/* mirrors tryUnion() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method<&ObjectShapeType::tryIntersect, zp::Obj>(sigs::tryIntersect);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createobjects"));
 

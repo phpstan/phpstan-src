@@ -90,7 +90,7 @@ function test(int|string|null $duration, string $foo): ?bool
 		];
 	}
 
-	assertType('int<0, max>', count($alerts));
+	assertType('int<0, 10>', count($alerts));
 	if (count($alerts) === 0) {
 		return null;
 	}

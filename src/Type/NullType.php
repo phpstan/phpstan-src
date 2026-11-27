@@ -244,6 +244,11 @@ class NullType implements ConstantScalarType
 		return $this;
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::NULL;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
@@ -322,6 +327,11 @@ class NullType implements ConstantScalarType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -446,6 +456,16 @@ class NullType implements ConstantScalarType
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createNull();
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

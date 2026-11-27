@@ -291,7 +291,7 @@ class CountWithOptionalKeys
 		}
 
 		if (count($row) === 1) {
-			assertType('array{int}|array{string}', $row);
+			assertType('array{int|string}', $row);
 		} else {
 			assertType('array{int, string|null}', $row);
 		}
@@ -299,13 +299,13 @@ class CountWithOptionalKeys
 		if (count($row) === 2) {
 			assertType('array{int, string|null}', $row);
 		} else {
-			assertType('array{int}|array{string}', $row);
+			assertType('array{int|string}', $row);
 		}
 
 		if (count($row) === 3) {
 			assertType('*NEVER*', $row);
 		} else {
-			assertType('array{0: int, 1?: string|null}|array{string}', $row);
+			assertType('array{int, string|null}|array{int|string}', $row);
 		}
 	}
 

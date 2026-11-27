@@ -635,6 +635,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 		return $this->getStaticObjectType()->isList();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::OBJECT;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isNull();
@@ -713,6 +718,11 @@ class StaticType implements TypeWithClassName, SubtractableType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return $this->getStaticObjectType()->isLiteralString();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -910,6 +920,16 @@ class StaticType implements TypeWithClassName, SubtractableType
 	public function getSubtractedType(): ?Type
 	{
 		return $this->subtractedType;
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return SubtractionAlgebra::tryUnion($this, $otherType);
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return SubtractionAlgebra::tryIntersect($this, $otherType);
 	}
 
 	public function tryRemove(Type $typeToRemove): ?Type

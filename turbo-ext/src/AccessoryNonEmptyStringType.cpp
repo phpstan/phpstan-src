@@ -332,6 +332,13 @@ PT_MINIT_REGISTRATION(pt_register_accessory_non_empty_string_type)
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryNonEmptyStringType");
 	ptdecl::AccessoryNonEmptyStringType::declareClass(cls);
 	ptdecl::AccessoryNonEmptyStringType::declareProperties(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<(PT_STRING_CELLS_ALL & ~pt_string_cells_of(PT_STRING_CELL_EMPTY))>);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 
@@ -430,6 +437,9 @@ PT_MINIT_REGISTRATION(pt_register_accessory_non_empty_string_type)
 
 	cls.method<&AccessoryNonEmptyStringType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_STRING>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_STRING); });
 	cls.method(sigs::isNull, anesNo0);
 	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, anesMaybe0);

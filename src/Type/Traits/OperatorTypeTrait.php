@@ -29,6 +29,11 @@ trait OperatorTypeTrait
 		return null;
 	}
 
+	public function toExactNumberSet(): ?NumberSet
+	{
+		return null;
+	}
+
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createUnknown();

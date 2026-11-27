@@ -27,15 +27,19 @@ inline constexpr char strings[] =
 	"\0" /* 23 */
 	"PHPStan\\Type\\IsSuperTypeOfResult\0" /* 24 */
 	"isSuperTypeOf\0" /* 57 */
-	"strictTypes\0" /* 71 */
-	"PHPStan\\Type\\AcceptsResult\0" /* 83 */
-	"accepts"; /* 110 */
+	"getKindMask\0" /* 71 */
+	"strictTypes\0" /* 83 */
+	"PHPStan\\Type\\AcceptsResult\0" /* 95 */
+	"accepts\0" /* 122 */
+	"getStringRefinement"; /* 130 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* isSuperTypeOf $type */
 	reg::packed(23, 0, 24), /* isSuperTypeOf return */
+	reg::packed(23, MAY_BE_LONG), /* getKindMask return */
 	reg::packed(0, 0, 5), /* accepts $type */
-	reg::packed(71, MAY_BE_BOOL), /* accepts $strictTypes */
-	reg::packed(23, 0, 83), /* accepts return */
+	reg::packed(83, MAY_BE_BOOL), /* accepts $strictTypes */
+	reg::packed(23, 0, 95), /* accepts return */
+	reg::packed(23, MAY_BE_NULL | MAY_BE_LONG), /* getStringRefinement return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -43,7 +47,9 @@ using Sig = reg::Sig<strings, args>;
 /* the signatures of the methods the class declares itself (a used trait's are in the trait's header) */
 namespace sig {
 inline constexpr sigtab::Sig isSuperTypeOf = { { 57 /* isSuperTypeOf */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig accepts = { { 110 /* accepts */, 2, 2, 2, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getKindMask = { { 71 /* getKindMask */, 0, 2, 0, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig accepts = { { 122 /* accepts */, 2, 3, 2, 5, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStringRefinement = { { 130 /* getStringRefinement */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StringAlwaysAcceptingObjectWithToStringType

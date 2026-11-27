@@ -501,6 +501,22 @@ trait LateResolvableTypeTrait
 		return $this->resolve()->isSmallerThanOrEqual($otherType, $phpVersion);
 	}
 
+	public function getKindMask(): int
+	{
+		return $this->resolve()->getKindMask();
+	}
+
+	/** Stays unresolved: TypeCombinator keeps it apart instead of merging what it resolves to. */
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return $this->resolve()->isNull();
@@ -579,6 +595,11 @@ trait LateResolvableTypeTrait
 	public function isLiteralString(): TrinaryLogic
 	{
 		return $this->resolve()->isLiteralString();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic

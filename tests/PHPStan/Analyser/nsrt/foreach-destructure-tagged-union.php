@@ -131,3 +131,24 @@ function threePositions(array $list): void
 		}
 	}
 }
+
+/**
+ * A value one variant has at a position that another variant can have too
+ * does not pick the variant: `false` is the first variant's `$byRef` and one
+ * of the second's.
+ *
+ * @param list<array{'', 'a', false, null}|array{'x', 'b', bool, string|null}> $list
+ */
+function overlappingValues(array $list): void
+{
+	foreach ($list as [$tag, $kind, $byRef, $default]) {
+		if (!$byRef) {
+			assertType("''|'x'", $tag);
+			assertType('string|null', $default);
+		}
+		if ($tag === '') {
+			assertType("'a'", $kind);
+			assertType('null', $default);
+		}
+	}
+}

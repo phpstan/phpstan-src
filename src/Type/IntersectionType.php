@@ -1005,6 +1005,20 @@ class IntersectionType implements CompoundType
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isLiteralString());
 	}
 
+	public function getStringRefinement(): ?int
+	{
+		$cells = StringRefinement::ALL;
+		foreach ($this->types as $type) {
+			$typeCells = $type->getStringRefinement();
+			if ($typeCells === null) {
+				return null;
+			}
+			$cells &= $typeCells;
+		}
+
+		return $cells;
+	}
+
 	public function isLowercaseString(): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isLowercaseString());
@@ -1485,6 +1499,16 @@ class IntersectionType implements CompoundType
 	public function isSmallerThanOrEqual(Type $otherType, PhpVersion $phpVersion): TrinaryLogic
 	{
 		return $this->intersectResults(static fn (Type $type): TrinaryLogic => $type->isSmallerThanOrEqual($otherType, $phpVersion));
+	}
+
+	public function getKindMask(): int
+	{
+		$mask = TypeKind::ALL;
+		foreach ($this->types as $type) {
+			$mask &= $type->getKindMask();
+		}
+
+		return $mask;
 	}
 
 	public function isNull(): TrinaryLogic
@@ -2197,6 +2221,16 @@ class IntersectionType implements CompoundType
 		}
 
 		return $valueSet;
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return IntersectionAlgebra::tryUnion($this, $otherType);
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

@@ -416,6 +416,13 @@ PT_MINIT_REGISTRATION(pt_register_null_type)
 	reg::Class cls("PHPStan\\Type\\NullType");
 	ptdecl::NullType::declareClass(cls);
 	ptdecl::NullType::declareProperties(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_CREATE("createnull"));
 
@@ -569,6 +576,9 @@ PT_MINIT_REGISTRATION(pt_register_null_type)
 		PT_RETURN_VAL(PT_THIS.traverseSimultaneously());
 	});
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_NULL>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_NULL); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(NullType::isNull()));

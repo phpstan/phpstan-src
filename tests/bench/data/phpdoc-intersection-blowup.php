@@ -1,9 +1,9 @@
 <?php declare(strict_types = 1);
 
 /*
- * instructions: 39.69M
- * cycles: 54.13M
- * memory: 206.0KiB
+ * instructions: 38.85M
+ * cycles: 53.16M
+ * memory: 175.5KiB
  */
 
 namespace BenchPhpDocIntersectionBlowup;

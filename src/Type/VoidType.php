@@ -140,6 +140,12 @@ class VoidType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	/** void is no set of values; it compares like a value of any kind. */
+	public function getKindMask(): int
+	{
+		return TypeKind::ALL;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -218,6 +224,11 @@ class VoidType implements Type
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -303,6 +314,16 @@ class VoidType implements Type
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createInvalid();
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

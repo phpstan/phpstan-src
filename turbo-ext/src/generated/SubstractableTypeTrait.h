@@ -11,23 +11,32 @@ namespace ptdecl::SubstractableTypeTrait {
 /* the string and parameter tables the signatures below index into (see reg::Sig) */
 namespace sigtab {
 inline constexpr char strings[] =
-	"subtractedType\0" /* 0 */
-	"PHPStan\\Type\\Type\0" /* 15 */
-	"level\0" /* 33 */
-	"PHPStan\\Type\\VerbosityLevel\0" /* 39 */
-	"\0" /* 67 */
-	"describeSubtractedType"; /* 68 */
+	"otherType\0" /* 0 */
+	"PHPStan\\Type\\Type\0" /* 10 */
+	"\0" /* 28 */
+	"tryUnion\0" /* 29 */
+	"tryIntersect\0" /* 38 */
+	"subtractedType\0" /* 51 */
+	"level\0" /* 66 */
+	"PHPStan\\Type\\VerbosityLevel\0" /* 72 */
+	"describeSubtractedType"; /* 100 */
 inline constexpr reg::PackedArg args[] = {
-	reg::packed(0, MAY_BE_NULL, 15), /* describeSubtractedType $subtractedType */
-	reg::packed(33, 0, 39), /* describeSubtractedType $level */
-	reg::packed(67, MAY_BE_STRING), /* describeSubtractedType return */
+	reg::packed(0, 0, 10), /* tryUnion $otherType */
+	reg::packed(28, MAY_BE_NULL, 10), /* tryUnion return */
+	reg::packed(0, 0, 10), /* tryIntersect $otherType */
+	reg::packed(28, MAY_BE_NULL, 10), /* tryIntersect return */
+	reg::packed(51, MAY_BE_NULL, 10), /* describeSubtractedType $subtractedType */
+	reg::packed(66, 0, 72), /* describeSubtractedType $level */
+	reg::packed(28, MAY_BE_STRING), /* describeSubtractedType return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
 
 /* the signatures of the methods the trait declares itself */
 namespace sig {
-inline constexpr sigtab::Sig describeSubtractedType = { { 68 /* describeSubtractedType */, 2, 0, 2, 2, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryUnion = { { 29 /* tryUnion */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 38 /* tryIntersect */, 1, 2, 1, 3, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig describeSubtractedType = { { 100 /* describeSubtractedType */, 2, 4, 2, 6, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::SubstractableTypeTrait

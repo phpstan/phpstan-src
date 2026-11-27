@@ -15,6 +15,7 @@ use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\NullType;
+use PHPStan\Type\NumberSet;
 use PHPStan\Type\RecursionGuard;
 use PHPStan\Type\SubtractableType;
 use PHPStan\Type\Type;
@@ -94,6 +95,18 @@ trait TemplateTypeTrait
 			$basicDescription,
 			fn (): string => sprintf('%s (%s, %s)', $basicDescription(), $this->scope->describe(), $this->isArgument() ? 'argument' : 'parameter'),
 		);
+	}
+
+	/** A template stands for a type, not for the numbers of its bound. */
+	public function toExactNumberSet(): ?NumberSet
+	{
+		return null;
+	}
+
+	/** A template stands for a type, not for the values of its bound. */
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isArgument(): bool

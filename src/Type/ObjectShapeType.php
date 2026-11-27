@@ -625,4 +625,19 @@ class ObjectShapeType implements Type
 		return ValueSet::createObjects($this);
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		// the property a HasPropertyType asserts is present
+		if ($otherType instanceof HasPropertyType && !$this->hasInstanceProperty($otherType->getPropertyName())->no()) {
+			return $this->makePropertyRequired($otherType->getPropertyName());
+		}
+
+		return null;
+	}
+
 }

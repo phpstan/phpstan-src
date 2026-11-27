@@ -24,6 +24,7 @@ use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NativeTypePosition;
 use PHPStan\Type\ObjectWithoutClassType;
+use PHPStan\Type\StringRefinement;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\MaybeCallableTypeTrait;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
@@ -35,6 +36,7 @@ use PHPStan\Type\Traits\OperatorTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
@@ -243,6 +245,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::STRING;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -321,6 +328,11 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createYes();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return StringRefinement::LITERAL;
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -424,6 +436,16 @@ class AccessoryLiteralStringType implements CompoundType, AccessoryType
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createStrings($this);
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

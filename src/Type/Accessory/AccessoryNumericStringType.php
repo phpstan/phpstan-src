@@ -25,6 +25,7 @@ use PHPStan\Type\IntegerType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\NativeTypePosition;
+use PHPStan\Type\StringRefinement;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Traits\NonArrayTypeTrait;
 use PHPStan\Type\Traits\NonCallableTypeTrait;
@@ -36,6 +37,7 @@ use PHPStan\Type\Traits\UndecidedBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\ValueSet;
 use PHPStan\Type\VerbosityLevel;
@@ -253,6 +255,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 		return $this;
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::STRING;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -331,6 +338,11 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createMaybe();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return StringRefinement::of(StringRefinement::ZERO | StringRefinement::DECIMAL | StringRefinement::NUMERIC | StringRefinement::NUMERIC_LOWER | StringRefinement::NUMERIC_UPPER);
 	}
 
 	public function isLowercaseString(): TrinaryLogic
@@ -446,6 +458,16 @@ class AccessoryNumericStringType implements CompoundType, AccessoryType
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createStrings($this);
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

@@ -11,6 +11,7 @@ use PHPStan\ShouldNotHappenException;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\AcceptsResult;
+use PHPStan\Type\ArrayAlgebra;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\CompoundType;
@@ -42,6 +43,7 @@ use PHPStan\Type\Traits\TruthyBooleanTypeTrait;
 use PHPStan\Type\Traits\UndecidedComparisonCompoundTypeTrait;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use function spl_object_id;
@@ -425,6 +427,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::STRING | TypeKind::ARRAY | TypeKind::OBJECT;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -606,6 +613,16 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 	public function hasUnresolvedTemplateArgumentType(): bool
 	{
 		return $this->offsetType->hasUnresolvedTemplateArgumentType() || $this->valueType->hasUnresolvedTemplateArgumentType();
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return ArrayAlgebra::tryUnionHasOffsetValue($this, $otherType);
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

@@ -12,6 +12,7 @@ use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeKind;
 use PHPStan\Type\ValueSet;
 
 trait ArrayTypeTrait
@@ -109,6 +110,11 @@ trait ArrayTypeTrait
 		return TrinaryLogic::createMaybe();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::ARRAY;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -167,6 +173,11 @@ trait ArrayTypeTrait
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic

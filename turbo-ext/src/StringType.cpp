@@ -416,6 +416,13 @@ PT_MINIT_REGISTRATION(pt_register_string_type)
 	reg::Class cls("PHPStan\\Type\\StringType");
 	ptdecl::StringType::declareClass(cls);
 	ptdecl::StringType::declareProperties(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<PT_STRING_CELLS_ALL>);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 
@@ -494,6 +501,9 @@ PT_MINIT_REGISTRATION(pt_register_string_type)
 
 	cls.method<&StringType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_STRING>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_STRING); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(StringType::isNull()));

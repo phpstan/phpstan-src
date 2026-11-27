@@ -20,10 +20,11 @@ inline constexpr char strings[] =
 	"isNonEmptyString\0" /* 89 */
 	"isNonFalsyString\0" /* 106 */
 	"isLiteralString\0" /* 123 */
-	"isLowercaseString\0" /* 139 */
-	"isUppercaseString\0" /* 157 */
-	"isClassString\0" /* 175 */
-	"isScalar"; /* 189 */
+	"getStringRefinement\0" /* 139 */
+	"isLowercaseString\0" /* 159 */
+	"isUppercaseString\0" /* 177 */
+	"isClassString\0" /* 195 */
+	"isScalar"; /* 209 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* getConstantStrings return */
 	reg::packed(0, 0, 20), /* isString return */
@@ -32,6 +33,7 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 20), /* isNonEmptyString return */
 	reg::packed(0, 0, 20), /* isNonFalsyString return */
 	reg::packed(0, 0, 20), /* isLiteralString return */
+	reg::packed(0, MAY_BE_NULL | MAY_BE_LONG), /* getStringRefinement return */
 	reg::packed(0, 0, 20), /* isLowercaseString return */
 	reg::packed(0, 0, 20), /* isUppercaseString return */
 	reg::packed(0, 0, 20), /* isClassString return */
@@ -49,10 +51,11 @@ inline constexpr sigtab::Sig isDecimalIntegerString = { { 66 /* isDecimalInteger
 inline constexpr sigtab::Sig isNonEmptyString = { { 89 /* isNonEmptyString */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isNonFalsyString = { { 106 /* isNonFalsyString */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig isLiteralString = { { 123 /* isLiteralString */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isLowercaseString = { { 139 /* isLowercaseString */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isUppercaseString = { { 157 /* isUppercaseString */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isClassString = { { 175 /* isClassString */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig isScalar = { { 189 /* isScalar */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStringRefinement = { { 139 /* getStringRefinement */, 0, 7, 0, 7, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isLowercaseString = { { 159 /* isLowercaseString */, 0, 8, 0, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isUppercaseString = { { 177 /* isUppercaseString */, 0, 9, 0, 9, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isClassString = { { 195 /* isClassString */, 0, 10, 0, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig isScalar = { { 209 /* isScalar */, 0, 11, 0, 11, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::MaybeStringTypeTrait

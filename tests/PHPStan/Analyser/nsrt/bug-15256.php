@@ -86,7 +86,7 @@ function arrayMethods(
 
 	// Unlike array_rand(), picking a single key still returns an array.
 	assertType('array{string}', $randomizer->pickArrayKeys($nonEmptyArray, 1));
-	assertType("array{'a'}|array{'b'}", $randomizer->pickArrayKeys(['a' => 1, 'b' => 2], 1));
+	assertType("array{'a'|'b'}", $randomizer->pickArrayKeys(['a' => 1, 'b' => 2], 1));
 	assertType('non-empty-list<string>', $randomizer->pickArrayKeys($nonEmptyArray, $num));
 }
 

@@ -87,7 +87,7 @@ class ForeachFoo
 
 			assertType('1|2|3', $nullableInt);
 
-			assertType('list{0: 1|2|3, 1?: 1|2|3, 2?: 1|2|3}', $integers);
+			assertType('array{0: 1, 1: 1|2|3, 2?: 1|2|3}|array{1|2|3}|array{2, 1|2|3}', $integers);
 
 			assertType('non-empty-array<string, 1|2|3>', $this->property);
 

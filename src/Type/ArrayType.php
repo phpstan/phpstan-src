@@ -1054,4 +1054,14 @@ class ArrayType implements Type
 		return $this->keyType->hasUnresolvedTemplateArgumentType() || $this->itemType->hasUnresolvedTemplateArgumentType();
 	}
 
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return ArrayAlgebra::tryIntersectArray($this, $otherType);
+	}
+
 }

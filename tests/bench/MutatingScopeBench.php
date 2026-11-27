@@ -83,7 +83,7 @@ final class MutatingScopeBench
 	/**
 	 * Only the cases with a left side that may be set narrow the scope by isset() (#4661).
 	 */
-	#[Expected(instructions: '988.4K', cycles: '2.096M', memory: '93.89KiB')]
+	#[Expected(instructions: '1.014M', cycles: '2.149M', memory: '93.89KiB')]
 	public function benchGetTypeOfCoalesceWithNullLeft(): Type
 	{
 		return $this->scope()->getType(self::coalesce());
@@ -146,7 +146,7 @@ final class MutatingScopeBench
 	/**
 	 * The keys of the narrowed expressions are not printed again (#4691).
 	 */
-	#[Expected(instructions: '2.047M', cycles: '3.874M', memory: '109.7KiB')]
+	#[Expected(instructions: '2.106M', cycles: '4.009M', memory: '108.2KiB')]
 	public function benchFilterByTruthyValue(): MutatingScope
 	{
 		return $this->scope()->filterByTruthyValue(self::condition());
@@ -156,7 +156,7 @@ final class MutatingScopeBench
 	 * The scope remembers what the properties assigned in `if ($s !== null)` are when it holds,
 	 * but not what they are otherwise, so they are not intersected with anything (#4690).
 	 */
-	#[Expected(instructions: '611.7K', cycles: '1.427M', memory: '26.10KiB')]
+	#[Expected(instructions: '629.1K', cycles: '1.426M', memory: '26.10KiB')]
 	public function benchFilterByConditionOfConditionalExpressions(): MutatingScope
 	{
 		if ($this->conditionalScope === null) {

@@ -94,6 +94,7 @@ const pt_type_op_info pt_type_op_infos[PT_OP_COUNT] = {
 	/* PT_OP_GET_TEMPLATE_TYPE_MAP */ { "gettemplatetypemap", sizeof("gettemplatetypemap") - 1, 0, pt_type_op_kinds() },
 	/* PT_OP_GET_RESOLVED_PHP_DOC */ { "getresolvedphpdoc", sizeof("getresolvedphpdoc") - 1, 0, pt_type_op_kinds() },
 	/* PT_OP_WITH_TYPES */ { "withtypes", sizeof("withtypes") - 1, 1, pt_type_op_kinds() },
+	/* PT_OP_GET_KIND_MASK */ { "getkindmask", sizeof("getkindmask") - 1, 0, pt_type_op_kinds() },
 };
 
 pt_type_ops_slot pt_type_ops_table[PT_TYPE_OPS_TABLE_SIZE];

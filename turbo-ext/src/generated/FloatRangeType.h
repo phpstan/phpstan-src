@@ -87,12 +87,11 @@ inline constexpr char strings[] =
 	"toInteger\0" /* 814 */
 	"toString\0" /* 824 */
 	"toAbsoluteNumber\0" /* 833 */
-	"tryUnion\0" /* 850 */
-	"tryIntersect\0" /* 859 */
-	"typeToRemove\0" /* 872 */
-	"tryRemove\0" /* 885 */
-	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 895 */
-	"toPhpDocNode"; /* 934 */
+	"tryIntersect\0" /* 850 */
+	"typeToRemove\0" /* 863 */
+	"tryRemove\0" /* 876 */
+	"PHPStan\\PhpDocParser\\Ast\\Type\\TypeNode\0" /* 886 */
+	"toPhpDocNode"; /* 925 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_DOUBLE), /* __construct $min */
 	reg::packed(4, MAY_BE_DOUBLE), /* __construct $max */
@@ -165,13 +164,11 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(20, 0, 21), /* toInteger return */
 	reg::packed(20, 0, 21), /* toString return */
 	reg::packed(20, 0, 21), /* toAbsoluteNumber return */
-	reg::packed(385, 0, 21), /* tryUnion $otherType */
-	reg::packed(20, MAY_BE_NULL, 21), /* tryUnion return */
 	reg::packed(385, 0, 21), /* tryIntersect $otherType */
 	reg::packed(20, MAY_BE_NULL, 21), /* tryIntersect return */
-	reg::packed(872, 0, 21), /* tryRemove $typeToRemove */
+	reg::packed(863, 0, 21), /* tryRemove $typeToRemove */
 	reg::packed(20, MAY_BE_NULL, 21), /* tryRemove return */
-	reg::packed(20, 0, 895), /* toPhpDocNode return */
+	reg::packed(20, 0, 886), /* toPhpDocNode return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -180,8 +177,8 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 8 /* __construct */, 2, 0, 2, reg::NoArg, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig fromInterval = { { 39 /* fromInterval */, 2, 2, 2, 4, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig toOrdinal = { { 58 /* toOrdinal */, 1, 5, 1, 6, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig fromOrdinal = { { 76 /* fromOrdinal */, 1, 7, 1, 8, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig toOrdinal = { { 58 /* toOrdinal */, 1, 5, 1, 6, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig fromOrdinal = { { 76 /* fromOrdinal */, 1, 7, 1, 8, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig getOrdinalBounds = { { 93 /* getOrdinalBounds */, 1, 9, 1, 10, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig createAllSmallerThan = { { 110 /* createAllSmallerThan */, 1, 11, 1, 12, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig createAllSmallerThanOrEqualTo = { { 131 /* createAllSmallerThanOrEqualTo */, 1, 13, 1, 14, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC } };
@@ -212,10 +209,9 @@ inline constexpr sigtab::Sig toNumberSet = { { 802 /* toNumberSet */, 0, 67, 0, 
 inline constexpr sigtab::Sig toInteger = { { 814 /* toInteger */, 0, 68, 0, 68, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toString = { { 824 /* toString */, 0, 69, 0, 69, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig toAbsoluteNumber = { { 833 /* toAbsoluteNumber */, 0, 70, 0, 70, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryUnion = { { 850 /* tryUnion */, 1, 71, 1, 72, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryIntersect = { { 859 /* tryIntersect */, 1, 73, 1, 74, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig tryRemove = { { 885 /* tryRemove */, 1, 75, 1, 76, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig toPhpDocNode = { { 934 /* toPhpDocNode */, 0, 77, 0, 77, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryIntersect = { { 850 /* tryIntersect */, 1, 71, 1, 72, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig tryRemove = { { 876 /* tryRemove */, 1, 73, 1, 74, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig toPhpDocNode = { { 925 /* toPhpDocNode */, 0, 75, 0, 75, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::FloatRangeType

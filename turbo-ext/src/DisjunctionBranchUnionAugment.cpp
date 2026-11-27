@@ -147,8 +147,13 @@ public:
 			if (UNEXPECTED(rightIsSubType < 0)) return zv::Val();
 			if (!rightIsSubType) continue;
 
+			// TypeCombinator::widen(TypeCombinator::union($leftType, $rightType)):
+			// a join of the branches stored on the scope, widened like the
+			// joins of scopes
 			zv::Args unionArgs{leftType, rightType};
-			zv::Val unionType = pt_type_combinator_union(2, unionArgs);
+			zv::Val joined = pt_type_combinator_union(2, unionArgs);
+			if (UNEXPECTED(joined.isUndef())) return zv::Val();
+			zv::Val unionType = pt_type_combinator_call(PT_LC("widen"), 1, joined.raw());
 			if (UNEXPECTED(unionType.isUndef())) return zv::Val();
 			// a union that covers the whole original type gains no narrowing -
 			// pinning it would only stack a redundant intersection on the

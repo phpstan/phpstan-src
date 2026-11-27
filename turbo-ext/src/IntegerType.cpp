@@ -248,6 +248,13 @@ PT_MINIT_REGISTRATION(pt_register_integer_type)
 	reg::Class cls("PHPStan\\Type\\IntegerType");
 	ptdecl::IntegerType::declareClass(cls);
 	ptdecl::IntegerType::declareProperties(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
+	/* mirrors toExactNumberSet() */
+	cls.method(sigs::toExactNumberSet, pt_type_exact_number_set_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, pt_value_set_of_numbers);
 
@@ -289,6 +296,9 @@ PT_MINIT_REGISTRATION(pt_register_integer_type)
 		RETURN_COPY(pt_trinary_singleton(IntegerType::isOffsetAccessLegal()));
 	});
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_INT>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_INT); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(IntegerType::isNull()));

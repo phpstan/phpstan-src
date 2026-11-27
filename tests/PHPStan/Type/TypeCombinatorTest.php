@@ -1911,8 +1911,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 						new StringType(),
 					], [1], [0]),
 				],
-				UnionType::class,
-				'array{}|array{0?: string}',
+				ConstantArrayType::class,
+				'array{0?: string}',
 			],
 			[
 				[
@@ -2041,8 +2041,9 @@ class TypeCombinatorTest extends PHPStanTestCase
 						new AccessoryNonFalsyStringType(),
 					]),
 				],
-				StringType::class,
-				'string',
+				// string would hold '0' too
+				UnionType::class,
+				"''|non-falsy-string",
 			],
 			[
 				[
@@ -2097,16 +2098,16 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
 					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
 				],
-				UnionType::class,
-				'lowercase-string|non-falsy-string',
+				StringType::class,
+				'string',
 			],
 			[
 				[
 					new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
 					new IntersectionType([new StringType(), new AccessoryLowercaseStringType()]),
 				],
-				UnionType::class,
-				'lowercase-string|non-empty-string',
+				StringType::class,
+				'string',
 			],
 			[
 				[
@@ -2137,16 +2138,16 @@ class TypeCombinatorTest extends PHPStanTestCase
 					new IntersectionType([new StringType(), new AccessoryNonFalsyStringType()]),
 					new IntersectionType([new StringType(), new AccessoryUppercaseStringType()]),
 				],
-				UnionType::class,
-				'non-falsy-string|uppercase-string',
+				StringType::class,
+				'string',
 			],
 			[
 				[
 					new IntersectionType([new StringType(), new AccessoryNonEmptyStringType()]),
 					new IntersectionType([new StringType(), new AccessoryUppercaseStringType()]),
 				],
-				UnionType::class,
-				'non-empty-string|uppercase-string',
+				StringType::class,
+				'string',
 			],
 			[
 				[
@@ -3028,8 +3029,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 					])],
 				),
 			],
-			ConstantArrayType::class,
-			'array{int, non-empty-string}',
+			UnionType::class,
+			'array{int, \'0\'|\'foo\'}|array{int<0, max>, non-falsy-string}',
 		];
 
 		// current behaviour (unknown sealedness)
@@ -3082,8 +3083,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 				'array{int, 0|\'foo\'}',
 				'array{int<0, max>, non-falsy-string}',
 			],
-			ConstantArrayType::class,
-			'array{int, 0|non-falsy-string}',
+			UnionType::class,
+			'array{int, 0|\'foo\'}|array{int<0, max>, non-falsy-string}',
 		];
 
 		yield [
@@ -6963,8 +6964,8 @@ class TypeCombinatorTest extends PHPStanTestCase
 			}
 		}
 		$resultType = TypeCombinator::union(...$arrays);
-		$this->assertInstanceOf(ConstantArrayType::class, $resultType);
-		$this->assertSame('array{0: string, 1?: string, 2?: string, 3?: string, 4?: string, test?: string}', $resultType->describe(VerbosityLevel::precise()));
+		$this->assertInstanceOf(UnionType::class, $resultType);
+		$this->assertSame('array{0: string, 1: string, 2: string, 3: string, 4: string, test?: string}|array{0: string, 1: string, 2: string, 3: string, test: string, 4?: string}|array{0: string, 1: string, 2: string, test?: string}|array{0: string, 1: string, test: string, 2?: string}|array{0: string, test?: string}|list{0: string, 1?: string, 2?: string, 3?: string}', $resultType->describe(VerbosityLevel::precise()));
 	}
 
 	#[DataProvider('dataContainsNull')]

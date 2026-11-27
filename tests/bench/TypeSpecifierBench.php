@@ -103,7 +103,7 @@ final class TypeSpecifierBench
 	/**
 	 * $i ?: $t
 	 */
-	#[Expected(instructions: '186.7M', cycles: '239.2M', memory: '2.017MiB')]
+	#[Expected(instructions: '235.0M', cycles: '294.7M', memory: '2.025MiB')]
 	public function benchSpecifyShortTernary(): int
 	{
 		$exprs = $this->meter->exclude(static function (): array {

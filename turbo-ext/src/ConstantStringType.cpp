@@ -1336,6 +1336,9 @@ PT_MINIT_REGISTRATION(pt_register_constant_string_type)
 
 	reg::Class cls("PHPStan\\Type\\Constant\\ConstantStringType");
 	ptdecl::ConstantStringType::declareClass(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createconstantstring"));
 	cls.privateClassConstantLong("DESCRIBE_LIMIT", PT_CST_DESCRIBE_LIMIT);

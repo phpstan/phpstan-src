@@ -3660,6 +3660,9 @@ PT_MINIT_REGISTRATION(pt_register_object_type)
 
 	reg::Class cls("PHPStan\\Type\\ObjectType");
 	ptdecl::ObjectType::declareClass(cls);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_null_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createobjects"));
 	/* the twin's declaration order defines the PT_OT_PROP_* slots */
@@ -3841,6 +3844,9 @@ PT_MINIT_REGISTRATION(pt_register_object_type)
 		pt_ot_value(INTERNAL_FUNCTION_PARAM_PASSTHRU, &ObjectType::thisGetIterableValueType);
 	});
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_OBJECT>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_OBJECT); });
 	cls.method(sigs::isNull, otNo0);
 	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, otNo0);

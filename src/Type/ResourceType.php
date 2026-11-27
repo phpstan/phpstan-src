@@ -109,6 +109,11 @@ class ResourceType implements Type
 		return TrinaryLogic::createYes();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::RESOURCE;
+	}
+
 	public function isScalar(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -152,6 +157,16 @@ class ResourceType implements Type
 	public function toValueSet(): ValueSet
 	{
 		return ValueSet::createResources();
+	}
+
+	public function tryUnion(Type $otherType): ?Type
+	{
+		return null;
+	}
+
+	public function tryIntersect(Type $otherType): ?Type
+	{
+		return null;
 	}
 
 }

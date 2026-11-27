@@ -1944,10 +1944,13 @@ private:
 		}
 
 		// For each item × variant, build a holder: "when item is variant's value
-		// at this position, the *other* items are the variant's values at their
-		// positions". Skip the variant if the condition value is too wide to be
-		// a useful discriminator (i.e. equal to the union of all the variant
-		// values at this position — narrowing it back wouldn't pick a variant).
+		// at this position, the *other* items are the values at their positions
+		// of the variants whose value at this position can be that value" -
+		// those of the variant itself, and of every other variant that does
+		// not rule it out. Skip the variant if the condition value is too wide
+		// to be a useful discriminator (i.e. equal to the union of all the
+		// variant values at this position — narrowing it back wouldn't pick a
+		// variant).
 		for (uint32_t itemIdx = 0; itemIdx < itemCount; itemIdx++) {
 			zv::Str exprString = zv::Str::adopt(zend_string_concat2(PT_LC("$"), ZSTR_VAL(items[itemIdx].name), ZSTR_LEN(items[itemIdx].name)));
 			zv::Arr variantConditionTypes = zv::Arr::create(variantCount);
@@ -1962,16 +1965,30 @@ private:
 				zv::Val equals = typeOp(conditionType, PT_OP_EQUALS, "equals", 1, itemUnionType.raw());
 				if (UNEXPECTED(equals.isUndef())) return zv::Val();
 				if (zend_is_true(equals.raw())) continue;
+				std::vector<uint32_t> matchingVariantIdxs;
+				for (uint32_t otherVariantIdx = 0; otherVariantIdx < variantCount; otherVariantIdx++) {
+					if (otherVariantIdx != variantIdx) {
+						zend_long overlaps = isSuperTypeOf(variantValuesByItem[(size_t) itemIdx * variantCount + otherVariantIdx].raw(), conditionType);
+						if (UNEXPECTED(overlaps < 0)) return zv::Val();
+						if (overlaps == PT_TRI_NO) continue;
+					}
+					matchingVariantIdxs.push_back(otherVariantIdx);
+				}
 				zv::Val conditionVariable = newVariable(items[itemIdx].name);
 				if (UNEXPECTED(conditionVariable.isUndef())) return zv::Val();
 				zv::Arr conditions = zv::Arr::create(1);
 				conditions.set(exprString.get(), expressionTypeHolderYes(conditionVariable.raw(), conditionType));
 				for (uint32_t otherIdx = 0; otherIdx < itemCount; otherIdx++) {
 					if (otherIdx == itemIdx) continue;
-					zval *otherType = variantValuesByItem[(size_t) otherIdx * variantCount + variantIdx].raw();
+					zv::Arr otherTypes = zv::Arr::create((uint32_t) matchingVariantIdxs.size());
+					for (uint32_t matchingVariantIdx : matchingVariantIdxs) {
+						otherTypes.push(zv::Ref(variantValuesByItem[(size_t) otherIdx * variantCount + matchingVariantIdx].raw()));
+					}
+					zv::Val otherType = unionOfList(otherTypes);
+					if (UNEXPECTED(otherType.isUndef())) return zv::Val();
 					zv::Val otherVariable = newVariable(items[otherIdx].name);
 					if (UNEXPECTED(otherVariable.isUndef())) return zv::Val();
-					zv::Val typeHolder = expressionTypeHolderYes(otherVariable.raw(), otherType);
+					zv::Val typeHolder = expressionTypeHolderYes(otherVariable.raw(), otherType.raw());
 					zv::Val holder = newConditionalExpressionHolder(conditions.raw(), typeHolder.raw());
 					if (UNEXPECTED(holder.isUndef())) return zv::Val();
 					zv::Str holderKey = zv::Str::adopt(conditionalHolderKey(holder.raw()));

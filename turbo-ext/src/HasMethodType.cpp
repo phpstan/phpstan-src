@@ -352,6 +352,10 @@ PT_MINIT_REGISTRATION(pt_register_has_method_type)
 	/* "methodName" must stay the first declared property (slots::methodName) */
 	ptdecl::HasMethodType::declareProperties(cls);
 
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
 	cls.method<&HasMethodType::construct, zp::Str>(sigs::__construct);
 
 	cls.method(sigs::getReferencedClasses, hmtEmptyArray0);
@@ -408,6 +412,9 @@ PT_MINIT_REGISTRATION(pt_register_has_method_type)
 		PT_RETURN_TRINARY_OR_THROW(PT_THIS.isCallable());
 	});
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_STRING | PT_KIND_OBJECT>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_STRING | PT_KIND_OBJECT); });
 	cls.method(sigs::isNull, hmtNo0);
 	cls.method(sigs::isConstantValue, hmtNo0);
 	cls.method(sigs::isConstantScalarValue, hmtNo0);

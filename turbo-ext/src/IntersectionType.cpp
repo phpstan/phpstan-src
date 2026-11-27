@@ -3266,6 +3266,16 @@ PT_MINIT_REGISTRATION(pt_register_intersection_type)
 {
 	reg::Class cls("PHPStan\\Type\\IntersectionType");
 	ptdecl::IntersectionType::declareClass(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_intersection_try_union_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(pt_type_string_refinement_of_members(Z_OBJ_P(ZEND_THIS)));
+	});
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) { pt_value_set_of_members(INTERNAL_FUNCTION_PARAM_PASSTHRU, true); });
 	/* the slots PT_IT_PROP_*: the sixteen explicit properties first, the
@@ -3648,6 +3658,12 @@ PT_MINIT_REGISTRATION(pt_register_intersection_type)
 		pt_it_trinary_type_version(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isSmallerThanOrEqual);
 	});
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		PT_RETURN_VAL(pt_type_kind_mask_of_members(Z_OBJ_P(ZEND_THIS), true));
+	});
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return pt_type_kind_mask_of_members(self, true); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		pt_it_trinary0(INTERNAL_FUNCTION_PARAM_PASSTHRU, &IntersectionType::isNull);
 	});

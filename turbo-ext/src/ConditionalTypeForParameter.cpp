@@ -35,7 +35,6 @@ zend_class_entry *pt_ce_conditional_type_for_parameter = nullptr;
 /* a closure created by a closure of the method, both on the same line */
 #define PT_CTFP_NESTED_CLOSURE(method, line) PT_ABI_SINCE(80400, PT_CTFP_CLASS "::{closure:{closure:" PT_CTFP_CLASS "::" method "():" line "}:" line "}", PT_CTFP_CLASS "::PHPStan\\Type\\{closure}")
 
-
 namespace phpstanturbo {
 
 /* Mirrors PHPStan\Type\ConditionalTypeForParameter. State lives in the PHP

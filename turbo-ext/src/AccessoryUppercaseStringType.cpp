@@ -334,6 +334,13 @@ PT_MINIT_REGISTRATION(pt_register_accessory_uppercase_string_type)
 	reg::Class cls("PHPStan\\Type\\Accessory\\AccessoryUppercaseStringType");
 	ptdecl::AccessoryUppercaseStringType::declareClass(cls);
 	ptdecl::AccessoryUppercaseStringType::declareProperties(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+
+	/* mirrors getStringRefinement() */
+	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<pt_string_cells_of(PT_STRING_CELL_EMPTY | PT_STRING_CELL_ZERO | PT_STRING_CELL_DECIMAL | PT_STRING_CELL_NUMERIC | PT_STRING_CELL_NUMERIC_UPPER | PT_STRING_CELL_TEXT | PT_STRING_CELL_TEXT_UPPER)>);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 
@@ -432,6 +439,9 @@ PT_MINIT_REGISTRATION(pt_register_accessory_uppercase_string_type)
 
 	cls.method<&AccessoryUppercaseStringType::toCoercedArgumentType, zp::Bool>(sigs::toCoercedArgumentType);
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_STRING>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_STRING); });
 	cls.method(sigs::isNull, aucsNo0);
 	cls.op(PT_OP_IS_NULL, PT_OP_LAMBDA { return pt_op_trinary(PT_TRI_NO); });
 	cls.method(sigs::isConstantValue, aucsMaybe0);

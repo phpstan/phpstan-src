@@ -264,6 +264,11 @@ PT_MINIT_REGISTRATION(pt_register_constant_boolean_type)
 	ptdecl::ConstantBooleanType::declareClass(cls);
 	/* "value" must stay the first declared property (slots::value) */
 	ptdecl::ConstantBooleanType::declareProperties(cls);
+	/* mirrors getKindMask(): $this->value ? TypeKind::TRUE : TypeKind::FALSE */
+	cls.method(sigs::getKindMask, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		RETURN_LONG(Z_TYPE_P(OBJ_PROP_NUM(Z_OBJ_P(ZEND_THIS), ptdecl::ConstantBooleanType::slot::value)) == IS_TRUE ? PT_KIND_TRUE : PT_KIND_FALSE);
+	});
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();

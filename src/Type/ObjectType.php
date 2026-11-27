@@ -1381,6 +1381,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 		return $this->getIterableValueType();
 	}
 
+	public function getKindMask(): int
+	{
+		return TypeKind::OBJECT;
+	}
+
 	public function isNull(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
@@ -1459,6 +1464,11 @@ class ObjectType implements TypeWithClassName, SubtractableType
 	public function isLiteralString(): TrinaryLogic
 	{
 		return TrinaryLogic::createNo();
+	}
+
+	public function getStringRefinement(): ?int
+	{
+		return null;
 	}
 
 	public function isLowercaseString(): TrinaryLogic

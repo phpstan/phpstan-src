@@ -29,13 +29,15 @@ inline constexpr char strings[] =
 	"isSuperTypeOf\0" /* 57 */
 	"strictTypes\0" /* 71 */
 	"PHPStan\\Type\\AcceptsResult\0" /* 83 */
-	"accepts"; /* 110 */
+	"accepts\0" /* 110 */
+	"getStringRefinement"; /* 118 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 5), /* isSuperTypeOf $type */
 	reg::packed(23, 0, 24), /* isSuperTypeOf return */
 	reg::packed(0, 0, 5), /* accepts $type */
 	reg::packed(71, MAY_BE_BOOL), /* accepts $strictTypes */
 	reg::packed(23, 0, 83), /* accepts return */
+	reg::packed(23, MAY_BE_NULL | MAY_BE_LONG), /* getStringRefinement return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -44,6 +46,7 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig isSuperTypeOf = { { 57 /* isSuperTypeOf */, 1, 0, 1, 1, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig accepts = { { 110 /* accepts */, 2, 2, 2, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig getStringRefinement = { { 118 /* getStringRefinement */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
 } // namespace sig
 
 } // namespace ptdecl::StringNeverAcceptingObjectWithToStringType

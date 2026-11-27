@@ -839,6 +839,24 @@ parameters:
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 3
+			path: src/Type/ArrayAlgebra.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantArrayType is error-prone and deprecated. Use Type::getConstantArrays() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 3
+			path: src/Type/ArrayAlgebra.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\IterableType is error-prone and deprecated. Use Type::isIterable() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 5
+			path: src/Type/ArrayAlgebra.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 3
 			path: src/Type/ArrayType.php
 
 		-
@@ -884,10 +902,46 @@ parameters:
 			path: src/Type/CallableType.php
 
 		-
+			rawMessage: 'Doing instanceof PHPStan\Type\Generic\GenericClassStringType is error-prone and deprecated. Use Type::isClassStringType() and Type::getClassStringObjectType() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/ClassStringAlgebra.php
+
+		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 1
 			path: src/Type/ClosureType.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\CallableType is error-prone and deprecated. Use Type::isCallable() and Type::getCallableParametersAcceptors() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/Combinator/ArrayUnion.php
+
+		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/Combinator/ArrayUnion.php
+
+		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/Combinator/ExactIntersectRule.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\IterableType is error-prone and deprecated. Use Type::isIterable() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/Combinator/IterableUnionRule.php
+
+		-
+			rawMessage: 'Doing instanceof PHPStan\Type\IterableType is error-prone and deprecated. Use Type::isIterable() instead.'
+			identifier: phpstanApi.instanceofType
+			count: 2
+			path: src/Type/Combinator/SubsumptionIntersectRule.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'
@@ -1358,6 +1412,12 @@ parameters:
 			path: src/Type/IntegerType.php
 
 		-
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
+			identifier: phpstanApi.instanceofType
+			count: 1
+			path: src/Type/IntersectionAlgebra.php
+
+		-
 			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 4
@@ -1586,57 +1646,21 @@ parameters:
 			path: src/Type/StringType.php
 
 		-
-			rawMessage: 'Doing instanceof PHPStan\Type\ArrayType is error-prone and deprecated. Use Type::isArray() or Type::getArrays() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 5
-			path: src/Type/TypeCombinator.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\CallableType is error-prone and deprecated. Use Type::isCallable() and Type::getCallableParametersAcceptors() instead.'
+			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
 			count: 1
-			path: src/Type/TypeCombinator.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantArrayType is error-prone and deprecated. Use Type::getConstantArrays() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 24
-			path: src/Type/TypeCombinator.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Constant\ConstantStringType is error-prone and deprecated. Use Type::getConstantStrings() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 2
-			path: src/Type/TypeCombinator.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\Generic\GenericClassStringType is error-prone and deprecated. Use Type::isClassStringType() and Type::getClassStringObjectType() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 2
-			path: src/Type/TypeCombinator.php
+			path: src/Type/SubtractionAlgebra.php
 
 		-
 			rawMessage: Doing instanceof PHPStan\Type\IntersectionType is error-prone and deprecated.
 			identifier: phpstanApi.instanceofType
-			count: 7
-			path: src/Type/TypeCombinator.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\IterableType is error-prone and deprecated. Use Type::isIterable() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 8
+			count: 1
 			path: src/Type/TypeCombinator.php
 
 		-
 			rawMessage: 'Doing instanceof PHPStan\Type\NullType is error-prone and deprecated. Use Type::isNull() instead.'
 			identifier: phpstanApi.instanceofType
 			count: 1
-			path: src/Type/TypeCombinator.php
-
-		-
-			rawMessage: 'Doing instanceof PHPStan\Type\ObjectShapeType is error-prone and deprecated. Use Type::isObject() and Type::hasProperty() instead.'
-			identifier: phpstanApi.instanceofType
-			count: 2
 			path: src/Type/TypeCombinator.php
 
 		-

@@ -54,6 +54,13 @@ PT_MINIT_REGISTRATION(pt_register_resource_type)
 	reg::Class cls("PHPStan\\Type\\ResourceType");
 	ptdecl::ResourceType::declareClass(cls);
 	ptdecl::ResourceType::declareProperties(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_RESOURCE>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_RESOURCE); });
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_CREATE("createresources"));
 

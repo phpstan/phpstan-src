@@ -46,11 +46,11 @@ class Test {
 			}
 			assertType('array{default?: PHPStan\Type\Type, range: PHPStan\Type\Type}', $otherTypes);
 		}
-		assertType('non-empty-array{default?: PHPStan\Type\Type, range?: PHPStan\Type\Type}', $otherTypes);
+		assertType('array{default: PHPStan\Type\Type}|array{default?: PHPStan\Type\Type, range: PHPStan\Type\Type}', $otherTypes);
 		if ($exactType !== null) {
-			assertType('non-empty-array{default?: PHPStan\Type\Type, range?: PHPStan\Type\Type}', $otherTypes);
+			assertType('array{default: PHPStan\Type\Type}|array{default?: PHPStan\Type\Type, range: PHPStan\Type\Type}', $otherTypes);
 			unset($otherTypes['default']);
-			assertType('array{range?: PHPStan\Type\Type}', $otherTypes);
+			assertType('array{}|array{range: PHPStan\Type\Type}', $otherTypes);
 		}
 		assertType('array{default?: PHPStan\Type\Type, range?: PHPStan\Type\Type}', $otherTypes);
 		if (isset($otherTypes['default']) && $otherTypes['default']->isSuperTypeOf($type)->no()) {

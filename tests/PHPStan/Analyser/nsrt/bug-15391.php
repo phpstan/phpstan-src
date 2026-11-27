@@ -45,5 +45,5 @@ function guardedAppendsInLoops(bool $c): void
 			$l[] = 'b';
 		}
 	}
-	assertType("list{0: 'x', 1: 'a'|'b', 2?: 'a'|'b', 3?: 'b', 4?: 'b'}", $l);
+	assertType("list{0: 'x', 1: 'a', 2: 'a'|'b', 3?: 'b', 4?: 'b'}|list{0: 'x', 1: 'a'|'b', 2?: 'a'|'b', 3?: 'b'}", $l);
 }

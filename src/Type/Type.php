@@ -462,10 +462,26 @@ interface Type
 	public function toNumberSet(): ?NumberSet;
 
 	/**
+	 * The numbers this type holds when it is exactly the union of them: int,
+	 * float and their ranges and constants. Null for any other type, a template
+	 * of a number type included, which stands for a type and not its values.
+	 */
+	public function toExactNumberSet(): ?NumberSet;
+
+	/**
 	 * The values this type holds, by the kinds of values PHP's operators tell apart.
 	 * A union of types is the union of their sets, an intersection their intersection.
 	 */
 	public function toValueSet(): ValueSet;
+
+	/**
+	 * The kinds of values this type may hold, as TypeKind bits: a bit can be
+	 * set for a kind the type holds no value of, never the other way round.
+	 * Unions OR the masks of their members, intersections AND them.
+	 *
+	 * @return int-mask-of<TypeKind::*>
+	 */
+	public function getKindMask(): int;
 
 	/** Models the bitwise-not (`~$x`) operator. Returns `ErrorType` for types where `~` is undefined. */
 	public function toBitwiseNotType(): Type;
@@ -606,6 +622,15 @@ interface Type
 	 */
 	public function isLiteralString(): TrinaryLogic;
 
+	/**
+	 * The strings this type holds as StringRefinement cells, when they are
+	 * exactly the strings of those cells: string and the conjunctions of its
+	 * accessory types. Null for any other type, a constant string included.
+	 *
+	 * @return int-mask-of<StringRefinement::*>|null
+	 */
+	public function getStringRefinement(): ?int;
+
 	public function isLowercaseString(): TrinaryLogic;
 
 	public function isUppercaseString(): TrinaryLogic;
@@ -719,6 +744,23 @@ interface Type
 
 	/** @see TypeCombinator::remove() */
 	public function tryRemove(Type $typeToRemove): ?Type;
+
+	/**
+	 * The union with the other type as this type alone, when this type absorbs
+	 * it by more than being its supertype, such as `mixed~int|1` being
+	 * `mixed~(int<min, 0>|int<2, max>)`. Null when it does not; TypeCombinator::union()
+	 * asks the other type the same.
+	 */
+	public function tryUnion(Type $otherType): ?Type;
+
+	/**
+	 * The intersection with the other type as one type, when this type knows it
+	 * better than as the subtype of the two, such as `Foo & object~Bar` being
+	 * `Foo~Bar`. Null when it does not; TypeCombinator::intersect() asks the
+	 * other type the same, and asks both before it drops supertypes. A type that
+	 * compares the two to find out may return the one the other holds instead.
+	 */
+	public function tryIntersect(Type $otherType): ?Type;
 
 	/**
 	 * Removes constant value information. E.g. 'foo' -> string, 1 -> int.

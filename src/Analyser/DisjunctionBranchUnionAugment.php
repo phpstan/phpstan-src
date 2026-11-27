@@ -58,7 +58,10 @@ final class DisjunctionBranchUnionAugment implements DeferredSpecifiedTypesAugme
 				continue;
 			}
 
-			$unionType = TypeCombinator::union($leftType, $rightType);
+			// a join of the branches stored on the scope, widened like the
+			// joins of scopes: the unions of an isset() chain's branches
+			// otherwise grow by one shape per subject
+			$unionType = TypeCombinator::widen(TypeCombinator::union($leftType, $rightType));
 			// a union that covers the whole original type gains no narrowing -
 			// pinning it would only stack a redundant intersection on the
 			// expression (e.g. re-wrapping a template type in its own bound)

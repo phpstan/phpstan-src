@@ -236,6 +236,10 @@ PT_MINIT_REGISTRATION(pt_register_boolean_type)
 	reg::Class cls("PHPStan\\Type\\BooleanType");
 	ptdecl::BooleanType::declareClass(cls);
 	ptdecl::BooleanType::declareProperties(cls);
+
+	/* mirrors tryUnion() and tryIntersect() */
+	cls.method(sigs::tryUnion, pt_type_try_null_handler);
+	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
@@ -285,6 +289,9 @@ PT_MINIT_REGISTRATION(pt_register_boolean_type)
 		RETURN_COPY(pt_trinary_singleton(BooleanType::isOffsetAccessLegal()));
 	});
 
+	/* mirrors getKindMask() */
+	cls.method(sigs::getKindMask, pt_type_kind_mask_handler<PT_KIND_BOOL>);
+	cls.op(PT_OP_GET_KIND_MASK, PT_OP_LAMBDA { return zv::Val::integer(PT_KIND_BOOL); });
 	cls.method(sigs::isNull, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		RETURN_COPY(pt_trinary_singleton(BooleanType::isNull()));

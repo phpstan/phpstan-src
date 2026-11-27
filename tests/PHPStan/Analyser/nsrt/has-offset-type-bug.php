@@ -65,7 +65,7 @@ class Foo
 	{
 		assertType("array{min?: bool|float|int|string|null, max?: bool|float|int|string|null}", $range);
 		if (isset($range['min']) || isset($range['max'])) {
-			assertType("non-empty-array{min?: bool|float|int|string|null, max?: bool|float|int|string|null}", $range);
+			assertType("array{min: bool|float|int|string|null, max?: bool|float|int|string|null}|array{min?: bool|float|int|string|null, max: bool|float|int|string|null}", $range);
 		} else {
 			assertType("array{min?: bool|float|int|string|null, max?: bool|float|int|string|null}", $range);
 		}

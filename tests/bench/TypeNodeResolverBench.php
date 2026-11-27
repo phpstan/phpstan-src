@@ -55,8 +55,8 @@ final class TypeNodeResolverBench
 	 * A non-empty-list shape gets both the list and the non-empty accessory.
 	 */
 	#[DataProvider(method: 'items')]
-	#[ExpectedFor(dataSet: 'items-4', instructions: '80.50K', cycles: '297.9K', memory: '5.430KiB')]
-	#[ExpectedFor(dataSet: 'items-32', instructions: '545.4K', cycles: '854.6K', memory: '15.37KiB')]
+	#[ExpectedFor(dataSet: 'items-4', instructions: '96.13K', cycles: '321.7K', memory: '4.852KiB')]
+	#[ExpectedFor(dataSet: 'items-32', instructions: '566.2K', cycles: '863.5K', memory: '14.79KiB')]
 	public function benchResolveNonEmptyListShape(int $items): Type
 	{
 		if ($this->resolver === null || $this->typeNode === null) {

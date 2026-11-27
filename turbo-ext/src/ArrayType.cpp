@@ -741,8 +741,6 @@ public:
 			zend_long valueIsConstantArray = pt_type_op_trinary(Z_OBJ_P(valueType), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
 			if (UNEXPECTED(valueIsConstantArray < 0)) return zv::Val();
 			if (valueIsConstantArray == PT_TRI_YES) {
-				zv::Val itemConstantArrays = pt_type_call_array(Z_OBJ_P(i), PT_LC("getconstantarrays"), 0, NULL);
-				if (UNEXPECTED(itemConstantArrays.isUndef())) return zv::Val();
 				zv::Val constantArrays = pt_type_call_array(Z_OBJ_P(valueType), PT_LC("getconstantarrays"), 0, NULL);
 				if (UNEXPECTED(constantArrays.isUndef())) return zv::Val();
 				zv::Arr newItemTypes = zv::Arr::create(zend_hash_num_elements(Z_ARRVAL_P(constantArrays.raw())) * 2);
@@ -753,55 +751,109 @@ public:
 						return zv::Val();
 					}
 					/* A written shape with optional keys is not all-or-nothing:
-					 * each optional key may or may not be present on its own,
-					 * so it is written as optional (present keys keep their
-					 * certainty, the value unions with what the key held)
-					 * instead of once with every key required and once with
-					 * every optional key unset. */
+					 * each optional key may or may not be present on its own, so
+					 * it is written into each item shape as optional, instead of
+					 * once with every key required and once with every optional
+					 * key unset. Like a key written without optional keys, a key
+					 * the written shape has is required, and one it may have is
+					 * optional, such as one an offset was unset from; only one
+					 * entry is written, so the value unions with what the key
+					 * held. */
 					zv::Val optionalKeys = pt_type_call_array(Z_OBJ_P(constArray), PT_LC("getoptionalkeys"), 0, NULL);
 					if (UNEXPECTED(optionalKeys.isUndef())) return zv::Val();
-					if (zend_hash_num_elements(Z_ARRVAL_P(optionalKeys.raw())) > 0 && zend_hash_num_elements(Z_ARRVAL_P(itemConstantArrays.raw())) == 1) {
-						zval *itemConstantArray = zend_hash_index_find(Z_ARRVAL_P(itemConstantArrays.raw()), 0);
-						if (UNEXPECTED(itemConstantArray == NULL || Z_TYPE_P(itemConstantArray) != IS_OBJECT)) {
-							zend_type_error("phpstan_turbo: getConstantArrays() must return a list of ConstantArrayType instances");
-							return zv::Val();
-						}
-						zv::Val builder = pt_constant_array_type_builder_create_from_constant_array(itemConstantArray);
-						if (UNEXPECTED(builder.isUndef())) return zv::Val();
+					if (zend_hash_num_elements(Z_ARRVAL_P(optionalKeys.raw())) > 0) {
+						zv::Val itemConstantArrays = pt_type_call_array(Z_OBJ_P(i), PT_LC("getconstantarrays"), 0, NULL);
+						if (UNEXPECTED(itemConstantArrays.isUndef())) return zv::Val();
 						zv::Val shapeKeyTypes = pt_type_call_array(Z_OBJ_P(constArray), PT_LC("getkeytypes"), 0, NULL);
 						if (UNEXPECTED(shapeKeyTypes.isUndef())) return zv::Val();
-						for (zv::ArrayEntry keyEntry : zv::ArrRef(shapeKeyTypes.raw())) {
-							zval *keyType = keyEntry.value().deref().raw();
-							if (UNEXPECTED(Z_TYPE_P(keyType) != IS_OBJECT || keyEntry.hasStringKey())) {
-								zend_type_error("phpstan_turbo: getKeyTypes() must return a list of %s", ptcls::type);
-								return zv::Val();
-							}
-							zv::Val offsetValue = callType(Z_OBJ_P(constArray), PT_LC("getoffsetvaluetype"), 1, keyType);
-							if (UNEXPECTED(offsetValue.isUndef())) return zv::Val();
-							zval index;
-							ZVAL_LONG(&index, (zend_long) keyEntry.indexKey());
-							zv::Val optional = pt_type_call(Z_OBJ_P(constArray), PT_LC("isoptionalkey"), 1, &index);
-							if (UNEXPECTED(optional.isUndef())) return zv::Val();
-							zv::Args setArgs{keyType, offsetValue.raw(), bool(zend_is_true(optional.raw()))};
-							zv::Val set = pt_type_call(Z_OBJ_P(builder.raw()), PT_LC("setoffsetvaluetype"), 3, setArgs);
-							if (UNEXPECTED(set.isUndef())) return zv::Val();
-						}
-						zv::Val shape = pt_type_call(Z_OBJ_P(builder.raw()), PT_LC("getarray"), 0, NULL);
-						if (UNEXPECTED(shape.isUndef())) return zv::Val();
 						zv::Val accessories = pt_type_call_static_ce(pt_ce_type_utils, PT_LC("getaccessorytypes"), 1, i);
 						if (UNEXPECTED(accessories.isUndef())) return zv::Val();
 						if (UNEXPECTED(Z_TYPE_P(accessories.raw()) != IS_ARRAY)) {
 							zend_type_error("phpstan_turbo: TypeUtils::getAccessoryTypes() must return an array");
 							return zv::Val();
 						}
-						zv::Arr intersectArgs = zv::Arr::create(1 + zend_hash_num_elements(Z_ARRVAL_P(accessories.raw())));
-						intersectArgs.push(std::move(shape));
-						for (zv::ArrayEntry accessoryEntry : zv::ArrRef(accessories.raw())) {
-							intersectArgs.push(accessoryEntry.value());
+						for (zv::ArrayEntry itemEntry : zv::ArrRef(itemConstantArrays.raw())) {
+							zval *itemConstantArray = itemEntry.value().deref().raw();
+							if (UNEXPECTED(Z_TYPE_P(itemConstantArray) != IS_OBJECT)) {
+								zend_type_error("phpstan_turbo: getConstantArrays() must return ConstantArrayType instances");
+								return zv::Val();
+							}
+							/* new ConstantArrayType([], [], unsealed: $itemConstantArray->getUnsealedTypes()) */
+							zv::Val itemUnsealed = pt_type_call(Z_OBJ_P(itemConstantArray), PT_LC("getunsealedtypes"), 0, NULL);
+							if (UNEXPECTED(itemUnsealed.isUndef())) return zv::Val();
+							zval empty, start;
+							ZVAL_EMPTY_ARRAY(&empty);
+							if (UNEXPECTED(!pt_constant_array_type_new(&start, &empty, &empty, NULL, NULL, NULL, Z_TYPE_P(itemUnsealed.raw()) == IS_NULL ? NULL : itemUnsealed.raw()))) return zv::Val();
+							zv::Val startArray = zv::Val::adopt(start);
+							zv::Val builder = pt_constant_array_type_builder_create_from_constant_array(startArray.raw());
+							if (UNEXPECTED(builder.isUndef())) return zv::Val();
+							zv::Val itemKeyTypes = pt_type_call_array(Z_OBJ_P(itemConstantArray), PT_LC("getkeytypes"), 0, NULL);
+							if (UNEXPECTED(itemKeyTypes.isUndef())) return zv::Val();
+							zv::Val itemValueTypes = pt_type_call_array(Z_OBJ_P(itemConstantArray), PT_LC("getvaluetypes"), 0, NULL);
+							if (UNEXPECTED(itemValueTypes.isUndef())) return zv::Val();
+							for (zv::ArrayEntry keyEntry : zv::ArrRef(itemKeyTypes.raw())) {
+								zval *keyType = keyEntry.value().deref().raw();
+								if (UNEXPECTED(Z_TYPE_P(keyType) != IS_OBJECT || keyEntry.hasStringKey())) {
+									zend_type_error("phpstan_turbo: getKeyTypes() must return a list of %s", ptcls::type);
+									return zv::Val();
+								}
+								zval *itemValueType = zend_hash_index_find(Z_ARRVAL_P(itemValueTypes.raw()), keyEntry.indexKey());
+								if (UNEXPECTED(itemValueType == NULL || Z_TYPE_P(itemValueType) != IS_OBJECT)) {
+									zend_type_error("phpstan_turbo: getValueTypes() must return a list of %s", ptcls::type);
+									return zv::Val();
+								}
+								zend_long hasOffset = pt_type_op_trinary(Z_OBJ_P(constArray), PT_OP_HAS_OFFSET_VALUE_TYPE, 1, keyType);
+								if (UNEXPECTED(hasOffset < 0)) return zv::Val();
+								zv::Val setValue;
+								bool optional;
+								if (hasOffset == PT_TRI_NO) {
+									setValue = zv::Val::copyOf(zv::Ref(itemValueType));
+									zval index;
+									ZVAL_LONG(&index, (zend_long) keyEntry.indexKey());
+									zv::Val itemOptional = pt_type_call(Z_OBJ_P(itemConstantArray), PT_LC("isoptionalkey"), 1, &index);
+									if (UNEXPECTED(itemOptional.isUndef())) return zv::Val();
+									optional = zend_is_true(itemOptional.raw());
+								} else {
+									zv::Val writtenValue = callType(Z_OBJ_P(constArray), PT_LC("getoffsetvaluetype"), 1, keyType);
+									if (UNEXPECTED(writtenValue.isUndef())) return zv::Val();
+									setValue = combinator2(PT_LC("union"), itemValueType, writtenValue.raw());
+									if (UNEXPECTED(setValue.isUndef())) return zv::Val();
+									optional = hasOffset == PT_TRI_MAYBE;
+								}
+								zv::Args setArgs{keyType, setValue.raw(), optional};
+								zv::Val set = pt_type_call(Z_OBJ_P(builder.raw()), PT_LC("setoffsetvaluetype"), 3, setArgs);
+								if (UNEXPECTED(set.isUndef())) return zv::Val();
+							}
+							for (zv::ArrayEntry keyEntry : zv::ArrRef(shapeKeyTypes.raw())) {
+								zval *keyType = keyEntry.value().deref().raw();
+								if (UNEXPECTED(Z_TYPE_P(keyType) != IS_OBJECT || keyEntry.hasStringKey())) {
+									zend_type_error("phpstan_turbo: getKeyTypes() must return a list of %s", ptcls::type);
+									return zv::Val();
+								}
+								zend_long itemHasOffset = pt_type_op_trinary(Z_OBJ_P(itemConstantArray), PT_OP_HAS_OFFSET_VALUE_TYPE, 1, keyType);
+								if (UNEXPECTED(itemHasOffset < 0)) return zv::Val();
+								if (itemHasOffset != PT_TRI_NO) continue;
+								zv::Val offsetValue = callType(Z_OBJ_P(constArray), PT_LC("getoffsetvaluetype"), 1, keyType);
+								if (UNEXPECTED(offsetValue.isUndef())) return zv::Val();
+								zval index;
+								ZVAL_LONG(&index, (zend_long) keyEntry.indexKey());
+								zv::Val optional = pt_type_call(Z_OBJ_P(constArray), PT_LC("isoptionalkey"), 1, &index);
+								if (UNEXPECTED(optional.isUndef())) return zv::Val();
+								zv::Args setArgs{keyType, offsetValue.raw(), bool(zend_is_true(optional.raw()))};
+								zv::Val set = pt_type_call(Z_OBJ_P(builder.raw()), PT_LC("setoffsetvaluetype"), 3, setArgs);
+								if (UNEXPECTED(set.isUndef())) return zv::Val();
+							}
+							zv::Val shape = pt_type_call(Z_OBJ_P(builder.raw()), PT_LC("getarray"), 0, NULL);
+							if (UNEXPECTED(shape.isUndef())) return zv::Val();
+							zv::Arr intersectArgs = zv::Arr::create(1 + zend_hash_num_elements(Z_ARRVAL_P(accessories.raw())));
+							intersectArgs.push(std::move(shape));
+							for (zv::ArrayEntry accessoryEntry : zv::ArrRef(accessories.raw())) {
+								intersectArgs.push(accessoryEntry.value());
+							}
+							zv::Val intersected = pt_type_combinator_call_spread(PT_LC("intersect"), intersectArgs.table());
+							if (UNEXPECTED(intersected.isUndef())) return zv::Val();
+							newItemTypes.push(std::move(intersected));
 						}
-						zv::Val intersected = pt_type_combinator_call_spread(PT_LC("intersect"), intersectArgs.table());
-						if (UNEXPECTED(intersected.isUndef())) return zv::Val();
-						newItemTypes.push(std::move(intersected));
 						continue;
 					}
 

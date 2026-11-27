@@ -2920,14 +2920,52 @@ public:
 				zend_string *key = entryKeyString(entry, "getVariablesOfExpressionKey", "key");
 				if (UNEXPECTED(key == NULL)) return zv::Val();
 				if (!addVariablesOfExpressionKey(roots, key)) return zv::Val::null();
-				/* a statement narrowing a guard applies the holder to its
-				 * target, so the guards' variables differ in effect too */
+			}
+		}
+
+		/* array_keys($roots) */
+		zv::Arr keys = zv::Arr::create(roots.arrRef().size());
+		for (auto entry : roots.arrRef()) {
+			keys.push(zv::Val::string(entry.stringKey()));
+		}
+		return zv::Val(std::move(keys));
+	}
+
+	/* The variables spelled by the guards of the conditional expressions
+	 * only one of this scope and $other has; null when such a guard has no
+	 * variable root. */
+	zv::Val getDifferingConditionalGuardRoots(zend_object *otherObject)
+	{
+		MutatingScope other(otherObject);
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS, "conditionalExpressions") || !other.requireSlot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS, "conditionalExpressions"))) {
+			return zv::Val();
+		}
+		zv::Arr roots = zv::Arr::create(0);
+		zv::Arr seenGuardKeys = zv::Arr::create(0);
+		HashTable *ourConditionals = Z_ARRVAL_P(slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw());
+		HashTable *theirConditionals = Z_ARRVAL_P(other.slot(PT_MS_PROP_CONDITIONAL_EXPRESSIONS).raw());
+		const struct { HashTable *ours; HashTable *theirs; } conditionalTables[] = {
+			{ ourConditionals, theirConditionals },
+			{ theirConditionals, ourConditionals },
+		};
+		for (const auto &table : conditionalTables) {
+			for (auto entry : zv::TableRef(table.ours)) {
+				zval *theirSlot = findByEntryKey(table.theirs, entry);
+				HashTable *theirHolders = NULL;
+				if (theirSlot != NULL) {
+					ZVAL_DEREF(theirSlot);
+					if (Z_TYPE_P(theirSlot) == IS_ARRAY) theirHolders = Z_ARRVAL_P(theirSlot);
+				}
 				zv::Ref holders = entry.value().deref();
 				if (UNEXPECTED(!holders.isArray())) {
 					zend_throw_error(NULL, "phpstan_turbo: a conditional expressions entry is not an array");
 					return zv::Val();
 				}
+				/* $theirHolders === $holders, [] when missing */
+				if (theirHolders != NULL ? zend_is_identical(theirSlot, holders.raw()) : zend_hash_num_elements(holders.asArrayTable()) == 0) continue;
+				/* array_diff_key($holders, $theirHolders) */
 				for (auto holderEntry : zv::TableRef(holders.asArrayTable())) {
+					if (theirHolders != NULL && pt_ht_find(theirHolders, holderEntry.stringKeyOrNull(), holderEntry.indexKey()) != NULL) continue;
 					zv::Val conditions = conditionalConditions(holderEntry.value().deref());
 					if (UNEXPECTED(conditions.isUndef())) return zv::Val();
 					if (UNEXPECTED(Z_TYPE_P(conditions.raw()) != IS_ARRAY)) {
@@ -2937,6 +2975,10 @@ public:
 					for (auto guardEntry : zv::ArrRef(conditions.raw())) {
 						zend_string *guardKey = entryKeyString(guardEntry, "getVariablesOfExpressionKey", "key");
 						if (UNEXPECTED(guardKey == NULL)) return zv::Val();
+						if (zend_symtable_find(seenGuardKeys.table(), guardKey) != NULL) continue;
+						zval trueZv;
+						ZVAL_TRUE(&trueZv);
+						zend_symtable_update(seenGuardKeys.table(), guardKey, &trueZv);
 						if (!addVariablesOfExpressionKey(roots, guardKey)) return zv::Val::null();
 					}
 				}
@@ -12735,6 +12777,13 @@ zv::Val pt_mutating_scope_get_differing_variable_roots(zend_object *scope, zend_
 	return pt_type_call(scope, PT_LC("getdifferingvariableroots"), 1, argv);
 }
 
+zv::Val pt_mutating_scope_get_differing_conditional_guard_roots(zend_object *scope, zend_object *other)
+{
+	if (PT_MS_INHERITS(scope, "getdifferingconditionalguardroots")) return MutatingScope(scope).getDifferingConditionalGuardRoots(other);
+	zv::Args argv{other};
+	return pt_type_call(scope, PT_LC("getdifferingconditionalguardroots"), 1, argv);
+}
+
 zv::Val pt_mutating_scope_with_recorded_statement_delta(zend_object *scope, zend_object *recordedEntry, zend_object *recordedExit)
 {
 	if (PT_MS_INHERITS(scope, "withrecordedstatementdelta")) return MutatingScope(scope).withRecordedStatementDelta(recordedEntry, recordedExit);
@@ -13294,6 +13343,14 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_mutating_scope)
 		ZEND_PARSE_PARAMETERS_END();
 		PT_RETURN_VAL(PT_THIS.getDifferingVariableRoots(Z_OBJ_P(other)));
+	});
+
+	cls.method(sigs::getDifferingConditionalGuardRoots, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *other;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(other, pt_ce_mutating_scope)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(PT_THIS.getDifferingConditionalGuardRoots(Z_OBJ_P(other)));
 	});
 
 	cls.method(sigs::withRecordedStatementDelta, [](INTERNAL_FUNCTION_PARAMETERS) {

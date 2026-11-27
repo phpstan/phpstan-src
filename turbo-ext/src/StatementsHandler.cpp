@@ -811,11 +811,7 @@ public:
 					return pt_statement_list_walk_state_to_result(state.raw());
 				}
 				bool reWalk = differingRoots.isNull();
-				if (!reWalk) {
-					zv::Val mentioned = withByRefClosureHolders(OBJ_PROP_NUM(stateObject, stateSlots::scope), differingRoots.raw());
-					if (UNEXPECTED(mentioned.isUndef())) return zv::Val();
-					if (UNEXPECTED(!statementMentionsAnyVariable(stmt, mentioned.raw(), reWalk))) return zv::Val();
-				}
+				if (!reWalk && UNEXPECTED(!statementMentionsDifferingState(stmt, OBJ_PROP_NUM(stateObject, stateSlots::scope), OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope), differingRoots.raw(), true, reWalk))) return zv::Val();
 				if (!reWalk) {
 					if (replayTarget != NULL && previousRecording != NULL && UNEXPECTED(!pt_node_scope_resolver_replay_recording_range(nodeScopeResolver, previousRecording, offset, nextOffset, replayTarget, storage, scope))) return zv::Val();
 					zend_long exitPointCount = zend_hash_num_elements(Z_ARRVAL_P(OBJ_PROP_NUM(stateObject, stateSlots::exitPoints)));
@@ -1921,7 +1917,7 @@ private:
 			ZVAL_DEREF(stmt);
 			bool reWalk = differingRoots.isNull() || hasLabels;
 			if (!reWalk && UNEXPECTED(!frameOwnsSiteInStatement(frame.raw(), i, reWalk))) return zv::Val();
-			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), reWalk))) return zv::Val();
+			if (!reWalk && UNEXPECTED(!statementMentionsDifferingState(stmt, OBJ_PROP_NUM(stateObject, stateSlots::scope), OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope), differingRoots.raw(), false, reWalk))) return zv::Val();
 			if (Z_TYPE_P(OBJ_PROP_NUM(self, slots::debugTemplateArguments)) == IS_TRUE && UNEXPECTED(!printDebugDecision(scope.raw(), stmt, i, reWalk, differingRoots.raw()))) return zv::Val();
 			if (reWalk) {
 				if (statsEnabled && UNEXPECTED(!templateArgumentStatsIncrement(PT_LC("statementsReWalked"), 1))) return zv::Val();
@@ -2299,7 +2295,7 @@ private:
 			ZVAL_DEREF(stmt);
 			bool reWalk = differingRoots.isNull() || hasLabels;
 			if (!reWalk && UNEXPECTED(!frameOwnsSiteInStatement(frame, i, reWalk))) return false;
-			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), reWalk))) return false;
+			if (!reWalk && UNEXPECTED(!statementMentionsDifferingState(stmt, OBJ_PROP_NUM(stateObject, stateSlots::scope), OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope), differingRoots.raw(), false, reWalk))) return false;
 			if (reWalk) {
 				zend_long from;
 				if (UNEXPECTED(!recordingNodeCallbackCount(nodeCallback, from))) return false;
@@ -3074,7 +3070,7 @@ private:
 			ZVAL_DEREF(stmt);
 			bool reWalk = differingRoots.isNull() || hasLabels;
 			if (!reWalk && UNEXPECTED(!frameOwnsSiteInStatement(frame, i, reWalk))) return false;
-			if (!reWalk && UNEXPECTED(!statementMentionsAnyVariable(stmt, differingRoots.raw(), reWalk))) return false;
+			if (!reWalk && UNEXPECTED(!statementMentionsDifferingState(stmt, OBJ_PROP_NUM(stateObject, stateSlots::scope), OBJ_PROP_NUM(recordedEntryObject, stateSlots::scope), differingRoots.raw(), false, reWalk))) return false;
 			if (reWalk) {
 				if (statsEnabled && UNEXPECTED(!templateArgumentStatsIncrement(PT_LC("closureObservationStatements"), 1))) return false;
 				if (UNEXPECTED(!processStatementStep(nodeScopeResolver, parentNode, stmts, i, stmt, state, storage, nodeCallback, context, true))) return false;
@@ -3324,6 +3320,25 @@ private:
 	/* }}} */
 
 	/* {{{ mentioned variables */
+
+	/* the private statementMentionsDifferingState(): the differing roots
+	 * first, the one-sided conditional guards only when they miss */
+	[[nodiscard]] bool statementMentionsDifferingState(zval *stmt, zval *scope, zval *recordedScope, zval *differingRoots, bool withByRefClosureHolders_, bool &out)
+	{
+		zv::Val names = withByRefClosureHolders_ ? withByRefClosureHolders(scope, differingRoots) : zv::Val::copyOf(zv::Ref(differingRoots));
+		if (UNEXPECTED(names.isUndef())) return false;
+		if (UNEXPECTED(!statementMentionsAnyVariable(stmt, names.raw(), out))) return false;
+		if (out) return true;
+		zv::Val guardRoots = pt_mutating_scope_get_differing_conditional_guard_roots(Z_OBJ_P(scope), Z_OBJ_P(recordedScope));
+		if (UNEXPECTED(guardRoots.isUndef())) return false;
+		if (guardRoots.isNull()) {
+			out = true;
+			return true;
+		}
+		zv::Val guardNames = withByRefClosureHolders_ ? withByRefClosureHolders(scope, guardRoots.raw()) : std::move(guardRoots);
+		if (UNEXPECTED(guardNames.isUndef())) return false;
+		return statementMentionsAnyVariable(stmt, guardNames.raw(), out);
+	}
 
 	/* the private statementMentionsAnyVariable() */
 	[[nodiscard]] bool statementMentionsAnyVariable(zval *stmt, zval *variableNames, bool &out)

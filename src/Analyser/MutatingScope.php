@@ -1390,15 +1390,46 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 				foreach ($variables as $variable) {
 					$roots[$variable] = true;
 				}
-				// a statement narrowing a guard applies the holder to its target,
-				// so the guards' variables differ in effect too
-				foreach ($holders as $holder) {
+			}
+		}
+
+		return array_keys($roots);
+	}
+
+	/**
+	 * The variables spelled by the guards of the conditional expressions only one
+	 * of this scope and $other has, or null when such a guard has no variable root.
+	 * A statement narrowing one of these guards applies the holder to its target on
+	 * one side only, so it differs in effect even when it mentions no variable
+	 * getDifferingVariableRoots() returns.
+	 *
+	 * @return list<string>|null
+	 */
+	public function getDifferingConditionalGuardRoots(self $other): ?array
+	{
+		$roots = [];
+		$seenGuardKeys = [];
+		$conditionalTables = [
+			[$this->conditionalExpressions, $other->conditionalExpressions],
+			[$other->conditionalExpressions, $this->conditionalExpressions],
+		];
+		foreach ($conditionalTables as [$ours, $theirs]) {
+			foreach ($ours as $key => $holders) {
+				$theirHolders = $theirs[$key] ?? [];
+				if ($theirHolders === $holders) {
+					continue;
+				}
+				foreach (array_diff_key($holders, $theirHolders) as $holder) {
 					foreach (array_keys($holder->getConditionExpressionTypeHolders()) as $guardKey) {
-						$guardVariables = self::getVariablesOfExpressionKey($guardKey);
-						if ($guardVariables === null) {
+						if (isset($seenGuardKeys[$guardKey])) {
+							continue;
+						}
+						$seenGuardKeys[$guardKey] = true;
+						$variables = self::getVariablesOfExpressionKey($guardKey);
+						if ($variables === null) {
 							return null;
 						}
-						foreach ($guardVariables as $variable) {
+						foreach ($variables as $variable) {
 							$roots[$variable] = true;
 						}
 					}

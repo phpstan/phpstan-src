@@ -2458,6 +2458,7 @@ zv::Val pt_mutating_scope_get_tracked_expression_type(zend_object *scope, zend_o
 [[nodiscard]] bool pt_mutating_scope_equals(zend_object *scope, zend_object *otherScope, bool &out);
 zv::Val pt_mutating_scope_generalize_with(zend_object *scope, zend_object *otherScope);
 zv::Val pt_mutating_scope_get_differing_variable_roots(zend_object *scope, zend_object *other);
+zv::Val pt_mutating_scope_get_differing_conditional_guard_roots(zend_object *scope, zend_object *other);
 zv::Val pt_mutating_scope_with_recorded_statement_delta(zend_object *scope, zend_object *recordedEntry, zend_object *recordedExit);
 zv::Val pt_mutating_scope_set_allowed_undefined_expression(zend_object *scope, zend_object *expr);
 zv::Val pt_mutating_scope_unset_allowed_undefined_expression(zend_object *scope, zend_object *expr);

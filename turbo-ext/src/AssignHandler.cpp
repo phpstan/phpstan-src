@@ -2951,9 +2951,19 @@ private:
 			return true;
 		}
 
+		// after `$c = $c->parent` the expression `$c->parent` names the new value's
+		// property, not the one the narrowing was about
+		AH_VALB(readVariables, nodeFinderFindVariables(expr));
+		for (auto readEntry : zv::TableRef(Z_ARRVAL_P(readVariables.raw()))) {
+			zend_string *readName = ahVariableName(readEntry.value().deref().raw());
+			if (readName != NULL && zend_string_equals(readName, variableName)) {
+				out = false;
+				return true;
+			}
+		}
+
 		if (ahIs(expr, PT_CLASS_VARIABLE)) {
-			zend_string *name = ahVariableName(expr);
-			out = name != NULL && !zend_string_equals(name, variableName);
+			out = ahVariableName(expr) != NULL;
 			return true;
 		}
 

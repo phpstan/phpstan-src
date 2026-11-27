@@ -1156,22 +1156,35 @@ final class ScopeOps
 			return [$conditions, $specifiedExpressions];
 		}
 		$originallySpecifiedExprStrings = $specifiedExpressions;
+		// After the first round, an unmatched expression can only start matching
+		// once one of its guards gets matched: the rounds after the first only
+		// revisit the expressions guarded by an expression matched since.
+		$guardedBy = null;
+		$candidates = null;
+		$matchedInRound = [];
 		$prevSpecifiedCount = -1;
 		while (count($specifiedExpressions) !== $prevSpecifiedCount) {
 			$prevSpecifiedCount = count($specifiedExpressions);
+			if ($candidates !== null) {
+				$candidates = [];
+				foreach (array_keys($matchedInRound) as $matchedExprString) {
+					$candidates += $guardedBy[$matchedExprString] ?? [];
+				}
+				if ($candidates === []) {
+					break;
+				}
+			}
+			$matchedInRound = [];
 			foreach ($conditionalExpressions as $conditionalExprString => $conditionalExpressionHolders) {
 				if (array_key_exists($conditionalExprString, $conditions)) {
+					continue;
+				}
+				if ($candidates !== null && !array_key_exists($conditionalExprString, $candidates)) {
 					continue;
 				}
 
 				// Pass 1: Prefer exact matches
 				foreach ($conditionalExpressionHolders as $conditionalExpression) {
-					if (
-						$conditionalExpression->getTypeHolder()->getCertainty()->no()
-						&& array_key_exists($conditionalExprString, $originallySpecifiedExprStrings)
-					) {
-						continue;
-					}
 					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
 						if (
 							!array_key_exists($holderExprString, $specifiedExpressions)
@@ -1180,33 +1193,66 @@ final class ScopeOps
 							continue 2;
 						}
 					}
+					if (
+						$conditionalExpression->getTypeHolder()->getCertainty()->no()
+						&& array_key_exists($conditionalExprString, $originallySpecifiedExprStrings)
+					) {
+						continue;
+					}
 
 					$conditions[$conditionalExprString][] = $conditionalExpression;
 					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
-				}
-
-				if (array_key_exists($conditionalExprString, $conditions)) {
-					continue;
 				}
 
 				// Pass 2: Supertype match. Only runs when Pass 1 found no exact match for this expression.
-				foreach ($conditionalExpressionHolders as $conditionalExpression) {
-					if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
-						continue;
-					}
-					foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
-						if (
-							!array_key_exists($holderExprString, $specifiedExpressions)
-							|| !$conditionalTypeHolder->getCertainty()->equals($specifiedExpressions[$holderExprString]->getCertainty())
-							|| !$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedExpressions[$holderExprString]->getType())->yes()
-						) {
-							continue 2;
+				if (!array_key_exists($conditionalExprString, $conditions)) {
+					foreach ($conditionalExpressionHolders as $conditionalExpression) {
+						foreach ($conditionalExpression->getConditionExpressionTypeHolders() as $holderExprString => $conditionalTypeHolder) {
+							if (
+								!array_key_exists($holderExprString, $specifiedExpressions)
+								|| !$conditionalTypeHolder->getCertainty()->equals($specifiedExpressions[$holderExprString]->getCertainty())
+								|| !$conditionalTypeHolder->getType()->isSuperTypeOf($specifiedExpressions[$holderExprString]->getType())->yes()
+							) {
+								continue 2;
+							}
 						}
-					}
+						if ($conditionalExpression->getTypeHolder()->getCertainty()->no()) {
+							continue;
+						}
 
-					$conditions[$conditionalExprString][] = $conditionalExpression;
-					$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+						$conditions[$conditionalExprString][] = $conditionalExpression;
+						$specifiedExpressions[$conditionalExprString] = $conditionalExpression->getTypeHolder();
+					}
 				}
+
+				if ($candidates === null || !array_key_exists($conditionalExprString, $conditions)) {
+					continue;
+				}
+				$matchedInRound[$conditionalExprString] = true;
+				$candidates += $guardedBy[$conditionalExprString] ?? [];
+			}
+
+			if ($candidates !== null) {
+				continue;
+			}
+			if (count($specifiedExpressions) === $prevSpecifiedCount) {
+				break;
+			}
+			// after the first round, index the unmatched expressions by their guards
+			$guardedBy = [];
+			foreach ($conditionalExpressions as $conditionalExprString => $conditionalExpressionHolders) {
+				if (array_key_exists($conditionalExprString, $conditions)) {
+					continue;
+				}
+				foreach ($conditionalExpressionHolders as $conditionalExpression) {
+					foreach (array_keys($conditionalExpression->getConditionExpressionTypeHolders()) as $holderExprString) {
+						$guardedBy[$holderExprString][$conditionalExprString] = true;
+					}
+				}
+			}
+			$candidates = [];
+			foreach (array_keys($conditions) as $matchedExprString) {
+				$matchedInRound[$matchedExprString] = true;
 			}
 		}
 

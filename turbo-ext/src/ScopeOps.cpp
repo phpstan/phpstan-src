@@ -1306,16 +1306,33 @@ public:
 			return zv::Val(std::move(result));
 		}
 
+		/* After the first round, an unmatched expression can only start
+		 * matching once one of its guards gets matched: the rounds after the
+		 * first only revisit the expressions guarded by an expression matched
+		 * since. */
+		zv::Arr guardedBy = zv::Arr::create(0);
+		zv::Arr candidates = zv::Arr::create(0);
+		zv::Arr matchedInRound = zv::Arr::create(0);
+		bool indexed = false;
 		uint32_t previousCount = UINT32_MAX;
 
 		while (zend_hash_num_elements(specified.table()) != previousCount) {
 			previousCount = zend_hash_num_elements(specified.table());
+			if (indexed) {
+				zend_hash_clean(candidates.table());
+				for (auto matchedEntry : zv::TableRef(matchedInRound.table())) {
+					addGuardedCandidates(candidates, guardedBy, matchedEntry.stringKeyOrNull(), matchedEntry.indexKey());
+				}
+				if (zend_hash_num_elements(candidates.table()) == 0) break;
+			}
+			zend_hash_clean(matchedInRound.table());
 
 			for (auto entry : conditionalExpressions) {
 				zend_string *conditionalKey = entry.stringKeyOrNull();
 				zend_ulong conditionalIdx = entry.indexKey();
 
 				if (pt_ht_exists(conditions.table(), conditionalKey, conditionalIdx)) continue;
+				if (indexed && !pt_ht_exists(candidates.table(), conditionalKey, conditionalIdx)) continue;
 				zv::Ref holders = entry.value().deref();
 				if (UNEXPECTED(!holders.isArray())) continue;
 				zv::TableRef holdersTable(holders.asArrayTable());
@@ -1326,11 +1343,6 @@ public:
 					if (UNEXPECTED(!holder.instanceOf(pt_ce_cond_expr_holder))) {
 						zend_type_error("phpstan_turbo: expected ConditionalExpressionHolder");
 						return zv::Val();
-					}
-					zv::Ref typeHolder = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER);
-					if (pt_holder_certainty_value(typeHolder.asObject()) == PT_TRI_NO
-						&& pt_ht_exists(specifiedInput.table(), conditionalKey, conditionalIdx)) {
-						continue;
 					}
 					zv::Ref conditionHolders = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_CONDS);
 					if (UNEXPECTED(!conditionHolders.isArray())) continue;
@@ -1352,47 +1364,94 @@ public:
 						}
 					}
 					if (!all) continue;
+					zv::Ref typeHolder = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER);
+					if (pt_holder_certainty_value(typeHolder.asObject()) == PT_TRI_NO
+						&& pt_ht_exists(specifiedInput.table(), conditionalKey, conditionalIdx)) {
+						continue;
+					}
 
 					recordMatchedCondition(conditions, specified, conditionalKey, conditionalIdx, holder, typeHolder);
 				}
-
-				if (pt_ht_exists(conditions.table(), conditionalKey, conditionalIdx)) continue;
 
 				/* Pass 2: supertype match, only when Pass 1 found nothing */
-				for (auto holderEntry : holdersTable) {
+				if (!pt_ht_exists(conditions.table(), conditionalKey, conditionalIdx)) {
+					for (auto holderEntry : holdersTable) {
+						zv::Ref holder = holderEntry.value().deref();
+						zv::Ref conditionHolders = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_CONDS);
+						if (UNEXPECTED(!conditionHolders.isArray())) continue;
+						bool all = true;
+						for (auto conditionEntry : zv::TableRef(conditionHolders.asArrayTable())) {
+							zval *specifiedSlot = pt_ht_find(specified.table(), conditionEntry.stringKeyOrNull(), conditionEntry.indexKey());
+							if (specifiedSlot == NULL) {
+								all = false;
+								break;
+							}
+							zv::Ref conditionHolder = conditionEntry.value().deref();
+							zv::Ref specifiedHolder = zv::Ref(specifiedSlot).deref();
+							/* Pass 1 validates only the entries it reaches before
+							 * its first mismatch, so these can be unchecked here;
+							 * the twin raises a catchable Error on wrong types */
+							if (UNEXPECTED(!pt_check_holder(conditionHolder.raw()) || !pt_check_holder(specifiedHolder.raw()))) return zv::Val();
+							if (pt_holder_certainty_value(conditionHolder.asObject()) != pt_holder_certainty_value(specifiedHolder.asObject())) {
+								all = false;
+								break;
+							}
+							zend_long superTypeOf;
+							if (UNEXPECTED(!isSuperTypeOfValue(holderType(conditionHolder), holderType(specifiedHolder), &superTypeOf))) return zv::Val();
+							if (superTypeOf != PT_TRI_YES) {
+								all = false;
+								break;
+							}
+						}
+						if (!all) continue;
+						zv::Ref typeHolder = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER);
+						if (pt_holder_certainty_value(typeHolder.asObject()) == PT_TRI_NO) continue;
+
+						recordMatchedCondition(conditions, specified, conditionalKey, conditionalIdx, holder, typeHolder);
+					}
+				}
+
+				if (!indexed || !pt_ht_exists(conditions.table(), conditionalKey, conditionalIdx)) continue;
+				zval trueValue;
+				ZVAL_TRUE(&trueValue);
+				pt_ht_update(matchedInRound.table(), conditionalKey, conditionalIdx, &trueValue);
+				addGuardedCandidates(candidates, guardedBy, conditionalKey, conditionalIdx);
+			}
+
+			if (indexed) continue;
+			if (zend_hash_num_elements(specified.table()) == previousCount) break;
+			/* after the first round, index the unmatched expressions by their guards */
+			for (auto entry : conditionalExpressions) {
+				zend_string *conditionalKey = entry.stringKeyOrNull();
+				zend_ulong conditionalIdx = entry.indexKey();
+				if (pt_ht_exists(conditions.table(), conditionalKey, conditionalIdx)) continue;
+				zv::Ref holders = entry.value().deref();
+				if (UNEXPECTED(!holders.isArray())) continue;
+				for (auto holderEntry : zv::TableRef(holders.asArrayTable())) {
 					zv::Ref holder = holderEntry.value().deref();
-					zv::Ref typeHolder = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_TYPEHOLDER);
-					if (pt_holder_certainty_value(typeHolder.asObject()) == PT_TRI_NO) continue;
 					zv::Ref conditionHolders = zv::ObjRef(holder.asObject()).propAt(PT_CEH_PROP_CONDS);
 					if (UNEXPECTED(!conditionHolders.isArray())) continue;
-					bool all = true;
 					for (auto conditionEntry : zv::TableRef(conditionHolders.asArrayTable())) {
-						zval *specifiedSlot = pt_ht_find(specified.table(), conditionEntry.stringKeyOrNull(), conditionEntry.indexKey());
-						if (specifiedSlot == NULL) {
-							all = false;
-							break;
+						zend_string *guardKey = conditionEntry.stringKeyOrNull();
+						zend_ulong guardIdx = conditionEntry.indexKey();
+						zval *targets = pt_ht_find(guardedBy.table(), guardKey, guardIdx);
+						if (targets == NULL) {
+							zval newTargets;
+							array_init(&newTargets);
+							pt_ht_add_new(guardedBy.table(), guardKey, guardIdx, &newTargets);
+							targets = pt_ht_find(guardedBy.table(), guardKey, guardIdx);
 						}
-						zv::Ref conditionHolder = conditionEntry.value().deref();
-						zv::Ref specifiedHolder = zv::Ref(specifiedSlot).deref();
-						/* Pass 1 validates only the entries it reaches before
-						 * its first mismatch, so these can be unchecked here;
-						 * the twin raises a catchable Error on wrong types */
-						if (UNEXPECTED(!pt_check_holder(conditionHolder.raw()) || !pt_check_holder(specifiedHolder.raw()))) return zv::Val();
-						if (pt_holder_certainty_value(conditionHolder.asObject()) != pt_holder_certainty_value(specifiedHolder.asObject())) {
-							all = false;
-							break;
-						}
-						zend_long superTypeOf;
-						if (UNEXPECTED(!isSuperTypeOfValue(holderType(conditionHolder), holderType(specifiedHolder), &superTypeOf))) return zv::Val();
-						if (superTypeOf != PT_TRI_YES) {
-							all = false;
-							break;
-						}
+						zval trueValue;
+						ZVAL_TRUE(&trueValue);
+						pt_ht_update(Z_ARRVAL_P(targets), conditionalKey, conditionalIdx, &trueValue);
 					}
-					if (!all) continue;
-
-					recordMatchedCondition(conditions, specified, conditionalKey, conditionalIdx, holder, typeHolder);
 				}
+			}
+			indexed = true;
+			for (auto matchedEntry : zv::TableRef(conditions.table())) {
+				zval trueValue;
+				ZVAL_TRUE(&trueValue);
+				pt_ht_update(matchedInRound.table(), matchedEntry.stringKeyOrNull(), matchedEntry.indexKey(), &trueValue);
 			}
 		}
 
@@ -2129,6 +2188,14 @@ private:
 	 * $conditions[$exprString][] = $conditionalExpression and
 	 * $specifiedExpressions[$exprString] = its type holder.
 	 */
+	/* $candidates += $guardedBy[$exprString] ?? [] */
+	static void addGuardedCandidates(zv::Arr &candidates, zv::Arr &guardedBy, zend_string *key, zend_ulong idx)
+	{
+		zval *targets = pt_ht_find(guardedBy.table(), key, idx);
+		if (targets == NULL) return;
+		zend_hash_merge(candidates.table(), Z_ARRVAL_P(targets), NULL, 0);
+	}
+
 	static void recordMatchedCondition(zv::Arr &conditions, zv::Arr &specified, zend_string *condKey, zend_ulong condIdx, zv::Ref conditionalExpression, zv::Ref typeHolder)
 	{
 		zval *group = pt_ht_find(conditions.table(), condKey, condIdx);

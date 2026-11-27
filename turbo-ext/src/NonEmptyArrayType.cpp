@@ -39,7 +39,8 @@ public:
 		return pt_type_new_accepts_result(isNonEmptyArray);
 	}
 
-	/* yes for an equal type; the CompoundType callback; else the
+	/* yes for an equal type; for a CompoundType yes when it is an array
+	 * and non-empty as a whole, else its callback; else the
 	 * array-and-non-empty verdict; UNDEF = pending exception */
 	zv::Val isSuperTypeOf(zval *type) const
 	{
@@ -49,6 +50,11 @@ public:
 		bool compound;
 		if (UNEXPECTED(!pt_type_instanceof(type, PT_CLASS_COMPOUND_TYPE, compound))) return zv::Val();
 		if (compound) {
+			/* a non-empty array, also where no member of an intersection
+			 * is one alone, as `array<int>&hasOffsetValue('a', int)` */
+			zend_long whole = arrayAndAtLeastOnce(type);
+			if (UNEXPECTED(whole < 0)) return zv::Val();
+			if (whole == PT_TRI_YES) return pt_type_is_super_type_of_result(PT_TRI_YES);
 			zval selfZv;
 			ZVAL_OBJ(&selfZv, self);
 			return pt_type_op(Z_OBJ_P(type), PT_OP_IS_SUB_TYPE_OF, 1, &selfZv);

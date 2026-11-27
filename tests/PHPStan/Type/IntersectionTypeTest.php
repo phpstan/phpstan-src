@@ -571,6 +571,16 @@ class IntersectionTypeTest extends PHPStanTestCase
 		);
 	}
 
+	public function testNonEmptyArrayHoldsIntersectionNonEmptyAsAWhole(): void
+	{
+		// array<int>&hasOffsetValue('a', int) is non-empty although none of its members is alone
+		$type = new IntersectionType([
+			new ArrayType(new MixedType(), new IntegerType()),
+			new HasOffsetValueType(new ConstantStringType('a'), new IntegerType()),
+		]);
+		$this->assertSame('Yes', (new NonEmptyArrayType())->isSuperTypeOf($type)->describe());
+	}
+
 	public function testToBooleanCrash(): void
 	{
 		$type = new IntersectionType([new NeverType(), new NonEmptyArrayType()]);

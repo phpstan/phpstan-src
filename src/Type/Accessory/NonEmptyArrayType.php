@@ -109,6 +109,12 @@ class NonEmptyArrayType implements CompoundType, AccessoryType
 		}
 
 		if ($type instanceof CompoundType) {
+			// a non-empty array, also where no member of an intersection is
+			// one alone, as `array<int>&hasOffsetValue('a', int)`
+			if ($type->isArray()->yes() && $type->isIterableAtLeastOnce()->yes()) {
+				return IsSuperTypeOfResult::createYes();
+			}
+
 			return $type->isSubTypeOf($this);
 		}
 

@@ -164,9 +164,18 @@ class ArrayType implements Type
 
 	public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
 	{
-		if ($type instanceof self || $type instanceof ConstantArrayType) {
-			$result = $this->getItemType()->isSuperTypeOf($type->getItemType())
-				->and($this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType()));
+		$isGeneralArray = $type instanceof self;
+		if ($isGeneralArray || $type instanceof ConstantArrayType) {
+			// a subtracted mixed key type, as `mixed~'a'`, keeps its subtraction
+			// against another general array: getIterableKeyType() would make it
+			// every array key
+			$keyType = $this->keyType;
+			if ($isGeneralArray && $keyType instanceof MixedType && !$keyType instanceof TemplateMixedType && $keyType->getSubtractedType() !== null) {
+				$keyResult = $keyType->isSuperTypeOf($type->getKeyType());
+			} else {
+				$keyResult = $this->getIterableKeyType()->isSuperTypeOf($type->getIterableKeyType());
+			}
+			$result = $this->getItemType()->isSuperTypeOf($type->getItemType())->and($keyResult);
 			if (
 				$result->no()
 				&& $type->isConstantArray()->yes()

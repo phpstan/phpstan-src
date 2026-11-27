@@ -1048,7 +1048,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$array' => 'non-empty-array',
 				],
 				[
-					'$array' => PHP_VERSION_ID < 80000 ? '~hasOffset(\'bar\')|hasOffset(\'foo\')' : "array<mixed~'foo', mixed> & ~hasOffset('bar')|hasOffset('foo')",
+					'$array' => PHP_VERSION_ID < 80000 ? '~hasOffset(\'bar\')|hasOffset(\'foo\')' : "array & ~hasOffset('bar')|hasOffset('foo')",
 				],
 			],
 			[
@@ -1063,7 +1063,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					]),
 				)),
 				[
-					'$array' => PHP_VERSION_ID < 80000 ? '~hasOffset(\'bar\')|hasOffset(\'foo\')' : "array<mixed~'foo', mixed> & ~hasOffset('bar')|hasOffset('foo')",
+					'$array' => PHP_VERSION_ID < 80000 ? '~hasOffset(\'bar\')|hasOffset(\'foo\')' : "array & ~hasOffset('bar')|hasOffset('foo')",
 				],
 				[
 					'$array' => 'non-empty-array',
@@ -1096,7 +1096,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					'$array' => 'non-empty-array',
 				],
 				[
-					'$array' => PHP_VERSION_ID < 80000 ? '~hasOffset(\'bar\')|hasOffset(\'foo\')' : "array<mixed~'foo', mixed> & ~hasOffset('bar')|hasOffset('foo')",
+					'$array' => PHP_VERSION_ID < 80000 ? '~hasOffset(\'bar\')|hasOffset(\'foo\')' : "array & ~hasOffset('bar')|hasOffset('foo')",
 				],
 			],
 			[
@@ -1111,7 +1111,7 @@ class TypeSpecifierTest extends PHPStanTestCase
 					]),
 				)),
 				[
-					'$array' => PHP_VERSION_ID < 80000 ? '~hasOffset(\'bar\')|hasOffset(\'foo\')' : "array<mixed~'foo', mixed> & ~hasOffset('bar')|hasOffset('foo')",
+					'$array' => PHP_VERSION_ID < 80000 ? '~hasOffset(\'bar\')|hasOffset(\'foo\')' : "array & ~hasOffset('bar')|hasOffset('foo')",
 				],
 				[
 					'$array' => 'non-empty-array',

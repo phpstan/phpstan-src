@@ -13785,6 +13785,12 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		PT_RETURN_VAL(PT_THIS.processAlwaysIterableForeachScopeWithoutPollute(Z_OBJ_P(finalScope)));
 	});
 
+	cls.method(sigs::generalizeIteratedType, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *previousType, *type;
+		if (!zp::parse<zp::Obj, zp::Obj>(execute_data, previousType, type)) RETURN_THROWS();
+		PT_RETURN_VAL(PT_THIS.generalizeType(previousType, type, 0));
+	});
+
 	cls.method(sigs::generalizeWith, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *otherScope;
 		HashTable *writableVariableNames = NULL;

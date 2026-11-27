@@ -236,7 +236,7 @@ final class ArgumentsHandler
 				// resolution (see gatherClosureArgType()).
 				$originalArgForGather = $arg->getAttribute(ArgumentsNormalizer::ORIGINAL_ARG_ATTRIBUTE) ?? $arg;
 				$gatheredArgTypeByIndex[$i] = $typeDrivenAcceptorSelection
-					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope, $gatheredTypes)
+					? $this->gatherClosureArgType($parametersAcceptors, $i, $arg->value, $scope, $gatheredTypes, $originalArgForGather, $gatheredUnpack, $gatheredHasName)
 					: $this->closureTypeResolver->getClosureType($scope, $arg->value, true, $storage);
 				$this->addGatheredArgType($gatheredTypes, $gatheredUnpack, $gatheredHasName, $originalArgForGather, $i, $gatheredArgTypeByIndex[$i]);
 			}
@@ -1073,12 +1073,18 @@ final class ArgumentsHandler
 	 * resolved (the T in callable(T): U from list<T> $xs), so the closure's
 	 * inferred return type - its contribution to U - comes from the same
 	 * parameter types its body is later walked with. Templates the closure
-	 * returns itself stay unresolved (see resolveParameterFromSiblings()).
+	 * returns itself stay unresolved (see resolveParameterFromSiblings()),
+	 * except an accumulator the siblings seed, as the TCarry of
+	 * callable(TCarry, T): TCarry from $initial: the closure is typed with
+	 * the seed, its return joins the seed, and the rounds repeat until the
+	 * accumulator stops growing, generalized as a loop generalizes the
+	 * variables it writes. Without a fixed point within as many rounds as a
+	 * loop takes, the accumulator stays unresolved.
 	 *
 	 * @param ParametersAcceptor[] $parametersAcceptors
 	 * @param array<int|string, Type> $siblingTypes
 	 */
-	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope, array $siblingTypes): Type
+	private function gatherClosureArgType(array $parametersAcceptors, int $i, Expr $closureExpr, MutatingScope $scope, array $siblingTypes, Node\Arg $originalArg, bool $unpack, bool $hasName): Type
 	{
 		$rawParameter = null;
 		if (count($parametersAcceptors) === 1) {
@@ -1090,14 +1096,53 @@ final class ArgumentsHandler
 			}
 		}
 
-		if ($rawParameter !== null) {
-			if ($siblingTypes !== []) {
-				$rawParameter = GenericParametersAcceptorResolver::resolveParameterFromSiblings($siblingTypes, $parametersAcceptors[0], $rawParameter);
-			}
-			$scope = $scope->pushInFunctionCall(null, $rawParameter, false);
+		if ($rawParameter === null) {
+			return $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope);
 		}
 
-		return $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope);
+		$parameter = $siblingTypes !== []
+			? GenericParametersAcceptorResolver::resolveParameterFromSiblings($siblingTypes, $parametersAcceptors[0], $rawParameter)
+			: $rawParameter;
+		$closureType = $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope->pushInFunctionCall(null, $parameter, false));
+		if ($siblingTypes === []) {
+			return $closureType;
+		}
+
+		$accumulatorTypes = GenericParametersAcceptorResolver::resolveAccumulatorTemplateTypes($siblingTypes, $parametersAcceptors[0], $rawParameter);
+		if ($accumulatorTypes === null || $accumulatorTypes === []) {
+			return $closureType;
+		}
+
+		for ($iteration = 0; $iteration < NodeScopeResolver::LOOP_SCOPE_ITERATIONS; $iteration++) {
+			$parameter = GenericParametersAcceptorResolver::resolveParameterFromSiblings($siblingTypes, $parametersAcceptors[0], $rawParameter, $accumulatorTypes);
+			$iterationClosureType = $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope->pushInFunctionCall(null, $parameter, false));
+
+			$argTypes = $siblingTypes;
+			$this->addGatheredArgType($argTypes, $unpack, $hasName, $originalArg, $i, $iterationClosureType);
+			$nextAccumulatorTypes = GenericParametersAcceptorResolver::resolveAccumulatorTemplateTypes($argTypes, $parametersAcceptors[0], $rawParameter);
+			if ($nextAccumulatorTypes === null) {
+				return $closureType;
+			}
+
+			$changed = false;
+			foreach ($accumulatorTypes as $name => $previousType) {
+				$nextType = TypeCombinator::union($nextAccumulatorTypes[$name] ?? $previousType, $previousType);
+				if ($nextType->equals($previousType)) {
+					continue;
+				}
+				if ($iteration >= NodeScopeResolver::GENERALIZE_AFTER_ITERATION) {
+					$nextType = $scope->generalizeIteratedType($previousType, $nextType);
+				}
+				$accumulatorTypes[$name] = $nextType;
+				$changed = true;
+			}
+
+			if (!$changed) {
+				return $iterationClosureType;
+			}
+		}
+
+		return $closureType;
 	}
 
 	/**

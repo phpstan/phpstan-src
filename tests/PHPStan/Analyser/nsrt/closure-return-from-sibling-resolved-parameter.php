@@ -73,6 +73,7 @@ function test(Collection $c): void
 	assertType('list<2|3>', $c->map([1, 2], fn ($x) => $x + 1));
 	assertType('array{1}', pipe2(1, fn ($x) => [$x], fn ($y) => $y));
 
-	// the closure's own return feeds T, so T is not taken from $init alone
-	assertType("''|non-falsy-string", reduce([1, 2, 3], fn ($carry, $x) => $carry . 'a', ''));
+	// the closure's own return feeds T, so T is not taken from $init alone:
+	// the closure is typed with '' first, and its returns join T until T stops growing
+	assertType("''|(literal-string&non-falsy-string)", reduce([1, 2, 3], fn ($carry, $x) => $carry . 'a', ''));
 }

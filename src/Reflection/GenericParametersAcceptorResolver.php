@@ -19,7 +19,9 @@ use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use function array_intersect_key;
 use function array_key_exists;
+use function array_keys;
 use function array_last;
 use function array_map;
 use function array_merge;
@@ -35,11 +37,14 @@ final class GenericParametersAcceptorResolver
 	 * determine resolved, for typing a closure passed to it before its own
 	 * type is known. A template that also occurs in a non-covariant position
 	 * of the parameter (the T in callable(T): T, an accumulator) is fed by
-	 * the closure's own return, so it stays unresolved.
+	 * the closure's own return, so it stays unresolved unless
+	 * $accumulatorTypes holds a round of its fixed point
+	 * (see resolveAccumulatorTemplateTypes()).
 	 *
 	 * @param array<int|string, Type> $siblingTypes
+	 * @param array<string, Type> $accumulatorTypes
 	 */
-	public static function resolveParameterFromSiblings(array $siblingTypes, ParametersAcceptor $parametersAcceptor, ParameterReflection $parameter): ParameterReflection
+	public static function resolveParameterFromSiblings(array $siblingTypes, ParametersAcceptor $parametersAcceptor, ParameterReflection $parameter, array $accumulatorTypes = []): ParameterReflection
 	{
 		$parameterType = $parameter->getType();
 		if (!$parameterType->hasTemplateOrLateResolvableType()) {
@@ -59,6 +64,7 @@ final class GenericParametersAcceptorResolver
 			}
 			unset($siblingTemplateTypes[$reference->getType()->getName()]);
 		}
+		$siblingTemplateTypes = array_merge($siblingTemplateTypes, $accumulatorTypes);
 		if ($siblingTemplateTypes === []) {
 			return $parameter;
 		}
@@ -82,6 +88,53 @@ final class GenericParametersAcceptorResolver
 			TrinaryLogic::createNo(),
 			TrinaryLogic::createNo(),
 		);
+	}
+
+	/**
+	 * The accumulators of a callable parameter - the templates it both passes
+	 * to the closure and receives back from it, as the TCarry in
+	 * callable(TCarry, T): TCarry - each with the type the argument types
+	 * determine. Without the closure among $argTypes this is the seed of the
+	 * accumulator's fixed point, with the closure typed by the previous round
+	 * it is the next round. An empty array when the parameter has no
+	 * accumulator, null when the arguments do not determine one.
+	 *
+	 * @param array<int|string, Type> $argTypes
+	 * @return array<string, Type>|null
+	 */
+	public static function resolveAccumulatorTemplateTypes(array $argTypes, ParametersAcceptor $parametersAcceptor, ParameterReflection $parameter): ?array
+	{
+		$parameterType = $parameter->getType();
+		if (!$parameterType->hasTemplateOrLateResolvableType()) {
+			return [];
+		}
+
+		$passed = [];
+		$returned = [];
+		foreach ($parameterType->getReferencedTemplateTypes(TemplateTypeVariance::createContravariant()) as $reference) {
+			$name = $reference->getType()->getName();
+			if ($reference->getPositionVariance()->covariant()) {
+				$passed[$name] = true;
+			} else {
+				$returned[$name] = true;
+			}
+		}
+		$accumulators = array_intersect_key($passed, $returned);
+		if ($accumulators === []) {
+			return [];
+		}
+
+		$resolvedTemplateTypeMap = self::resolve($argTypes, $parametersAcceptor)->getResolvedTemplateTypeMap();
+		$types = [];
+		foreach (array_keys($accumulators) as $name) {
+			$type = $resolvedTemplateTypeMap->getType($name);
+			if ($type === null || $type instanceof ErrorType) {
+				return null;
+			}
+			$types[$name] = $type;
+		}
+
+		return $types;
 	}
 
 	/**

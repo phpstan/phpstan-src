@@ -42,13 +42,24 @@ inline constexpr char strings[] =
 	"PHPStan\\Analyser\\MutatingScope\0" /* 164 */
 	"\0" /* 195 */
 	"PHPStan\\Analyser\\SpecifiedTypes\0" /* 196 */
-	"evaluate"; /* 228 */
+	"evaluate\0" /* 228 */
+	"created\0" /* 237 */
+	"targetExpr\0" /* 245 */
+	"PhpParser\\Node\\Expr\0" /* 256 */
+	"phpDocType\0" /* 276 */
+	"PHPStan\\Type\\Type\0" /* 287 */
+	"keepNativeValuesOutsidePhpDoc"; /* 305 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 18), /* __construct $nodeScopeResolver */
 	reg::packed(53, 0, 76), /* __construct $defaultNarrowingHelper */
 	reg::packed(135, MAY_BE_ARRAY), /* __construct $candidates */
 	reg::packed(158, 0, 164), /* evaluate $scope */
 	reg::packed(195, MAY_BE_NULL, 196), /* evaluate return */
+	reg::packed(237, 0, 196), /* keepNativeValuesOutsidePhpDoc $created */
+	reg::packed(158, 0, 164), /* keepNativeValuesOutsidePhpDoc $scope */
+	reg::packed(245, 0, 256), /* keepNativeValuesOutsidePhpDoc $targetExpr */
+	reg::packed(276, 0, 287), /* keepNativeValuesOutsidePhpDoc $phpDocType */
+	reg::packed(195, 0, 196), /* keepNativeValuesOutsidePhpDoc return */
 };
 using Sig = reg::Sig<strings, args>;
 } // namespace sigtab
@@ -57,6 +68,7 @@ using Sig = reg::Sig<strings, args>;
 namespace sig {
 inline constexpr sigtab::Sig __construct = { { 146 /* __construct */, 3, 0, 3, reg::NoArg, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig evaluate = { { 228 /* evaluate */, 1, 3, 1, 4, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig keepNativeValuesOutsidePhpDoc = { { 305 /* keepNativeValuesOutsidePhpDoc */, 4, 5, 4, 9, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::DisjunctionBranchUnionAugment

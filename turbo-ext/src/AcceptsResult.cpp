@@ -419,6 +419,29 @@ bool pt_reasons_merge_operands(zval *result, zend_object *self, zval *operands, 
 	return true;
 }
 
+/* AcceptsResult::REASONS_LIMIT: the constructor keeps only the first
+ * reasons, array_slice($reasons, 0, REASONS_LIMIT) — owned is replaced by
+ * the slice (a packed list, like array_slice() of a list returns) */
+#define PT_ACCEPTS_RESULT_REASONS_LIMIT 10
+static void pt_accepts_result_cap_reasons(zval *owned)
+{
+	HashTable *ht = Z_ARRVAL_P(owned);
+	if (EXPECTED(zend_hash_num_elements(ht) <= PT_ACCEPTS_RESULT_REASONS_LIMIT)) return;
+	zval sliced;
+	array_init_size(&sliced, PT_ACCEPTS_RESULT_REASONS_LIMIT);
+	zend_hash_real_init_packed(Z_ARRVAL(sliced));
+	uint32_t taken = 0;
+	zval *value;
+	ZEND_HASH_FOREACH_VAL(ht, value) {
+		if (taken == PT_ACCEPTS_RESULT_REASONS_LIMIT) break;
+		Z_TRY_ADDREF_P(value);
+		zend_hash_next_index_insert_new(Z_ARRVAL(sliced), value);
+		taken++;
+	} ZEND_HASH_FOREACH_END();
+	zval_ptr_dtor(owned);
+	ZVAL_COPY_VALUE(owned, &sliced);
+}
+
 /* }}} */
 
 namespace phpstanturbo {
@@ -438,6 +461,7 @@ public:
 		ZVAL_COPY(&copy, result);
 		pt_readonly_slot_init(self, PT_RESULT_PROP_RESULT, &copy);
 		ZVAL_COPY(&copy, reasons);
+		pt_accepts_result_cap_reasons(&copy);
 		pt_readonly_slot_init(self, PT_RESULT_PROP_REASONS, &copy);
 		return true;
 	}
@@ -553,6 +577,7 @@ public:
 		if (UNEXPECTED(ce == NULL)) return zv::Val();
 		zval out;
 		zval reasonsRaw = reasons.take();
+		pt_accepts_result_cap_reasons(&reasonsRaw);
 		if (UNEXPECTED(!pt_result_object_create(&out, ce, trinary, &reasonsRaw, NULL))) return zv::Val();
 		return zv::Val::adopt(out);
 	}
@@ -760,6 +785,7 @@ PT_MINIT_REGISTRATION(pt_register_accepts_result)
 	/* the static flyweight properties stay unused: the natives keep the
 	 * singletons in the request globals */
 	ptdecl::AcceptsResult::declareProperties(cls);
+	cls.classConstantLong("REASONS_LIMIT", PT_ACCEPTS_RESULT_REASONS_LIMIT);
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *result, *reasons;

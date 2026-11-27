@@ -49,6 +49,7 @@ final class GenericAncestorsCheck
 	/**
 	 * @param array<Node\Name> $nameNodes
 	 * @param array<Type> $ancestorTypes
+	 * @param list<string> $namesWithTypesSpecifiedElsewhere names exempt from the missing-generics check because a tag for them exists in another location (e.g. a class-level `@use` tag)
 	 * @return list<IdentifierRuleError>
 	 */
 	public function check(
@@ -66,6 +67,7 @@ final class GenericAncestorsCheck
 		string $invalidTypeMessage,
 		string $genericClassInNonGenericObjectType,
 		string $invalidVarianceMessage,
+		array $namesWithTypesSpecifiedElsewhere = [],
 	): array
 	{
 		$names = array_fill_keys(array_map(static fn (Name $nameNode): string => $nameNode->toString(), $nameNodes), true);
@@ -165,6 +167,9 @@ final class GenericAncestorsCheck
 
 		if ($this->checkMissingTypehints) {
 			foreach (array_keys($unusedNames) as $unusedName) {
+				if (in_array($unusedName, $namesWithTypesSpecifiedElsewhere, true)) {
+					continue;
+				}
 				if (!$this->reflectionProvider->hasClass($unusedName)) {
 					continue;
 				}

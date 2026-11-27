@@ -238,6 +238,7 @@ class JsonErrorFormatterTest extends ErrorFormatterTestCase
 		yield ['tip', 'tip'];
 		yield ['<fg=cyan>%configurationFile%</>', '%configurationFile%'];
 		yield ['this check by setting <fg=cyan>treatPhpDocTypesAsCertain: false</> in your <fg=cyan>%configurationFile%</>.', 'this check by setting treatPhpDocTypesAsCertain: false in your %configurationFile%.'];
+		yield ["Offset 'a' (array<string, array<int, string>>) does not accept type <fg=cyan>list<\\Foo></>.", "Offset 'a' (array<string, array<int, string>>) does not accept type list<\\Foo>."];
 	}
 
 	#[DataProvider('dataFormatTip')]

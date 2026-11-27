@@ -113,13 +113,13 @@ final class TableErrorFormatter implements ErrorFormatter
 		foreach ($fileErrors as $file => $errors) {
 			$rows = [];
 			foreach ($errors as $error) {
-				$message = $error->getMessage();
+				$message = ConsoleTagEscaper::escape($error->getMessage());
 				$filePath = $error->getTraitFilePath() ?? $error->getFilePath();
 				if (
 					$error->getIdentifier() !== null
 					&& in_array($error->getIdentifier(), ['phpstan.type', 'phpstan.nativeType', 'phpstan.variable', 'phpstan.dumpType', 'phpstan.unknownExpectation'], true)
 				) {
-					$message = '<fg=red>' . OutputFormatter::escape($message) . '</>';
+					$message = '<fg=red>' . OutputFormatter::escape($error->getMessage()) . '</>';
 				}
 				if ($error->getFixedErrorDiffs() !== []) {
 					$message .= ' 🔧';
@@ -133,7 +133,7 @@ final class TableErrorFormatter implements ErrorFormatter
 				}
 				if ($error->getTip() !== null) {
 					$tip = $error->getTip();
-					$tip = str_replace('%configurationFile%', $projectConfigFile, $tip);
+					$tip = ConsoleTagEscaper::escape(str_replace('%configurationFile%', $projectConfigFile, $tip));
 
 					$message .= "\n";
 					if (str_contains($tip, "\n")) {

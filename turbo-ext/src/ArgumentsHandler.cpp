@@ -231,6 +231,7 @@ pt_property_site pt_ah_method_call_name_site;
 pt_property_site pt_ah_array_items_site;
 pt_property_site pt_ah_array_item_key_site;
 pt_property_site pt_ah_array_item_unpack_site;
+pt_property_site pt_ah_array_item_by_ref_site;
 pt_property_site pt_ah_array_item_value_site;
 pt_property_site pt_ah_string_value_site;
 pt_method_site pt_ah_identifier_to_string_site;
@@ -306,6 +307,51 @@ inline bool closureKind(zval *value, bool &isClosure, bool &isArrowFunction)
 	zend_class_entry *arrowCe = pt_class(PT_CLASS_ARROW_FUNCTION);
 	if (UNEXPECTED(arrowCe == NULL)) return false;
 	isArrowFunction = instanceof_function(Z_OBJCE_P(value), arrowCe);
+	return true;
+}
+
+/* Mirrors isClosureOrClosureArray(): a closure, or an array literal holding
+ * only closures (with literal keys); false = pending exception */
+bool isClosureOrClosureArray(zval *value, bool &out)
+{
+	out = false;
+	bool isClosure, isArrowFunction;
+	if (UNEXPECTED(!closureKind(value, isClosure, isArrowFunction))) return false;
+	if (isClosure || isArrowFunction) {
+		out = true;
+		return true;
+	}
+	bool isArray = false;
+	if (UNEXPECTED(!isA(value, PT_CLASS_ARRAY_EXPR, isArray))) return false;
+	if (!isArray) return true;
+	zv::Val itemsHold;
+	zval *items = readProperty(pt_ah_array_items_site, value, PT_LC("items"), itemsHold);
+	if (UNEXPECTED(items == NULL)) return false;
+	if (Z_TYPE_P(items) != IS_ARRAY || zend_hash_num_elements(Z_ARRVAL_P(items)) == 0) return true;
+	for (zv::ArrayEntry entry : zv::TableRef(Z_ARRVAL_P(items))) {
+		zval *item = entry.value().deref().raw();
+		zv::Val byRefHold, unpackHold, keyHold, itemValueHold;
+		zval *byRef = readProperty(pt_ah_array_item_by_ref_site, item, PT_LC("byRef"), byRefHold);
+		if (UNEXPECTED(byRef == NULL)) return false;
+		if (zend_is_true(byRef)) return true;
+		zval *unpack = readProperty(pt_ah_array_item_unpack_site, item, PT_LC("unpack"), unpackHold);
+		if (UNEXPECTED(unpack == NULL)) return false;
+		if (zend_is_true(unpack)) return true;
+		zval *key = readProperty(pt_ah_array_item_key_site, item, PT_LC("key"), keyHold);
+		if (UNEXPECTED(key == NULL)) return false;
+		if (Z_TYPE_P(key) != IS_NULL) {
+			bool isString = false, isInt = false;
+			if (UNEXPECTED(!isA(key, PT_CLASS_SCALAR_STRING, isString))) return false;
+			if (!isString && UNEXPECTED(!isA(key, PT_CLASS_SCALAR_INT, isInt))) return false;
+			if (!isString && !isInt) return true;
+		}
+		zval *itemValue = readProperty(pt_ah_array_item_value_site, item, PT_LC("value"), itemValueHold);
+		if (UNEXPECTED(itemValue == NULL)) return false;
+		bool itemIsClosure = false;
+		if (UNEXPECTED(!isClosureOrClosureArray(itemValue, itemIsClosure))) return false;
+		if (!itemIsClosure) return true;
+	}
+	out = true;
 	return true;
 }
 
@@ -1562,7 +1608,7 @@ private:
 		Walk *walk = NULL;
 	};
 
-	/* the usort() comparator: closures after non-closures, then the
+	/* the usort() comparator: closures (and closure-only arrays) after the rest, then the
 	 * normalized-only arguments after the original ones, by index / start
 	 * token position (a strict order together with the stable fallback on
 	 * the original position, so any stable sort agrees with usort()) */
@@ -1612,9 +1658,7 @@ private:
 			zv::Val valueHold;
 			zval *value = argValue(record.sortHasOriginal ? original : record.arg, valueHold);
 			if (UNEXPECTED(value == NULL)) return false;
-			bool isClosure, isArrowFunction;
-			if (UNEXPECTED(!closureKind(value, isClosure, isArrowFunction))) return false;
-			record.sortIsClosure = isClosure || isArrowFunction;
+			if (UNEXPECTED(!isClosureOrClosureArray(value, record.sortIsClosure))) return false;
 			record.sortStartTokenPos = -1;
 			if (record.sortHasOriginal) {
 				if (UNEXPECTED(Z_TYPE_P(original) != IS_OBJECT)) {

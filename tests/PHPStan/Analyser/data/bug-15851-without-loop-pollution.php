@@ -29,3 +29,18 @@ function lessThanUnknown(int $n): void
 	assertType('int<0, max>', $i);
 	assertType('5', $j);
 }
+
+function assignmentInConditionAlwaysTrueAtFirst(): void
+{
+	for ($i = 0; $row = ($i === 0 ? ['a' => 1] : fetchRow()); $i++) {
+		echo $row['a'];
+	}
+	assertType('false', $row);
+}
+
+function sideEffectInCondition(): void
+{
+	for ($i = 0; $i++ < 10;) {
+	}
+	assertType('11', $i);
+}

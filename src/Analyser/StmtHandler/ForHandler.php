@@ -23,7 +23,6 @@ use PHPStan\Analyser\NodeScopeResolver;
 use PHPStan\Analyser\NoopNodeCallback;
 use PHPStan\Analyser\StatementContext;
 use PHPStan\Analyser\StmtHandler;
-use PHPStan\Analyser\TypeSpecifierContext;
 use PHPStan\Analyser\VariableFlow;
 use PHPStan\Analyser\VariableFlowBuilder;
 use PHPStan\Dependency\Dependencies;
@@ -342,17 +341,19 @@ final class ForHandler implements StmtHandler
 		$finalScope = $loopScope;
 
 		if ($lastCondExpr !== null) {
-			// the loop condition narrows the post-loop scope to its falsey branch,
-			// priced on the GENERALIZED exit scope. The condition's stored result
-			// was walked before generalizeWith() widened the counter, so its
-			// verdict is stale here: `$k <= $d` with a literal `$k` reads as
-			// always-true, whose falsey branch is unreachable - and that narrowed
-			// every operand to never, killing the enclosing loop's counter
-			// (a nested loop's counter never widened). Same shape as WhileHandler.
-			$finalScope = $finalScope->applySpecifiedTypes(
-				$nodeScopeResolver->processExprOnDemand($lastCondExpr, $finalScope, $storage->duplicate())
-					->getSpecifiedTypesForScope($finalScope, TypeSpecifierContext::createFalsey()),
-			);
+			// the loop exits when the condition, evaluated again after the loop
+			// expressions ran, is falsey - walk it on $finalScope and take its
+			// falsey scope, so the assignments and side effects it makes
+			// (`$row = fetch()`, `$i++ < 10`) apply instead of the body's stale
+			// values being narrowed by them. The duplicate keeps this walk's
+			// results out of the final walk's storage. Same as WhileHandler.
+			$exitCondStorage = $storage->duplicate();
+			$scope->pushExpressionResultStorage($exitCondStorage);
+			try {
+				$finalScope = $nodeScopeResolver->processExprNode($stmt, $lastCondExpr, $finalScope, $exitCondStorage, new NoopNodeCallback(), ExpressionContext::createDeep(resolveTemplateArguments: false))->getFalseyScope();
+			} finally {
+				$scope->popExpressionResultStorage();
+			}
 		}
 
 		$breakExitPoints = $finalScopeResult->getExitPointsByType(Break_::class);

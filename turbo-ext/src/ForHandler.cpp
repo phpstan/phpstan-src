@@ -438,25 +438,28 @@ public:
 		finalScope = zv::Val::copyOf(loopScope.ref());
 
 		if (lastCondExpr != NULL) {
-			// the loop condition narrows the post-loop scope to its falsey branch,
-			// priced on the GENERALIZED exit scope. The condition's stored result
-			// was walked before generalizeWith() widened the counter, so its
-			// verdict is stale here: `$k <= $d` with a literal `$k` reads as
-			// always-true, whose falsey branch is unreachable - and that narrowed
-			// every operand to never, killing the enclosing loop's counter
-			// (a nested loop's counter never widened). Same shape as WhileHandler.
-			zv::Val duplicate = pt_expression_result_storage_duplicate(storage);
-			if (UNEXPECTED(duplicate.isUndef())) return zv::Val();
-			zv::Val onDemand = pt_node_scope_resolver_process_expr_on_demand(nodeScopeResolver, lastCondExpr, finalScope.raw(), duplicate.raw());
-			if (UNEXPECTED(onDemand.isUndef())) return zv::Val();
-			zend_object *falsey = pt_type_specifier_context_create_falsey();
-			if (UNEXPECTED(falsey == NULL)) return zv::Val();
-			zval falseyContext;
-			ZVAL_OBJ(&falseyContext, falsey);
-			zv::Val specifiedTypes = pt_expression_result_get_specified_types_for_scope(onDemand.raw(), finalScope.raw(), &falseyContext);
-			if (UNEXPECTED(specifiedTypes.isUndef())) return zv::Val();
-			finalScope = pt_mutating_scope_apply_specified_types(Z_OBJ_P(finalScope.raw()), specifiedTypes.raw());
-			if (UNEXPECTED(finalScope.isUndef())) return zv::Val();
+			// the loop exits when the condition, evaluated again after the loop
+			// expressions ran, is falsey - walk it on $finalScope and take its
+			// falsey scope, so the assignments and side effects it makes
+			// (`$row = fetch()`, `$i++ < 10`) apply instead of the body's stale
+			// values being narrowed by them. The duplicate keeps this walk's
+			// results out of the final walk's storage. Same as WhileHandler.
+			zv::Val exitCondStorage = pt_expression_result_storage_duplicate(storage);
+			if (UNEXPECTED(exitCondStorage.isUndef())) return zv::Val();
+			if (UNEXPECTED(!pt_mutating_scope_push_expression_result_storage(Z_OBJ_P(scope), exitCondStorage.raw()))) return zv::Val();
+			zv::Val falseyScope;
+			[&]() {
+				zv::Val noop = ptlh::newNoopNodeCallback();
+				if (UNEXPECTED(noop.isUndef())) return;
+				zv::Val expressionContext = pt_expression_context_create_deep(false);
+				if (UNEXPECTED(expressionContext.isUndef())) return;
+				zv::Val exitCondResult = pt_node_scope_resolver_process_expr_node(nodeScopeResolver, stmt, lastCondExpr, finalScope.raw(), exitCondStorage.raw(), noop.raw(), expressionContext.raw());
+				if (UNEXPECTED(exitCondResult.isUndef())) return;
+				falseyScope = pt_expression_result_get_falsey_scope(exitCondResult.raw());
+			}();
+			pt_finally([&]() { (void) pt_mutating_scope_pop_expression_result_storage(Z_OBJ_P(scope)); });
+			if (UNEXPECTED(EG(exception))) return zv::Val();
+			finalScope = std::move(falseyScope);
 		}
 
 		zv::Val breakExitPoints = ptlh::breakExitPoints(result);

@@ -291,6 +291,23 @@ public:
 		return pt_type_accepts_result(PT_TRI_NO);
 	}
 
+	/* whether the key type is a MixedType (not a TemplateMixedType) with a
+	 * subtracted type; false = pending exception */
+	[[nodiscard]] static bool isSubtractedMixed(zval *type, bool &result)
+	{
+		result = false;
+		bool isMixed;
+		if (UNEXPECTED(!isInstance(type, pt_ce_mixed_type, isMixed))) return false;
+		if (!isMixed) return true;
+		bool isTemplateMixed;
+		if (UNEXPECTED(!isInstance(type, pt_ce_template_mixed_type, isTemplateMixed))) return false;
+		if (isTemplateMixed) return true;
+		zv::Val subtracted = pt_type_call(Z_OBJ_P(type), PT_LC("getsubtractedtype"), 0, NULL);
+		if (UNEXPECTED(subtracted.isUndef())) return false;
+		result = Z_TYPE_P(subtracted.raw()) == IS_OBJECT;
+		return true;
+	}
+
 	/* for an ArrayType / ConstantArrayType the item types' verdict and'ed
 	 * with the iterable key types' (maybe instead of no for a possibly-empty
 	 * constant array); the CompoundType callback; no otherwise; UNDEF =
@@ -306,9 +323,19 @@ public:
 			if (UNEXPECTED(thatItemType.isUndef())) return zv::Val();
 			zv::Val result = pt_type_op(Z_OBJ_P(itemType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, thatItemType.raw());
 			if (UNEXPECTED(result.isUndef())) return zv::Val();
-			zv::Val keyType = thisGetIterableKeyType();
+			/* a subtracted mixed key type, as `mixed~'a'`, keeps its
+			 * subtraction against another general array: getIterableKeyType()
+			 * would make it every array key, so it is compared as written
+			 * with the other's key type */
+			zval *rawKeyType = keyType();
+			if (UNEXPECTED(rawKeyType == NULL)) return zv::Val();
+			bool subtractedMixedKey = false;
+			if (isArray && UNEXPECTED(!isSubtractedMixed(rawKeyType, subtractedMixedKey))) return zv::Val();
+			zv::Val keyType = subtractedMixedKey ? zv::Val::copyOf(zv::Ref(rawKeyType)) : thisGetIterableKeyType();
 			if (UNEXPECTED(keyType.isUndef())) return zv::Val();
-			zv::Val thatKeyType = callType(Z_OBJ_P(type), PT_LC("getiterablekeytype"), 0, NULL);
+			zv::Val thatKeyType = subtractedMixedKey
+				? callType(Z_OBJ_P(type), PT_LC("getkeytype"), 0, NULL)
+				: callType(Z_OBJ_P(type), PT_LC("getiterablekeytype"), 0, NULL);
 			if (UNEXPECTED(thatKeyType.isUndef())) return zv::Val();
 			zv::Val keyResult = pt_type_op(Z_OBJ_P(keyType.raw()), PT_OP_IS_SUPER_TYPE_OF, 1, thatKeyType.raw());
 			if (UNEXPECTED(keyResult.isUndef())) return zv::Val();

@@ -829,7 +829,18 @@ PT_MINIT_REGISTRATION(pt_register_has_offset_value_type)
 
 	/* mirrors tryUnion() and tryIntersect() */
 	cls.method(sigs::tryUnion, pt_type_has_offset_value_try_union_handler);
-	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
+	/* a NeverType for an offset of no value, which is of no array, null
+	 * otherwise */
+	cls.method(sigs::tryIntersect, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *otherType;
+		if (!zp::parse<zp::Zval>(execute_data, otherType)) RETURN_THROWS();
+		zval *valueType = PT_THIS.valueType();
+		if (UNEXPECTED(valueType == NULL)) RETURN_THROWS();
+		if (Z_TYPE_P(valueType) == IS_OBJECT && instanceof_function(Z_OBJCE_P(valueType), pt_ce_never_type)) {
+			PT_RETURN_VAL(pt_type_new_never_type());
+		}
+		RETURN_NULL();
+	});
 
 	cls.method(sigs::__construct, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *offsetType, *valueType;

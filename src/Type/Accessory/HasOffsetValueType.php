@@ -27,6 +27,7 @@ use PHPStan\Type\IntersectionType;
 use PHPStan\Type\IsSuperTypeOfResult;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\NativeTypePosition;
+use PHPStan\Type\NeverType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ObjectWithoutClassType;
 use PHPStan\Type\StaticTypeFactory;
@@ -622,6 +623,11 @@ class HasOffsetValueType implements CompoundType, AccessoryType
 
 	public function tryIntersect(Type $otherType): ?Type
 	{
+		// an offset of no value is of no array
+		if ($this->valueType instanceof NeverType) {
+			return new NeverType();
+		}
+
 		return null;
 	}
 

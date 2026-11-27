@@ -284,11 +284,12 @@ final class ArrayUnion
 
 	/**
 	 * One array of all the keys and all the values of the arrays, with the
-	 * accessory types they have in common.
+	 * accessory types they have in common. With $widen, the merged values
+	 * widen as TypeCombinator::widen() does.
 	 *
 	 * @param list<Type> $arrayTypes
 	 */
-	public static function mergeIntoGeneralArray(array $arrayTypes): Type
+	public static function mergeIntoGeneralArray(array $arrayTypes, bool $widen = false): Type
 	{
 		$keyTypes = [];
 		$valueTypes = [];
@@ -333,10 +334,11 @@ final class ArrayUnion
 			$templateArrayType ??= $arrayType;
 		}
 
+		// merging the arrays into one generalizes them already, and bounds what it merges
+		$valueType = TypeCombinator::union(...ArrayWidening::widen($valueTypes));
 		$arrayType = new ArrayType(
 			TypeCombinator::union(...$keyTypes),
-			// merging the arrays into one generalizes them already, and bounds what it merges
-			TypeCombinator::union(...ArrayWidening::widen($valueTypes)),
+			$widen ? TypeCombinator::widen($valueType) : $valueType,
 		);
 
 		if ($templateArrayType !== null) {

@@ -484,19 +484,39 @@ class ArrayType implements Type
 		if ($this->itemType->isConstantArray()->yes() && $valueType->isConstantArray()->yes()) {
 			$newItemTypes = [];
 
-			$itemConstantArrays = $this->itemType->getConstantArrays();
 			foreach ($valueType->getConstantArrays() as $constArray) {
-				if ($constArray->getOptionalKeys() !== [] && count($itemConstantArrays) === 1) {
+				if ($constArray->getOptionalKeys() !== []) {
 					// A written shape with optional keys is not all-or-nothing: each
 					// optional key may or may not be present on its own, so it is
-					// written as optional (present keys keep their certainty, the
-					// value unions with what the key held) instead of once with every
-					// key required and once with every optional key unset.
-					$builder = ConstantArrayTypeBuilder::createFromConstantArray($itemConstantArrays[0]);
-					foreach ($constArray->getKeyTypes() as $i => $keyType) {
-						$builder->setOffsetValueType($keyType, $constArray->getOffsetValueType($keyType), $constArray->isOptionalKey($i));
+					// written into each item shape as optional, instead of once with
+					// every key required and once with every optional key unset. Like
+					// a key written without optional keys, a key the written shape has
+					// is required, and one it may have is optional, such as one an
+					// offset was unset from; only one entry is written, so the value
+					// unions with what the key held.
+					foreach ($this->itemType->getConstantArrays() as $itemConstantArray) {
+						$builder = ConstantArrayTypeBuilder::createFromConstantArray(new ConstantArrayType([], [], unsealed: $itemConstantArray->getUnsealedTypes()));
+						$itemValueTypes = $itemConstantArray->getValueTypes();
+						foreach ($itemConstantArray->getKeyTypes() as $i => $keyType) {
+							$hasOffset = $constArray->hasOffsetValueType($keyType);
+							if ($hasOffset->no()) {
+								$builder->setOffsetValueType($keyType, $itemValueTypes[$i], $itemConstantArray->isOptionalKey($i));
+								continue;
+							}
+							$builder->setOffsetValueType(
+								$keyType,
+								TypeCombinator::union($itemValueTypes[$i], $constArray->getOffsetValueType($keyType)),
+								$hasOffset->maybe(),
+							);
+						}
+						foreach ($constArray->getKeyTypes() as $i => $keyType) {
+							if (!$itemConstantArray->hasOffsetValueType($keyType)->no()) {
+								continue;
+							}
+							$builder->setOffsetValueType($keyType, $constArray->getOffsetValueType($keyType), $constArray->isOptionalKey($i));
+						}
+						$newItemTypes[] = TypeCombinator::intersect($builder->getArray(), ...TypeUtils::getAccessoryTypes($this->itemType));
 					}
-					$newItemTypes[] = TypeCombinator::intersect($builder->getArray(), ...TypeUtils::getAccessoryTypes($this->itemType));
 					continue;
 				}
 

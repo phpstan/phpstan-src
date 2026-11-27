@@ -4998,6 +4998,16 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	}
 
 	/**
+	 * Generalizes a type that grew in a round of a fixed point the way a loop
+	 * generalizes a variable it writes: the constant parts that changed
+	 * since $previousType widen, so the iteration converges.
+	 */
+	public function generalizeIteratedType(Type $previousType, Type $type): Type
+	{
+		return $this->generalizeType($previousType, $type, 0);
+	}
+
+	/**
 	 * @param array<string, true>|null $writableVariableNames variables the loop can write, null when unknown
 	 */
 	public function generalizeWith(self $otherScope, ?array $writableVariableNames = null, ?self $loopEntryScope = null): self

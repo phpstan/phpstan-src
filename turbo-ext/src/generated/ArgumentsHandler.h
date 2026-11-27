@@ -213,6 +213,9 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1657, 0, 1451), /* gatherClosureArgType $closureExpr */
 	reg::packed(1074, 0, 1080), /* gatherClosureArgType $scope */
 	reg::packed(1669, MAY_BE_ARRAY), /* gatherClosureArgType $siblingTypes */
+	reg::packed(1520, 0, 1532), /* gatherClosureArgType $originalArg */
+	reg::packed(1505, MAY_BE_BOOL), /* gatherClosureArgType $unpack */
+	reg::packed(1512, MAY_BE_BOOL), /* gatherClosureArgType $hasName */
 	reg::packed(1245, 0, 1558), /* gatherClosureArgType return */
 	reg::packed(832, 0, 850), /* selectCountStableMetadataAcceptor $nodeScopeResolver */
 	reg::packed(1703, MAY_BE_ARRAY), /* selectCountStableMetadataAcceptor $args */
@@ -299,21 +302,21 @@ inline constexpr sigtab::Sig findObjectWrittenByCallable = { { 1471 /* findObjec
 inline constexpr sigtab::Sig addGatheredArgType = { { 1576 /* addGatheredArgType */, 6, 38, 6, 44, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig isClosureOrClosureArray = { { 1600 /* isClosureOrClosureArray */, 1, 45, 1, 46, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 inline constexpr sigtab::Sig argConsumesResolvedParameterType = { { 1624 /* argConsumesResolvedParameterType */, 1, 47, 1, 48, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig gatherClosureArgType = { { 1682 /* gatherClosureArgType */, 5, 49, 5, 54, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig selectCountStableMetadataAcceptor = { { 1746 /* selectCountStableMetadataAcceptor */, 5, 55, 5, 60, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig matchArgParameter = { { 1793 /* matchArgParameter */, 3, 61, 3, 64, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig selectArgsAcceptor = { { 1811 /* selectArgsAcceptor */, 5, 65, 5, 70, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig selectArgsMetadataAcceptor = { { 1844 /* selectArgsMetadataAcceptor */, 8, 71, 8, 79, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig processDroppedArgs = { { 1899 /* processDroppedArgs */, 7, 80, 7, 87, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig callCallbackImmediately = { { 1932 /* callCallbackImmediately */, 3, 88, 3, 91, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig shouldInvalidateCallbackExpressions = { { 1956 /* shouldInvalidateCallbackExpressions */, 1, 92, 1, 93, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getParameterTypeFromParameterClosureTypeExtension = { { 1992 /* getParameterTypeFromParameterClosureTypeExtension */, 4, 94, 4, 98, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getParameterOutExtensionsType = { { 2059 /* getParameterOutExtensionsType */, 4, 99, 4, 103, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig resolveClosureThisType = { { 2094 /* resolveClosureThisType */, 4, 104, 4, 108, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig observeUnpackedArgument = { { 2146 /* observeUnpackedArgument */, 5, 109, 5, 114, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig observeArgumentValue = { { 2180 /* observeArgumentValue */, 5, 115, 5, 120, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig findOriginalParameterType = { { 2201 /* findOriginalParameterType */, 2, 121, 2, 123, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig readArgResult = { { 2281 /* readArgResult */, 2, 124, 2, 126, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig gatherClosureArgType = { { 1682 /* gatherClosureArgType */, 8, 49, 8, 57, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig selectCountStableMetadataAcceptor = { { 1746 /* selectCountStableMetadataAcceptor */, 5, 58, 5, 63, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig matchArgParameter = { { 1793 /* matchArgParameter */, 3, 64, 3, 67, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig selectArgsAcceptor = { { 1811 /* selectArgsAcceptor */, 5, 68, 5, 73, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig selectArgsMetadataAcceptor = { { 1844 /* selectArgsMetadataAcceptor */, 8, 74, 8, 82, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig processDroppedArgs = { { 1899 /* processDroppedArgs */, 7, 83, 7, 90, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig callCallbackImmediately = { { 1932 /* callCallbackImmediately */, 3, 91, 3, 94, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig shouldInvalidateCallbackExpressions = { { 1956 /* shouldInvalidateCallbackExpressions */, 1, 95, 1, 96, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getParameterTypeFromParameterClosureTypeExtension = { { 1992 /* getParameterTypeFromParameterClosureTypeExtension */, 4, 97, 4, 101, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getParameterOutExtensionsType = { { 2059 /* getParameterOutExtensionsType */, 4, 102, 4, 106, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig resolveClosureThisType = { { 2094 /* resolveClosureThisType */, 4, 107, 4, 111, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeUnpackedArgument = { { 2146 /* observeUnpackedArgument */, 5, 112, 5, 117, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig observeArgumentValue = { { 2180 /* observeArgumentValue */, 5, 118, 5, 123, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig findOriginalParameterType = { { 2201 /* findOriginalParameterType */, 2, 124, 2, 126, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig readArgResult = { { 2281 /* readArgResult */, 2, 127, 2, 129, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ArgumentsHandler

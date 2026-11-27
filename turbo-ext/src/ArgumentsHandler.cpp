@@ -547,8 +547,15 @@ inline zv::Val selectorSelectFromTypes(zval *types, zval *parametersAcceptors, b
  * the callee */
 pt_method_site pt_ah_callee_is_builtin_site;
 
-/* GenericParametersAcceptorResolver::resolveParameterFromSiblings($siblingTypes, $acceptor, $parameter) */
+/* GenericParametersAcceptorResolver::resolveParameterFromSiblings($siblingTypes, $acceptor, $parameter[, $accumulatorTypes]) */
 pt_method_site pt_ah_resolve_parameter_from_siblings_site;
+
+/* GenericParametersAcceptorResolver::resolveAccumulatorTemplateTypes($argTypes, $acceptor, $parameter) */
+pt_method_site pt_ah_resolve_accumulator_template_types_site;
+
+/* NodeScopeResolver::LOOP_SCOPE_ITERATIONS / ::GENERALIZE_AFTER_ITERATION */
+#define PT_AH_LOOP_SCOPE_ITERATIONS_LIMIT 10
+#define PT_AH_GENERALIZE_AFTER_ITERATION_LIMIT 1
 
 /* the parameter getters: pt_parameter_reflection_call() (ParameterValues.h —
  * the value classes' slots, the native parameter reflections' bodies, a
@@ -1063,7 +1070,7 @@ private:
 	}
 
 	/* Mirrors gatherClosureArgType() */
-	zv::Val gatherClosureArgType(HashTable *parametersAcceptors, zend_ulong i, zval *closureExpr, zval *scope, zval *siblingTypes) const
+	zv::Val gatherClosureArgType(HashTable *parametersAcceptors, zend_ulong i, zval *closureExpr, zval *scope, zval *siblingTypes, zval *originalArg, bool unpack, bool hasName) const
 	{
 		zv::Val rawParametersHold;
 		zval *rawParameter = NULL;
@@ -1086,25 +1093,102 @@ private:
 			}
 		}
 
-		zv::Val pushedScope;
-		zv::Val siblingParameterHold;
-		if (rawParameter != NULL && Z_TYPE_P(rawParameter) != IS_NULL) {
-			if (zend_hash_num_elements(Z_ARRVAL_P(siblingTypes)) > 0) {
-				zval *acceptor = readIndex(parametersAcceptors, 0);
-				if (UNEXPECTED(acceptor == NULL)) return zv::Val();
-				zv::Args argv{siblingTypes, acceptor, rawParameter};
-				siblingParameterHold = pt_call_static_cached(pt_ah_resolve_parameter_from_siblings_site, PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER, PT_LC("resolveparameterfromsiblings"), 3, argv);
-				if (UNEXPECTED(siblingParameterHold.isUndef())) return zv::Val();
-				rawParameter = siblingParameterHold.raw();
-			}
-			zval null;
-			ZVAL_NULL(&null);
-			pushedScope = pt_mutating_scope_push_in_function_call(Z_OBJ_P(scope), &null, rawParameter, false);
-			if (UNEXPECTED(pushedScope.isUndef())) return zv::Val();
-			scope = pushedScope.raw();
+		zval *closureParameterResolver = slot(slots::closureParameterResolver);
+		if (rawParameter == NULL || Z_TYPE_P(rawParameter) == IS_NULL) {
+			return closureParameterResolverResolveCallableTypeForScope(closureParameterResolver, closureExpr, scope);
 		}
 
-		return closureParameterResolverResolveCallableTypeForScope(slot(slots::closureParameterResolver), closureExpr, scope);
+		zval *acceptor = NULL;
+		bool hasSiblings = zend_hash_num_elements(Z_ARRVAL_P(siblingTypes)) > 0;
+		zv::Val parameterHold;
+		zval *parameter = rawParameter;
+		if (hasSiblings) {
+			acceptor = readIndex(parametersAcceptors, 0);
+			if (UNEXPECTED(acceptor == NULL)) return zv::Val();
+			parameterHold = resolveParameterFromSiblings(siblingTypes, acceptor, rawParameter, NULL);
+			if (UNEXPECTED(parameterHold.isUndef())) return zv::Val();
+			parameter = parameterHold.raw();
+		}
+		zv::Val closureType = resolveClosureTypeWithParameter(closureExpr, scope, parameter);
+		if (UNEXPECTED(closureType.isUndef()) || !hasSiblings) return closureType;
+
+		zv::Val accumulatorTypes = resolveAccumulatorTemplateTypes(siblingTypes, acceptor, rawParameter);
+		if (UNEXPECTED(accumulatorTypes.isUndef())) return zv::Val();
+		if (accumulatorTypes.isNull()) return closureType;
+		if (UNEXPECTED(!requireArray(accumulatorTypes.raw(), "resolveAccumulatorTemplateTypes()"))) return zv::Val();
+		if (zend_hash_num_elements(Z_ARRVAL_P(accumulatorTypes.raw())) == 0) return closureType;
+
+		for (zend_long iteration = 0; iteration < PT_AH_LOOP_SCOPE_ITERATIONS_LIMIT; iteration++) {
+			zv::Val iterationParameter = resolveParameterFromSiblings(siblingTypes, acceptor, rawParameter, accumulatorTypes.raw());
+			if (UNEXPECTED(iterationParameter.isUndef())) return zv::Val();
+			zv::Val iterationClosureType = resolveClosureTypeWithParameter(closureExpr, scope, iterationParameter.raw());
+			if (UNEXPECTED(iterationClosureType.isUndef())) return zv::Val();
+
+			zv::Arr argTypes = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(siblingTypes)));
+			bool argUnpack = unpack;
+			bool argHasName = hasName;
+			if (UNEXPECTED(!addGatheredArgType(argTypes, argUnpack, argHasName, originalArg, i, iterationClosureType.raw()))) return zv::Val();
+			zv::Val nextAccumulatorTypes = resolveAccumulatorTemplateTypes(argTypes.raw(), acceptor, rawParameter);
+			if (UNEXPECTED(nextAccumulatorTypes.isUndef())) return zv::Val();
+			if (nextAccumulatorTypes.isNull()) return closureType;
+			if (UNEXPECTED(!requireArray(nextAccumulatorTypes.raw(), "resolveAccumulatorTemplateTypes()"))) return zv::Val();
+
+			bool changed = false;
+			zv::Arr updated = zv::Arr::adoptVal(zv::Val::copyOf(zv::Ref(accumulatorTypes.raw())));
+			for (zv::ArrayEntry entry : zv::ArrRef(accumulatorTypes.raw())) {
+				zval *previousType = entry.value().deref().raw();
+				zend_string *name = entry.stringKeyOrNull();
+				zval *nextFound = name != NULL ? zend_symtable_find(Z_ARRVAL_P(nextAccumulatorTypes.raw()), name) : zend_hash_index_find(Z_ARRVAL_P(nextAccumulatorTypes.raw()), entry.indexKey());
+				if (nextFound != NULL) ZVAL_DEREF(nextFound);
+				zval *nextFoundType = nextFound != NULL && Z_TYPE_P(nextFound) != IS_NULL ? nextFound : previousType;
+				zval unioned;
+				if (UNEXPECTED(!pt_type_combinator_binary(PT_LC("union"), nextFoundType, previousType, &unioned))) return zv::Val();
+				zv::Val nextType = zv::Val::adopt(unioned);
+				bool equal;
+				if (UNEXPECTED(!pt_type_call_bool(Z_OBJ_P(nextType.raw()), PT_LC("equals"), 1, previousType, equal))) return zv::Val();
+				if (equal) continue;
+				if (iteration >= PT_AH_GENERALIZE_AFTER_ITERATION_LIMIT) {
+					zv::Args generalizeArgs{previousType, nextType.raw()};
+					nextType = pt_type_call(Z_OBJ_P(scope), PT_LC("generalizeiteratedtype"), 2, generalizeArgs);
+					if (UNEXPECTED(nextType.isUndef())) return zv::Val();
+				}
+				setKey(updated, name, entry.indexKey(), nextType.raw());
+				changed = true;
+			}
+
+			if (!changed) return iterationClosureType;
+			accumulatorTypes = zv::Val(std::move(updated));
+		}
+
+		return closureType;
+	}
+
+	/* GenericParametersAcceptorResolver::resolveParameterFromSiblings(); $accumulatorTypes NULL for the default [] */
+	static zv::Val resolveParameterFromSiblings(zval *siblingTypes, zval *acceptor, zval *rawParameter, zval *accumulatorTypes)
+	{
+		if (accumulatorTypes == NULL) {
+			zv::Args argv{siblingTypes, acceptor, rawParameter};
+			return pt_call_static_cached(pt_ah_resolve_parameter_from_siblings_site, PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER, PT_LC("resolveparameterfromsiblings"), 3, argv);
+		}
+		zv::Args argv{siblingTypes, acceptor, rawParameter, accumulatorTypes};
+		return pt_call_static_cached(pt_ah_resolve_parameter_from_siblings_site, PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER, PT_LC("resolveparameterfromsiblings"), 4, argv);
+	}
+
+	/* GenericParametersAcceptorResolver::resolveAccumulatorTemplateTypes() */
+	static zv::Val resolveAccumulatorTemplateTypes(zval *argTypes, zval *acceptor, zval *rawParameter)
+	{
+		zv::Args argv{argTypes, acceptor, rawParameter};
+		return pt_call_static_cached(pt_ah_resolve_accumulator_template_types_site, PT_CLASS_GENERIC_PARAMETERS_ACCEPTOR_RESOLVER, PT_LC("resolveaccumulatortemplatetypes"), 3, argv);
+	}
+
+	/* $this->closureParameterResolver->resolveCallableTypeForScope($closureExpr, $scope->pushInFunctionCall(null, $parameter, false)) */
+	zv::Val resolveClosureTypeWithParameter(zval *closureExpr, zval *scope, zval *parameter) const
+	{
+		zval null;
+		ZVAL_NULL(&null);
+		zv::Val pushedScope = pt_mutating_scope_push_in_function_call(Z_OBJ_P(scope), &null, parameter, false);
+		if (UNEXPECTED(pushedScope.isUndef())) return zv::Val();
+		return closureParameterResolverResolveCallableTypeForScope(slot(slots::closureParameterResolver), closureExpr, pushedScope.raw());
 	}
 
 	/* Mirrors selectArgsAcceptor() */
@@ -2534,7 +2618,7 @@ private:
 		// the evolving scope, before the body is processed
 		zval *originalArgForGather = originalArgOf(record.arg);
 		zv::Val gathered = w.typeDrivenAcceptorSelection
-			? gatherClosureArgType(Z_ARRVAL_P(w.parametersAcceptors), record.key, value, w.scope.raw(), w.gatheredTypes.raw())
+			? gatherClosureArgType(Z_ARRVAL_P(w.parametersAcceptors), record.key, value, w.scope.raw(), w.gatheredTypes.raw(), originalArgForGather, w.gatheredUnpack, w.gatheredHasName)
 			: closureTypeResolverGetClosureType(slot(slots::closureTypeResolver), w.scope.raw(), value, true, w.storage);
 		if (UNEXPECTED(gathered.isUndef())) return false;
 		zval_ptr_dtor(&record.gathered);

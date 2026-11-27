@@ -7,10 +7,10 @@ use function PHPStan\Testing\assertType;
 /** @param list<int> $vals */
 function foo(array $vals): int {
 	$result = array_reduce($vals, function($carry, $val) {
-		assertType('(float|int)', $carry + map($val));
+		assertType('int', $carry + map($val));
 		return $carry + map($val);
 	}, 0);
-	assertType('(float|int)', $result);
+	assertType('int', $result);
 
 	return $result;
 }
@@ -22,10 +22,10 @@ function map(int $val): int {
 /** @param list<int> $vals */
 function bar(array $vals): int {
 	$result = array_reduce($vals, function($carry, $val) {
-		assertType('(float|int)', $carry + $val);
+		assertType('int', $carry + $val);
 		return $carry + $val;
 	}, 0);
-	assertType('(float|int)', $result);
+	assertType('int', $result);
 
 	return $result;
 }

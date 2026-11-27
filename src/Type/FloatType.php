@@ -148,9 +148,10 @@ class FloatType implements Type
 		return new NumberSet([], [[-INF, INF]], true);
 	}
 
+	/** A subclass may hold numbers the set does not describe, so only the subclasses that override this give theirs. */
 	public function toExactNumberSet(): ?NumberSet
 	{
-		return $this->toNumberSet();
+		return static::class === self::class ? $this->toNumberSet() : null;
 	}
 
 	public function toBitwiseNotType(): Type

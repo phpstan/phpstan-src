@@ -356,6 +356,8 @@ PT_MINIT_REGISTRATION(pt_register_constant_float_type)
 
 	cls.method<&ConstantFloatType::toInteger>(sigs::toInteger);
 	cls.method<&ConstantFloatType::toNumberSet>(sigs::toNumberSet);
+	/* mirrors toExactNumberSet() */
+	cls.method(sigs::toExactNumberSet, pt_type_exact_number_set_handler);
 
 	cls.method<&ConstantFloatType::toBitwiseNotType>(sigs::toBitwiseNotType);
 

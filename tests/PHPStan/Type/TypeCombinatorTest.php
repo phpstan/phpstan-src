@@ -3438,6 +3438,143 @@ class TypeCombinatorTest extends PHPStanTestCase
 			IntersectionType::class,
 			'lowercase-string&non-empty-string',
 		];
+		yield [
+			[
+				self::createPropertyNameType('User'),
+				self::createPropertyNameType('Account'),
+			],
+			UnionType::class,
+			'property name of Account|property name of User',
+		];
+		yield [
+			[
+				self::createPropertyNameType('User'),
+				new StringType(),
+			],
+			StringType::class,
+			'string',
+		];
+		yield [
+			[
+				self::createIdType('User'),
+				self::createIdType('Account'),
+			],
+			UnionType::class,
+			'id of Account|id of User',
+		];
+		yield [
+			[
+				self::createWeightType('User'),
+				self::createWeightType('Account'),
+			],
+			UnionType::class,
+			'weight of Account|weight of User',
+		];
+	}
+
+	/** A subclass of StringType holding the names of the properties of a class, as Larastan's model property of X. */
+	private static function createPropertyNameType(string $className): StringType
+	{
+		return new class (new ObjectType($className)) extends StringType {
+
+			public function __construct(private ObjectType $class)
+			{
+				parent::__construct();
+			}
+
+			public function describe(VerbosityLevel $level): string
+			{
+				return sprintf('property name of %s', $this->class->describe($level));
+			}
+
+			public function equals(Type $type): bool
+			{
+				return $type instanceof self && $this->class->equals($type->class);
+			}
+
+			public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
+			{
+				if ($type instanceof self) {
+					return $this->class->isSuperTypeOf($type->class);
+				}
+				if ($type instanceof CompoundType) {
+					return $type->isSubTypeOf($this);
+				}
+
+				return IsSuperTypeOfResult::createNo();
+			}
+
+		};
+	}
+
+	/** The IntegerType counterpart of createPropertyNameType(). */
+	private static function createIdType(string $className): IntegerType
+	{
+		return new class (new ObjectType($className)) extends IntegerType {
+
+			public function __construct(private ObjectType $class)
+			{
+				parent::__construct();
+			}
+
+			public function describe(VerbosityLevel $level): string
+			{
+				return sprintf('id of %s', $this->class->describe($level));
+			}
+
+			public function equals(Type $type): bool
+			{
+				return $type instanceof self && $this->class->equals($type->class);
+			}
+
+			public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
+			{
+				if ($type instanceof self) {
+					return $this->class->isSuperTypeOf($type->class);
+				}
+				if ($type instanceof CompoundType) {
+					return $type->isSubTypeOf($this);
+				}
+
+				return IsSuperTypeOfResult::createNo();
+			}
+
+		};
+	}
+
+	/** The FloatType counterpart of createPropertyNameType(). */
+	private static function createWeightType(string $className): FloatType
+	{
+		return new class (new ObjectType($className)) extends FloatType {
+
+			public function __construct(private ObjectType $class)
+			{
+				parent::__construct();
+			}
+
+			public function describe(VerbosityLevel $level): string
+			{
+				return sprintf('weight of %s', $this->class->describe($level));
+			}
+
+			public function equals(Type $type): bool
+			{
+				return $type instanceof self && $this->class->equals($type->class);
+			}
+
+			public function isSuperTypeOf(Type $type): IsSuperTypeOfResult
+			{
+				if ($type instanceof self) {
+					return $this->class->isSuperTypeOf($type->class);
+				}
+				if ($type instanceof CompoundType) {
+					return $type->isSubTypeOf($this);
+				}
+
+				return IsSuperTypeOfResult::createNo();
+			}
+
+		};
 	}
 
 	/**

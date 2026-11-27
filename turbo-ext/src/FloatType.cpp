@@ -291,8 +291,14 @@ PT_MINIT_REGISTRATION(pt_register_float_type)
 
 	/* mirrors getStringRefinement() */
 	cls.method(sigs::getStringRefinement, pt_type_null_handler);
-	/* mirrors toExactNumberSet() */
-	cls.method(sigs::toExactNumberSet, pt_type_exact_number_set_handler);
+	/* mirrors toExactNumberSet(): null for a subclass that does not override it */
+	cls.method(sigs::toExactNumberSet, [](INTERNAL_FUNCTION_PARAMETERS) {
+		if (Z_OBJCE_P(ZEND_THIS) != pt_ce_float_type) {
+			ZEND_PARSE_PARAMETERS_NONE();
+			RETURN_NULL();
+		}
+		pt_type_exact_number_set_handler(INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	});
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, pt_value_set_of_numbers);
 

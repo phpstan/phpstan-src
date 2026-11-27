@@ -421,8 +421,14 @@ PT_MINIT_REGISTRATION(pt_register_string_type)
 	cls.method(sigs::tryUnion, pt_type_try_null_handler);
 	cls.method(sigs::tryIntersect, pt_type_try_null_handler);
 
-	/* mirrors getStringRefinement() */
-	cls.method(sigs::getStringRefinement, pt_type_string_refinement_handler<PT_STRING_CELLS_ALL>);
+	/* mirrors getStringRefinement(): null for a subclass */
+	cls.method(sigs::getStringRefinement, [](INTERNAL_FUNCTION_PARAMETERS) {
+		if (Z_OBJCE_P(ZEND_THIS) != pt_ce_string_type) {
+			ZEND_PARSE_PARAMETERS_NONE();
+			RETURN_NULL();
+		}
+		pt_type_string_refinement_handler<PT_STRING_CELLS_ALL>(INTERNAL_FUNCTION_PARAM_PASSTHRU);
+	});
 	/* mirrors toValueSet() */
 	cls.method(sigs::toValueSet, PT_VALUE_SET_OF_THIS("createstrings"));
 

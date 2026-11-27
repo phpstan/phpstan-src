@@ -2,6 +2,7 @@
 
 namespace PHPStan\Type;
 
+use PHPStan\DependencyInjection\BleedingEdgeToggle;
 use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Turbo\TurboExtensionEnabler;
 use PHPStan\Type\Accessory\AccessoryType;
@@ -17,6 +18,7 @@ use PHPStan\Type\Combinator\GeneralArrayUnionRule;
 use PHPStan\Type\Combinator\IntegerUnionRemoveRule;
 use PHPStan\Type\Combinator\IntersectRule;
 use PHPStan\Type\Combinator\IterableUnionRule;
+use PHPStan\Type\Combinator\MergedGeneralArrayUnionRule;
 use PHPStan\Type\Combinator\MixedUnionRemoveRule;
 use PHPStan\Type\Combinator\NumberUnionRule;
 use PHPStan\Type\Combinator\OffsetValueLimitIntersectRule;
@@ -59,11 +61,11 @@ use function usort;
 final class TypeCombinator
 {
 
-	/** @var list<UnionRule>|null */
-	private static ?array $unionRules = null;
+	/** @var array<int, list<UnionRule>> by whether bleeding edge is on */
+	private static array $unionRules = [];
 
-	/** @var list<UnionRule>|null */
-	private static ?array $widenRules = null;
+	/** @var array<int, list<UnionRule>> by whether bleeding edge is on */
+	private static array $widenRules = [];
 
 	/** @var list<IntersectRule>|null */
 	private static ?array $intersectRules = null;
@@ -231,15 +233,16 @@ final class TypeCombinator
 			return $type;
 		}
 
+		$bleedingEdge = BleedingEdgeToggle::isBleedingEdge();
 		if (
 			self::countConstantArrayValueTypes($arrayTypes) <= ConstantArrayTypeBuilder::ARRAY_COUNT_LIMIT
-			&& count(GeneralArrayUnionRule::getGeneralArrays($arrayTypes)) <= GeneralArrayUnionRule::GENERAL_ARRAYS_LIMIT
+			&& (!$bleedingEdge || count(GeneralArrayUnionRule::getGeneralArrays($arrayTypes)) <= GeneralArrayUnionRule::GENERAL_ARRAYS_LIMIT)
 		) {
 			return $type;
 		}
 
 		$types = [...$otherTypes, ...$arrayTypes];
-		foreach (self::$widenRules ??= self::createWidenRules() as $rule) {
+		foreach (self::$widenRules[(int) $bleedingEdge] ??= self::createWidenRules($bleedingEdge) as $rule) {
 			$types = $rule->apply($types, []);
 		}
 
@@ -254,12 +257,17 @@ final class TypeCombinator
 	/**
 	 * The rules union() runs, in this order: the scalars merge kind by kind,
 	 * the arrays merge with each other, and then any member holding another
-	 * takes its place.
+	 * takes its place. Without bleeding edge, every general array merges with
+	 * the other arrays before the shapes merge among themselves.
 	 *
 	 * @return list<UnionRule>
 	 */
-	private static function createUnionRules(): array
+	private static function createUnionRules(bool $bleedingEdge): array
 	{
+		$arrayRules = $bleedingEdge
+			? [new ShapeUnionRule(), new OverlappingArrayUnionRule()]
+			: [new MergedGeneralArrayUnionRule(), new ShapeUnionRule()];
+
 		return [
 			new SingleValueUnionRule(),
 			new NumberUnionRule(),
@@ -267,20 +275,27 @@ final class TypeCombinator
 			new BooleanUnionRule(),
 			new IterableUnionRule(),
 			new AbsorbedArrayUnionRule(),
-			new ShapeUnionRule(),
-			new OverlappingArrayUnionRule(),
+			...$arrayRules,
 			new SubsumptionUnionRule(),
 		];
 	}
 
 	/**
 	 * The rules widen() runs on the members before union() runs its own: they
-	 * give up precision to keep big joins of arrays small.
+	 * give up precision to keep big joins of arrays small. Without bleeding
+	 * edge, every general array merges with the other arrays first.
 	 *
 	 * @return list<UnionRule>
 	 */
-	private static function createWidenRules(): array
+	private static function createWidenRules(bool $bleedingEdge): array
 	{
+		if (!$bleedingEdge) {
+			return [
+				new MergedGeneralArrayUnionRule(),
+				new FoldedShapeUnionRule(),
+			];
+		}
+
 		return [
 			new FoldedShapeUnionRule(),
 			new GeneralArrayUnionRule(),
@@ -492,7 +507,8 @@ final class TypeCombinator
 			}
 			$nonConstantKindMask |= $memberKindMask;
 		}
-		foreach (self::$unionRules ??= self::createUnionRules() as $rule) {
+		$bleedingEdge = BleedingEdgeToggle::isBleedingEdge();
+		foreach (self::$unionRules[(int) $bleedingEdge] ??= self::createUnionRules($bleedingEdge) as $rule) {
 			if (($rule->getKindMask() & ($rule->mergesConstantScalarValues() ? $kindMask : $nonConstantKindMask)) === 0) {
 				continue;
 			}

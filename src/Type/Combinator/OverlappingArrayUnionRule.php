@@ -10,9 +10,10 @@ use function array_values;
 use function count;
 
 /**
- * A general array merges with the arrays it cannot be told apart from by the
- * kinds of their keys or values, as `array<int, string>|array{foo: string}`
- * becomes `array<int|'foo', string>`. Arrays whose keys or values are of
+ * With bleeding edge, a general array merges with the arrays it cannot be told
+ * apart from by the kinds of their keys or values, as
+ * `array<string, string>|array{foo: string}` becomes `array<string, string>`.
+ * Arrays whose keys or values are of
  * kinds that share no value stay members of their own: `array<int>|array<string>`
  * holds no array of ints and strings, so it is not `array<int|string>`.
  * Shapes among themselves are left to ShapeUnionRule.

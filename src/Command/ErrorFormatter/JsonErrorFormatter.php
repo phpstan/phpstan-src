@@ -47,7 +47,7 @@ final class JsonErrorFormatter implements ErrorFormatter
 			];
 
 			if ($fileSpecificError->getTip() !== null) {
-				$message['tip'] = $tipFormatter->format($fileSpecificError->getTip());
+				$message['tip'] = $tipFormatter->format(ConsoleTagEscaper::escape($fileSpecificError->getTip()));
 			}
 
 			if ($fileSpecificError->getIdentifier() !== null) {

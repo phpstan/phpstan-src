@@ -835,6 +835,11 @@ public:
 		if (UNEXPECTED(relational < 0)) return zv::Val();
 		if (!relational) return specifiedTypes;
 		{
+			int kind = kindOf(expr);
+			if (UNEXPECTED(kind < 0)) return zv::Val();
+			if (kind == KIND_GREATER || kind == KIND_GREATER_OR_EQUAL) return specifiedTypes;
+		}
+		{
 			zv::Val leftHold, rightHold;
 			zval *leftImpure = pt_expression_result_impure_points(leftResult, leftHold);
 			if (UNEXPECTED(leftImpure == NULL)) return zv::Val();

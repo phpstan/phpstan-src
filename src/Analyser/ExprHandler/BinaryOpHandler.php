@@ -827,6 +827,11 @@ final class BinaryOpHandler implements ExprHandler
 		if (!self::isRelationalComparison($expr)) {
 			return $specifiedTypes;
 		}
+		// `$a > $b` narrows as the mirrored `$b < $a`, whose verdict that
+		// narrowing remembers - a second fact would be specified again twice
+		if ($expr instanceof BinaryOp\Greater || $expr instanceof BinaryOp\GreaterOrEqual) {
+			return $specifiedTypes;
+		}
 		if ($leftResult->getImpurePoints() !== [] || $rightResult->getImpurePoints() !== []) {
 			return $specifiedTypes;
 		}

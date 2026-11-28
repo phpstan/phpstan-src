@@ -295,6 +295,15 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 		if ($node instanceof Expr\MethodCall || $node instanceof Expr\NullsafeMethodCall) {
 			if ($this->isThis($node->var) && $node->name instanceof Identifier) {
 				$this->methodArgs($scan, $node->args, $node->name->toLowerString());
+			} elseif (
+				$node->var instanceof Expr\PropertyFetch
+				&& $this->isThis($node->var->var)
+				&& $node->var->name instanceof Identifier
+				&& $node->name instanceof Identifier
+				&& $scan->lowerName !== null
+			) {
+				// the declared type of the property tells the method, whose overrides keep its parameters by reference or by value
+				$this->calleeArgs($scan, $node->args, [$scan->lowerName . '::$' . $node->var->name->toString() . '->' . $node->name->toString()], true);
 			} else {
 				$this->writeArgs($scan, $node->args, true);
 			}
@@ -570,9 +579,10 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 	 * PreservedPropertiesResolver looks up.
 	 *
 	 * @param array<Node> $args
-	 * @param list<non-empty-string> $calleeNames candidate function names, or 'Class::method'
+	 * @param list<non-empty-string> $calleeNames candidate function names, 'Class::method', or 'Class::$property->method'
+	 *        for a method of the object in a property of $this
 	 */
-	private function calleeArgs(PreservedPropertiesClassScan $scan, array $args, array $calleeNames): void
+	private function calleeArgs(PreservedPropertiesClassScan $scan, array $args, array $calleeNames, bool $toOtherObject = false): void
 	{
 		foreach ($args as $position => $arg) {
 			if (!$arg instanceof Arg) {
@@ -583,7 +593,7 @@ final class PreservedPropertiesVisitor extends NodeVisitorAbstract
 				continue;
 			}
 			if ($arg->unpack || $arg->name !== null) {
-				$this->writeName($scan, $propertyName);
+				$this->writeName($scan, $propertyName, false, $toOtherObject);
 				continue;
 			}
 			$scan->summaries[(string) $scan->currentMethod]['functionArguments'][] = [$calleeNames, $position, $propertyName];

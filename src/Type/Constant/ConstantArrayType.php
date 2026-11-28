@@ -2229,7 +2229,12 @@ class ConstantArrayType implements Type
 	 */
 	public static function extractTruncateListBounds(Type $sizeType): array
 	{
-		return $sizeType->toNumberSet()?->getIntegerBounds() ?? [null, null];
+		$numbers = $sizeType->toNumberSet();
+		if ($numbers === null) {
+			return [null, null];
+		}
+
+		return $numbers->getIntegerBounds() ?? [null, null];
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic

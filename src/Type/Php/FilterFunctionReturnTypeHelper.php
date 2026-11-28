@@ -418,7 +418,8 @@ final class FilterFunctionReturnTypeHelper
 			if (count($minRange->getConstantScalarValues()) === 1) {
 				$range['min'] = (int) $minRange->getConstantScalarValues()[0];
 			} elseif ($minRange->isInteger()->yes()) {
-				$range['min'] = $minRange->toNumberSet()?->getIntegerBounds()[0] ?? null;
+				$minBounds = $minRange->toNumberSet()?->getIntegerBounds();
+				$range['min'] = $minBounds !== null ? $minBounds[0] : null;
 			} else {
 				$range['min'] = null;
 			}
@@ -428,7 +429,8 @@ final class FilterFunctionReturnTypeHelper
 			if (count($maxRange->getConstantScalarValues()) === 1) {
 				$range['max'] = (int) $maxRange->getConstantScalarValues()[0];
 			} elseif ($maxRange->isInteger()->yes()) {
-				$range['max'] = $maxRange->toNumberSet()?->getIntegerBounds()[1] ?? null;
+				$maxBounds = $maxRange->toNumberSet()?->getIntegerBounds();
+				$range['max'] = $maxBounds !== null ? $maxBounds[1] : null;
 			} else {
 				$range['max'] = null;
 			}

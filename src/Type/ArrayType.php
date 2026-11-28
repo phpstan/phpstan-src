@@ -407,7 +407,8 @@ class ArrayType implements Type
 					$integerKeyType = TypeCombinator::union(...$integerTypes);
 					$offsetTypes = [$integerKeyType];
 					// the appended key is one past an integer key: past the max of each interval, the rest of the interval is already a key
-					foreach ($integerKeyType->toNumberSet()?->getIntegerIntervals() ?? [] as [, $max]) {
+					$integerKeyNumbers = $integerKeyType->toNumberSet();
+					foreach ($integerKeyNumbers !== null ? $integerKeyNumbers->getIntegerIntervals() : [] as [, $max]) {
 						// an offset past PHP_INT_MAX cannot be assigned, so it's not a possible key
 						if (in_array($max, [null, PHP_INT_MAX], true)) {
 							continue;

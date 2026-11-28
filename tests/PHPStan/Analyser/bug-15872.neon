@@ -1,0 +1,5 @@
+services:
+	-
+		class: PHPStan\Analyser\Bug15872ReturnTypeExtension
+		tags:
+			- phpstan.broker.dynamicMethodReturnTypeExtension

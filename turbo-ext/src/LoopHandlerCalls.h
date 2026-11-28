@@ -24,6 +24,8 @@
 /* NodeScopeResolver::LOOP_SCOPE_ITERATIONS / ::GENERALIZE_AFTER_ITERATION */
 #define PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT 10
 #define PT_LH_GENERALIZE_AFTER_ITERATION_LIMIT 1
+/* NodeScopeResolver::LOOP_SCOPE_FORGETTING_ITERATIONS_LIMIT */
+#define PT_LH_LOOP_SCOPE_FORGETTING_ITERATIONS_LIMIT 10
 
 namespace ptlh {
 
@@ -69,14 +71,6 @@ inline zv::Val generalizeWithWrittenNames(zval *prevScope, zval *bodyScope, zval
 	zv::Val names = loopWrittenVariableNames(stmt, passFlow);
 	if (UNEXPECTED(names.isUndef())) return zv::Val();
 	return pt_mutating_scope_generalize_with_names(Z_OBJ_P(prevScope), Z_OBJ_P(bodyScope), names.raw());
-}
-
-/* if ($count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS) $bodyScope = $bodyScope->forgetLoopWrittenVariables($writtenVariableNames):
- * a scope still changing after the limit is not a fixpoint; UNDEF = pending exception */
-inline zv::Val forgetIfLimitReached(zv::Val bodyScope, zend_long count, zv::Val &writtenVariableNames)
-{
-	if (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT) return bodyScope;
-	return pt_mutating_scope_forget_loop_written_variables(Z_OBJ_P(bodyScope.raw()), writtenVariableNames.isUndef() ? NULL : writtenVariableNames.raw());
 }
 
 /* new NoopNodeCallback() / new RecordingNodeCallback() */
@@ -220,6 +214,25 @@ inline uint32_t countOf(zval *list)
 [[nodiscard]] inline bool scopesEqual(zval *a, zval *b, bool &out)
 {
 	return pt_mutating_scope_equals(Z_OBJ_P(a), Z_OBJ_P(b), out);
+}
+
+/* the convergence loop's tail once $count reached
+ * NodeScopeResolver::LOOP_SCOPE_ITERATIONS (PHP twin): the variables still
+ * changing since $prevScope are forgotten and the loop iterates on; giveUp =
+ * what changes is not a variable, or LOOP_SCOPE_FORGETTING_ITERATIONS_LIMIT
+ * more passes did not converge, so every written variable is forgotten and
+ * the loop stops. UNDEF = pending exception */
+inline zv::Val forgetChangedAtLimit(zval *prevScope, zv::Val bodyScope, zend_long count, zv::Val &writtenVariableNames, bool &giveUp)
+{
+	giveUp = false;
+	if (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT + PT_LH_LOOP_SCOPE_FORGETTING_ITERATIONS_LIMIT) {
+		zv::Val forgottenScope = pt_mutating_scope_forget_changed_loop_variables(Z_OBJ_P(bodyScope.raw()), Z_OBJ_P(prevScope));
+		if (UNEXPECTED(forgottenScope.isUndef())) return zv::Val();
+		if (!forgottenScope.isNull()) return forgottenScope;
+	}
+	// what still changes is not a variable, so nothing the loop writes keeps a type
+	giveUp = true;
+	return pt_mutating_scope_forget_loop_written_variables(Z_OBJ_P(bodyScope.raw()), writtenVariableNames.isUndef() ? NULL : writtenVariableNames.raw());
 }
 
 /* the twin's VariableWrite::KIND_* values the handlers pass */

@@ -3572,6 +3572,8 @@ zv::Val pt_variable_flow_builder_writes(zval *flow);
 zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object *otherScope, zval *writableVariableNames, zend_object *loopEntryScope = NULL);
 /* ->forgetLoopWrittenVariables($writtenVariableNames) (NULL or a null zval for null) */
 zv::Val pt_mutating_scope_forget_loop_written_variables(zend_object *scope, zval *writtenVariableNames);
+/* ->forgetChangedLoopVariables($previousScope) (a null zval for null) */
+zv::Val pt_mutating_scope_forget_changed_loop_variables(zend_object *scope, zend_object *previousScope);
 zv::Val pt_mutating_scope_enter_foreach(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *valueName, zend_string *keyName, bool valueByRef);
 zv::Val pt_mutating_scope_enter_foreach_key(zend_object *scope, zend_object *originalScope, zval *iteratee, zval *iterateeType, zval *nativeIterateeType, zend_string *keyName);
 zv::Val pt_mutating_scope_enter_catch_type(zend_object *scope, zval *catchType, zend_string *variableName);

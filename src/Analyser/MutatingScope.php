@@ -5030,6 +5030,58 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	}
 
 	/**
+	 * One pass of a loop that reached NodeScopeResolver::LOOP_SCOPE_ITERATIONS:
+	 * only the variables whose type changed since $previousScope become mixed,
+	 * so the variables that did converge keep their types while the loop
+	 * iterates on. A variable reassigned after it was forgotten changes again
+	 * and is forgotten again, so the head stops changing once every variable
+	 * that does not converge is mixed.
+	 *
+	 * Returns null when what changed is not a variable - forgetting cannot
+	 * make such a head converge.
+	 */
+	public function forgetChangedLoopVariables(self $previousScope): ?self
+	{
+		$changedVariableNames = $this->getChangedVariableNames($previousScope);
+		if ($changedVariableNames !== []) {
+			return $this->forgetLoopWrittenVariables($changedVariableNames);
+		}
+
+		// a head no variable changed in converges at the next pass's entry check
+		return $this->equals($previousScope) ? $this : null;
+	}
+
+	/**
+	 * Variables whose type or certainty differs between this scope and
+	 * $otherScope, in either flavour.
+	 *
+	 * @return array<string, true>
+	 */
+	private function getChangedVariableNames(self $otherScope): array
+	{
+		$names = [];
+		foreach ([
+			[$this->expressionTypes, $otherScope->expressionTypes],
+			[$this->nativeExpressionTypes, $otherScope->nativeExpressionTypes],
+		] as [$holders, $otherHolders]) {
+			foreach ([[$holders, $otherHolders], [$otherHolders, $holders]] as [$a, $b]) {
+				foreach ($a as $exprString => $holder) {
+					$expr = $holder->getExpr();
+					if (!$expr instanceof Variable || !is_string($expr->name)) {
+						continue;
+					}
+					if (isset($b[$exprString]) && $holder->equals($b[$exprString])) {
+						continue;
+					}
+					$names[$expr->name] = true;
+				}
+			}
+		}
+
+		return $names;
+	}
+
+	/**
 	 * Generalizes a type that grew in a round of a fixed point the way a loop
 	 * generalizes a variable it writes: the constant parts that changed
 	 * since $previousType widen, so the iteration converges.

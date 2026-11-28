@@ -19,6 +19,9 @@ use function count;
  * them. And the fold is kept only when it is small enough; otherwise the shapes
  * are left for the next step.
  *
+ * A lone shape, too big for the shapes nested in it, keeps its keys too: only
+ * its values widen, instead of the whole shape degrading to an oversized array.
+ *
  * @internal
  */
 final class SharedKeyShapeWidening implements WideningStep
@@ -43,12 +46,13 @@ final class SharedKeyShapeWidening implements WideningStep
 				return $types;
 			}
 		}
-		if ($merged === null || count($result) + 1 >= count($types)) {
+		if ($merged === null) {
 			return $types;
 		}
 
+		$folded = count($result) + 1 < count($types);
 		$merged = ArrayWidening::widenValueTypes($merged);
-		if (count($merged->getOptionalKeys()) >= count($merged->getKeyTypes())) {
+		if ($folded && count($merged->getOptionalKeys()) >= count($merged->getKeyTypes())) {
 			return $types;
 		}
 

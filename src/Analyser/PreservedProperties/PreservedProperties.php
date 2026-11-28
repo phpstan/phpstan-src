@@ -7,9 +7,9 @@ namespace PHPStan\Analyser\PreservedProperties;
  * $this the call cannot write, read from the class's own code.
  *
  * Function arguments are properties passed positionally to a named function or to a
- * method of a class named in the call - candidate function names (namespaced first)
- * or 'Class::method', argument position, property name - and written when that
- * parameter is by reference.
+ * method of a class named in the call or of the object in a property of $this - candidate
+ * function names (namespaced first), 'Class::method' or 'Class::$property->method', argument
+ * position, property name - and written when that parameter is by reference.
  */
 final class PreservedProperties
 {

@@ -30,7 +30,9 @@ use function count;
 use function explode;
 use function implode;
 use function str_contains;
+use function str_starts_with;
 use function strtolower;
+use function substr;
 
 /**
  * Which properties of $this keep their remembered types across an impure call
@@ -502,6 +504,30 @@ final class PreservedPropertiesResolver
 			return null;
 		}
 		$classReflection = $this->reflectionProvider->getClass($className);
+		if (str_starts_with($methodName, '$')) {
+			// 'Class::$property->method': a method of the classes the property is declared to hold
+			[$propertyName, $methodName] = explode('->', substr($methodName, 1), 2);
+			if (!$classReflection->hasNativeProperty($propertyName)) {
+				return null;
+			}
+			// a call on null runs no method
+			$objectClassReflections = TypeCombinator::removeNull($classReflection->getNativeProperty($propertyName)->getReadableType())->getObjectClassReflections();
+			if (count($objectClassReflections) === 0) {
+				return null;
+			}
+			$variants = [];
+			foreach ($objectClassReflections as $objectClassReflection) {
+				if (!$objectClassReflection->hasNativeMethod($methodName)) {
+					// __call or a magic @method
+					return null;
+				}
+				foreach ($objectClassReflection->getNativeMethod($methodName)->getVariants() as $variant) {
+					$variants[] = $variant;
+				}
+			}
+
+			return $variants;
+		}
 		if (!$classReflection->hasNativeMethod($methodName)) {
 			// a class without a constructor takes no arguments by reference
 			return $methodName === '__construct' ? [] : null;

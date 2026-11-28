@@ -10,6 +10,7 @@ use PHPStan\Turbo\ReferencedByTurboExtension;
 use PHPStan\Type\CallableAssertionsHelper;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\ErrorType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\Generic\TemplateTypeVariance;
@@ -18,6 +19,7 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\NeverType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeTraverser;
 use PHPStan\Type\UnionType;
 use function array_key_exists;
 use function array_keys;
@@ -144,10 +146,35 @@ final class GenericParametersAcceptorResolver
 			if ($type === null || $type instanceof ErrorType) {
 				continue;
 			}
-			$types[$name] = $type;
+			$types[$name] = self::isUnresolvableAccumulatorType($type, $parametersAcceptor->getTemplateTypeMap()) ? new MixedType() : $type;
 		}
 
 		return $types;
+	}
+
+	/**
+	 * An accumulator type with an error type, from a closure body that does
+	 * not type with the accumulator, or with a template of the called
+	 * function itself, which a closure parameter the arguments leave
+	 * unresolved returns, cannot be resolved further: it widens to mixed.
+	 */
+	private static function isUnresolvableAccumulatorType(Type $type, TemplateTypeMap $calleeTemplateTypeMap): bool
+	{
+		$unresolvable = false;
+		TypeTraverser::map($type, static function (Type $type, callable $traverse) use ($calleeTemplateTypeMap, &$unresolvable): Type {
+			if ($type instanceof ErrorType) {
+				$unresolvable = true;
+			} elseif ($type instanceof TemplateType) {
+				$calleeTemplateType = $calleeTemplateTypeMap->getType($type->getName());
+				if ($calleeTemplateType instanceof TemplateType && $calleeTemplateType->getScope()->equals($type->getScope())) {
+					$unresolvable = true;
+				}
+			}
+
+			return $unresolvable ? $type : $traverse($type);
+		});
+
+		return $unresolvable;
 	}
 
 	/**

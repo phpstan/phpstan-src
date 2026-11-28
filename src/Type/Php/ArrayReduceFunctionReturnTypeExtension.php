@@ -7,12 +7,10 @@ use PHPStan\Analyser\Scope;
 use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\ParametersAcceptorSelector;
-use PHPStan\TrinaryLogic;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
 use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use function count;
 
 #[AutowiredService]
 final class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionReturnTypeExtension
@@ -47,23 +45,12 @@ final class ArrayReduceFunctionReturnTypeExtension implements DynamicFunctionRet
 			$initialType = new NullType();
 		}
 
-		$arraysType = $scope->getType($args[0]->value);
-		$constantArrays = $arraysType->getConstantArrays();
-		if (count($constantArrays) > 0) {
-			$onlyEmpty = TrinaryLogic::createYes();
-			$onlyNonEmpty = TrinaryLogic::createYes();
-			foreach ($constantArrays as $constantArray) {
-				$iterableAtLeastOnce = $constantArray->isIterableAtLeastOnce();
-				$onlyEmpty = $onlyEmpty->and($iterableAtLeastOnce->negate());
-				$onlyNonEmpty = $onlyNonEmpty->and($iterableAtLeastOnce);
-			}
-
-			if ($onlyEmpty->yes()) {
-				return $initialType;
-			}
-			if ($onlyNonEmpty->yes()) {
-				return $callbackReturnType;
-			}
+		$iterableAtLeastOnce = $scope->getType($args[0]->value)->isIterableAtLeastOnce();
+		if ($iterableAtLeastOnce->no()) {
+			return $initialType;
+		}
+		if ($iterableAtLeastOnce->yes()) {
+			return $callbackReturnType;
 		}
 
 		return TypeCombinator::union($callbackReturnType, $initialType);

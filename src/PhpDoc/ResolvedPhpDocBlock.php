@@ -30,6 +30,7 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\ShouldNotHappenException;
 use PHPStan\Turbo\ReferencedByTurboExtension;
+use PHPStan\Type\ConditionalType;
 use PHPStan\Type\ConditionalTypeForParameter;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
@@ -1249,7 +1250,32 @@ final class ResolvedPhpDocBlock
 			$classReflection->getCallSiteVarianceMap(),
 			$positionVariance,
 		);
-		return $tag->withType($type);
+		return $tag->withType(self::resolveConditionalTypes($type));
+	}
+
+	/**
+	 * A conditional type on the parent's template type can be decided by the child's
+	 * type arguments. It stays when its subject is static, which depends on the called
+	 * class, or when it resolves to another conditional type, including one on a
+	 * parameter, which the parent's conditional type is compared with branch by branch.
+	 */
+	private static function resolveConditionalTypes(Type $type): Type
+	{
+		if (!$type->hasTemplateOrLateResolvableType()) {
+			return $type;
+		}
+
+		return TypeTraverser::map($type, static function (Type $type, callable $traverse): Type {
+			$type = $traverse($type);
+			if ($type instanceof ConditionalType && !$type->getSubject() instanceof StaticType && $type->isResolvable()) {
+				$resolved = $type->resolve();
+				if (!$resolved instanceof ConditionalType && !$resolved instanceof ConditionalTypeForParameter) {
+					return $resolved;
+				}
+			}
+
+			return $type;
+		});
 	}
 
 }

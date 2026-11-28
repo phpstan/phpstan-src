@@ -16,6 +16,18 @@ class ErrorTest extends PHPStanTestCase
 		$this->assertSame(10, $error->getLine());
 	}
 
+	public function testWithAdditionalTip(): void
+	{
+		$error = new Error('Message', 'file', 10);
+		$this->assertNull($error->getTip());
+
+		$withTip = $error->withAdditionalTip('First.');
+		$this->assertNull($error->getTip());
+		$this->assertSame('First.', $withTip->getTip());
+		$this->assertSame("• First.\n• Second.", $withTip->withAdditionalTip('Second.')->getTip());
+		$this->assertSame("• First.\n• Second.\n• Third.", $withTip->withAdditionalTip('Second.')->withAdditionalTip('Third.')->getTip());
+	}
+
 	public function testRemoveTraitContextKeepsTraitFilePath(): void
 	{
 		$error = new Error('Message', 'trait.php (in context of class C)', 11, true, 'user.php', 'trait.php');

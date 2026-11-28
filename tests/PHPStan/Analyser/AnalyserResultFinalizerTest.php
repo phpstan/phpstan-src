@@ -136,14 +136,42 @@ class AnalyserResultFinalizerTest extends PHPStanTestCase
 		);
 	}
 
+	public function testErrorTipExtensionAddsTipToCollectedDataRuleError(): void
+	{
+		$extension = new class implements ErrorTipExtension {
+
+			public function getTip(Error $error, Node $node, Scope $scope): ?string
+			{
+				if (!$node instanceof CollectedDataNode) {
+					return null;
+				}
+
+				return sprintf('Tip for %s.', $error->getIdentifier());
+			}
+
+		};
+
+		$result = $this->createFinalizer([$this->createReportingRule()], [$extension])->finalize(
+			$this->createAnalyserResult(),
+			false,
+			false,
+		)->getAnalyserResult();
+
+		$this->assertCount(1, $result->getErrors());
+		$this->assertSame('Reported.', $result->getErrors()[0]->getMessage());
+		$this->assertSame('Tip for tests.reported.', $result->getErrors()[0]->getTip());
+	}
+
 	/**
 	 * @param list<Rule<CollectedDataNode>> $rules
+	 * @param list<ErrorTipExtension> $errorTipExtensions
 	 */
-	private function createFinalizer(array $rules): AnalyserResultFinalizer
+	private function createFinalizer(array $rules, array $errorTipExtensions = []): AnalyserResultFinalizer
 	{
 		return new AnalyserResultFinalizer(
 			new DirectRuleRegistry($rules),
 			new DirectExtensionsCollection([]),
+			new DirectExtensionsCollection($errorTipExtensions),
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			self::createScopeFactory(
 				self::createReflectionProvider(),

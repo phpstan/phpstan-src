@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PHPStan\Analyser\Analyser;
 use PHPStan\Analyser\AnalyserResultFinalizer;
 use PHPStan\Analyser\Error;
+use PHPStan\Analyser\ErrorTipExtension;
 use PHPStan\Analyser\ExpressionResultFactory;
 use PHPStan\Analyser\FileAnalyser;
 use PHPStan\Analyser\FixedErrorDiff;
@@ -127,6 +128,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 				$nodeScopeResolver,
 				$this->getParser(),
 				self::getContainer()->getExtensionsCollection(IgnoreErrorExtension::class),
+				self::getContainer()->getExtensionsCollection(ErrorTipExtension::class),
 				self::getContainer()->getByType(RuleErrorTransformer::class),
 				new LocalIgnoresProcessor(),
 				false,
@@ -377,6 +379,7 @@ abstract class RuleTestCase extends PHPStanTestCase
 		$finalizer = new AnalyserResultFinalizer(
 			$ruleRegistry,
 			self::getContainer()->getExtensionsCollection(IgnoreErrorExtension::class),
+			self::getContainer()->getExtensionsCollection(ErrorTipExtension::class),
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			self::createScopeFactory($reflectionProvider, self::getContainer()->getService('typeSpecifier')),
 			new LocalIgnoresProcessor(),

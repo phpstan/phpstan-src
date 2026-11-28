@@ -892,6 +892,7 @@ class AnalyserTest extends PHPStanTestCase
 		$finalizer = new AnalyserResultFinalizer(
 			new DirectRuleRegistry($collectedDataRules),
 			new DirectExtensionsCollection([]),
+			new DirectExtensionsCollection([]),
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			$this->createScopeFactory(
 				self::createReflectionProvider(),
@@ -954,6 +955,7 @@ class AnalyserTest extends PHPStanTestCase
 				$container->getExtensionsCollection(NodeVisitor::class),
 				new IgnoreLexer(),
 			),
+			new DirectExtensionsCollection([]),
 			new DirectExtensionsCollection([]),
 			$container->getByType(RuleErrorTransformer::class),
 			new LocalIgnoresProcessor(),

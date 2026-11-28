@@ -15,12 +15,15 @@ use function array_map;
 use function count;
 use function is_bool;
 use function sprintf;
+use function str_starts_with;
 
 /**
  * @api
  */
 final class Error implements JsonSerializable
 {
+
+	private const TIP_BULLET = '• ';
 
 	public const PATTERN_IDENTIFIER = '[a-zA-Z0-9](?:[a-zA-Z0-9\\.]*[a-zA-Z0-9])?';
 
@@ -264,6 +267,33 @@ final class Error implements JsonSerializable
 			$this->filePath,
 			$this->traitFilePath,
 			null,
+			$this->nodeLine,
+			$this->nodeType,
+			$this->identifier,
+			$this->metadata,
+			$this->fixedErrorDiffs,
+			$this->traitContexts,
+		);
+	}
+
+	public function withAdditionalTip(string $tip): self
+	{
+		if ($this->tip === null) {
+			$newTip = $tip;
+		} elseif (str_starts_with($this->tip, self::TIP_BULLET)) {
+			$newTip = sprintf("%s\n%s%s", $this->tip, self::TIP_BULLET, $tip);
+		} else {
+			$newTip = sprintf("%s%s\n%s%s", self::TIP_BULLET, $this->tip, self::TIP_BULLET, $tip);
+		}
+
+		return new self(
+			$this->message,
+			$this->file,
+			$this->line,
+			$this->canBeIgnored,
+			$this->filePath,
+			$this->traitFilePath,
+			$newTip,
 			$this->nodeLine,
 			$this->nodeType,
 			$this->identifier,

@@ -1408,6 +1408,24 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-15854.php'], []);
 	}
 
+	public function testBug15869(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-15869.php'], [
+			[
+				'Offset 1 might not exist on array{}|array{non-falsy-string, \':20:\'|\':28:\'|\':60:\'|\':65:\'|\':86:\', \'\'|\':20:\', \'\'|\':28:\', \'\'|\':60:\', \'\'|\':65:\', \'\'|\':86:\', string}.',
+				21,
+			],
+			[
+				'Offset \'transaction\' might not exist on array{header: array{array{name: string}}, message: non-empty-array<int<0, max>, array{reference?: string, account?: string, number?: string, sequence?: string, endCurrency?: string, endBalance?: string, header?: array{_pointer: \'header[0][id]\'}, startSign?: string, ...}>, transaction?: non-empty-array<array{description: string}>}.',
+				37,
+			],
+			[
+				'Offset \'transaction\' might not exist on array{header: array{array{name: string}}, message: non-empty-array<int<0, max>, array{reference?: string, account?: string, number?: string, sequence?: string, endCurrency?: string, endBalance?: string, header?: array{_pointer: \'header[0][id]\'}, startSign?: string, ...}>, transaction?: non-empty-array<array{description: string}>}.',
+				47,
+			],
+		]);
+	}
+
 	public static function dataUnsealedArrayShapes(): iterable
 	{
 		foreach ([false, true] as $reportPossiblyNonexistentGeneralArrayOffset) {

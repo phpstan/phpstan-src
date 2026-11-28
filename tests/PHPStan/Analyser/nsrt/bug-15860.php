@@ -264,6 +264,6 @@ function getFormData(string $start_date, string $end_date, string $lname, string
         }
     }
 
-    assertType('array<string, array<lowercase-string&non-falsy-string&uppercase-string, array{name: non-falsy-string, date: string, pubpid: string, dob: string, vitals: string, reason: string, exam: list<string>, prescriptions: list<string>, other: array<string, list<string>>, billing: list<non-falsy-string>, calories: list<array{subcategory: string, item: string, content: string, date: string}>}>>', $dates);
+    assertType('array<string, array<lowercase-string&non-falsy-string&uppercase-string, array{name: non-falsy-string, date: string, pubpid: string, dob: string, vitals: string, reason: string, exam: list<string>, prescriptions: list<string>, other: array<string, non-empty-list<string>>, billing: list<non-falsy-string>, calories: list<array{subcategory: string, item: string, content: string, date: string}>}>>', $dates);
     return $dates;
 }

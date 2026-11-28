@@ -40,7 +40,8 @@ function narrowOffsetOfUnion(array $m, int|string $key): void
 	if (is_array($m[$key])) {
 		assertType('list<array{key: string}>', $m);
 		$m[$key]['flag'] = true;
-		assertType('non-empty-list<array{key: string, flag: true}>', $m);
+		// only the element at $key is written
+		assertType('non-empty-list<array{key: string, flag?: true}>', $m);
 	}
 }
 
@@ -49,7 +50,8 @@ function nestedWriteToTrackedOffset(array $m, int|string $key): void
 {
 	if (is_array($m[$key])) {
 		$m[$key]['flag'] = true;
-		assertType('non-empty-list<array{key: string, flag: true}>', $m);
+		// only the element at $key is written
+		assertType('non-empty-list<array{key: string, flag?: true}>', $m);
 	}
 }
 

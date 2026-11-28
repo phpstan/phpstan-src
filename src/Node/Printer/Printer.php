@@ -17,6 +17,7 @@ use PHPStan\Node\Expr\ForeachValueByRefExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\ObjectAliasExpr;
+use PHPStan\Node\Expr\OffsetWriteBaseExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
@@ -178,6 +179,11 @@ final class Printer extends Standard
 	protected function pPHPStan_Node_ObjectAliasExpr(ObjectAliasExpr $expr): string // phpcs:ignore
 	{
 		return sprintf('__phpstanObjectAlias(%s, %s)', $this->p($expr->getExpr()), $this->p($expr->getAliasedExpr()));
+	}
+
+	protected function pPHPStan_Node_OffsetWriteBaseExpr(OffsetWriteBaseExpr $expr): string // phpcs:ignore
+	{
+		return sprintf('__phpstanOffsetWriteBase(%s)', $this->p($expr->getDimFetch()));
 	}
 
 	protected function pPHPStan_Node_IssetExpr(IssetExpr $expr): string // phpcs:ignore

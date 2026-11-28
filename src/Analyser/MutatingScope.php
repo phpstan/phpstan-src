@@ -37,6 +37,7 @@ use PHPStan\Node\Expr\CloneReinitializationExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
 use PHPStan\Node\Expr\ObjectAliasExpr;
+use PHPStan\Node\Expr\OffsetWriteBaseExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
@@ -76,6 +77,7 @@ use PHPStan\Type\ArrayType;
 use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\ClosureType;
 use PHPStan\Type\ConditionalTypeForParameter;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantArrayTypeBuilder;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantFloatType;
@@ -138,6 +140,7 @@ use function md5;
 use function min;
 use function preg_match;
 use function preg_match_all;
+use function sort;
 use function spl_object_id;
 use function sprintf;
 use function str_contains;
@@ -4865,6 +4868,65 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	}
 
 	/**
+	 * A side of a merge that did not write the offset an OffsetWriteBaseExpr is about
+	 * holds that offset in its current container, so its current container is what the
+	 * next write to the offset goes into. Without it, the remembered container would
+	 * only be maybe-tracked after the merge and the next write would keep the value the
+	 * offset held after the write on the other side, as in
+	 * `if (!isset($a[$k])) { $a[$k] = []; } $a[$k][] = $v;`.
+	 *
+	 * @param array<string, true> $differingKeys
+	 * @param array<string, ExpressionTypeHolder> $ourTypes
+	 * @param array<string, ExpressionTypeHolder> $theirTypes
+	 * @param array<string, ExpressionTypeHolder> $ourNativeTypes
+	 * @param array<string, ExpressionTypeHolder> $theirNativeTypes
+	 */
+	private function completeOffsetWriteBases(array $differingKeys, array &$ourTypes, array &$theirTypes, array &$ourNativeTypes, array &$theirNativeTypes): bool
+	{
+		$completed = false;
+		foreach (array_keys($differingKeys) as $exprString) {
+			if (!str_starts_with($exprString, '__phpstanOffsetWriteBase(')) {
+				continue;
+			}
+
+			if (isset($ourTypes[$exprString])) {
+				if (isset($theirTypes[$exprString])) {
+					continue;
+				}
+				$completed = $this->completeOffsetWriteBase($exprString, $ourTypes[$exprString], $theirTypes, $theirNativeTypes) || $completed;
+			} elseif (isset($theirTypes[$exprString])) {
+				$completed = $this->completeOffsetWriteBase($exprString, $theirTypes[$exprString], $ourTypes, $ourNativeTypes) || $completed;
+			}
+		}
+
+		return $completed;
+	}
+
+	/**
+	 * @param array<string, ExpressionTypeHolder> $types
+	 * @param array<string, ExpressionTypeHolder> $nativeTypes
+	 */
+	private function completeOffsetWriteBase(string $exprString, ExpressionTypeHolder $holder, array &$types, array &$nativeTypes): bool
+	{
+		$writeBaseExpr = $holder->getExpr();
+		if (!$writeBaseExpr instanceof OffsetWriteBaseExpr) {
+			return false;
+		}
+
+		$containerKey = $this->getNodeKey($writeBaseExpr->getDimFetch()->var);
+		$containerHolder = $types[$containerKey] ?? null;
+		$containerNativeHolder = $nativeTypes[$containerKey] ?? null;
+		if ($containerHolder === null || $containerNativeHolder === null || !$containerHolder->getCertainty()->yes() || !$containerNativeHolder->getCertainty()->yes()) {
+			return false;
+		}
+
+		$types[$exprString] = ExpressionTypeHolder::createYes($writeBaseExpr, $containerHolder->getType());
+		$nativeTypes[$exprString] = ExpressionTypeHolder::createYes($writeBaseExpr, $containerNativeHolder->getType());
+
+		return true;
+	}
+
+	/**
 	 * The closures a variable held on one side of a merge and the merged
 	 * variable lost - see ClosureSignatureInference::collectAbsorbed().
 	 */
@@ -4895,8 +4957,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		$ourExpressionTypes = $this->expressionTypes;
 		$theirExpressionTypes = $otherScope->expressionTypes;
 
+		$ourNativeExpressionTypes = $this->nativeExpressionTypes;
+		$theirNativeExpressionTypes = $otherScope->nativeExpressionTypes;
+
 		$differingExpressionKeys = [];
 		$mergedExpressionTypes = ScopeOps::mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes, $differingExpressionKeys);
+		if ($this->completeOffsetWriteBases($differingExpressionKeys, $ourExpressionTypes, $theirExpressionTypes, $ourNativeExpressionTypes, $theirNativeExpressionTypes)) {
+			$differingExpressionKeys = [];
+			$mergedExpressionTypes = ScopeOps::mergeVariableHolders($ourExpressionTypes, $theirExpressionTypes, $differingExpressionKeys);
+		}
 		$differingExpressionKeys = $this->withoutPreciseClassConstantFetches($differingExpressionKeys, $ourExpressionTypes, $theirExpressionTypes);
 		$conditionalExpressions = ScopeOps::intersectConditionalExpressions($this->conditionalExpressions, $otherScope->conditionalExpressions);
 		if ($preserveVacuousConditionals) {
@@ -4937,8 +5006,8 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$mergedExpressionTypes,
 			$ourExpressionTypes,
 			$theirExpressionTypes,
-			$this->nativeExpressionTypes,
-			$otherScope->nativeExpressionTypes,
+			$ourNativeExpressionTypes,
+			$theirNativeExpressionTypes,
 		);
 
 		$afterExtractCall = $this->afterExtractCall && $otherScope->afterExtractCall;
@@ -5987,7 +6056,15 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			} else {
 				$constantArraysA = TypeCombinator::union(...$constantArrays['a']);
 				$constantArraysB = TypeCombinator::union(...$constantArrays['b']);
-				if (
+				$shapePairs = self::pairShapesByRequiredKeys($constantArraysA, $constantArraysB);
+				if ($shapePairs !== null) {
+					// shapes with different required keys describe different kinds of
+					// values, such as groups with and without a key; merged key by key,
+					// every key would become optional in all of them
+					foreach ($shapePairs as [$aShape, $bShape]) {
+						$resultTypes[] = $this->generalizeType($aShape, $bShape, $depth);
+					}
+				} elseif (
 					$constantArraysA->getIterableKeyType()->equals($constantArraysB->getIterableKeyType())
 					&& $constantArraysA->getArraySize()->getGreaterOrEqualType($this->services->phpVersion)->isSuperTypeOf($constantArraysB->getArraySize())->yes()
 				) {
@@ -6407,6 +6484,57 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Pairs each shape of $a with the shape of $b that has the same required keys,
+	 * when there are at least two shapes and every shape on both sides has exactly
+	 * one partner.
+	 *
+	 * @return list<array{ConstantArrayType, ConstantArrayType}>|null
+	 */
+	private static function pairShapesByRequiredKeys(Type $a, Type $b): ?array
+	{
+		$aShapes = $a->getConstantArrays();
+		$bShapes = $b->getConstantArrays();
+		if (count($aShapes) < 2 || count($aShapes) !== count($bShapes)) {
+			return null;
+		}
+
+		$bShapesByKeys = [];
+		foreach ($bShapes as $bShape) {
+			$keys = self::getRequiredKeysSignature($bShape);
+			if (isset($bShapesByKeys[$keys])) {
+				return null;
+			}
+			$bShapesByKeys[$keys] = $bShape;
+		}
+
+		$pairs = [];
+		foreach ($aShapes as $aShape) {
+			$keys = self::getRequiredKeysSignature($aShape);
+			if (!isset($bShapesByKeys[$keys])) {
+				return null;
+			}
+			$pairs[] = [$aShape, $bShapesByKeys[$keys]];
+			unset($bShapesByKeys[$keys]);
+		}
+
+		return $pairs;
+	}
+
+	private static function getRequiredKeysSignature(ConstantArrayType $shape): string
+	{
+		$keys = [];
+		foreach ($shape->getKeyTypes() as $i => $keyType) {
+			if ($shape->isOptionalKey($i)) {
+				continue;
+			}
+			$keys[] = ($keyType instanceof ConstantIntegerType ? 'i:' : 's:') . $keyType->getValue();
+		}
+		sort($keys);
+
+		return implode("\0", $keys);
 	}
 
 	private static function getArrayDepth(Type $type): int

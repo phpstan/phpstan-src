@@ -17,10 +17,11 @@ function mergeJoins(array $joins, string $s, string $hash): void
 	foreach ($joins as $join) {
 		$aggregated[$s][$hash] = $s;
 	}
-	assertType('non-empty-array<non-empty-array<string>>', $aggregated);
+	// the declared type lets the elements not written in the loop be empty
+	assertType('non-empty-array<array<string>>', $aggregated);
 
 	foreach ($aggregated as $sameJoins) {
 		$first = reset($sameJoins);
-		assertType('string', $first);
+		assertType('string|false', $first);
 	}
 }

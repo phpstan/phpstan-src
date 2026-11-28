@@ -504,6 +504,11 @@ class TypesAssignedToPropertiesRuleTest extends RuleTestCase
 				26,
 				"Offset 'age' (int) does not accept type int|string.",
 			],
+			[
+				'Property Bug6356b\HelloWorld2::$nestedDetails (array<array{name: string, age: int}>) does not accept non-empty-array<array{age: \'Eleventy-one\'|\'Five\'|\'Twelve\'|int, name: \'nothing\'}|array{name: string, age: int}>.',
+				29,
+				"Offset 'age' (int) does not accept type int|string.",
+			],
 		]);
 	}
 

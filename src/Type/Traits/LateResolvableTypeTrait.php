@@ -278,7 +278,7 @@ trait LateResolvableTypeTrait
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		return $this->resolve()->setOffsetValueType($offsetType, $valueType, $unionValues);
+		return $this->resolve()->setOffsetValueType($offsetType, $valueType);
 	}
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type

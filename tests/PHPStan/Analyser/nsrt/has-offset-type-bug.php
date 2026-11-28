@@ -157,7 +157,8 @@ class AssignVsNarrow
 		$a['a'] = $i;
 		assertType('non-empty-array<string, int|string>&hasOffsetValue(\'a\', int)', $a);
 		$a['a'] = $s;
-		assertType('non-empty-array<string, int|string>&hasOffsetValue(\'a\', string)', $a);
+		// the int written before is overwritten
+		assertType('non-empty-array<string, string>&hasOffsetValue(\'a\', string)', $a);
 	}
 
 }

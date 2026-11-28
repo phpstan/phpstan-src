@@ -60,6 +60,7 @@ use PHPStan\DependencyInjection\AutowiredService;
 use PHPStan\Node\Expr\ExistingArrayDimFetch;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
+use PHPStan\Node\Expr\OffsetWriteBaseExpr;
 use PHPStan\Node\Expr\SetExistingOffsetValueTypeExpr;
 use PHPStan\Node\Expr\SetOffsetValueTypeExpr;
 use PHPStan\Node\Expr\TypeExpr;
@@ -1462,10 +1463,10 @@ final class AssignHandler implements ExprHandler
 			$offsetValueType = $varType;
 			$offsetNativeValueType = $varNativeType;
 
-			[$valueToWrite, $additionalExpressions] = $this->produceArrayDimFetchAssignValueToWrite($nodeScopeResolver, $dimFetchStack, $offsetTypes, $offsetValueType, $valueToWrite, $scope, $storage);
+			[$valueToWrite, $additionalExpressions] = $this->produceArrayDimFetchAssignValueToWrite($nodeScopeResolver, $dimFetchStack, $offsetTypes, $offsetValueType, $valueToWrite, $scope, $storage, $scope);
 
 			if (!$offsetValueType->equals($offsetNativeValueType) || !$valueToWrite->equals($nativeValueToWrite)) {
-				[$nativeValueToWrite, $additionalNativeExpressions] = $this->produceArrayDimFetchAssignValueToWrite($nodeScopeResolver, $dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope, $storage);
+				[$nativeValueToWrite, $additionalNativeExpressions] = $this->produceArrayDimFetchAssignValueToWrite($nodeScopeResolver, $dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope, $storage, $scope->doNotTreatPhpDocTypesAsCertain());
 			} else {
 				$rewritten = false;
 				foreach ($offsetTypes as $i => [$offsetType]) {
@@ -1484,7 +1485,7 @@ final class AssignHandler implements ExprHandler
 						continue;
 					}
 
-					[$nativeValueToWrite] = $this->produceArrayDimFetchAssignValueToWrite($nodeScopeResolver, $dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope, $storage);
+					[$nativeValueToWrite] = $this->produceArrayDimFetchAssignValueToWrite($nodeScopeResolver, $dimFetchStack, $offsetNativeTypes, $offsetNativeValueType, $nativeValueToWrite, $scope, $storage, $scope->doNotTreatPhpDocTypesAsCertain());
 					$rewritten = true;
 					break;
 				}
@@ -2828,20 +2829,20 @@ final class AssignHandler implements ExprHandler
 	 * @param non-empty-list<ArrayDimFetch> $dimFetchStack
 	 * @param non-empty-list<array{Type|null, ArrayDimFetch}> $offsetTypes
 	 *
+	 * @param MutatingScope $writeBaseScope the scope to read the remembered containers from (see OffsetWriteBaseExpr)
+	 *
 	 * @return array{Type, list<array{Expr, Type}>}
 	 */
-	private function produceArrayDimFetchAssignValueToWrite(NodeScopeResolver $nodeScopeResolver, array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, MutatingScope $scope, ExpressionResultStorage $storage): array
+	private function produceArrayDimFetchAssignValueToWrite(NodeScopeResolver $nodeScopeResolver, array $dimFetchStack, array $offsetTypes, Type $offsetValueType, Type $valueToWrite, MutatingScope $scope, ExpressionResultStorage $storage, MutatingScope $writeBaseScope): array
 	{
 		$originalValueToWrite = $valueToWrite;
 
 		$offsetValueTypeStack = [$offsetValueType];
-		$generalizeOnWrite = $offsetTypes[array_key_last($offsetTypes)][0] !== null;
 		$dimDepth = 0;
 		foreach (array_slice($offsetTypes, 0, -1) as [$offsetType, $dimFetch]) {
 			$dimDepth++;
 			if ($offsetType === null) {
 				$offsetValueType = new ConstantArrayType([], []);
-				$generalizeOnWrite = false;
 			} else {
 				if ($dimDepth > self::ARRAY_DIM_FETCH_WRITE_DEPTH_LIMIT && $offsetValueType->isOversizedArray()->yes()) {
 					$offsetValueType = new MixedType();
@@ -2855,13 +2856,11 @@ final class AssignHandler implements ExprHandler
 						}
 					} elseif ($has->maybe()) {
 						if ($scope->hasExpressionType($dimFetch)->yes()) {
-							$generalizeOnWrite = false;
 							$offsetValueType = $scope->getStateType($dimFetch);
 						} else {
 							$offsetValueType = TypeCombinator::union($offsetValueType->getOffsetValueType($offsetType), new ConstantArrayType([], []));
 						}
 					} else {
-						$generalizeOnWrite = false;
 						$offsetValueType = new ConstantArrayType([], []);
 					}
 				}
@@ -2872,6 +2871,7 @@ final class AssignHandler implements ExprHandler
 
 		$lastDimKey = array_key_last($dimFetchStack);
 		$computedContainerValues = [];
+		$writeBases = [];
 		foreach (array_reverse($offsetTypes) as $i => [$offsetType, $writtenDimFetch]) {
 			/** @var Type $offsetValueType */
 			$offsetValueType = array_pop($offsetValueTypeStack);
@@ -2884,6 +2884,18 @@ final class AssignHandler implements ExprHandler
 				} else {
 					$offsetValueType = TypeCombinator::intersect($offsetValueType, StaticTypeFactory::generalOffsetAccessibleType());
 				}
+			}
+
+			// the container as it was before this offset was first written - writing
+			// into it instead of into the current container drops the value the
+			// offset held after the previous write to it
+			$writeBase = null;
+			if ($offsetType !== null && $this->denotesSameOffsetEveryTime($writtenDimFetch)) {
+				$writeBaseExpr = new OffsetWriteBaseExpr($writtenDimFetch);
+				if ($writeBaseScope->hasExpressionType($writeBaseExpr)->yes()) {
+					$writeBase = $writeBaseScope->getStateType($writeBaseExpr);
+				}
+				$writeBases[] = [$writeBaseExpr, $writeBase ?? $offsetValueType];
 			}
 
 			// the link of the chain that is looked up in the scope: the written
@@ -2904,7 +2916,13 @@ final class AssignHandler implements ExprHandler
 				if ($offsetType instanceof ConstantStringType || $offsetType instanceof ConstantIntegerType) {
 					$hasOffsetType = new HasOffsetValueType($offsetType, $valueToWrite);
 				}
-				$valueToWrite = $offsetValueType->setExistingOffsetValueType($offsetType, $valueToWrite);
+				if ($writeBase === null) {
+					$valueToWrite = $offsetValueType->setExistingOffsetValueType($offsetType, $valueToWrite);
+				} elseif ($writeBase->hasOffsetValueType($offsetType)->yes()) {
+					$valueToWrite = $writeBase->setExistingOffsetValueType($offsetType, $valueToWrite);
+				} else {
+					$valueToWrite = $writeBase->setOffsetValueType($offsetType, $valueToWrite);
+				}
 
 				if ($valueToWrite->isArray()->yes()) {
 					if ($hasOffsetType !== null) {
@@ -2921,24 +2939,7 @@ final class AssignHandler implements ExprHandler
 				}
 
 			} else {
-				// when $unionValues=false the array item-type will be replaced with $valueToWrite
-				// when $unionValues=true the existing array item-type will be union'ed with $valueToWrite -> type gets wider
-				$unionValues = false;
-				if ($i === 0) {
-					$unionValues = true;
-				} elseif (
-					$generalizeOnWrite
-					&& $i === count($offsetTypes) - 1
-					&&
-						(
-							$originalValueToWrite->isConstantScalarValue()->yes()
-							|| !$offsetValueType->getIterableValueType()->isSuperTypeOf($valueToWrite)->yes()
-						)
-				) {
-					$unionValues = true;
-				}
-
-				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $unionValues);
+				$valueToWrite = ($writeBase ?? $offsetValueType)->setOffsetValueType($offsetType, $valueToWrite);
 			}
 
 			if ($offsetValueType->isList()->yes() && $this->shouldKeepList($nodeScopeResolver, $writtenDimFetch, $scope, $storage, $offsetValueType, $offsetType)) {
@@ -2975,7 +2976,7 @@ final class AssignHandler implements ExprHandler
 			$additionalExpressions[] = [$dimFetch, $additionalValueType];
 		}
 
-		return [$valueToWrite, $additionalExpressions];
+		return [$valueToWrite, array_merge($additionalExpressions, $writeBases)];
 	}
 
 	private function shouldKeepList(NodeScopeResolver $nodeScopeResolver, ArrayDimFetch $arrayDimFetch, MutatingScope $scope, ExpressionResultStorage $storage, Type $offsetValueType, ?Type $offsetType): bool
@@ -3032,6 +3033,59 @@ final class AssignHandler implements ExprHandler
 		return $offsetType !== null
 			&& !$offsetValueType->hasOffsetValueType($offsetType)->no()
 			&& $scope->hasExpressionType($arrayDimFetch)->yes();
+	}
+
+	/**
+	 * Whether evaluating the expression again yields the same value as long as nothing
+	 * it consists of is reassigned - which invalidates what the scope remembers about it.
+	 * `$a[rand()]` or `$a[]` denote a new offset every time.
+	 */
+	private function denotesSameOffsetEveryTime(Expr $expr): bool
+	{
+		if ($expr instanceof Variable) {
+			return is_string($expr->name);
+		}
+		if ($expr instanceof ArrayDimFetch) {
+			return $expr->dim !== null && $this->denotesSameOffsetEveryTime($expr->var) && $this->denotesSameOffsetEveryTime($expr->dim);
+		}
+		if ($expr instanceof PropertyFetch || $expr instanceof Expr\NullsafePropertyFetch) {
+			return $expr->name instanceof Node\Identifier && $this->denotesSameOffsetEveryTime($expr->var);
+		}
+		if ($expr instanceof StaticPropertyFetch) {
+			return $expr->class instanceof Name && $expr->name instanceof Node\VarLikeIdentifier;
+		}
+		if ($expr instanceof Expr\ClassConstFetch) {
+			return $expr->class instanceof Name && $expr->name instanceof Node\Identifier;
+		}
+		if ($expr instanceof Expr\ConstFetch) {
+			return true;
+		}
+		if ($expr instanceof Node\Scalar\InterpolatedString) {
+			foreach ($expr->parts as $part) {
+				if (!$part instanceof Node\InterpolatedStringPart && !$this->denotesSameOffsetEveryTime($part)) {
+					return false;
+				}
+			}
+
+			return true;
+		}
+		if ($expr instanceof Node\Scalar) {
+			return true;
+		}
+		if ($expr instanceof Expr\BinaryOp) {
+			return $this->denotesSameOffsetEveryTime($expr->left) && $this->denotesSameOffsetEveryTime($expr->right);
+		}
+		if (
+			$expr instanceof Expr\UnaryMinus
+			|| $expr instanceof Expr\UnaryPlus
+			|| $expr instanceof Expr\BitwiseNot
+			|| $expr instanceof Expr\BooleanNot
+			|| $expr instanceof Expr\Cast
+		) {
+			return $this->denotesSameOffsetEveryTime($expr->expr);
+		}
+
+		return false;
 	}
 
 	/**

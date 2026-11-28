@@ -58,6 +58,7 @@ function maybeEmptyArray(array $list): void
 	if ($key !== null) {
 		assertType('array{name: \'x\', comment: null}', $list[$key]);
 		$list[$key]['comment'] = 'hello';
-		assertType('non-empty-list<array{name: \'x\', comment: \'hello\'}>', $list);
+		// only the last element is written
+		assertType('non-empty-list<array{name: \'x\', comment: \'hello\'|null}>', $list);
 	}
 }

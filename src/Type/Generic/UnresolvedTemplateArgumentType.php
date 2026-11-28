@@ -535,7 +535,7 @@ final class UnresolvedTemplateArgumentType implements CompoundType
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		return $this->getDelegate()->setOffsetValueType($offsetType, $valueType, $unionValues);
+		return $this->getDelegate()->setOffsetValueType($offsetType, $valueType);
 	}
 
 	public function setExistingOffsetValueType(Type $offsetType, Type $valueType): Type

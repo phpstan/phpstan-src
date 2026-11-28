@@ -169,7 +169,7 @@ class AccessoryNonEmptyStringType implements CompoundType, AccessoryType
 
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
-		$stringOffset = (new StringType())->setOffsetValueType($offsetType, $valueType, $unionValues);
+		$stringOffset = (new StringType())->setOffsetValueType($offsetType, $valueType);
 
 		if ($stringOffset instanceof ErrorType) {
 			return $stringOffset;

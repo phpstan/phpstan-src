@@ -638,45 +638,28 @@ public:
 			if (UNEXPECTED(isKeyTypeInteger < 0)) return zv::Val();
 			if (isKeyTypeInteger == PT_TRI_NO) {
 				offsetType = integerType();
-			} else if (isKeyTypeInteger == PT_TRI_YES) {
-				zv::Val constantScalars = pt_type_call_array(Z_OBJ_P(k), PT_LC("getconstantscalartypes"), 0, NULL);
-				if (UNEXPECTED(constantScalars.isUndef())) return zv::Val();
-				uint32_t count = zend_hash_num_elements(Z_ARRVAL_P(constantScalars.raw()));
-				if (count > 0) {
-					/* $offsetTypes = $constantScalars; foreach ($constantScalars as $constantScalar) $offsetTypes[] = new ConstantIntegerType($constantScalar->getValue() + 1), skipping PHP_INT_MAX */
-					zv::Arr all = zv::Arr::create(count * 2);
-					for (zv::ArrayEntry entry : zv::ArrRef(constantScalars.raw())) {
-						all.push(entry.value());
-					}
-					for (zv::ArrayEntry entry : zv::ArrRef(constantScalars.raw())) {
-						zval *constantScalar = entry.value().deref().raw();
-						if (UNEXPECTED(Z_TYPE_P(constantScalar) != IS_OBJECT)) {
-							zend_type_error("phpstan_turbo: getConstantScalarTypes() must return %s instances", ZSTR_VAL(pt_ce_constant_integer_type->name));
-							return zv::Val();
-						}
-						zv::Val value = pt_type_call(Z_OBJ_P(constantScalar), PT_LC("getvalue"), 0, NULL);
-						if (UNEXPECTED(value.isUndef())) return zv::Val();
-						if (UNEXPECTED(Z_TYPE_P(value.raw()) != IS_LONG)) {
-							pt_throw_should_not_happen();
-							return zv::Val();
-						}
-						// an offset past PHP_INT_MAX cannot be assigned, so it's not a possible key
-						if (Z_LVAL_P(value.raw()) == ZEND_LONG_MAX) continue;
-						zv::Val next = pt_type_new_constant_integer(Z_LVAL_P(value.raw()) + 1);
-						if (UNEXPECTED(next.isUndef())) return zv::Val();
-						all.push(std::move(next));
-					}
-					offsetType = pt_type_combinator_call_spread(PT_LC("union"), all.table());
-				} else {
-					offsetType = zv::Val::copyOf(zv::Ref(k));
-				}
 			} else {
 				zv::Val integerTypes = collectIntegerTypes(k);
 				if (UNEXPECTED(integerTypes.isUndef())) return zv::Val();
 				if (zend_hash_num_elements(Z_ARRVAL_P(integerTypes.raw())) == 0) {
 					offsetType = zv::Val::copyOf(zv::Ref(k));
 				} else {
-					offsetType = pt_type_combinator_call_spread(PT_LC("union"), Z_ARRVAL_P(integerTypes.raw()));
+					zv::Val integerKeyType = pt_type_combinator_call_spread(PT_LC("union"), Z_ARRVAL_P(integerTypes.raw()));
+					if (UNEXPECTED(integerKeyType.isUndef())) return zv::Val();
+					phpstanturbo::NumberSetData numbers;
+					bool hasNumbers;
+					if (UNEXPECTED(!pt_type_to_number_set(integerKeyType.raw(), numbers, hasNumbers))) return zv::Val();
+					zv::Arr offsetTypes = zv::Arr::create(1 + (uint32_t) numbers.integerIntervals.size());
+					offsetTypes.push(std::move(integerKeyType));
+					/* the appended key is one past an integer key: past the max of each interval, the rest of the interval is already a key */
+					for (const phpstanturbo::NumberSetData::IntegerInterval &interval : numbers.integerIntervals) {
+						// an offset past PHP_INT_MAX cannot be assigned, so it's not a possible key
+						if (interval.max.isNull || interval.max.value == ZEND_LONG_MAX) continue;
+						zv::Val next = pt_type_new_constant_integer(interval.max.value + 1);
+						if (UNEXPECTED(next.isUndef())) return zv::Val();
+						offsetTypes.push(std::move(next));
+					}
+					offsetType = pt_type_combinator_call_spread(PT_LC("union"), offsetTypes.table());
 				}
 			}
 		} else {

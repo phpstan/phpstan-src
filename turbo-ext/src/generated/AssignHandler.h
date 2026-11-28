@@ -214,8 +214,8 @@ inline constexpr char strings[] =
 	"produceArrayDimFetchAssignValueToWrite\0" /* 3513 */
 	"arrayDimFetch\0" /* 3552 */
 	"PhpParser\\Node\\Expr\\ArrayDimFetch\0" /* 3566 */
-	"shouldKeepList\0" /* 3600 */
-	"offsetType\0" /* 3615 */
+	"offsetType\0" /* 3600 */
+	"shouldKeepList\0" /* 3611 */
 	"trackedLinkImpliesOffset\0" /* 3626 */
 	"a\0" /* 3651 */
 	"b\0" /* 3653 */
@@ -456,9 +456,10 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(1476, 0, 1482), /* shouldKeepList $scope */
 	reg::packed(1513, 0, 1521), /* shouldKeepList $storage */
 	reg::packed(3484, 0, 2030), /* shouldKeepList $offsetValueType */
+	reg::packed(3600, MAY_BE_NULL, 2030), /* shouldKeepList $offsetType */
 	reg::packed(1388, MAY_BE_BOOL), /* shouldKeepList return */
 	reg::packed(3484, 0, 2030), /* trackedLinkImpliesOffset $offsetValueType */
-	reg::packed(3615, 0, 2030), /* trackedLinkImpliesOffset $offsetType */
+	reg::packed(3600, 0, 2030), /* trackedLinkImpliesOffset $offsetType */
 	reg::packed(1388, MAY_BE_BOOL), /* trackedLinkImpliesOffset return */
 	reg::packed(3651, 0, 1368), /* isSameVariable $a */
 	reg::packed(3653, 0, 1368), /* isSameVariable $b */
@@ -518,14 +519,14 @@ inline constexpr sigtab::Sig processArrayByRefItemsWithImplicitIndex = { { 3378 
 inline constexpr sigtab::Sig isFlattenableUnpackedArray = { { 3418 /* isFlattenableUnpackedArray */, 1, 209, 1, 210, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig advanceImplicitIndex = { { 3451 /* advanceImplicitIndex */, 1, 211, 1, 212, ZEND_ACC_PRIVATE } };
 inline constexpr sigtab::Sig produceArrayDimFetchAssignValueToWrite = { { 3513 /* produceArrayDimFetchAssignValueToWrite */, 7, 213, 7, 220, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig shouldKeepList = { { 3600 /* shouldKeepList */, 5, 221, 5, 226, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig trackedLinkImpliesOffset = { { 3626 /* trackedLinkImpliesOffset */, 2, 227, 2, 229, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isSameVariable = { { 3655 /* isSameVariable */, 2, 230, 2, 232, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isSameOffset = { { 3670 /* isSameOffset */, 2, 233, 2, 235, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getLiteralArrayKeyType = { { 3683 /* getLiteralArrayKeyType */, 1, 236, 1, 237, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getOriginalPropertyType = { { 3794 /* getOriginalPropertyType */, 3, 238, 3, 241, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig hasArrayReference = { { 3824 /* hasArrayReference */, 1, 242, 1, 243, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig redundant = { { 3846 /* redundant */, 3, 244, 3, 247, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig shouldKeepList = { { 3611 /* shouldKeepList */, 6, 221, 6, 227, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig trackedLinkImpliesOffset = { { 3626 /* trackedLinkImpliesOffset */, 2, 228, 2, 230, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isSameVariable = { { 3655 /* isSameVariable */, 2, 231, 2, 233, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isSameOffset = { { 3670 /* isSameOffset */, 2, 234, 2, 236, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getLiteralArrayKeyType = { { 3683 /* getLiteralArrayKeyType */, 1, 237, 1, 238, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getOriginalPropertyType = { { 3794 /* getOriginalPropertyType */, 3, 239, 3, 242, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig hasArrayReference = { { 3824 /* hasArrayReference */, 1, 243, 1, 244, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig redundant = { { 3846 /* redundant */, 3, 245, 3, 248, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::AssignHandler

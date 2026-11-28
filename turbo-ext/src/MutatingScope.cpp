@@ -278,6 +278,8 @@ namespace sigs = ptdecl::MutatingScope::sig;
 #include "AnalyserValues.h"
 
 #include <algorithm>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 /* md5.h carries no extern "C" guard of its own */
@@ -407,6 +409,9 @@ static zval *pt_ms_service_of(zval *services, uint32_t which)
 /* private const RELATIONAL_FACT_ROUNDS_LIMIT */
 #define PT_MS_RELATIONAL_FACT_ROUNDS_LIMIT 4
 
+/* private const OBJECT_ALIAS_CLASS_LIMIT */
+#define PT_MS_OBJECT_ALIAS_CLASS_LIMIT 256
+
 /* the twin's private CUSTOM_SERIALIZATION_METHODS (the serialization check
  * walks the same names), a persistent list built once at module startup */
 static const pt_superglobal_name pt_ms_custom_serialization_methods[] = {
@@ -460,6 +465,7 @@ static void ZEND_FASTCALL msAssignVariable(INTERNAL_FUNCTION_PARAMETERS);
 static void ZEND_FASTCALL msAssignExpression(INTERNAL_FUNCTION_PARAMETERS);
 static void ZEND_FASTCALL msSpecifyExpressionType(INTERNAL_FUNCTION_PARAMETERS);
 static void ZEND_FASTCALL msInvalidateExpression(INTERNAL_FUNCTION_PARAMETERS);
+static void ZEND_FASTCALL msAssignObjectAlias(INTERNAL_FUNCTION_PARAMETERS);
 static void ZEND_FASTCALL msFilterByTruthyValue(INTERNAL_FUNCTION_PARAMETERS);
 static void ZEND_FASTCALL msFilterByFalseyValue(INTERNAL_FUNCTION_PARAMETERS);
 static void ZEND_FASTCALL msApplySpecifiedTypes(INTERNAL_FUNCTION_PARAMETERS);
@@ -7008,6 +7014,39 @@ public:
 		bool isPropertyFetch;
 		if (UNEXPECTED(!isInstance(zv::Ref(&exprZv), PT_CLASS_PROPERTY_FETCH, isPropertyFetch))) return zv::Val();
 		if (isPropertyFetch) {
+			std::vector<zv::Val> aliases;
+			std::vector<zv::Val> aliasedFetchesWithFacts;
+			bool nameIsIdentifier;
+			if (UNEXPECTED(!nodeNameIs(expr, PT_CLASS_IDENTIFIER, nameIsIdentifier))) return zv::Val();
+			if (nameIsIdentifier) {
+				std::vector<ObjectAliasEdge> edges;
+				if (UNEXPECTED(!getObjectAliasEdges(edges))) return zv::Val();
+				if (!edges.empty()) {
+					zv::Ref fetchedOn = nodeProp(expr, PT_LC("var"));
+					zv::Ref name = nodeProp(expr, PT_LC("name"));
+					if (UNEXPECTED(fetchedOn.raw() == NULL || name.raw() == NULL)) return zv::Val();
+					std::vector<ObjectAliasMember> members;
+					if (UNEXPECTED(!findObjectAliasClass(fetchedOn.deref().raw(), edges, members))) return zv::Val();
+					std::vector<zval *> names{name.deref().raw()};
+					HashTable *expressionTypes = Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).deref().raw());
+					for (ObjectAliasMember &member : members) {
+						aliases.push_back(zv::Val::copyOf(zv::Ref(member.expr.raw())));
+						zv::Val aliasedFetch = objectAliasFetchChain(member.expr.raw(), names);
+						if (UNEXPECTED(aliasedFetch.isUndef())) return zv::Val();
+						zv::Str aliasedFetchKey;
+						if (UNEXPECTED(!objectAliasNodeKey(aliasedFetch.raw(), aliasedFetchKey))) return zv::Val();
+						if (member.certainty != PT_TRI_YES) continue;
+						zval *holder = zend_symtable_find(expressionTypes, aliasedFetchKey.get());
+						if (holder == NULL) continue;
+						zend_long holderCertaintyValue = holderCertainty(zv::Ref(holder));
+						if (UNEXPECTED(holderCertaintyValue < 0)) return zv::Val();
+						if (holderCertaintyValue != PT_TRI_YES) continue;
+						aliasedFetchesWithFacts.push_back(std::move(aliasedFetch));
+					}
+				}
+			}
+
+			/* invalidateExpression() also forgets the property on every alias of $expr->var */
 			scope = thisInvalidateExpression(&exprZv, false, NULL, false);
 			if (UNEXPECTED(scope.isUndef())) return zv::Val();
 			zend_object *scopeObject = requireObject(scope, "invalidateMethodsOnExpression");
@@ -7025,6 +7064,22 @@ public:
 				return other.invalidateMethodsOnExpression(varObject);
 			});
 			if (UNEXPECTED(scope.isUndef())) return zv::Val();
+			for (zv::Val &alias : aliases) {
+				scopeObject = requireObject(scope, "invalidateMethodsOnExpression");
+				if (UNEXPECTED(scopeObject == NULL)) return zv::Val();
+				zend_object *aliasObject = alias.ref().asObject();
+				scope = otherPrivate(scopeObject, PT_LC("invalidatemethodsonexpression"), 1, alias.raw(), [&](MutatingScope &other) {
+					return other.invalidateMethodsOnExpression(aliasObject);
+				});
+				if (UNEXPECTED(scope.isUndef())) return zv::Val();
+			}
+			/* a remembered fact about the same property of an alias now holds the written value */
+			for (zv::Val &aliasedFetch : aliasedFetchesWithFacts) {
+				scopeObject = requireObject(scope, "specifyExpressionType");
+				if (UNEXPECTED(scopeObject == NULL)) return zv::Val();
+				scope = pt_mutating_scope_specify_expression_type(scopeObject, aliasedFetch.ref().asObject(), type, nativeType, pt_trinary_singleton(PT_TRI_YES));
+				if (UNEXPECTED(scope.isUndef())) return zv::Val();
+			}
 		} else {
 			bool invalidate;
 			if (UNEXPECTED(!isInstance(zv::Ref(&exprZv), PT_CLASS_STATIC_PROPERTY_FETCH, invalidate))) return zv::Val();
@@ -7171,8 +7226,551 @@ public:
 		return otherAssignExpression(scope, reinitializationExpr.raw(), cloneMixed.raw(), cloneNativeMixed.raw());
 	}
 
-	/* (twin 3813) */
+	/* (twin invalidateExpression()) */
 	zv::Val invalidateExpression(zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches, zval *preservedPropertyNames)
+	{
+		zv::Val scope = invalidateExpressionWithoutAliases(expressionToInvalidate, requireMoreCharacters, invalidatingClass, keepPropertyFetches, preservedPropertyNames);
+		if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		std::vector<ObjectAliasEdge> edges;
+		if (UNEXPECTED(!getObjectAliasEdges(edges))) return zv::Val();
+		if (edges.empty()) return scope;
+
+		std::vector<ObjectAliasTarget> targets;
+		if (UNEXPECTED(!findObjectAliasInvalidationTargets(expressionToInvalidate, requireMoreCharacters, edges, targets))) return zv::Val();
+		for (ObjectAliasTarget &target : targets) {
+			zend_object *scopeObject = requireScope(scope, "invalidateExpressionWithoutAliases");
+			if (UNEXPECTED(scopeObject == NULL)) return zv::Val();
+			scope = MutatingScope(scopeObject).invalidateExpressionWithoutAliases(target.expr.raw(), target.requireMoreCharacters, invalidatingClass, keepPropertyFetches, preservedPropertyNames);
+			if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		}
+		targets.push_back(ObjectAliasTarget{zv::Val::copyOf(zv::Ref(expressionToInvalidate)), requireMoreCharacters});
+
+		zend_object *scopeObject = requireScope(scope, "reconnectObjectAliases");
+		if (UNEXPECTED(scopeObject == NULL)) return zv::Val();
+		return MutatingScope(scopeObject).reconnectObjectAliases(edges, targets);
+	}
+
+	/* {{{ object aliases (twin assignObjectAlias() .. reconnectObjectAliases()) */
+
+	struct ObjectAliasEdge
+	{
+		zv::Str key;
+		zv::Val a;
+		zv::Str aKey;
+		zv::Val b;
+		zv::Str bKey;
+		zend_long certainty;
+	};
+
+	struct ObjectAliasMember
+	{
+		zv::Str key;
+		zv::Val expr;
+		zend_long certainty;
+	};
+
+	struct ObjectAliasPrefix
+	{
+		zv::Str key;
+		/* borrowed Identifier nodes of the fetch chain, outermost first */
+		std::vector<zval *> names;
+	};
+
+	struct ObjectAliasTarget
+	{
+		zv::Val expr;
+		bool requireMoreCharacters;
+	};
+
+	struct ZendStringHash
+	{
+		size_t operator()(zend_string *s) const { return (size_t) ZSTR_HASH(s); }
+	};
+
+	struct ZendStringEquals
+	{
+		bool operator()(zend_string *a, zend_string *b) const { return zend_string_equals(a, b); }
+	};
+
+	typedef std::unordered_set<zend_string *, ZendStringHash, ZendStringEquals> ZendStringSet;
+
+	/* a scope result that the alias walk keeps calling private methods on */
+	static zend_object *requireScope(zv::Val &value, const char *methodName)
+	{
+		zend_object *object = requireObject(value, methodName);
+		if (UNEXPECTED(object == NULL)) return NULL;
+		if (UNEXPECTED(!instanceof_function(object->ce, pt_ce_mutating_scope))) {
+			pt_throw_should_not_happen();
+			return NULL;
+		}
+		return object;
+	}
+
+	[[nodiscard]] bool objectAliasNodeKey(zval *node, zv::Str &out)
+	{
+		zv::Val key = thisGetNodeKey(node);
+		if (UNEXPECTED(key.isUndef())) return false;
+		if (UNEXPECTED(!key.ref().isString())) {
+			pt_throw_should_not_happen();
+			return false;
+		}
+		out = zv::Str::copyOf(key.ref().asString());
+		return true;
+	}
+
+	/* $this->assignObjectAlias($variableName, $assignedExpr, $certainty) */
+	zv::Val thisAssignObjectAlias(zend_string *variableName, zval *assignedExpr, zend_long certainty)
+	{
+		zv::Args args{variableName, assignedExpr, pt_trinary_singleton(certainty)};
+		return thisCall(PT_LC("assignobjectalias"), msAssignObjectAlias, 3, args, [&]() { return assignObjectAlias(variableName, assignedExpr, certainty); });
+	}
+
+	/* (twin assignObjectAlias()) */
+	zv::Val assignObjectAlias(zend_string *variableName, zval *assignedExpr, zend_long certainty)
+	{
+		bool isTernary, isCoalesce;
+		if (UNEXPECTED(!isInstance(zv::Ref(assignedExpr), PT_CLASS_TERNARY_EXPR, isTernary))) return zv::Val();
+		if (UNEXPECTED(!isInstance(zv::Ref(assignedExpr), PT_CLASS_COALESCE_EXPR, isCoalesce))) return zv::Val();
+		if (isTernary || isCoalesce) {
+			/* either arm may be the assigned object */
+			zv::Ref first = isTernary ? nodeProp(Z_OBJ_P(assignedExpr), PT_LC("if")) : nodeProp(Z_OBJ_P(assignedExpr), PT_LC("left"));
+			if (UNEXPECTED(first.raw() == NULL)) return zv::Val();
+			if (isTernary && first.deref().isNull()) {
+				first = nodeProp(Z_OBJ_P(assignedExpr), PT_LC("cond"));
+				if (UNEXPECTED(first.raw() == NULL)) return zv::Val();
+			}
+			zv::Ref second = isTernary ? nodeProp(Z_OBJ_P(assignedExpr), PT_LC("else")) : nodeProp(Z_OBJ_P(assignedExpr), PT_LC("right"));
+			if (UNEXPECTED(second.raw() == NULL)) return zv::Val();
+			zv::Val firstExpr = zv::Val::copyOf(first.deref());
+			zv::Val secondExpr = zv::Val::copyOf(second.deref());
+			zv::Val scope = thisAssignObjectAlias(variableName, firstExpr.raw(), PT_TRI_MAYBE);
+			if (UNEXPECTED(scope.isUndef())) return zv::Val();
+			zend_object *scopeObject = requireObject(scope, "assignObjectAlias");
+			if (UNEXPECTED(scopeObject == NULL)) return zv::Val();
+			return pt_mutating_scope_assign_object_alias(scopeObject, variableName, secondExpr.raw(), PT_TRI_MAYBE);
+		}
+
+		zv::Str rootVariableName;
+		if (UNEXPECTED(!getObjectAliasRootVariableName(assignedExpr, rootVariableName))) return zv::Val();
+		if (rootVariableName.isNull() || zend_string_equals(rootVariableName.get(), variableName)) return self_();
+
+		zval variableNameZv;
+		ZVAL_STR(&variableNameZv, variableName);
+		zv::Val variable = pt_type_new(PT_CLASS_VARIABLE, 1, &variableNameZv);
+		if (UNEXPECTED(variable.isUndef())) return zv::Val();
+		zv::Val variableType = thisGetType(variable.raw());
+		if (UNEXPECTED(variableType.isUndef())) return zv::Val();
+		if (UNEXPECTED(!variableType.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function isObject() on %s", zend_zval_value_name(variableType.raw()));
+			return zv::Val();
+		}
+		zend_long isObject = pt_type_call_trinary(variableType.ref().asObject(), PT_LC("isobject"), 0, NULL);
+		if (UNEXPECTED(isObject < 0)) return zv::Val();
+		if (isObject == PT_TRI_NO) return self_();
+
+		return specifyObjectAlias(variable.raw(), assignedExpr, certainty);
+	}
+
+	/* (twin holdsSameObject()) */
+	[[nodiscard]] bool holdsSameObject(zval *expr, zval *otherExpr, bool &out)
+	{
+		out = false;
+		/* a property can be replaced by a call that is not known to write it, a variable only by an assignment */
+		bool exprIsVariable, otherIsVariable;
+		if (UNEXPECTED(!isInstance(zv::Ref(expr), PT_CLASS_VARIABLE, exprIsVariable))) return false;
+		if (UNEXPECTED(!isInstance(zv::Ref(otherExpr), PT_CLASS_VARIABLE, otherIsVariable))) return false;
+		if (!exprIsVariable || !otherIsVariable) return true;
+
+		std::vector<ObjectAliasEdge> allEdges;
+		if (UNEXPECTED(!getObjectAliasEdges(allEdges))) return false;
+		std::vector<ObjectAliasEdge> edges;
+		for (ObjectAliasEdge &edge : allEdges) {
+			bool aIsVariable, bIsVariable;
+			if (UNEXPECTED(!isInstance(edge.a.ref(), PT_CLASS_VARIABLE, aIsVariable))) return false;
+			if (UNEXPECTED(!isInstance(edge.b.ref(), PT_CLASS_VARIABLE, bIsVariable))) return false;
+			if (!aIsVariable || !bIsVariable) continue;
+			edges.push_back(std::move(edge));
+		}
+		if (edges.empty()) return true;
+
+		std::vector<ObjectAliasMember> members;
+		if (UNEXPECTED(!findObjectAliasClass(expr, edges, members))) return false;
+		zv::Str otherKey;
+		if (UNEXPECTED(!objectAliasNodeKey(otherExpr, otherKey))) return false;
+		for (ObjectAliasMember &member : members) {
+			if (!zend_string_equals(member.key.get(), otherKey.get())) continue;
+			out = member.certainty == PT_TRI_YES;
+			break;
+		}
+		return true;
+	}
+
+	/* private (twin specifyObjectAlias()) */
+	zv::Val specifyObjectAlias(zval *expr, zval *aliasedExpr, zend_long certainty)
+	{
+		zv::Str exprKey, aliasedKey;
+		if (UNEXPECTED(!objectAliasNodeKey(expr, exprKey) || !objectAliasNodeKey(aliasedExpr, aliasedKey))) return zv::Val();
+		/* one key for both orders */
+		if (zend_binary_strcmp(ZSTR_VAL(exprKey.get()), ZSTR_LEN(exprKey.get()), ZSTR_VAL(aliasedKey.get()), ZSTR_LEN(aliasedKey.get())) > 0) {
+			std::swap(expr, aliasedExpr);
+		}
+
+		zv::Args args{expr, aliasedExpr};
+		zv::Val alias = pt_type_new(PT_CLASS_OBJECT_ALIAS_EXPR, 2, args);
+		if (UNEXPECTED(alias.isUndef())) return zv::Val();
+		zval mixedZv, nativeMixedZv;
+		if (UNEXPECTED(!pt_mixed_type_new(&mixedZv))) return zv::Val();
+		zv::Val mixedType = zv::Val::adopt(mixedZv);
+		if (UNEXPECTED(!pt_mixed_type_new(&nativeMixedZv))) return zv::Val();
+		zv::Val nativeMixedType = zv::Val::adopt(nativeMixedZv);
+		return pt_mutating_scope_specify_expression_type(self, alias.ref().asObject(), mixedType.raw(), nativeMixedType.raw(), pt_trinary_singleton(certainty));
+	}
+
+	/* private (twin getObjectAliasRootVariableName()); out stays NULL for null */
+	[[nodiscard]] bool getObjectAliasRootVariableName(zval *exprArg, zv::Str &out)
+	{
+		out = zv::Str();
+		zv::Val expr = zv::Val::copyOf(zv::Ref(exprArg));
+		while (true) {
+			bool isPropertyFetch;
+			if (UNEXPECTED(!isInstance(expr.ref(), PT_CLASS_PROPERTY_FETCH, isPropertyFetch))) return false;
+			if (!isPropertyFetch) break;
+			bool nameIsIdentifier;
+			if (UNEXPECTED(!nodeNameIs(expr.ref().asObject(), PT_CLASS_IDENTIFIER, nameIsIdentifier))) return false;
+			if (!nameIsIdentifier) return true;
+			zv::Ref finder = service(PT_MSS_PROPERTY_REFLECTION_FINDER);
+			if (UNEXPECTED(!finder.isObject())) {
+				(void) uninitializedProperty("propertyReflectionFinder");
+				return false;
+			}
+			zv::Args args{expr.raw(), self};
+			zv::Val propertyReflection = pt_type_call(finder.asObject(), PT_LC("findpropertyreflectionfromnode"), 2, args);
+			if (UNEXPECTED(propertyReflection.isUndef())) return false;
+			/* a magic or hooked property may return a different object on every read */
+			if (propertyReflection.isNull()) return true;
+			if (UNEXPECTED(!propertyReflection.ref().isObject())) {
+				zend_throw_error(NULL, "Call to a member function isNative() on %s", zend_zval_value_name(propertyReflection.raw()));
+				return false;
+			}
+			zv::Val isNative = pt_type_call(propertyReflection.ref().asObject(), PT_LC("isnative"), 0, NULL);
+			if (UNEXPECTED(isNative.isUndef())) return false;
+			if (!zend_is_true(isNative.raw())) return true;
+			zv::Val hookType = zv::Val::string(PT_LC("get"));
+			zv::Val hasHook = pt_type_call(propertyReflection.ref().asObject(), PT_LC("hashook"), 1, hookType.raw());
+			if (UNEXPECTED(hasHook.isUndef())) return false;
+			if (zend_is_true(hasHook.raw())) return true;
+			zv::Ref var = nodeProp(expr.ref().asObject(), PT_LC("var"));
+			if (UNEXPECTED(var.raw() == NULL)) return false;
+			zv::Val next = zv::Val::copyOf(var.deref());
+			expr = std::move(next);
+		}
+
+		bool isVariable;
+		if (UNEXPECTED(!isInstance(expr.ref(), PT_CLASS_VARIABLE, isVariable))) return false;
+		if (!isVariable) return true;
+		zv::Ref name = nodeProp(expr.ref().asObject(), PT_LC("name"));
+		if (UNEXPECTED(name.raw() == NULL)) return false;
+		if (name.deref().isString()) out = zv::Str::copyOf(name.deref().asString());
+		return true;
+	}
+
+	/* private (twin getObjectAliasEdges()) */
+	[[nodiscard]] bool getObjectAliasEdges(std::vector<ObjectAliasEdge> &edges)
+	{
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes"))) return false;
+		zend_class_entry *aliasCe = pt_class_loaded(PT_CLASS_OBJECT_ALIAS_EXPR);
+		if (aliasCe == NULL) return EG(exception) == NULL;
+		for (auto entry : zv::ArrRef(slot(PT_MS_PROP_EXPRESSION_TYPES).deref().raw())) {
+			zend_string *exprString = entry.stringKeyOrNull();
+			/* the printer starts every alias key with this, a cheap filter before the holder read */
+			if (exprString == NULL || !zend_string_starts_with_literal(exprString, "__phpstanObjectAlias(")) continue;
+			zv::Val alias = holderExpr(entry.value());
+			if (UNEXPECTED(alias.isUndef())) return false;
+			if (!alias.ref().isObject() || !instanceof_function(alias.ref().asObject()->ce, aliasCe)) continue;
+			zend_long certainty = holderCertainty(entry.value());
+			if (UNEXPECTED(certainty < 0)) return false;
+			zv::Ref a = nodeProp(alias.ref().asObject(), PT_LC("expr"));
+			zv::Ref b = nodeProp(alias.ref().asObject(), PT_LC("aliasedExpr"));
+			if (UNEXPECTED(a.raw() == NULL || b.raw() == NULL)) return false;
+			ObjectAliasEdge edge{zv::Str::copyOf(exprString), zv::Val::copyOf(a.deref()), zv::Str(), zv::Val::copyOf(b.deref()), zv::Str(), certainty};
+			if (UNEXPECTED(!objectAliasNodeKey(edge.a.raw(), edge.aKey) || !objectAliasNodeKey(edge.b.raw(), edge.bKey))) return false;
+			edges.push_back(std::move(edge));
+		}
+		return true;
+	}
+
+	/* private (twin getPropertyFetchChainPrefixes()) */
+	[[nodiscard]] bool getPropertyFetchChainPrefixes(zval *exprArg, bool includeSelf, std::vector<ObjectAliasPrefix> &prefixes)
+	{
+		auto put = [&prefixes](zv::Str key, const std::vector<zval *> &names) {
+			for (ObjectAliasPrefix &prefix : prefixes) {
+				if (!zend_string_equals(prefix.key.get(), key.get())) continue;
+				prefix.names = names;
+				return;
+			}
+			prefixes.push_back(ObjectAliasPrefix{std::move(key), names});
+		};
+		std::vector<zval *> names;
+		if (includeSelf) {
+			zv::Str key;
+			if (UNEXPECTED(!objectAliasNodeKey(exprArg, key))) return false;
+			put(std::move(key), names);
+		}
+		zval *expr = exprArg;
+		while (true) {
+			bool isPropertyFetch;
+			if (UNEXPECTED(!isInstance(zv::Ref(expr), PT_CLASS_PROPERTY_FETCH, isPropertyFetch))) return false;
+			if (!isPropertyFetch) break;
+			zv::Ref name = nodeProp(Z_OBJ_P(expr), PT_LC("name"));
+			if (UNEXPECTED(name.raw() == NULL)) return false;
+			bool nameIsIdentifier;
+			if (UNEXPECTED(!isInstance(name.deref(), PT_CLASS_IDENTIFIER, nameIsIdentifier))) return false;
+			if (!nameIsIdentifier) break;
+			names.insert(names.begin(), name.deref().raw());
+			zv::Ref var = nodeProp(Z_OBJ_P(expr), PT_LC("var"));
+			if (UNEXPECTED(var.raw() == NULL)) return false;
+			expr = var.deref().raw();
+			zv::Str key;
+			if (UNEXPECTED(!objectAliasNodeKey(expr, key))) return false;
+			put(std::move(key), names);
+		}
+		return true;
+	}
+
+	/* new PropertyFetch(...new PropertyFetch($object, $names[0])..., $names[n]) */
+	static zv::Val objectAliasFetchChain(zval *object, const std::vector<zval *> &names)
+	{
+		zv::Val fetch = zv::Val::copyOf(zv::Ref(object));
+		for (zval *name : names) {
+			zv::Args args{fetch.raw(), name};
+			zv::Val next = pt_type_new(PT_CLASS_PROPERTY_FETCH, 2, args);
+			if (UNEXPECTED(next.isUndef())) return zv::Val();
+			fetch = std::move(next);
+		}
+		return fetch;
+	}
+
+	/* private (twin findObjectAliasClass()): the members without $expr itself */
+	[[nodiscard]] bool findObjectAliasClass(zval *expr, std::vector<ObjectAliasEdge> &edges, std::vector<ObjectAliasMember> &out)
+	{
+		/* side key => (edge, whether the other side is b), in the twin's $edgesBySide order */
+		std::unordered_map<zend_string *, std::vector<std::pair<size_t, bool>>, ZendStringHash, ZendStringEquals> edgesBySide;
+		for (size_t i = 0; i < edges.size(); i++) {
+			edgesBySide[edges[i].aKey.get()].emplace_back(i, true);
+			edgesBySide[edges[i].bKey.get()].emplace_back(i, false);
+		}
+
+		std::vector<ObjectAliasMember> members;
+		ZendStringSet seen;
+		{
+			zv::Str exprKey;
+			if (UNEXPECTED(!objectAliasNodeKey(expr, exprKey))) return false;
+			members.push_back(ObjectAliasMember{std::move(exprKey), zv::Val::copyOf(zv::Ref(expr)), PT_TRI_YES});
+			seen.insert(members[0].key.get());
+		}
+		for (size_t queueIndex = 0; queueIndex < members.size(); queueIndex++) {
+			zend_long memberCertainty = members[queueIndex].certainty;
+			zv::Val member = zv::Val::copyOf(zv::Ref(members[queueIndex].expr.raw()));
+			std::vector<ObjectAliasPrefix> prefixes;
+			if (UNEXPECTED(!getPropertyFetchChainPrefixes(member.raw(), true, prefixes))) return false;
+			for (const ObjectAliasPrefix &prefix : prefixes) {
+				auto found = edgesBySide.find(prefix.key.get());
+				if (found == edgesBySide.end()) continue;
+				for (const std::pair<size_t, bool> &side : found->second) {
+					ObjectAliasEdge &edge = edges[side.first];
+					zv::Val aliased = objectAliasFetchChain(side.second ? edge.b.raw() : edge.a.raw(), prefix.names);
+					if (UNEXPECTED(aliased.isUndef())) return false;
+					zv::Str aliasedKey;
+					if (UNEXPECTED(!objectAliasNodeKey(aliased.raw(), aliasedKey))) return false;
+					if (seen.count(aliasedKey.get()) > 0) continue;
+					if (members.size() >= PT_MS_OBJECT_ALIAS_CLASS_LIMIT) goto done;
+					seen.insert(aliasedKey.get());
+					members.push_back(ObjectAliasMember{std::move(aliasedKey), std::move(aliased), pt_trinary_and(memberCertainty, edge.certainty)});
+				}
+			}
+		}
+	done:
+		for (size_t i = 1; i < members.size(); i++) out.push_back(std::move(members[i]));
+		return true;
+	}
+
+	/* private (twin findObjectAliasInvalidationTargets()) */
+	[[nodiscard]] bool findObjectAliasInvalidationTargets(zval *expr, bool requireMoreCharacters, std::vector<ObjectAliasEdge> &edges, std::vector<ObjectAliasTarget> &targets)
+	{
+		if (!requireMoreCharacters) {
+			bool isPropertyFetch;
+			if (UNEXPECTED(!isInstance(zv::Ref(expr), PT_CLASS_PROPERTY_FETCH, isPropertyFetch))) return false;
+			if (!isPropertyFetch) return true;
+			bool nameIsIdentifier;
+			if (UNEXPECTED(!nodeNameIs(Z_OBJ_P(expr), PT_CLASS_IDENTIFIER, nameIsIdentifier))) return false;
+			if (!nameIsIdentifier) return true;
+			zv::Ref var = nodeProp(Z_OBJ_P(expr), PT_LC("var"));
+			zv::Ref name = nodeProp(Z_OBJ_P(expr), PT_LC("name"));
+			if (UNEXPECTED(var.raw() == NULL || name.raw() == NULL)) return false;
+			std::vector<ObjectAliasMember> members;
+			if (UNEXPECTED(!findObjectAliasClass(var.deref().raw(), edges, members))) return false;
+			std::vector<zval *> names{name.deref().raw()};
+			for (ObjectAliasMember &member : members) {
+				zv::Val fetch = objectAliasFetchChain(member.expr.raw(), names);
+				if (UNEXPECTED(fetch.isUndef())) return false;
+				targets.push_back(ObjectAliasTarget{std::move(fetch), false});
+			}
+			return true;
+		}
+
+		std::vector<zv::Str> visitedKeys;
+		ZendStringSet visited;
+		{
+			zv::Str exprKey;
+			if (UNEXPECTED(!objectAliasNodeKey(expr, exprKey))) return false;
+			visited.insert(exprKey.get());
+			visitedKeys.push_back(std::move(exprKey));
+		}
+		std::vector<zv::Val> queue;
+		queue.push_back(zv::Val::copyOf(zv::Ref(expr)));
+		for (size_t queueIndex = 0; queueIndex < queue.size(); queueIndex++) {
+			zv::Val object = zv::Val::copyOf(zv::Ref(queue[queueIndex].raw()));
+			zv::Str objectKey;
+			if (UNEXPECTED(!objectAliasNodeKey(object.raw(), objectKey))) return false;
+			ZendStringSet members{objectKey.get()};
+			std::vector<ObjectAliasMember> objectClass;
+			if (UNEXPECTED(!findObjectAliasClass(object.raw(), edges, objectClass))) return false;
+			for (ObjectAliasMember &member : objectClass) {
+				members.insert(member.key.get());
+				if (visited.count(member.key.get()) > 0) continue;
+				visited.insert(member.key.get());
+				visitedKeys.push_back(zv::Str::copyOf(member.key.get()));
+				targets.push_back(ObjectAliasTarget{zv::Val::copyOf(zv::Ref(member.expr.raw())), true});
+			}
+
+			/* objects held in properties of the changed object */
+			for (ObjectAliasEdge &edge : edges) {
+				for (int orientation = 0; orientation < 2; orientation++) {
+					zv::Val &side = orientation == 0 ? edge.a : edge.b;
+					zv::Val &other = orientation == 0 ? edge.b : edge.a;
+					zend_string *otherKey = orientation == 0 ? edge.bKey.get() : edge.aKey.get();
+					if (visited.count(otherKey) > 0) continue;
+					std::vector<ObjectAliasPrefix> prefixes;
+					if (UNEXPECTED(!getPropertyFetchChainPrefixes(side.raw(), false, prefixes))) return false;
+					for (const ObjectAliasPrefix &prefix : prefixes) {
+						if (members.count(prefix.key.get()) == 0) continue;
+						visited.insert(otherKey);
+						targets.push_back(ObjectAliasTarget{zv::Val::copyOf(zv::Ref(other.raw())), true});
+						queue.push_back(zv::Val::copyOf(zv::Ref(other.raw())));
+						break;
+					}
+				}
+			}
+		}
+		return true;
+	}
+
+	/* the twin's $changed closure of reconnectObjectAliases() */
+	[[nodiscard]] bool objectAliasSideChanged(zval *expr, const std::unordered_map<zend_string *, bool, ZendStringHash, ZendStringEquals> &targetKeys, bool &out)
+	{
+		out = false;
+		std::vector<ObjectAliasPrefix> prefixes;
+		if (UNEXPECTED(!getPropertyFetchChainPrefixes(expr, true, prefixes))) return false;
+		for (const ObjectAliasPrefix &prefix : prefixes) {
+			auto found = targetKeys.find(prefix.key.get());
+			if (found == targetKeys.end()) continue;
+			if (!prefix.names.empty() || !found->second) {
+				out = true;
+				return true;
+			}
+		}
+		return true;
+	}
+
+	/* private (twin reconnectObjectAliases()) */
+	zv::Val reconnectObjectAliases(std::vector<ObjectAliasEdge> &edges, std::vector<ObjectAliasTarget> &targets)
+	{
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes"))) return zv::Val();
+		HashTable *expressionTypes = Z_ARRVAL_P(slot(PT_MS_PROP_EXPRESSION_TYPES).deref().raw());
+		std::vector<size_t> droppedEdges;
+		for (size_t i = 0; i < edges.size(); i++) {
+			if (zend_symtable_find(expressionTypes, edges[i].key.get()) != NULL) continue;
+			droppedEdges.push_back(i);
+		}
+		if (droppedEdges.empty()) return self_();
+
+		std::vector<zv::Str> targetKeyStrings;
+		std::unordered_map<zend_string *, bool, ZendStringHash, ZendStringEquals> targetKeys;
+		for (ObjectAliasTarget &target : targets) {
+			zv::Str targetKey;
+			if (UNEXPECTED(!objectAliasNodeKey(target.expr.raw(), targetKey))) return zv::Val();
+			auto found = targetKeys.find(targetKey.get());
+			if (found != targetKeys.end()) {
+				found->second = found->second && target.requireMoreCharacters;
+				continue;
+			}
+			targetKeys.emplace(targetKey.get(), target.requireMoreCharacters);
+			targetKeyStrings.push_back(std::move(targetKey));
+		}
+
+		struct Group
+		{
+			zend_string *changedSideKey;
+			zval *changedSide;
+			std::vector<std::pair<zval *, zend_long>> survivors;
+		};
+		std::vector<Group> groups;
+		for (size_t index : droppedEdges) {
+			ObjectAliasEdge &edge = edges[index];
+			bool aChanged, bChanged;
+			if (UNEXPECTED(!objectAliasSideChanged(edge.a.raw(), targetKeys, aChanged))) return zv::Val();
+			if (UNEXPECTED(!objectAliasSideChanged(edge.b.raw(), targetKeys, bChanged))) return zv::Val();
+			if (aChanged == bChanged) continue;
+			zval *changedSide = aChanged ? edge.a.raw() : edge.b.raw();
+			zend_string *changedSideKey = aChanged ? edge.aKey.get() : edge.bKey.get();
+			zval *survivor = aChanged ? edge.b.raw() : edge.a.raw();
+			Group *group = NULL;
+			for (Group &existing : groups) {
+				if (zend_string_equals(existing.changedSideKey, changedSideKey)) {
+					group = &existing;
+					break;
+				}
+			}
+			if (group == NULL) {
+				groups.push_back(Group{changedSideKey, changedSide, {}});
+				group = &groups.back();
+			}
+			group->changedSide = changedSide;
+			group->survivors.emplace_back(survivor, edge.certainty);
+		}
+
+		zv::Val scope = self_();
+		for (const Group &group : groups) {
+			std::vector<ObjectAliasMember> members;
+			if (UNEXPECTED(!findObjectAliasClass(group.changedSide, edges, members))) return zv::Val();
+			ObjectAliasMember *representative = NULL;
+			for (ObjectAliasMember &member : members) {
+				bool memberChanged;
+				if (UNEXPECTED(!objectAliasSideChanged(member.expr.raw(), targetKeys, memberChanged))) return zv::Val();
+				if (memberChanged) continue;
+				representative = &member;
+				break;
+			}
+			if (representative == NULL) continue;
+			zv::Str representativeKey;
+			if (UNEXPECTED(!objectAliasNodeKey(representative->expr.raw(), representativeKey))) return zv::Val();
+			for (const std::pair<zval *, zend_long> &survivor : group.survivors) {
+				zv::Str survivorKey;
+				if (UNEXPECTED(!objectAliasNodeKey(survivor.first, survivorKey))) return zv::Val();
+				if (zend_string_equals(survivorKey.get(), representativeKey.get())) continue;
+				zend_object *scopeObject = requireScope(scope, "specifyObjectAlias");
+				if (UNEXPECTED(scopeObject == NULL)) return zv::Val();
+				scope = MutatingScope(scopeObject).specifyObjectAlias(survivor.first, representative->expr.raw(), pt_trinary_and(survivor.second, representative->certainty));
+				if (UNEXPECTED(scope.isUndef())) return zv::Val();
+			}
+		}
+		return scope;
+	}
+
+	/* }}} */
+
+	/* private (twin invalidateExpressionWithoutAliases()) */
+	zv::Val invalidateExpressionWithoutAliases(zval *expressionToInvalidate, bool requireMoreCharacters, zval *invalidatingClass, bool keepPropertyFetches, zval *preservedPropertyNames)
 	{
 		zv::Val exprString = thisGetNodeKey(expressionToInvalidate);
 		if (UNEXPECTED(exprString.isUndef())) return zv::Val();
@@ -12563,6 +13161,26 @@ static void ZEND_FASTCALL msInvalidateExpression(INTERNAL_FUNCTION_PARAMETERS)
 	PT_RETURN_VAL(PT_THIS.invalidateExpression(expressionToInvalidate, requireMoreCharacters, invalidatingClass, keepPropertyFetches, preservedPropertyNames));
 }
 
+static void ZEND_FASTCALL msAssignObjectAlias(INTERNAL_FUNCTION_PARAMETERS)
+{
+	zend_string *variableName;
+	zval *assignedExpr, *certainty = NULL;
+	zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+	if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
+	ZEND_PARSE_PARAMETERS_START(2, 3)
+		Z_PARAM_STR(variableName)
+		Z_PARAM_OBJECT_OF_CLASS(assignedExpr, exprCe)
+		Z_PARAM_OPTIONAL
+		Z_PARAM_OBJECT_OR_NULL(certainty)
+	ZEND_PARSE_PARAMETERS_END();
+	zend_long certaintyValue = PT_TRI_YES;
+	if (certainty != NULL) {
+		certaintyValue = pt_type_trinary_value(certainty);
+		if (UNEXPECTED(certaintyValue < 0)) RETURN_THROWS();
+	}
+	PT_RETURN_VAL(PT_THIS.assignObjectAlias(variableName, assignedExpr, certaintyValue));
+}
+
 static void ZEND_FASTCALL msFilterByTruthyValue(INTERNAL_FUNCTION_PARAMETERS)
 {
 	PT_MS_PARSE_EXPR(expr);
@@ -13169,6 +13787,13 @@ zv::Val pt_mutating_scope_assign_expression(zend_object *scope, zend_object *exp
 	return pt_type_call(scope, PT_LC("assignexpression"), 3, argv);
 }
 
+zv::Val pt_mutating_scope_assign_object_alias(zend_object *scope, zend_string *variableName, zval *assignedExpr, zend_long certainty)
+{
+	if (PT_MS_INHERITS(scope, "assignobjectalias")) return MutatingScope(scope).assignObjectAlias(variableName, assignedExpr, certainty);
+	zv::Args argv{variableName, assignedExpr, pt_trinary_singleton(certainty)};
+	return pt_type_call(scope, PT_LC("assignobjectalias"), 3, argv);
+}
+
 zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_object *expr, zval *type, zval *nativeType, zval *certainty)
 {
 	if (PT_MS_INHERITS(scope, "specifyexpressiontype")) return MutatingScope(scope).specifyExpressionType(expr, type, nativeType, certainty);
@@ -13414,6 +14039,7 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 	cls.privateClassConstantLong("GLOBAL_CONSTANT_FETCH_KEYS_LIMIT", PT_MS_GLOBAL_CONSTANT_FETCH_KEYS_LIMIT);
 	cls.privateClassConstantLong("GENERALIZED_ARRAY_DEPTH_LIMIT", PT_MS_GENERALIZED_ARRAY_DEPTH_LIMIT);
 	cls.privateClassConstantLong("RELATIONAL_FACT_ROUNDS_LIMIT", PT_MS_RELATIONAL_FACT_ROUNDS_LIMIT);
+	cls.privateClassConstantLong("OBJECT_ALIAS_CLASS_LIMIT", PT_MS_OBJECT_ALIAS_CLASS_LIMIT);
 	pt_ms_custom_serialization_methods_list = pt_persistent_string_list(pt_ms_custom_serialization_methods, sizeof(pt_ms_custom_serialization_methods) / sizeof(pt_ms_custom_serialization_methods[0]));
 	cls.privateClassConstantValue("CUSTOM_SERIALIZATION_METHODS", pt_ms_custom_serialization_methods_constant);
 	/* }}} */
@@ -14147,6 +14773,19 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		reg::withDefault(reg::boolArg("keepPropertyFetches"), "false"),
 		reg::withDefault(reg::arrayArg("preservedPropertyNames", true), "null"),
 	}, msInvalidateExpression, &returnsSelf);
+
+	cls.method(sigs::assignObjectAlias, msAssignObjectAlias);
+
+	cls.method(sigs::holdsSameObject, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *expr, *otherExpr;
+		zend_class_entry *exprCe = pt_class(PT_CLASS_EXPR);
+		if (UNEXPECTED(exprCe == NULL)) RETURN_THROWS();
+		ZEND_PARSE_PARAMETERS_START(2, 2)
+			Z_PARAM_OBJECT_OF_CLASS(expr, exprCe)
+			Z_PARAM_OBJECT_OF_CLASS(otherExpr, exprCe)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_MS_RETURN_BOOL(PT_THIS.holdsSameObject(expr, otherExpr, out_));
+	});
 
 	cls.method(sigs::isPrivatePropertyOfDifferentClass, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *expr, *invalidatingClass;

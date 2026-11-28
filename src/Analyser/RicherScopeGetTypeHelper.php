@@ -83,6 +83,15 @@ final class RicherScopeGetTypeHelper
 			}
 		}
 
+		if (
+			$leftType->isFloat()->no()
+			&& $leftType->isArray()->no()
+			&& $scope->toWalkScope()->holdsSameObject($expr->left, $expr->right)
+		) {
+			// an alias of the same object (a float could be NAN, an array could contain one)
+			return new TypeResult(new ConstantBooleanType(true), []);
+		}
+
 		return $this->initializerExprTypeResolver->resolveIdenticalType($leftType, $rightType);
 	}
 

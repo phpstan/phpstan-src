@@ -1388,7 +1388,7 @@ final class AssignHandler implements ExprHandler
 					$nativeType,
 					TrinaryLogic::createYes(),
 					[],
-				);
+				)->assignObjectAlias($var->name, $assignedExpr);
 				foreach ($conditionalExpressions as $exprString => $holders) {
 					$scope = $scope->addConditionalExpressions((string) $exprString, $holders);
 				}

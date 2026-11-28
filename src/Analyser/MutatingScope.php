@@ -36,6 +36,7 @@ use PHPStan\Node\Expr\AlwaysRememberedExpr;
 use PHPStan\Node\Expr\CloneReinitializationExpr;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
 use PHPStan\Node\Expr\NativeTypeExpr;
+use PHPStan\Node\Expr\ObjectAliasExpr;
 use PHPStan\Node\Expr\OriginalForeachKeyExpr;
 use PHPStan\Node\Expr\OriginalForeachValueExpr;
 use PHPStan\Node\Expr\ParameterVariableOriginalValueExpr;
@@ -121,6 +122,7 @@ use function array_merge;
 use function array_pop;
 use function array_shift;
 use function array_slice;
+use function array_unshift;
 use function array_values;
 use function count;
 use function ctype_alnum;
@@ -140,6 +142,7 @@ use function spl_object_id;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
+use function strcmp;
 use function strlen;
 use function strtolower;
 use function substr;
@@ -164,6 +167,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	/** Rounds of carrying a narrowing through tracked comparison verdicts per application, a chain `$a < $b < $c` takes one per link. */
 	private const RELATIONAL_FACT_ROUNDS_LIMIT = 4;
+
+	/** Safety net for walking object alias edges: at most this many expressions are found to hold one object. */
+	private const OBJECT_ALIAS_CLASS_LIMIT = 256;
 
 	/** Magic methods that let the author decide which properties survive a serialize()/unserialize() round trip. */
 	private const CUSTOM_SERIALIZATION_METHODS = ['__sleep', '__serialize', '__unserialize'];
@@ -3685,8 +3691,37 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	{
 		$scope = $this;
 		if ($expr instanceof PropertyFetch) {
+			$aliases = [];
+			$aliasedFetchesWithFacts = [];
+			if ($expr->name instanceof Node\Identifier) {
+				$edges = $this->getObjectAliasEdges();
+				if (count($edges) > 0) {
+					foreach ($this->findObjectAliasClass($expr->var, $edges) as [$alias, $certainty]) {
+						$aliases[] = $alias;
+						$aliasedFetch = new PropertyFetch($alias, $expr->name);
+						$aliasedFetchKey = $this->getNodeKey($aliasedFetch);
+						if (
+							!$certainty->yes()
+							|| !array_key_exists($aliasedFetchKey, $this->expressionTypes)
+							|| !$this->expressionTypes[$aliasedFetchKey]->getCertainty()->yes()
+						) {
+							continue;
+						}
+						$aliasedFetchesWithFacts[] = $aliasedFetch;
+					}
+				}
+			}
+
+			// invalidateExpression() also forgets the property on every alias of $expr->var
 			$scope = $this->invalidateExpression($expr)
 				->invalidateMethodsOnExpression($expr->var);
+			foreach ($aliases as $alias) {
+				$scope = $scope->invalidateMethodsOnExpression($alias);
+			}
+			// a remembered fact about the same property of an alias now holds the written value
+			foreach ($aliasedFetchesWithFacts as $aliasedFetch) {
+				$scope = $scope->specifyExpressionType($aliasedFetch, $type, $nativeType, TrinaryLogic::createYes());
+			}
 		} elseif ($expr instanceof Expr\StaticPropertyFetch) {
 			$scope = $this->invalidateExpression($expr);
 		} elseif ($expr instanceof Variable) {
@@ -3741,6 +3776,344 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 *                                  called method that cannot write them (PreservedPropertiesResolver).
 	 */
 	public function invalidateExpression(Expr $expressionToInvalidate, bool $requireMoreCharacters = false, ?ClassReflection $invalidatingClass = null, bool $keepPropertyFetches = false, ?array $preservedPropertyNames = null): self
+	{
+		$scope = $this->invalidateExpressionWithoutAliases($expressionToInvalidate, $requireMoreCharacters, $invalidatingClass, $keepPropertyFetches, $preservedPropertyNames);
+		$edges = $this->getObjectAliasEdges();
+		if (count($edges) === 0) {
+			return $scope;
+		}
+
+		$targets = $this->findObjectAliasInvalidationTargets($expressionToInvalidate, $requireMoreCharacters, $edges);
+		foreach ($targets as [$target, $targetRequiresMoreCharacters]) {
+			$scope = $scope->invalidateExpressionWithoutAliases($target, $targetRequiresMoreCharacters, $invalidatingClass, $keepPropertyFetches, $preservedPropertyNames);
+		}
+		$targets[] = [$expressionToInvalidate, $requireMoreCharacters];
+
+		return $scope->reconnectObjectAliases($edges, $targets);
+	}
+
+	/**
+	 * Remembers that $variableName now holds the same object as $assignedExpr,
+	 * a variable or a chain of native property fetches on one.
+	 */
+	public function assignObjectAlias(string $variableName, Expr $assignedExpr, ?TrinaryLogic $certainty = null): self
+	{
+		$certainty ??= TrinaryLogic::createYes();
+		if ($assignedExpr instanceof Expr\Ternary) {
+			// either arm may be the assigned object
+			return $this->assignObjectAlias($variableName, $assignedExpr->if ?? $assignedExpr->cond, TrinaryLogic::createMaybe())
+				->assignObjectAlias($variableName, $assignedExpr->else, TrinaryLogic::createMaybe());
+		}
+		if ($assignedExpr instanceof Expr\BinaryOp\Coalesce) {
+			return $this->assignObjectAlias($variableName, $assignedExpr->left, TrinaryLogic::createMaybe())
+				->assignObjectAlias($variableName, $assignedExpr->right, TrinaryLogic::createMaybe());
+		}
+
+		$rootVariableName = $this->getObjectAliasRootVariableName($assignedExpr);
+		if ($rootVariableName === null || $rootVariableName === $variableName) {
+			return $this;
+		}
+
+		$variable = new Variable($variableName);
+		if ($this->getType($variable)->isObject()->no()) {
+			return $this;
+		}
+
+		return $this->specifyObjectAlias($variable, $assignedExpr, $certainty);
+	}
+
+	/**
+	 * Whether the scope knows that both variables hold the same object.
+	 *
+	 * @internal
+	 */
+	public function holdsSameObject(Expr $expr, Expr $otherExpr): bool
+	{
+		// a property can be replaced by a call that is not known to write it, a variable only by an assignment
+		if (!$expr instanceof Variable || !$otherExpr instanceof Variable) {
+			return false;
+		}
+
+		$edges = [];
+		foreach ($this->getObjectAliasEdges() as $edge) {
+			if (!$edge[1] instanceof Variable || !$edge[3] instanceof Variable) {
+				continue;
+			}
+			$edges[] = $edge;
+		}
+		if (count($edges) === 0) {
+			return false;
+		}
+
+		$class = $this->findObjectAliasClass($expr, $edges);
+		$otherKey = $this->getNodeKey($otherExpr);
+
+		return array_key_exists($otherKey, $class) && $class[$otherKey][1]->yes();
+	}
+
+	private function specifyObjectAlias(Expr $expr, Expr $aliasedExpr, TrinaryLogic $certainty): self
+	{
+		// one key for both orders
+		if (strcmp($this->getNodeKey($expr), $this->getNodeKey($aliasedExpr)) > 0) {
+			[$expr, $aliasedExpr] = [$aliasedExpr, $expr];
+		}
+
+		return $this->specifyExpressionType(new ObjectAliasExpr($expr, $aliasedExpr), new MixedType(), new MixedType(), $certainty);
+	}
+
+	private function getObjectAliasRootVariableName(Expr $expr): ?string
+	{
+		while ($expr instanceof PropertyFetch) {
+			if (!$expr->name instanceof Node\Identifier) {
+				return null;
+			}
+			$propertyReflection = $this->services->propertyReflectionFinder->findPropertyReflectionFromNode($expr, $this);
+			if (
+				$propertyReflection === null
+				|| !$propertyReflection->isNative()
+				|| $propertyReflection->hasHook('get')
+			) {
+				// a magic or hooked property may return a different object on every read
+				return null;
+			}
+			$expr = $expr->var;
+		}
+
+		if ($expr instanceof Variable && is_string($expr->name)) {
+			return $expr->name;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @return list<array{string, Expr, string, Expr, string, TrinaryLogic}> key of the edge, each side with its key, certainty
+	 */
+	private function getObjectAliasEdges(): array
+	{
+		$edges = [];
+		foreach ($this->expressionTypes as $exprString => $holder) {
+			$alias = $holder->getExpr();
+			if (!$alias instanceof ObjectAliasExpr) {
+				continue;
+			}
+			$edges[] = [
+				$exprString,
+				$alias->getExpr(),
+				$this->getNodeKey($alias->getExpr()),
+				$alias->getAliasedExpr(),
+				$this->getNodeKey($alias->getAliasedExpr()),
+				$holder->getCertainty(),
+			];
+		}
+
+		return $edges;
+	}
+
+	/**
+	 * Keys of $expr and of the objects it is fetched on, each with the property names
+	 * that lead from there to $expr.
+	 *
+	 * @return array<string, list<Node\Identifier>>
+	 */
+	private function getPropertyFetchChainPrefixes(Expr $expr, bool $includeSelf): array
+	{
+		$prefixes = [];
+		if ($includeSelf) {
+			$prefixes[$this->getNodeKey($expr)] = [];
+		}
+		$names = [];
+		while ($expr instanceof PropertyFetch && $expr->name instanceof Node\Identifier) {
+			array_unshift($names, $expr->name);
+			$expr = $expr->var;
+			$prefixes[$this->getNodeKey($expr)] = $names;
+		}
+
+		return $prefixes;
+	}
+
+	/**
+	 * Every other expression that holds the object $expr holds, found by walking the alias
+	 * edges: an edge relates its two sides, and also the same property fetched on them.
+	 *
+	 * @param list<array{string, Expr, string, Expr, string, TrinaryLogic}> $edges
+	 * @return array<string, array{Expr, TrinaryLogic}>
+	 */
+	private function findObjectAliasClass(Expr $expr, array $edges): array
+	{
+		$edgesBySide = [];
+		foreach ($edges as [, $a, $aKey, $b, $bKey, $certainty]) {
+			$edgesBySide[$aKey][] = [$b, $certainty];
+			$edgesBySide[$bKey][] = [$a, $certainty];
+		}
+
+		$exprKey = $this->getNodeKey($expr);
+		$class = [$exprKey => [$expr, TrinaryLogic::createYes()]];
+		$queue = [$class[$exprKey]];
+		while (($item = array_shift($queue)) !== null) {
+			[$member, $memberCertainty] = $item;
+			foreach ($this->getPropertyFetchChainPrefixes($member, true) as $prefixKey => $names) {
+				if (!array_key_exists($prefixKey, $edgesBySide)) {
+					continue;
+				}
+				foreach ($edgesBySide[$prefixKey] as [$other, $certainty]) {
+					$aliased = $other;
+					foreach ($names as $name) {
+						$aliased = new PropertyFetch($aliased, $name);
+					}
+					$aliasedKey = $this->getNodeKey($aliased);
+					if (array_key_exists($aliasedKey, $class)) {
+						continue;
+					}
+					if (count($class) >= self::OBJECT_ALIAS_CLASS_LIMIT) {
+						break 3;
+					}
+					$class[$aliasedKey] = [$aliased, $memberCertainty->and($certainty)];
+					$queue[] = $class[$aliasedKey];
+				}
+			}
+		}
+
+		unset($class[$exprKey]);
+
+		return $class;
+	}
+
+	/**
+	 * What else changes when $expr is invalidated: when its value changes, the same property
+	 * of the aliases of the object it is fetched on; when the object it holds may change,
+	 * the aliases of that object and of every object reachable from it.
+	 *
+	 * @param list<array{string, Expr, string, Expr, string, TrinaryLogic}> $edges
+	 * @return list<array{Expr, bool}> each with whether only what is fetched from it changes
+	 */
+	private function findObjectAliasInvalidationTargets(Expr $expr, bool $requireMoreCharacters, array $edges): array
+	{
+		$targets = [];
+		if (!$requireMoreCharacters) {
+			if ($expr instanceof PropertyFetch && $expr->name instanceof Node\Identifier) {
+				foreach ($this->findObjectAliasClass($expr->var, $edges) as [$alias]) {
+					$targets[] = [new PropertyFetch($alias, $expr->name), false];
+				}
+			}
+
+			return $targets;
+		}
+
+		$visited = [$this->getNodeKey($expr) => true];
+		$queue = [$expr];
+		while (($object = array_shift($queue)) !== null) {
+			$members = [$this->getNodeKey($object) => $object];
+			foreach ($this->findObjectAliasClass($object, $edges) as $memberKey => [$member]) {
+				$members[$memberKey] = $member;
+				if (array_key_exists($memberKey, $visited)) {
+					continue;
+				}
+				$visited[$memberKey] = true;
+				$targets[] = [$member, true];
+			}
+
+			// objects held in properties of the changed object
+			foreach ($edges as [, $a, $aKey, $b, $bKey]) {
+				foreach ([[$a, $b, $bKey], [$b, $a, $aKey]] as [$side, $other, $otherKey]) {
+					if (array_key_exists($otherKey, $visited)) {
+						continue;
+					}
+					foreach (array_keys($this->getPropertyFetchChainPrefixes($side, false)) as $prefixKey) {
+						if (!array_key_exists($prefixKey, $members)) {
+							continue;
+						}
+						$visited[$otherKey] = true;
+						$targets[] = [$other, true];
+						$queue[] = $other;
+						break;
+					}
+				}
+			}
+		}
+
+		return $targets;
+	}
+
+	/**
+	 * An alias edge dropped because one of its sides changed leaves the other side holding
+	 * the old object; links it to another expression still holding that object, so a chain
+	 * `$b = $a; $c = $a; $a = new C();` keeps `$b` and `$c` related.
+	 *
+	 * @param list<array{string, Expr, string, Expr, string, TrinaryLogic}> $edges the edges before the invalidation
+	 * @param list<array{Expr, bool}> $targets the invalidated expressions, each with whether only what is fetched from it changed
+	 */
+	private function reconnectObjectAliases(array $edges, array $targets): self
+	{
+		$droppedEdges = [];
+		foreach ($edges as $edge) {
+			if (array_key_exists($edge[0], $this->expressionTypes)) {
+				continue;
+			}
+			$droppedEdges[] = $edge;
+		}
+		if (count($droppedEdges) === 0) {
+			return $this;
+		}
+
+		$targetKeys = [];
+		foreach ($targets as [$target, $targetRequiresMoreCharacters]) {
+			$targetKey = $this->getNodeKey($target);
+			$targetKeys[$targetKey] = ($targetKeys[$targetKey] ?? true) && $targetRequiresMoreCharacters;
+		}
+		$changed = function (Expr $expr) use ($targetKeys): bool {
+			foreach ($this->getPropertyFetchChainPrefixes($expr, true) as $prefixKey => $names) {
+				if (!array_key_exists($prefixKey, $targetKeys)) {
+					continue;
+				}
+				if (count($names) > 0 || !$targetKeys[$prefixKey]) {
+					return true;
+				}
+			}
+
+			return false;
+		};
+
+		$groups = [];
+		foreach ($droppedEdges as [, $a, $aKey, $b, $bKey, $certainty]) {
+			$aChanged = $changed($a);
+			if ($aChanged === $changed($b)) {
+				continue;
+			}
+			[$changedSide, $changedSideKey, $survivor] = $aChanged ? [$a, $aKey, $b] : [$b, $bKey, $a];
+			$groups[$changedSideKey][0] = $changedSide;
+			$groups[$changedSideKey][1][] = [$survivor, $certainty];
+		}
+
+		$scope = $this;
+		foreach ($groups as [$changedSide, $survivors]) {
+			$representative = null;
+			foreach ($this->findObjectAliasClass($changedSide, $edges) as [$member, $memberCertainty]) {
+				if ($changed($member)) {
+					continue;
+				}
+				$representative = [$member, $memberCertainty];
+				break;
+			}
+			if ($representative === null) {
+				continue;
+			}
+			$representativeKey = $this->getNodeKey($representative[0]);
+			foreach ($survivors as [$survivor, $certainty]) {
+				if ($this->getNodeKey($survivor) === $representativeKey) {
+					continue;
+				}
+				$scope = $scope->specifyObjectAlias($survivor, $representative[0], $certainty->and($representative[1]));
+			}
+		}
+
+		return $scope;
+	}
+
+	/**
+	 * @param array<string, true>|null $preservedPropertyNames
+	 */
+	private function invalidateExpressionWithoutAliases(Expr $expressionToInvalidate, bool $requireMoreCharacters, ?ClassReflection $invalidatingClass, bool $keepPropertyFetches, ?array $preservedPropertyNames): self
 	{
 		$exprStringToInvalidate = $this->getNodeKey($expressionToInvalidate);
 

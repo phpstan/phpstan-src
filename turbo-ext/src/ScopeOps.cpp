@@ -30,6 +30,7 @@ static zend_class_entry *pt_ce_scope_ops;
 static const pt_superglobal_name pt_so_compositional_virtual_key_prefixes[] = {
 	{ PT_LC("__phpstanForeachValueByRef(") },
 	{ PT_LC("__phpstanIntertwinedVariableByReference(") },
+	{ PT_LC("__phpstanObjectAlias(") },
 	{ PT_LC("__phpstanPropertyInitialization(") },
 	{ PT_LC("__phpstanRemembered(") },
 };
@@ -2059,6 +2060,29 @@ private:
 		}
 
 		if (requireMoreCharacters && zend_string_equals(query.exprStringToInvalidate, exprString)) return false;
+
+		/* the object both sides of an alias hold may change, but they still hold the same one */
+		if (requireMoreCharacters) {
+			zend_class_entry *objectAliasCe = pt_class(PT_CLASS_OBJECT_ALIAS_EXPR);
+			if (UNEXPECTED(objectAliasCe == NULL)) {
+				*failed = true;
+				return false;
+			}
+			if (instanceof_function(expr->ce, objectAliasCe)) {
+				for (const char *side : {"expr", "aliasedExpr"}) {
+					int32_t offset = pt_instance_prop_offset(expr->ce, side, strlen(side));
+					if (offset < 0) continue;
+					zv::Ref sideExpr = zv::ObjRef(expr).propAtOffset((uint32_t) offset).deref();
+					if (!sideExpr.isObject()) continue;
+					zv::Val sideKey = nodeKey(sideExpr.asObject(), query.exprPrinter);
+					if (UNEXPECTED(sideKey.isUndef())) {
+						*failed = true;
+						return false;
+					}
+					if (sideKey.ref().isString() && zend_string_equals(sideKey.ref().asString(), query.exprStringToInvalidate)) return false;
+				}
+			}
+		}
 
 		/* Variables will not contain traversable expressions: direct compare */
 		{

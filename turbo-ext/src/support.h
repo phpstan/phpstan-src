@@ -541,6 +541,7 @@ enum {
 	PT_CLASS_INTERSECTION_ALGEBRA,
 	/* tryIntersect() of GenericClassStringType */
 	PT_CLASS_CLASS_STRING_ALGEBRA,
+	PT_CLASS_OBJECT_ALIAS_EXPR,
 	PT_CLASS_COUNT
 };
 
@@ -2471,6 +2472,7 @@ zv::Val pt_mutating_scope_get_file(zend_object *scope);
 zv::Val pt_mutating_scope_assign_variable(zend_object *scope, zend_string *variableName, zval *type, zval *nativeType, zval *certainty);
 zv::Val pt_mutating_scope_assign_expression(zend_object *scope, zend_object *expr, zval *type, zval *nativeType);
 zv::Val pt_mutating_scope_specify_expression_type(zend_object *scope, zend_object *expr, zval *type, zval *nativeType, zval *certainty);
+zv::Val pt_mutating_scope_assign_object_alias(zend_object *scope, zend_string *variableName, zval *assignedExpr, zend_long certainty = PT_TRI_YES);
 zv::Val pt_mutating_scope_invalidate_expression(zend_object *scope, zval *expressionToInvalidate, bool requireMoreCharacters = false, zval *invalidatingClass = NULL, bool keepPropertyFetches = false, zval *preservedPropertyNames = NULL);
 
 /* ExpressionResult.cpp — $result->withScope($scope) / getArgsResult() /

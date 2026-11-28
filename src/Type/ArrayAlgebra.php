@@ -67,7 +67,16 @@ final class ArrayAlgebra
 			}
 			// unions of constant scalars, the values tryUnionConstantArray() unions at one key,
 			// split into each value, and other unions into their members
-			$finiteTypes = $valueType->isConstantScalarValue()->yes() ? $valueType->getFiniteTypes() : $valueType->getTypes();
+			if ($valueType->isConstantScalarValue()->yes()) {
+				$finiteTypes = $valueType->getFiniteTypes();
+			} elseif ($valueType->isArray()->no()) {
+				// a split shape is accepted member by member, which splits the
+				// arrays among its values again: arrays nested in each other
+				// would split into exponentially many shapes
+				$finiteTypes = $valueType->getTypes();
+			} else {
+				continue;
+			}
 			if (count($finiteTypes) < 2) {
 				continue;
 			}

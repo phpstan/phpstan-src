@@ -177,10 +177,13 @@ final class RangeFunctionReturnTypeExtension implements DynamicFunctionReturnTyp
 		$isStepInteger = $stepType->isInteger()->yes();
 
 		if ($isInteger && $isStepInteger) {
-			if ($argType instanceof IntegerRangeType) {
-				return self::getNonEmptyListOfType($argType);
+			// the values lie between the smallest and the largest of the bounds
+			$bounds = $argType->toNumberSet()?->getIntegerBounds();
+			if ($bounds === null) {
+				return self::getNonEmptyListOfType(new IntegerType());
 			}
-			return self::getNonEmptyListOfType(new IntegerType());
+
+			return self::getNonEmptyListOfType(IntegerRangeType::fromInterval(...$bounds));
 		}
 
 		if ($argType->isFloat()->yes()) {

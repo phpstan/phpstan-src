@@ -63,6 +63,6 @@ function doBaz(bool $flag): void
 {
 	if (PHP_VERSION_ID >= 80000) {
 		// PHP 8.2 accepts the first combination and PHP 8.3 rejects it
-		assertType('non-empty-list<int>', range($flag ? 1 : 2000, 1000, -1));
+		assertType('non-empty-list<int<1, 2000>>', range($flag ? 1 : 2000, 1000, -1));
 	}
 }

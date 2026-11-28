@@ -380,6 +380,11 @@ zv::Val pt_number_set_new(const phpstanturbo::NumberSetData &data);
 /* $type->toNumberSet() read into `out`, has = false for its null; false =
  * pending exception */
 [[nodiscard]] bool pt_type_to_number_set(zval *type, phpstanturbo::NumberSetData &out, bool &has);
+/* NumberSet::getIntegerBounds(): false when the set holds no integer */
+[[nodiscard]] bool pt_number_set_integer_bounds(const phpstanturbo::NumberSetData &set, phpstanturbo::NullableLong &min, phpstanturbo::NullableLong &max);
+/* $type->toNumberSet()?->getIntegerBounds() into min/max, has = false for
+ * its null; false = pending exception */
+[[nodiscard]] bool pt_type_integer_bounds(zval *type, phpstanturbo::NullableLong &min, phpstanturbo::NullableLong &max, bool &has);
 
 /* the StringSet class entry and its twin's methods (StringSet.cpp); the
  * zvals are borrowed StringSet instances, UNDEF = pending exception */

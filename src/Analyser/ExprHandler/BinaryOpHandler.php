@@ -435,29 +435,15 @@ final class BinaryOpHandler implements ExprHandler
 				) {
 					$argType = $getType($expr->right->getArgs()[0]->value);
 
+					// the count is past the smallest left value when the comparison holds,
+					// and not past the largest one when it does not
 					$sizeType = null;
-					if ($leftType instanceof ConstantIntegerType) {
-						if ($orEqual) {
-							$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getValue());
-						} else {
-							$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getValue());
-						}
-					} elseif ($leftType instanceof IntegerRangeType) {
-						if ($context->falsey() && $leftType->getMax() !== null) {
-							if ($orEqual) {
-								$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMax());
-							} else {
-								$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMax());
-							}
-						} elseif ($context->truthy() && $leftType->getMin() !== null) {
-							if ($orEqual) {
-								$sizeType = IntegerRangeType::createAllGreaterThanOrEqualTo($leftType->getMin());
-							} else {
-								$sizeType = IntegerRangeType::createAllGreaterThan($leftType->getMin());
-							}
-						}
-					} else {
-						$sizeType = $leftType;
+					$leftBounds = $leftType->toNumberSet()?->getIntegerBounds();
+					$leftBound = $leftBounds === null ? null : ($context->falsey() ? $leftBounds[1] : $leftBounds[0]);
+					if ($leftBound !== null) {
+						$sizeType = $orEqual
+							? IntegerRangeType::createAllGreaterThanOrEqualTo($leftBound)
+							: IntegerRangeType::createAllGreaterThan($leftBound);
 					}
 
 					if ($sizeType !== null) {

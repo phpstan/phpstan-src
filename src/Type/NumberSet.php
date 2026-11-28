@@ -79,6 +79,21 @@ final class NumberSet
 		return $this->nan;
 	}
 
+	/**
+	 * The smallest and the largest integer of the set, null for an unbounded
+	 * side, or null when the set holds no integer.
+	 *
+	 * @return array{int|null, int|null}|null
+	 */
+	public function getIntegerBounds(): ?array
+	{
+		if ($this->integerIntervals === []) {
+			return null;
+		}
+
+		return $this->toHull()->integerIntervals[0];
+	}
+
 	public function union(self $other): self
 	{
 		return new self(

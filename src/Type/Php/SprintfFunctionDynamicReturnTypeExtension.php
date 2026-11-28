@@ -17,7 +17,6 @@ use PHPStan\Type\Accessory\AccessoryType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\DynamicFunctionReturnTypeExtension;
-use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\IntersectionType;
 use PHPStan\Type\StringType;
 use PHPStan\Type\Type;
@@ -122,10 +121,10 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 					$matches['specifier'] === 's'
 					&& ($checkArgType->isString()->yes() || $checkArgType->isInteger()->yes())
 				) {
-					if ($checkArgType instanceof IntegerRangeType) {
-						$constArgTypes = $checkArgType->getFiniteTypes();
-					} else {
-						$constArgTypes = $checkArgType->getConstantScalarTypes();
+					$constArgTypes = $checkArgType->getConstantScalarTypes();
+					if ($constArgTypes === []) {
+						/** @var list<ConstantIntegerType> $constArgTypes */
+						$constArgTypes = $checkArgType->isInteger()->yes() ? $checkArgType->getFiniteTypes() : [];
 					}
 					if ($constArgTypes !== []) {
 						$printfArgs = array_fill(0, count($args) - 1, '');
@@ -309,10 +308,15 @@ final class SprintfFunctionDynamicReturnTypeExtension implements DynamicFunction
 			$constantScalarValues = $argType->getConstantScalarValues();
 
 			if (count($constantScalarValues) === 0) {
-				if ($argType instanceof IntegerRangeType) {
-					foreach ($argType->getFiniteTypes() as $finiteType) {
-						$constantScalarValues[] = $finiteType->getValue();
+				// a type of finitely many values, such as int<0, 2>|5
+				foreach ($argType->getFiniteTypes() as $finiteType) {
+					$finiteValues = $finiteType->getConstantScalarValues();
+					if (count($finiteValues) !== 1) {
+						$constantScalarValues = [];
+						break;
 					}
+
+					$constantScalarValues[] = $finiteValues[0];
 				}
 			}
 

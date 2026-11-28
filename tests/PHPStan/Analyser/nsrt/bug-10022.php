@@ -21,7 +21,7 @@ function doFoo(bool $flag): void
 		assertType('non-empty-list<literal-string&non-empty-string>', range('A', 'z', 1.0));
 	} elseif (PHP_VERSION_ID >= 80000) {
 		// the sign of the step used to be ignored
-		assertType('non-empty-list<int>', range(2, 5, -1));
+		assertType('non-empty-list<int<2, 5>>', range(2, 5, -1));
 		assertType('non-empty-list<string>', range('a', 'z', -1));
 
 		// a float argument used to produce floats even without a fractional part
@@ -29,14 +29,14 @@ function doFoo(bool $flag): void
 		assertType('non-empty-list<float>', range('A', 'z', 1.0));
 
 		// PHP 8 throws instead of returning false
-		assertType('non-empty-list<int>', range(0, 0, 0));
+		assertType('non-empty-list<0>', range(0, 0, 0));
 	} else {
 		// PHP 7 returns false for an invalid step, next to what the other combinations return
-		assertType('non-empty-list<int>|false', range(2, 5, $flag ? -1 : 0));
+		assertType('non-empty-list<int<2, 5>>|false', range(2, 5, $flag ? -1 : 0));
 		assertType('non-empty-list<float|int>|false', range(2, 5, $flag ? 0 : true));
 
 		// a combination that the version might reject keeps false next to the general type
-		assertType('non-empty-list<int>|false', range(0, 0, 0));
+		assertType('non-empty-list<0>|false', range(0, 0, 0));
 		assertType('non-empty-list<float|int>|false', range(1, 1, INF));
 	}
 

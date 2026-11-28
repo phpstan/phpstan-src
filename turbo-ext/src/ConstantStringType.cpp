@@ -776,10 +776,10 @@ public:
 		return pt_string_type_has_offset_value_type(self, offsetType);
 	}
 
-	/* for an integer offset: the character at a constant offset within
-	 * int<-strlen, strlen-1> (new ErrorType() outside it), the union of the
-	 * characters at the finitely many offsets of the range's intersection
-	 * with the offset type (plus '' when the offset may fall outside);
+	/* for an integer offset: new ErrorType() when it is outside
+	 * int<-strlen, strlen-1>, else the union of the characters at the
+	 * finitely many offsets of the range's intersection with the offset type
+	 * (plus '' when the offset may fall outside);
 	 * parent::getOffsetValueType() (StringType's) otherwise; UNDEF =
 	 * pending exception */
 	zv::Val getOffsetValueType(zval *offsetType) const
@@ -792,53 +792,45 @@ public:
 			zv::Val strLenType = offsetRangeType();
 			if (UNEXPECTED(strLenType.isUndef())) return zv::Val();
 
-			if (instanceof_function(Z_OBJCE_P(offsetType), pt_ce_constant_integer_type)) {
-				zend_long verdict = superTypeVerdict(strLenType.raw(), offsetType);
-				if (UNEXPECTED(verdict < 0)) return zv::Val();
-				if (verdict == PT_TRI_YES) {
-					zend_long offset;
-					if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(offsetType), offset))) return zv::Val();
-					return charAt(v, offset);
-				}
-
-				return pt_type_new_error_type();
-			}
+			zend_long isInString = superTypeVerdict(strLenType.raw(), offsetType);
+			if (UNEXPECTED(isInString < 0)) return zv::Val();
+			if (isInString == PT_TRI_NO) return pt_type_new_error_type();
 
 			zv::Args args{strLenType.raw(), offsetType};
 			zv::Val intersected = pt_type_combinator_call(PT_LC("intersect"), 2, args);
 			if (UNEXPECTED(intersected.isUndef())) return zv::Val();
-			if (zv::Ref(intersected.raw()).instanceOf(pt_ce_integer_range_type)) {
-				zv::Val finiteTypes = pt_type_call(Z_OBJ_P(intersected.raw()), PT_LC("getfinitetypes"), 0, NULL);
-				if (UNEXPECTED(finiteTypes.isUndef())) return zv::Val();
-				if (UNEXPECTED(!zv::Ref(finiteTypes.raw()).isArray())) {
-					zend_type_error("phpstan_turbo: %s::getFiniteTypes() must return array", ZSTR_VAL(Z_OBJCE_P(intersected.raw())->name));
+			if (UNEXPECTED(!zv::Ref(intersected.raw()).isObject())) {
+				zend_throw_error(NULL, "Call to a member function getFiniteTypes() on %s", zend_zval_value_name(intersected.raw()));
+				return zv::Val();
+			}
+			zv::Val finiteTypes = pt_type_call(Z_OBJ_P(intersected.raw()), PT_LC("getfinitetypes"), 0, NULL);
+			if (UNEXPECTED(finiteTypes.isUndef())) return zv::Val();
+			if (UNEXPECTED(!zv::Ref(finiteTypes.raw()).isArray())) {
+				zend_type_error("phpstan_turbo: %s::getFiniteTypes() must return array", ZSTR_VAL(Z_OBJCE_P(intersected.raw())->name));
+				return zv::Val();
+			}
+			zv::ArrRef finite(finiteTypes.raw());
+			if (finite.size() == 0) return pt_string_type_get_offset_value_type(self, offsetType);
+
+			zv::Arr chars = zv::Arr::create(finite.size() + 1);
+			for (zv::ArrayEntry entry : finite) {
+				if (UNEXPECTED(!entry.value().isObject())) {
+					zend_type_error("phpstan_turbo: %s::getFiniteTypes() must return ConstantIntegerType instances", ZSTR_VAL(Z_OBJCE_P(intersected.raw())->name));
 					return zv::Val();
 				}
-				zv::ArrRef finite(finiteTypes.raw());
-				if (finite.size() == 0) return pt_string_type_get_offset_value_type(self, offsetType);
-
-				zv::Arr chars = zv::Arr::create(finite.size() + 1);
-				for (zv::ArrayEntry entry : finite) {
-					if (UNEXPECTED(!entry.value().isObject())) {
-						zend_type_error("phpstan_turbo: %s::getFiniteTypes() must return ConstantIntegerType instances", ZSTR_VAL(Z_OBJCE_P(intersected.raw())->name));
-						return zv::Val();
-					}
-					zend_long offset;
-					if (UNEXPECTED(!pt_constant_integer_get_value(entry.value().asObject(), offset))) return zv::Val();
-					zv::Val chr = charAt(v, offset);
-					if (UNEXPECTED(chr.isUndef())) return zv::Val();
-					chars.push(std::move(chr));
-				}
-				zend_long verdict = superTypeVerdict(strLenType.raw(), offsetType);
-				if (UNEXPECTED(verdict < 0)) return zv::Val();
-				if (verdict != PT_TRI_YES) {
-					zv::Val empty = create(ZSTR_EMPTY_ALLOC());
-					if (UNEXPECTED(empty.isUndef())) return zv::Val();
-					chars.push(std::move(empty));
-				}
-
-				return pt_type_combinator_call_spread(PT_LC("union"), chars.table());
+				zend_long offset;
+				if (UNEXPECTED(!pt_constant_integer_get_value(entry.value().asObject(), offset))) return zv::Val();
+				zv::Val chr = charAt(v, offset);
+				if (UNEXPECTED(chr.isUndef())) return zv::Val();
+				chars.push(std::move(chr));
 			}
+			if (isInString != PT_TRI_YES) {
+				zv::Val empty = create(ZSTR_EMPTY_ALLOC());
+				if (UNEXPECTED(empty.isUndef())) return zv::Val();
+				chars.push(std::move(empty));
+			}
+
+			return pt_type_combinator_call_spread(PT_LC("union"), chars.table());
 		}
 
 		return pt_string_type_get_offset_value_type(self, offsetType);

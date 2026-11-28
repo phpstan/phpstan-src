@@ -113,8 +113,13 @@ final class PrintfArrayParametersRule implements Rule
 		if ($formatArgsCounts === []) {
 			$formatArgsCount = new ConstantIntegerType(0);
 		} else {
-			$formatArgsCount = TypeCombinator::union(...$formatArgsCounts);
+			// the smallest and the largest count, as for the placeholders
+			$formatArgsBounds = TypeCombinator::union(...$formatArgsCounts)->toNumberSet()?->getIntegerBounds();
+			if ($formatArgsBounds === null) {
+				return [];
+			}
 
+			$formatArgsCount = IntegerRangeType::fromInterval(...$formatArgsBounds);
 			if (!$formatArgsCount instanceof IntegerRangeType && !$formatArgsCount instanceof ConstantIntegerType) {
 				return [];
 			}

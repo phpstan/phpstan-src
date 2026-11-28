@@ -39,72 +39,73 @@ inline constexpr char strings[] =
 	"getIntegerIntervals\0" /* 49 */
 	"getFloatIntervals\0" /* 69 */
 	"hasNan\0" /* 87 */
-	"other\0" /* 94 */
-	"PHPStan\\Type\\NumberSet\0" /* 100 */
-	"union\0" /* 123 */
-	"intersect\0" /* 129 */
-	"right\0" /* 139 */
-	"phpVersion\0" /* 145 */
-	"PHPStan\\Php\\PhpVersion\0" /* 156 */
-	"PHPStan\\Type\\Type\0" /* 179 */
-	"add\0" /* 197 */
-	"subtract\0" /* 201 */
-	"multiply\0" /* 210 */
-	"divide\0" /* 219 */
-	"intDivide\0" /* 226 */
-	"modulo\0" /* 236 */
-	"bitwiseAnd\0" /* 243 */
-	"bitwiseOr\0" /* 254 */
-	"bitwiseXor\0" /* 264 */
-	"negate\0" /* 275 */
-	"exponent\0" /* 282 */
-	"power\0" /* 291 */
-	"shiftLeft\0" /* 297 */
-	"shiftRight\0" /* 307 */
-	"operator\0" /* 318 */
-	"calculate\0" /* 327 */
-	"hasAnyInteger\0" /* 337 */
-	"countMembers\0" /* 351 */
-	"isEmpty\0" /* 364 */
-	"hasFloatRange\0" /* 372 */
-	"toHull\0" /* 386 */
-	"interval\0" /* 393 */
-	"integerToFloatInterval\0" /* 402 */
-	"splitIntegerDivisor\0" /* 425 */
-	"left\0" /* 445 */
-	"calculateIntegers\0" /* 450 */
-	"getBoundedIntegerInterval\0" /* 468 */
-	"baseMin\0" /* 494 */
-	"baseMax\0" /* 502 */
-	"exponentMin\0" /* 510 */
-	"exponentMax\0" /* 522 */
-	"powerIntegerIntervals\0" /* 534 */
-	"powerIntegerInterval\0" /* 556 */
-	"base\0" /* 577 */
-	"integerPower\0" /* 582 */
-	"value\0" /* 595 */
-	"shift\0" /* 601 */
-	"shiftLeftOverflows\0" /* 607 */
-	"divideIntegers\0" /* 626 */
-	"numerator\0" /* 641 */
-	"divisor\0" /* 651 */
-	"divideBound\0" /* 659 */
-	"toIntBound\0" /* 671 */
-	"bitwiseOrXor\0" /* 682 */
-	"getNonNegativeIntegerBounds\0" /* 695 */
-	"allBitsMask\0" /* 723 */
-	"getIntegerHull\0" /* 735 */
-	"divisorMin\0" /* 750 */
-	"divisorMax\0" /* 761 */
-	"getMaxModuloMagnitude\0" /* 772 */
-	"intDivideIntervals\0" /* 794 */
-	"intDivideBound\0" /* 813 */
-	"calculateFloats\0" /* 828 */
-	"calculateFloat\0" /* 844 */
-	"bound\0" /* 859 */
-	"min\0" /* 865 */
-	"max\0" /* 869 */
-	"getFloatBoundWithInnerNeighbour"; /* 873 */
+	"getIntegerBounds\0" /* 94 */
+	"other\0" /* 111 */
+	"PHPStan\\Type\\NumberSet\0" /* 117 */
+	"union\0" /* 140 */
+	"intersect\0" /* 146 */
+	"right\0" /* 156 */
+	"phpVersion\0" /* 162 */
+	"PHPStan\\Php\\PhpVersion\0" /* 173 */
+	"PHPStan\\Type\\Type\0" /* 196 */
+	"add\0" /* 214 */
+	"subtract\0" /* 218 */
+	"multiply\0" /* 227 */
+	"divide\0" /* 236 */
+	"intDivide\0" /* 243 */
+	"modulo\0" /* 253 */
+	"bitwiseAnd\0" /* 260 */
+	"bitwiseOr\0" /* 271 */
+	"bitwiseXor\0" /* 281 */
+	"negate\0" /* 292 */
+	"exponent\0" /* 299 */
+	"power\0" /* 308 */
+	"shiftLeft\0" /* 314 */
+	"shiftRight\0" /* 324 */
+	"operator\0" /* 335 */
+	"calculate\0" /* 344 */
+	"hasAnyInteger\0" /* 354 */
+	"countMembers\0" /* 368 */
+	"isEmpty\0" /* 381 */
+	"hasFloatRange\0" /* 389 */
+	"toHull\0" /* 403 */
+	"interval\0" /* 410 */
+	"integerToFloatInterval\0" /* 419 */
+	"splitIntegerDivisor\0" /* 442 */
+	"left\0" /* 462 */
+	"calculateIntegers\0" /* 467 */
+	"getBoundedIntegerInterval\0" /* 485 */
+	"baseMin\0" /* 511 */
+	"baseMax\0" /* 519 */
+	"exponentMin\0" /* 527 */
+	"exponentMax\0" /* 539 */
+	"powerIntegerIntervals\0" /* 551 */
+	"powerIntegerInterval\0" /* 573 */
+	"base\0" /* 594 */
+	"integerPower\0" /* 599 */
+	"value\0" /* 612 */
+	"shift\0" /* 618 */
+	"shiftLeftOverflows\0" /* 624 */
+	"divideIntegers\0" /* 643 */
+	"numerator\0" /* 658 */
+	"divisor\0" /* 668 */
+	"divideBound\0" /* 676 */
+	"toIntBound\0" /* 688 */
+	"bitwiseOrXor\0" /* 699 */
+	"getNonNegativeIntegerBounds\0" /* 712 */
+	"allBitsMask\0" /* 740 */
+	"getIntegerHull\0" /* 752 */
+	"divisorMin\0" /* 767 */
+	"divisorMax\0" /* 778 */
+	"getMaxModuloMagnitude\0" /* 789 */
+	"intDivideIntervals\0" /* 811 */
+	"intDivideBound\0" /* 830 */
+	"calculateFloats\0" /* 845 */
+	"calculateFloat\0" /* 861 */
+	"bound\0" /* 876 */
+	"min\0" /* 882 */
+	"max\0" /* 886 */
+	"getFloatBoundWithInnerNeighbour"; /* 890 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, MAY_BE_ARRAY), /* __construct $integerIntervals */
 	reg::packed(17, MAY_BE_ARRAY), /* __construct $floatIntervals */
@@ -112,117 +113,118 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(48, MAY_BE_ARRAY), /* getIntegerIntervals return */
 	reg::packed(48, MAY_BE_ARRAY), /* getFloatIntervals return */
 	reg::packed(48, MAY_BE_BOOL), /* hasNan return */
-	reg::packed(94, 0, 100), /* union $other */
-	reg::packed(48, 0, 100), /* union return */
-	reg::packed(94, 0, 100), /* intersect $other */
-	reg::packed(48, 0, 100), /* intersect return */
-	reg::packed(139, 0, 100), /* add $right */
-	reg::packed(145, 0, 156), /* add $phpVersion */
-	reg::packed(48, 0, 179), /* add return */
-	reg::packed(139, 0, 100), /* subtract $right */
-	reg::packed(145, 0, 156), /* subtract $phpVersion */
-	reg::packed(48, 0, 179), /* subtract return */
-	reg::packed(139, 0, 100), /* multiply $right */
-	reg::packed(145, 0, 156), /* multiply $phpVersion */
-	reg::packed(48, 0, 179), /* multiply return */
-	reg::packed(139, 0, 100), /* divide $right */
-	reg::packed(145, 0, 156), /* divide $phpVersion */
-	reg::packed(48, 0, 179), /* divide return */
-	reg::packed(139, 0, 100), /* intDivide $right */
-	reg::packed(145, 0, 156), /* intDivide $phpVersion */
-	reg::packed(48, 0, 179), /* intDivide return */
-	reg::packed(139, 0, 100), /* modulo $right */
-	reg::packed(145, 0, 156), /* modulo $phpVersion */
-	reg::packed(48, 0, 179), /* modulo return */
-	reg::packed(139, 0, 100), /* bitwiseAnd $right */
-	reg::packed(145, 0, 156), /* bitwiseAnd $phpVersion */
-	reg::packed(48, 0, 179), /* bitwiseAnd return */
-	reg::packed(139, 0, 100), /* bitwiseOr $right */
-	reg::packed(145, 0, 156), /* bitwiseOr $phpVersion */
-	reg::packed(48, 0, 179), /* bitwiseOr return */
-	reg::packed(139, 0, 100), /* bitwiseXor $right */
-	reg::packed(145, 0, 156), /* bitwiseXor $phpVersion */
-	reg::packed(48, 0, 179), /* bitwiseXor return */
-	reg::packed(145, 0, 156), /* negate $phpVersion */
-	reg::packed(48, 0, 179), /* negate return */
-	reg::packed(282, 0, 100), /* power $exponent */
-	reg::packed(145, 0, 156), /* power $phpVersion */
-	reg::packed(48, MAY_BE_NULL, 179), /* power return */
-	reg::packed(139, 0, 100), /* shiftLeft $right */
-	reg::packed(145, 0, 156), /* shiftLeft $phpVersion */
-	reg::packed(48, 0, 179), /* shiftLeft return */
-	reg::packed(139, 0, 100), /* shiftRight $right */
-	reg::packed(145, 0, 156), /* shiftRight $phpVersion */
-	reg::packed(48, 0, 179), /* shiftRight return */
-	reg::packed(318, MAY_BE_STRING), /* calculate $operator */
-	reg::packed(139, 0, 100), /* calculate $right */
-	reg::packed(145, 0, 156), /* calculate $phpVersion */
-	reg::packed(48, 0, 179), /* calculate return */
+	reg::packed(48, MAY_BE_NULL | MAY_BE_ARRAY), /* getIntegerBounds return */
+	reg::packed(111, 0, 117), /* union $other */
+	reg::packed(48, 0, 117), /* union return */
+	reg::packed(111, 0, 117), /* intersect $other */
+	reg::packed(48, 0, 117), /* intersect return */
+	reg::packed(156, 0, 117), /* add $right */
+	reg::packed(162, 0, 173), /* add $phpVersion */
+	reg::packed(48, 0, 196), /* add return */
+	reg::packed(156, 0, 117), /* subtract $right */
+	reg::packed(162, 0, 173), /* subtract $phpVersion */
+	reg::packed(48, 0, 196), /* subtract return */
+	reg::packed(156, 0, 117), /* multiply $right */
+	reg::packed(162, 0, 173), /* multiply $phpVersion */
+	reg::packed(48, 0, 196), /* multiply return */
+	reg::packed(156, 0, 117), /* divide $right */
+	reg::packed(162, 0, 173), /* divide $phpVersion */
+	reg::packed(48, 0, 196), /* divide return */
+	reg::packed(156, 0, 117), /* intDivide $right */
+	reg::packed(162, 0, 173), /* intDivide $phpVersion */
+	reg::packed(48, 0, 196), /* intDivide return */
+	reg::packed(156, 0, 117), /* modulo $right */
+	reg::packed(162, 0, 173), /* modulo $phpVersion */
+	reg::packed(48, 0, 196), /* modulo return */
+	reg::packed(156, 0, 117), /* bitwiseAnd $right */
+	reg::packed(162, 0, 173), /* bitwiseAnd $phpVersion */
+	reg::packed(48, 0, 196), /* bitwiseAnd return */
+	reg::packed(156, 0, 117), /* bitwiseOr $right */
+	reg::packed(162, 0, 173), /* bitwiseOr $phpVersion */
+	reg::packed(48, 0, 196), /* bitwiseOr return */
+	reg::packed(156, 0, 117), /* bitwiseXor $right */
+	reg::packed(162, 0, 173), /* bitwiseXor $phpVersion */
+	reg::packed(48, 0, 196), /* bitwiseXor return */
+	reg::packed(162, 0, 173), /* negate $phpVersion */
+	reg::packed(48, 0, 196), /* negate return */
+	reg::packed(299, 0, 117), /* power $exponent */
+	reg::packed(162, 0, 173), /* power $phpVersion */
+	reg::packed(48, MAY_BE_NULL, 196), /* power return */
+	reg::packed(156, 0, 117), /* shiftLeft $right */
+	reg::packed(162, 0, 173), /* shiftLeft $phpVersion */
+	reg::packed(48, 0, 196), /* shiftLeft return */
+	reg::packed(156, 0, 117), /* shiftRight $right */
+	reg::packed(162, 0, 173), /* shiftRight $phpVersion */
+	reg::packed(48, 0, 196), /* shiftRight return */
+	reg::packed(335, MAY_BE_STRING), /* calculate $operator */
+	reg::packed(156, 0, 117), /* calculate $right */
+	reg::packed(162, 0, 173), /* calculate $phpVersion */
+	reg::packed(48, 0, 196), /* calculate return */
 	reg::packed(48, MAY_BE_BOOL), /* hasAnyInteger return */
 	reg::packed(48, MAY_BE_LONG), /* countMembers return */
 	reg::packed(48, MAY_BE_BOOL), /* isEmpty return */
 	reg::packed(48, MAY_BE_BOOL), /* hasFloatRange return */
-	reg::packed(48, 0, 100), /* toHull return */
-	reg::packed(393, MAY_BE_ARRAY), /* integerToFloatInterval $interval */
+	reg::packed(48, 0, 117), /* toHull return */
+	reg::packed(410, MAY_BE_ARRAY), /* integerToFloatInterval $interval */
 	reg::packed(48, MAY_BE_ARRAY), /* integerToFloatInterval return */
-	reg::packed(393, MAY_BE_ARRAY), /* splitIntegerDivisor $interval */
+	reg::packed(410, MAY_BE_ARRAY), /* splitIntegerDivisor $interval */
 	reg::packed(48, MAY_BE_ARRAY), /* splitIntegerDivisor return */
-	reg::packed(318, MAY_BE_STRING), /* calculateIntegers $operator */
-	reg::packed(445, MAY_BE_ARRAY), /* calculateIntegers $left */
-	reg::packed(139, MAY_BE_ARRAY), /* calculateIntegers $right */
-	reg::packed(48, 0, 179), /* calculateIntegers return */
+	reg::packed(335, MAY_BE_STRING), /* calculateIntegers $operator */
+	reg::packed(462, MAY_BE_ARRAY), /* calculateIntegers $left */
+	reg::packed(156, MAY_BE_ARRAY), /* calculateIntegers $right */
+	reg::packed(48, 0, 196), /* calculateIntegers return */
 	reg::packed(48, MAY_BE_NULL | MAY_BE_ARRAY), /* getBoundedIntegerInterval return */
-	reg::packed(494, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerIntervals $baseMin */
-	reg::packed(502, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerIntervals $baseMax */
-	reg::packed(510, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerIntervals $exponentMin */
-	reg::packed(522, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerIntervals $exponentMax */
-	reg::packed(48, MAY_BE_NULL, 179), /* powerIntegerIntervals return */
-	reg::packed(494, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerInterval $baseMin */
-	reg::packed(502, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerInterval $baseMax */
-	reg::packed(282, MAY_BE_LONG), /* powerIntegerInterval $exponent */
-	reg::packed(48, MAY_BE_NULL, 179), /* powerIntegerInterval return */
-	reg::packed(577, MAY_BE_LONG), /* integerPower $base */
-	reg::packed(282, MAY_BE_LONG), /* integerPower $exponent */
+	reg::packed(511, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerIntervals $baseMin */
+	reg::packed(519, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerIntervals $baseMax */
+	reg::packed(527, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerIntervals $exponentMin */
+	reg::packed(539, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerIntervals $exponentMax */
+	reg::packed(48, MAY_BE_NULL, 196), /* powerIntegerIntervals return */
+	reg::packed(511, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerInterval $baseMin */
+	reg::packed(519, MAY_BE_NULL | MAY_BE_LONG), /* powerIntegerInterval $baseMax */
+	reg::packed(299, MAY_BE_LONG), /* powerIntegerInterval $exponent */
+	reg::packed(48, MAY_BE_NULL, 196), /* powerIntegerInterval return */
+	reg::packed(594, MAY_BE_LONG), /* integerPower $base */
+	reg::packed(299, MAY_BE_LONG), /* integerPower $exponent */
 	reg::packed(48, MAY_BE_NULL | MAY_BE_LONG), /* integerPower return */
-	reg::packed(595, MAY_BE_LONG), /* shiftLeftOverflows $value */
-	reg::packed(601, MAY_BE_LONG), /* shiftLeftOverflows $shift */
+	reg::packed(612, MAY_BE_LONG), /* shiftLeftOverflows $value */
+	reg::packed(618, MAY_BE_LONG), /* shiftLeftOverflows $shift */
 	reg::packed(48, MAY_BE_BOOL), /* shiftLeftOverflows return */
-	reg::packed(445, MAY_BE_ARRAY), /* divideIntegers $left */
-	reg::packed(139, MAY_BE_ARRAY), /* divideIntegers $right */
-	reg::packed(145, 0, 156), /* divideIntegers $phpVersion */
+	reg::packed(462, MAY_BE_ARRAY), /* divideIntegers $left */
+	reg::packed(156, MAY_BE_ARRAY), /* divideIntegers $right */
+	reg::packed(162, 0, 173), /* divideIntegers $phpVersion */
 	reg::packed(48, MAY_BE_ARRAY), /* divideIntegers return */
-	reg::packed(641, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideBound $numerator */
-	reg::packed(651, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideBound $divisor */
+	reg::packed(658, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideBound $numerator */
+	reg::packed(668, MAY_BE_LONG | MAY_BE_DOUBLE), /* divideBound $divisor */
 	reg::packed(48, MAY_BE_ARRAY), /* divideBound return */
-	reg::packed(595, MAY_BE_LONG | MAY_BE_DOUBLE), /* toIntBound $value */
+	reg::packed(612, MAY_BE_LONG | MAY_BE_DOUBLE), /* toIntBound $value */
 	reg::packed(48, MAY_BE_NULL | MAY_BE_LONG), /* toIntBound return */
-	reg::packed(139, 0, 100), /* bitwiseOrXor $right */
-	reg::packed(48, 0, 179), /* bitwiseOrXor return */
+	reg::packed(156, 0, 117), /* bitwiseOrXor $right */
+	reg::packed(48, 0, 196), /* bitwiseOrXor return */
 	reg::packed(48, MAY_BE_NULL | MAY_BE_ARRAY), /* getNonNegativeIntegerBounds return */
-	reg::packed(595, MAY_BE_LONG), /* allBitsMask $value */
+	reg::packed(612, MAY_BE_LONG), /* allBitsMask $value */
 	reg::packed(48, MAY_BE_LONG), /* allBitsMask return */
 	reg::packed(48, MAY_BE_ARRAY), /* getIntegerHull return */
-	reg::packed(750, MAY_BE_NULL | MAY_BE_LONG), /* getMaxModuloMagnitude $divisorMin */
-	reg::packed(761, MAY_BE_NULL | MAY_BE_LONG), /* getMaxModuloMagnitude $divisorMax */
+	reg::packed(767, MAY_BE_NULL | MAY_BE_LONG), /* getMaxModuloMagnitude $divisorMin */
+	reg::packed(778, MAY_BE_NULL | MAY_BE_LONG), /* getMaxModuloMagnitude $divisorMax */
 	reg::packed(48, MAY_BE_NULL | MAY_BE_LONG), /* getMaxModuloMagnitude return */
-	reg::packed(641, MAY_BE_ARRAY), /* intDivideIntervals $numerator */
-	reg::packed(651, MAY_BE_ARRAY), /* intDivideIntervals $divisor */
-	reg::packed(48, 0, 179), /* intDivideIntervals return */
-	reg::packed(641, MAY_BE_LONG | MAY_BE_DOUBLE), /* intDivideBound $numerator */
-	reg::packed(651, MAY_BE_LONG | MAY_BE_DOUBLE), /* intDivideBound $divisor */
+	reg::packed(658, MAY_BE_ARRAY), /* intDivideIntervals $numerator */
+	reg::packed(668, MAY_BE_ARRAY), /* intDivideIntervals $divisor */
+	reg::packed(48, 0, 196), /* intDivideIntervals return */
+	reg::packed(658, MAY_BE_LONG | MAY_BE_DOUBLE), /* intDivideBound $numerator */
+	reg::packed(668, MAY_BE_LONG | MAY_BE_DOUBLE), /* intDivideBound $divisor */
 	reg::packed(48, MAY_BE_LONG | MAY_BE_DOUBLE), /* intDivideBound return */
-	reg::packed(318, MAY_BE_STRING), /* calculateFloats $operator */
-	reg::packed(445, MAY_BE_ARRAY), /* calculateFloats $left */
-	reg::packed(139, MAY_BE_ARRAY), /* calculateFloats $right */
-	reg::packed(145, 0, 156), /* calculateFloats $phpVersion */
-	reg::packed(48, 0, 179), /* calculateFloats return */
-	reg::packed(318, MAY_BE_STRING), /* calculateFloat $operator */
-	reg::packed(445, MAY_BE_DOUBLE), /* calculateFloat $left */
-	reg::packed(139, MAY_BE_DOUBLE), /* calculateFloat $right */
+	reg::packed(335, MAY_BE_STRING), /* calculateFloats $operator */
+	reg::packed(462, MAY_BE_ARRAY), /* calculateFloats $left */
+	reg::packed(156, MAY_BE_ARRAY), /* calculateFloats $right */
+	reg::packed(162, 0, 173), /* calculateFloats $phpVersion */
+	reg::packed(48, 0, 196), /* calculateFloats return */
+	reg::packed(335, MAY_BE_STRING), /* calculateFloat $operator */
+	reg::packed(462, MAY_BE_DOUBLE), /* calculateFloat $left */
+	reg::packed(156, MAY_BE_DOUBLE), /* calculateFloat $right */
 	reg::packed(48, MAY_BE_DOUBLE), /* calculateFloat return */
-	reg::packed(859, MAY_BE_DOUBLE), /* getFloatBoundWithInnerNeighbour $bound */
-	reg::packed(865, MAY_BE_DOUBLE), /* getFloatBoundWithInnerNeighbour $min */
-	reg::packed(869, MAY_BE_DOUBLE), /* getFloatBoundWithInnerNeighbour $max */
+	reg::packed(876, MAY_BE_DOUBLE), /* getFloatBoundWithInnerNeighbour $bound */
+	reg::packed(882, MAY_BE_DOUBLE), /* getFloatBoundWithInnerNeighbour $min */
+	reg::packed(886, MAY_BE_DOUBLE), /* getFloatBoundWithInnerNeighbour $max */
 	reg::packed(48, MAY_BE_ARRAY), /* getFloatBoundWithInnerNeighbour return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -234,48 +236,49 @@ inline constexpr sigtab::Sig __construct = { { 36 /* __construct */, 3, 0, 3, re
 inline constexpr sigtab::Sig getIntegerIntervals = { { 49 /* getIntegerIntervals */, 0, 3, 0, 3, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig getFloatIntervals = { { 69 /* getFloatIntervals */, 0, 4, 0, 4, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig hasNan = { { 87 /* hasNan */, 0, 5, 0, 5, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig union_ = { { 123 /* union */, 1, 6, 1, 7, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig intersect = { { 129 /* intersect */, 1, 8, 1, 9, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig add = { { 197 /* add */, 2, 10, 2, 12, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig subtract = { { 201 /* subtract */, 2, 13, 2, 15, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig multiply = { { 210 /* multiply */, 2, 16, 2, 18, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig divide = { { 219 /* divide */, 2, 19, 2, 21, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig intDivide = { { 226 /* intDivide */, 2, 22, 2, 24, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig modulo = { { 236 /* modulo */, 2, 25, 2, 27, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig bitwiseAnd = { { 243 /* bitwiseAnd */, 2, 28, 2, 30, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig bitwiseOr = { { 254 /* bitwiseOr */, 2, 31, 2, 33, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig bitwiseXor = { { 264 /* bitwiseXor */, 2, 34, 2, 36, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig negate = { { 275 /* negate */, 1, 37, 1, 38, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig power = { { 291 /* power */, 2, 39, 2, 41, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig shiftLeft = { { 297 /* shiftLeft */, 2, 42, 2, 44, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig shiftRight = { { 307 /* shiftRight */, 2, 45, 2, 47, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig calculate = { { 327 /* calculate */, 3, 48, 3, 51, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig hasAnyInteger = { { 337 /* hasAnyInteger */, 0, 52, 0, 52, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig countMembers = { { 351 /* countMembers */, 0, 53, 0, 53, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig isEmpty = { { 364 /* isEmpty */, 0, 54, 0, 54, ZEND_ACC_PUBLIC } };
-inline constexpr sigtab::Sig hasFloatRange = { { 372 /* hasFloatRange */, 0, 55, 0, 55, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig toHull = { { 386 /* toHull */, 0, 56, 0, 56, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig integerToFloatInterval = { { 402 /* integerToFloatInterval */, 1, 57, 1, 58, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig splitIntegerDivisor = { { 425 /* splitIntegerDivisor */, 1, 59, 1, 60, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig calculateIntegers = { { 450 /* calculateIntegers */, 3, 61, 3, 64, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getBoundedIntegerInterval = { { 468 /* getBoundedIntegerInterval */, 0, 65, 0, 65, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig powerIntegerIntervals = { { 534 /* powerIntegerIntervals */, 4, 66, 4, 70, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig powerIntegerInterval = { { 556 /* powerIntegerInterval */, 3, 71, 3, 74, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig integerPower = { { 582 /* integerPower */, 2, 75, 2, 77, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig shiftLeftOverflows = { { 607 /* shiftLeftOverflows */, 2, 78, 2, 80, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig divideIntegers = { { 626 /* divideIntegers */, 3, 81, 3, 84, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig divideBound = { { 659 /* divideBound */, 2, 85, 2, 87, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig toIntBound = { { 671 /* toIntBound */, 1, 88, 1, 89, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig bitwiseOrXor = { { 682 /* bitwiseOrXor */, 1, 90, 1, 91, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getNonNegativeIntegerBounds = { { 695 /* getNonNegativeIntegerBounds */, 0, 92, 0, 92, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig allBitsMask = { { 723 /* allBitsMask */, 1, 93, 1, 94, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getIntegerHull = { { 735 /* getIntegerHull */, 0, 95, 0, 95, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getMaxModuloMagnitude = { { 772 /* getMaxModuloMagnitude */, 2, 96, 2, 98, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig intDivideIntervals = { { 794 /* intDivideIntervals */, 2, 99, 2, 101, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig intDivideBound = { { 813 /* intDivideBound */, 2, 102, 2, 104, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig calculateFloats = { { 828 /* calculateFloats */, 4, 105, 4, 109, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig calculateFloat = { { 844 /* calculateFloat */, 3, 110, 3, 113, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
-inline constexpr sigtab::Sig getFloatBoundWithInnerNeighbour = { { 873 /* getFloatBoundWithInnerNeighbour */, 3, 114, 3, 117, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getIntegerBounds = { { 94 /* getIntegerBounds */, 0, 6, 0, 6, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig union_ = { { 140 /* union */, 1, 7, 1, 8, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig intersect = { { 146 /* intersect */, 1, 9, 1, 10, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig add = { { 214 /* add */, 2, 11, 2, 13, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig subtract = { { 218 /* subtract */, 2, 14, 2, 16, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig multiply = { { 227 /* multiply */, 2, 17, 2, 19, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig divide = { { 236 /* divide */, 2, 20, 2, 22, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig intDivide = { { 243 /* intDivide */, 2, 23, 2, 25, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig modulo = { { 253 /* modulo */, 2, 26, 2, 28, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig bitwiseAnd = { { 260 /* bitwiseAnd */, 2, 29, 2, 31, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig bitwiseOr = { { 271 /* bitwiseOr */, 2, 32, 2, 34, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig bitwiseXor = { { 281 /* bitwiseXor */, 2, 35, 2, 37, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig negate = { { 292 /* negate */, 1, 38, 1, 39, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig power = { { 308 /* power */, 2, 40, 2, 42, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig shiftLeft = { { 314 /* shiftLeft */, 2, 43, 2, 45, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig shiftRight = { { 324 /* shiftRight */, 2, 46, 2, 48, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig calculate = { { 344 /* calculate */, 3, 49, 3, 52, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig hasAnyInteger = { { 354 /* hasAnyInteger */, 0, 53, 0, 53, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig countMembers = { { 368 /* countMembers */, 0, 54, 0, 54, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig isEmpty = { { 381 /* isEmpty */, 0, 55, 0, 55, ZEND_ACC_PUBLIC } };
+inline constexpr sigtab::Sig hasFloatRange = { { 389 /* hasFloatRange */, 0, 56, 0, 56, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig toHull = { { 403 /* toHull */, 0, 57, 0, 57, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig integerToFloatInterval = { { 419 /* integerToFloatInterval */, 1, 58, 1, 59, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig splitIntegerDivisor = { { 442 /* splitIntegerDivisor */, 1, 60, 1, 61, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig calculateIntegers = { { 467 /* calculateIntegers */, 3, 62, 3, 65, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getBoundedIntegerInterval = { { 485 /* getBoundedIntegerInterval */, 0, 66, 0, 66, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig powerIntegerIntervals = { { 551 /* powerIntegerIntervals */, 4, 67, 4, 71, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig powerIntegerInterval = { { 573 /* powerIntegerInterval */, 3, 72, 3, 75, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig integerPower = { { 599 /* integerPower */, 2, 76, 2, 78, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig shiftLeftOverflows = { { 624 /* shiftLeftOverflows */, 2, 79, 2, 81, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig divideIntegers = { { 643 /* divideIntegers */, 3, 82, 3, 85, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig divideBound = { { 676 /* divideBound */, 2, 86, 2, 88, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig toIntBound = { { 688 /* toIntBound */, 1, 89, 1, 90, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig bitwiseOrXor = { { 699 /* bitwiseOrXor */, 1, 91, 1, 92, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getNonNegativeIntegerBounds = { { 712 /* getNonNegativeIntegerBounds */, 0, 93, 0, 93, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig allBitsMask = { { 740 /* allBitsMask */, 1, 94, 1, 95, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getIntegerHull = { { 752 /* getIntegerHull */, 0, 96, 0, 96, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getMaxModuloMagnitude = { { 789 /* getMaxModuloMagnitude */, 2, 97, 2, 99, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intDivideIntervals = { { 811 /* intDivideIntervals */, 2, 100, 2, 102, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig intDivideBound = { { 830 /* intDivideBound */, 2, 103, 2, 105, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig calculateFloats = { { 845 /* calculateFloats */, 4, 106, 4, 110, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig calculateFloat = { { 861 /* calculateFloat */, 3, 111, 3, 114, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
+inline constexpr sigtab::Sig getFloatBoundWithInnerNeighbour = { { 890 /* getFloatBoundWithInnerNeighbour */, 3, 115, 3, 118, ZEND_ACC_PRIVATE | ZEND_ACC_STATIC } };
 } // namespace sig
 
 } // namespace ptdecl::NumberSet

@@ -366,15 +366,8 @@ public:
 
 				NullableLong sizeMin = NullableLong::null();
 				NullableLong sizeMax = NullableLong::null();
-				if (Z_TYPE_P(sizeType) == IS_OBJECT && instanceof_function(Z_OBJCE_P(sizeType), pt_ce_constant_integer_type)) {
-					zend_long value;
-					if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(sizeType), value))) return zv::Val();
-					sizeMin = NullableLong::of(value);
-					if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(sizeType), value))) return zv::Val();
-					sizeMax = NullableLong::of(value);
-				} else if (Z_TYPE_P(sizeType) == IS_OBJECT && instanceof_function(Z_OBJCE_P(sizeType), pt_ce_integer_range_type)) {
-					if (UNEXPECTED(!pt_integer_range_bounds(Z_OBJ_P(sizeType), sizeMin, sizeMax))) return zv::Val();
-				}
+				bool hasSizeBounds;
+				if (UNEXPECTED(!pt_type_integer_bounds(sizeType, sizeMin, sizeMax, hasSizeBounds))) return zv::Val();
 
 				zv::Arr sureTypes = zv::Arr::empty();
 				zv::Arr sureNotTypes = zv::Arr::empty();

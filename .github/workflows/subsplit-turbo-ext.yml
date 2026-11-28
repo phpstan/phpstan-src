@@ -15,12 +15,14 @@
 # git subtree split is not used because it walks the entire monorepo history
 # on every run, which takes tens of minutes at this repository's size.
 #
-# Tag pushes (2.3.*) first bring the split branch up to date and then tag
-# the split commit replayed from the last turbo-ext-touching commit at or
-# before the tagged monorepo commit. Packagist picks the tag up as a
-# phpstan/turbo release, and the release workflow in phpstan/phpstan
-# attaches the PIE binary assets to a phpstan/turbo-ext release of the same
-# name.
+# Tag pushes (2.3.*) bring the split branch up to date with the tagged
+# commit. They do not tag phpstan/turbo-ext: only the phpstan-release GitHub
+# App may create tags, from the tag.yml workflow in phpstan/release, which
+# waits for this replay, checks that the split commit replayed from the
+# last turbo-ext-touching commit at or before the tagged monorepo commit
+# matches its turbo-ext/ tree, and tags it. Packagist picks the tag up as a
+# phpstan/turbo release, and phar.yml attaches the PIE binary assets to a
+# phpstan/turbo-ext release of the same name.
 #
 # When a new maintained branch (2.4.x, ...) starts, update the triggers
 # below (like phar.yml) and create the same-named branch in phpstan/turbo-ext
@@ -72,8 +74,8 @@ jobs:
           PREFIX="turbo-ext"
 
           # A tag lives on its maintained branch (2.3.8 → 2.3.x). The replay
-          # always follows the branch — a tag run just also marks the split
-          # commit corresponding to the tagged monorepo commit afterwards.
+          # always follows the branch; a tag run only checks that the tag
+          # points into it.
           if [ "$REF_TYPE" = "tag" ]; then
             BRANCH="${REF_NAME%.*}.x"
             git fetch --no-tags origin "+refs/heads/$BRANCH:refs/remotes/origin/$BRANCH"
@@ -142,33 +144,3 @@ jobs:
           else
             echo "The split repository is up to date at $target_head."
           fi
-
-          if [ "$REF_TYPE" != "tag" ]; then
-            exit 0
-          fi
-
-          # Tag the split commit replayed from the last turbo-ext-touching
-          # commit at or before the tagged monorepo commit (HEAD on tag runs).
-          tag_src="$(git rev-list -1 --first-parent HEAD -- "$PREFIX")"
-          if [ -z "$tag_src" ]; then
-            echo "::error::No commit touching $PREFIX/ precedes tag $REF_NAME."
-            exit 1
-          fi
-          split_commit="$(git log "$tip" --format='%H%x09%(trailers:key=Split-From,valueonly,separator=)' | awk -F'\t' -v want="$tag_src" '$2 == want {print $1; exit}')"
-          if [ -z "$split_commit" ]; then
-            echo "::error::No split commit carries Split-From: $tag_src — was $tag_src replayed?"
-            exit 1
-          fi
-
-          existing="$(git ls-remote https://github.com/phpstan/turbo-ext.git "refs/tags/$REF_NAME" | cut -f1)"
-          if [ "$existing" = "$split_commit" ]; then
-            echo "Tag $REF_NAME already points at $split_commit."
-            exit 0
-          fi
-          if [ -n "$existing" ]; then
-            echo "::error::Tag $REF_NAME already exists in phpstan/turbo-ext at $existing, expected $split_commit. Delete it there if it must move."
-            exit 1
-          fi
-
-          echo "Tagging $split_commit (replayed from $tag_src) as $REF_NAME"
-          git push "https://x-access-token:${PUSH_TOKEN}@github.com/phpstan/turbo-ext.git" "$split_commit:refs/tags/$REF_NAME"

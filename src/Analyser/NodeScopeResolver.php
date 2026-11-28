@@ -66,6 +66,9 @@ class NodeScopeResolver
 	public const LOOP_SCOPE_ITERATIONS = 10;
 	public const GENERALIZE_AFTER_ITERATION = 1;
 
+	/** Passes a loop that reached LOOP_SCOPE_ITERATIONS makes forgetting its still-changing variables before it forgets everything it writes. */
+	public const LOOP_SCOPE_FORGETTING_ITERATIONS_LIMIT = 10;
+
 	/** @var array<string, true> filePath(string) => bool(true) */
 	private array $analysedFiles = [];
 

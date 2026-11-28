@@ -9414,6 +9414,71 @@ public:
 		return scope;
 	}
 
+	/* (twin forgetChangedLoopVariables()) — the variables changed since
+	 * previousScope become mixed; null = what changed is not a variable */
+	zv::Val forgetChangedLoopVariables(zend_object *previousScope)
+	{
+		zv::Val changed = getChangedVariableNames(previousScope);
+		if (UNEXPECTED(changed.isUndef())) return zv::Val();
+		if (zend_hash_num_elements(Z_ARRVAL_P(changed.raw())) != 0) return forgetLoopWrittenVariables(Z_ARRVAL_P(changed.raw()));
+		// a head no variable changed in converges at the next pass's entry check
+		bool equal;
+		if (UNEXPECTED(!equals(previousScope, equal))) return zv::Val();
+		return equal ? zv::Val::copyOf(zv::Ref(thisZval())) : zv::Val::null();
+	}
+
+	/* private (twin getChangedVariableNames()) — the variables whose holder
+	 * differs between the two scopes or exists in only one, in either flavour */
+	zv::Val getChangedVariableNames(zend_object *otherScope)
+	{
+		if (UNEXPECTED(!requireSlot(PT_MS_PROP_EXPRESSION_TYPES, "expressionTypes") || !requireSlot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES, "nativeExpressionTypes"))) return zv::Val();
+		HashTable *otherExpressionTypes = otherTable(otherScope, PT_MS_PROP_EXPRESSION_TYPES, PT_LC("expressionTypes"));
+		if (UNEXPECTED(otherExpressionTypes == NULL)) return zv::Val();
+		HashTable *otherNativeTypes = otherTable(otherScope, PT_MS_PROP_NATIVE_EXPRESSION_TYPES, PT_LC("nativeExpressionTypes"));
+		if (UNEXPECTED(otherNativeTypes == NULL)) return zv::Val();
+		zend_class_entry *variableCe = pt_class(PT_CLASS_VARIABLE);
+		if (UNEXPECTED(variableCe == NULL)) return zv::Val();
+		/* snapshots: holderEquals() may call back into PHP */
+		zv::Val ours = zv::Val::copyOf(slot(PT_MS_PROP_EXPRESSION_TYPES));
+		zv::Val ourNative = zv::Val::copyOf(slot(PT_MS_PROP_NATIVE_EXPRESSION_TYPES));
+		zv::Arr theirs = zv::Arr::copyOfTable(otherExpressionTypes);
+		zv::Arr theirNative = zv::Arr::copyOfTable(otherNativeTypes);
+		zv::Arr names = zv::Arr::create(0);
+		HashTable *pairs[4][2] = {
+			{ Z_ARRVAL_P(ours.raw()), theirs.table() },
+			{ theirs.table(), Z_ARRVAL_P(ours.raw()) },
+			{ Z_ARRVAL_P(ourNative.raw()), theirNative.table() },
+			{ theirNative.table(), Z_ARRVAL_P(ourNative.raw()) },
+		};
+		for (auto &pair : pairs) {
+			for (auto entry : zv::TableRef(pair[0])) {
+				zv::Val expr = holderExpr(entry.value());
+				if (UNEXPECTED(expr.isUndef())) return zv::Val();
+				if (!expr.ref().isObject() || !instanceof_function(expr.ref().asObject()->ce, variableCe)) continue;
+				zv::Ref name = nodeProp(expr.ref().asObject(), PT_LC("name"));
+				if (UNEXPECTED(name.raw() == NULL)) return zv::Val();
+				name = name.deref();
+				if (!name.isString()) continue;
+				zend_string *exprString = entry.stringKeyOrNull();
+				zv::Str ownedKey;
+				if (exprString == NULL) {
+					ownedKey = zv::Str::adopt(zend_long_to_str((zend_long) entry.indexKey()));
+					exprString = ownedKey.get();
+				}
+				zval *other = zend_symtable_find(pair[1], exprString);
+				if (other != NULL) {
+					bool equal;
+					if (UNEXPECTED(!holderEquals(entry.value(), zv::Ref(other), equal))) return zv::Val();
+					if (equal) continue;
+				}
+				zval trueValue;
+				ZVAL_TRUE(&trueValue);
+				zend_symtable_update(names.table(), name.asString(), &trueValue);
+			}
+		}
+		return zv::Val(std::move(names));
+	}
+
 	/* private (twin 4901) */
 	zv::Val generalizeWithVariableState(zend_object *otherScope, HashTable *writableVariableNames, zend_object *loopEntryScope)
 	{
@@ -13902,6 +13967,14 @@ PT_MINIT_REGISTRATION(pt_register_mutating_scope)
 		PT_RETURN_VAL(PT_THIS.forgetLoopWrittenVariables(writtenVariableNames));
 	});
 
+	cls.method(sigs::forgetChangedLoopVariables, [](INTERNAL_FUNCTION_PARAMETERS) {
+		zval *previousScope;
+		ZEND_PARSE_PARAMETERS_START(1, 1)
+			Z_PARAM_OBJECT_OF_CLASS(previousScope, pt_ce_mutating_scope)
+		ZEND_PARSE_PARAMETERS_END();
+		PT_RETURN_VAL(PT_THIS.forgetChangedLoopVariables(Z_OBJ_P(previousScope)));
+	});
+
 	cls.method(sigs::equals, [](INTERNAL_FUNCTION_PARAMETERS) {
 		zval *otherScope;
 		ZEND_PARSE_PARAMETERS_START(1, 1)
@@ -14231,6 +14304,16 @@ zv::Val pt_mutating_scope_generalize_with_names(zend_object *scope, zend_object 
 		ZVAL_NULL(&argv[2]);
 	}
 	return pt_type_call(scope, PT_LC("generalizewith"), 3, argv);
+}
+
+zv::Val pt_mutating_scope_forget_changed_loop_variables(zend_object *scope, zend_object *previousScope)
+{
+	if (PT_MS_INHERITS(scope, "forgetchangedloopvariables") && EXPECTED(instanceof_function(previousScope->ce, pt_ce_mutating_scope))) {
+		return MutatingScope(scope).forgetChangedLoopVariables(previousScope);
+	}
+	zval argv[1];
+	ZVAL_OBJ(&argv[0], previousScope);
+	return pt_type_call(scope, PT_LC("forgetchangedloopvariables"), 1, argv);
 }
 
 zv::Val pt_mutating_scope_forget_loop_written_variables(zend_object *scope, zval *writtenVariableNames)

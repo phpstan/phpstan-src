@@ -75,6 +75,7 @@ public:
 		zv::Val bodyScope = zv::Val::copyOf(zv::Ref(scope));
 		zv::Val writtenVariableNames;
 		zend_long count = 0;
+		bool iterationLimitReached = false;
 		bool isTopLevel;
 		if (UNEXPECTED(!pt_statement_context_is_top_level(context, isTopLevel))) return zv::Val();
 
@@ -200,11 +201,16 @@ public:
 					if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 				}
 				count++;
-			} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
-			bool iterationLimitReached = count >= PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT;
-			/* the limit is only a safety net (PHP twin) */
-			bodyScope = ptlh::forgetIfLimitReached(std::move(bodyScope), count, writtenVariableNames);
-			if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+				if (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT) continue;
+				/* the limit is only a safety net (PHP twin) */
+				bool giveUp;
+				bodyScope = ptlh::forgetChangedAtLimit(prevScope.raw(), std::move(bodyScope), count, writtenVariableNames, giveUp);
+				if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+				if (giveUp) {
+					iterationLimitReached = true;
+					break;
+				}
+			} while (true);
 
 			/* a non-converged body state keeps no vacuous conditionals (PHP mirror) */
 			if (!entryConverged) bodyScope = pt_mutating_scope_merge_with(Z_OBJ_P(bodyScope.raw()), loopEntryScope.raw(), !iterationLimitReached, true);

@@ -338,11 +338,16 @@ public:
 					if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
 				}
 				count++;
-			} while (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT);
-			iterationLimitReached = count >= PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT;
-			/* the limit is only a safety net (PHP twin) */
-			bodyScope = ptlh::forgetIfLimitReached(std::move(bodyScope), count, writtenVariableNames);
-			if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+				if (count < PT_LH_LOOP_SCOPE_ITERATIONS_LIMIT) continue;
+				/* the limit is only a safety net (PHP twin) */
+				bool giveUp;
+				bodyScope = ptlh::forgetChangedAtLimit(prevScope.raw(), std::move(bodyScope), count, writtenVariableNames, giveUp);
+				if (UNEXPECTED(bodyScope.isUndef())) return zv::Val();
+				if (giveUp) {
+					iterationLimitReached = true;
+					break;
+				}
+			} while (true);
 		}
 
 		zval *storage = originalStorage;

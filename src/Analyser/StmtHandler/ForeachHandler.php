@@ -296,13 +296,22 @@ final class ForeachHandler implements StmtHandler
 						$bodyScope = $prevScope->generalizeWith($bodyScope, $writtenVariableNames, $loopEntryScope);
 					}
 					$count++;
-				} while ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS);
-				$iterationLimitReached = $count >= NodeScopeResolver::LOOP_SCOPE_ITERATIONS;
-				if ($iterationLimitReached) {
-					// the limit is only a safety net - a scope still changing after it
-					// is not a fixpoint, so nothing the loop writes keeps a type
-					$bodyScope = $bodyScope->forgetLoopWrittenVariables($writtenVariableNames);
-				}
+					if ($count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS) {
+						continue;
+					}
+					// the limit is only a safety net - the variables still changing
+					// are forgotten while the loop iterates on
+					$forgottenScope = $count < NodeScopeResolver::LOOP_SCOPE_ITERATIONS + NodeScopeResolver::LOOP_SCOPE_FORGETTING_ITERATIONS_LIMIT
+						? $bodyScope->forgetChangedLoopVariables($prevScope)
+						: null;
+					if ($forgottenScope === null) {
+						// what still changes is not a variable, so nothing the loop writes keeps a type
+						$iterationLimitReached = true;
+						$bodyScope = $bodyScope->forgetLoopWrittenVariables($writtenVariableNames);
+						break;
+					}
+					$bodyScope = $forgottenScope;
+				} while (true);
 			}
 		}
 

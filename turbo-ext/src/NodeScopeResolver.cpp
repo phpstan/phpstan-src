@@ -2461,6 +2461,7 @@ PT_MINIT_REGISTRATION(pt_register_node_scope_resolver)
 	ptdecl::NodeScopeResolver::declareClass(cls);
 	cls.classConstantLong("LOOP_SCOPE_ITERATIONS", 10);
 	cls.classConstantLong("GENERALIZE_AFTER_ITERATION", 1);
+	cls.classConstantLong("LOOP_SCOPE_FORGETTING_ITERATIONS_LIMIT", 10);
 	cls.privateClassConstantString("REPLAYABLE_BODY_ATTRIBUTE", "convergenceReplayableBody");
 	cls.privateClassConstantString("CONTEXT_SENSITIVE_STATEMENT_ATTRIBUTE", "convergenceContextSensitiveStatement");
 	ptdecl::NodeScopeResolver::declareProperties(cls);

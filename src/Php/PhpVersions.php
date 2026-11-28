@@ -249,6 +249,12 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	/** Converting NAN to string, or NAN, INF or a float out of the int range to int, emits a warning. */
+	public function warnsOnNonFiniteFloatConversion(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	public function deprecatesNonStandardCasts(): TrinaryLogic
 	{
 		return IntegerRangeType::fromInterval(80500, null)->isSuperTypeOf($this->phpVersions)->result;

@@ -268,6 +268,16 @@ final class PhpVersion
 		return $this->versionId >= 80400;
 	}
 
+	public function throwsValueErrorForInvalidFlagArguments(): bool
+	{
+		return $this->versionId >= 80600;
+	}
+
+	public function throwsValueErrorForOutOfRangeIntegerArguments(): bool
+	{
+		return $this->versionId >= 80600;
+	}
+
 	public function hasTentativeReturnTypes(): bool
 	{
 		return $this->versionId >= 80100;

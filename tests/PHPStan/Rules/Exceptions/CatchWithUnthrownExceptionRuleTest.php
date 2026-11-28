@@ -1635,4 +1635,308 @@ class CatchWithUnthrownExceptionRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.6.0')]
+	public function testInvalidFlagThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/invalid-flag-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				12,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				18,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				24,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				45,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				51,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				57,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				63,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				69,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				75,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				81,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.6.0')]
+	public function testInvalidFlagThrowTypeBeforePhp86(): void
+	{
+		$this->analyse([__DIR__ . '/data/invalid-flag-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				12,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				18,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				24,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				30,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				36,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				45,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				51,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				57,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				63,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				69,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				75,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				81,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				87,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				93,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				99,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				105,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.0.0')]
+	public function testSleepThrowType(): void
+	{
+		$errors = [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				21,
+			],
+		];
+
+		if (PHP_VERSION_ID < 80600) {
+			// before PHP 8.6 any non-negative duration is accepted
+			$errors[] = [
+				'Dead catch - ValueError is never thrown in the try block.',
+				45,
+			];
+		}
+
+		$errors[] = [
+			'Dead catch - ValueError is never thrown in the try block.',
+			51,
+		];
+		$errors[] = [
+			'Dead catch - ValueError is never thrown in the try block.',
+			57,
+		];
+
+		if (PHP_VERSION_ID < 80600) {
+			$errors[] = [
+				'Dead catch - ValueError is never thrown in the try block.',
+				75,
+			];
+		}
+
+		$errors[] = [
+			'Dead catch - ValueError is never thrown in the try block.',
+			87,
+		];
+
+		if (PHP_VERSION_ID < 80600) {
+			$errors[] = [
+				'Dead catch - ValueError is never thrown in the try block.',
+				95,
+			];
+		}
+
+		$this->analyse([__DIR__ . '/data/sleep-throw-type.php'], $errors);
+	}
+
+	#[RequiresPhp('< 8.0.0')]
+	public function testSleepThrowTypeBeforePhp8(): void
+	{
+		$this->analyse([__DIR__ . '/data/sleep-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				39,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				45,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				51,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				57,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				63,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				69,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				75,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				87,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				95,
+			],
+		]);
+	}
+
+	#[RequiresPhp('>= 8.6.0')]
+	public function testNumberFormatThrowType(): void
+	{
+		$this->analyse([__DIR__ . '/data/number-format-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				39,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				47,
+			],
+		]);
+	}
+
+	#[RequiresPhp('< 8.6.0')]
+	public function testNumberFormatThrowTypeBeforePhp86(): void
+	{
+		$this->analyse([__DIR__ . '/data/number-format-throw-type.php'], [
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				15,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				21,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				27,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				33,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				39,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				47,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				53,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				59,
+			],
+			[
+				'Dead catch - ValueError is never thrown in the try block.',
+				65,
+			],
+		]);
+	}
+
 }

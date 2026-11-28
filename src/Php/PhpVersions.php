@@ -425,6 +425,16 @@ final class PhpVersions
 		return IntegerRangeType::fromInterval(80400, null)->isSuperTypeOf($this->phpVersions)->result;
 	}
 
+	public function throwsValueErrorForInvalidFlagArguments(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80600, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
+	public function throwsValueErrorForOutOfRangeIntegerArguments(): TrinaryLogic
+	{
+		return IntegerRangeType::fromInterval(80600, null)->isSuperTypeOf($this->phpVersions)->result;
+	}
+
 	/**
 	 * PHP 8.3 rejects a negative step on an increasing range and a NAN step, builds a character
 	 * range from two single bytes and no longer turns an integral float step into floats.

@@ -2150,6 +2150,7 @@ private:
 			AH_VALB(nativeScope, pt_mutating_scope_do_not_treat_phpdoc_types_as_certain(Z_OBJ_P(scope.raw())));
 			AH_VALB(nativeType, readAssignedValueType(nsr, stored, assignedExpr.raw(), nativeScope.raw()));
 			AH_SETB(scope, pt_mutating_scope_assign_variable(Z_OBJ_P(scope.raw()), varName, type.raw(), nativeType.raw(), ahTrinary(PT_TRI_YES)));
+			AH_SETB(scope, pt_mutating_scope_assign_object_alias(Z_OBJ_P(scope.raw()), varName, assignedExpr.raw()));
 			for (auto entry : zv::TableRef(Z_ARRVAL_P(conditionalExpressions.raw()))) {
 				zval *holders = entry.value().raw();
 				zend_string *exprString = entry.stringKeyOrNull();

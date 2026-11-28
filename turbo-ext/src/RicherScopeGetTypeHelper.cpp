@@ -186,6 +186,34 @@ private:
 		if (UNEXPECTED(!untypedNativePropertyComparedToNull(scope, right, leftType.raw(), untypedGuard))) return zv::Val();
 		if (untypedGuard) return booleanResult(-1);
 
+		/* an alias of the same object (a float could be NAN, an array could contain one) */
+		if (UNEXPECTED(!leftType.ref().isObject())) {
+			zend_throw_error(NULL, "Call to a member function isFloat() on %s", zend_zval_value_name(leftType.raw()));
+			return zv::Val();
+		}
+		zend_long leftIsFloat = pt_type_op_trinary(leftType.ref().asObject(), PT_OP_IS_FLOAT, 0, NULL);
+		if (UNEXPECTED(leftIsFloat < 0)) return zv::Val();
+		if (leftIsFloat == PT_TRI_NO) {
+			zend_long leftIsArray = pt_type_op_trinary(leftType.ref().asObject(), PT_OP_IS_ARRAY, 0, NULL);
+			if (UNEXPECTED(leftIsArray < 0)) return zv::Val();
+			if (leftIsArray == PT_TRI_NO) {
+				if (UNEXPECTED(Z_TYPE_P(scope) != IS_OBJECT)) {
+					zend_throw_error(NULL, "Call to a member function toWalkScope() on %s", zend_zval_value_name(scope));
+					return zv::Val();
+				}
+				zv::Val walkScope = pt_type_call(Z_OBJ_P(scope), PT_LC("towalkscope"), 0, NULL);
+				if (UNEXPECTED(walkScope.isUndef())) return zv::Val();
+				if (UNEXPECTED(!walkScope.ref().isObject())) {
+					zend_throw_error(NULL, "Call to a member function holdsSameObject() on %s", zend_zval_value_name(walkScope.raw()));
+					return zv::Val();
+				}
+				zv::Args holdsArgs{left, right};
+				zv::Val holds = pt_type_call(walkScope.ref().asObject(), PT_LC("holdssameobject"), 2, holdsArgs);
+				if (UNEXPECTED(holds.isUndef())) return zv::Val();
+				if (zend_is_true(holds.raw())) return booleanResult(1);
+			}
+		}
+
 		zval *resolver = pt_typed_slot(self, slots::initializerExprTypeResolver, self->ce, "initializerExprTypeResolver");
 		if (UNEXPECTED(resolver == NULL)) return zv::Val();
 		return pt_initializer_expr_type_resolver_resolve_identical_type(resolver, leftType.raw(), rightType.raw());

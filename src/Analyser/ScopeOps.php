@@ -12,6 +12,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\NodeFinder;
 use PHPStan\Node\Expr\IntertwinedVariableByReferenceWithExpr;
+use PHPStan\Node\Expr\ObjectAliasExpr;
 use PHPStan\Node\Printer\ExprPrinter;
 use PHPStan\Node\VirtualNode;
 use PHPStan\Parser\ArrayMapArgVisitor;
@@ -58,7 +59,7 @@ final class ScopeOps
 	// parameter original-value markers (__phpstanOriginalForeachKey etc.) hide a
 	// synthesized Variable child on purpose - reassigning the variable must
 	// invalidate them through containment - so they can never be listed here.
-	private const COMPOSITIONAL_VIRTUAL_KEY_PREFIXES = ['__phpstanForeachValueByRef(', '__phpstanIntertwinedVariableByReference(', '__phpstanPropertyInitialization(', '__phpstanRemembered('];
+	private const COMPOSITIONAL_VIRTUAL_KEY_PREFIXES = ['__phpstanForeachValueByRef(', '__phpstanIntertwinedVariableByReference(', '__phpstanObjectAlias(', '__phpstanPropertyInitialization(', '__phpstanRemembered('];
 
 	/**
 	 * Mirrors MutatingScope::getNodeKey().
@@ -1028,6 +1029,18 @@ final class ScopeOps
 		}
 
 		if ($requireMoreCharacters && $exprStringToInvalidate === $exprString) {
+			return false;
+		}
+
+		if (
+			$requireMoreCharacters
+			&& $expr instanceof ObjectAliasExpr
+			&& (
+				self::nodeKey($expr->getExpr(), $exprPrinter) === $exprStringToInvalidate
+				|| self::nodeKey($expr->getAliasedExpr(), $exprPrinter) === $exprStringToInvalidate
+			)
+		) {
+			// the object both sides hold may change, but they still hold the same one
 			return false;
 		}
 

@@ -1426,6 +1426,20 @@ class NonexistentOffsetInArrayDimFetchRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testBug15870(): void
+	{
+		$this->analyse([__DIR__ . '/../../Analyser/nsrt/bug-15870.php'], [
+			[
+				'Offset \'transaction\' might not exist on array{header: array{array{name: string}}, message: non-empty-array<int<0, max>, array{header?: array{_pointer: \'header[0][id]\'}, endBalance?: string, startSign?: string, startDate?: string, startCurrency?: string, startBalance?: string, number?: string, sequence?: string, ...}>, transaction?: non-empty-array<int, array{description: string}>}.',
+				32,
+			],
+			[
+				'Offset \'transaction\' might not exist on array{header: array{array{name: string}}, message: non-empty-array<int<0, max>, array{header?: array{_pointer: \'header[0][id]\'}, endBalance?: string, startSign?: string, startDate?: string, startCurrency?: string, startBalance?: string, number?: string, sequence?: string, ...}>, transaction?: non-empty-array<int, array{description: string}>}.',
+				38,
+			],
+		]);
+	}
+
 	public static function dataUnsealedArrayShapes(): iterable
 	{
 		foreach ([false, true] as $reportPossiblyNonexistentGeneralArrayOffset) {

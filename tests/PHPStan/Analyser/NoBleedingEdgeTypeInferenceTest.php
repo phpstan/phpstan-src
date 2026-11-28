@@ -21,6 +21,7 @@ class NoBleedingEdgeTypeInferenceTest extends TypeInferenceTestCase
 		yield from self::gatherAssertTypes(__DIR__ . '/nsrt/bug-15820.php');
 		yield from self::gatherAssertTypes(__DIR__ . '/nsrt/bug-15860.php');
 		yield from self::gatherAssertTypes(__DIR__ . '/nsrt/bug-15869.php');
+		yield from self::gatherAssertTypes(__DIR__ . '/nsrt/bug-15870.php');
 	}
 
 	/**

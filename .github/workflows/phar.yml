@@ -1794,8 +1794,8 @@ jobs:
     # phpstan/turbo-ext release of the tag, named per PIE's release-asset
     # conventions (.github/scripts/turbo-pie-assets.sh) so that
     # `pie install phpstan/turbo` finds them. The tag itself is created in
-    # phpstan/turbo-ext by subsplit-turbo-ext.yml. On pull requests labelled
-    # turbo-pie it only packages them, as an artifact.
+    # phpstan/turbo-ext by the tag.yml workflow in phpstan/release. On pull
+    # requests labelled turbo-pie it only packages them, as an artifact.
     if: startsWith(github.ref, 'refs/tags/') || contains(github.event.pull_request.labels.*.name, 'turbo-pie')
     needs:
       - turbo-compile
@@ -1863,11 +1863,17 @@ jobs:
           GH_TOKEN: ${{ secrets.PHPSTAN_BOT_TOKEN }}
           TAG: ${{ github.ref_name }}
         run: |
-          # The release must point at the tag subsplit-turbo-ext.yml creates
-          # in phpstan/turbo-ext when this repository is tagged; fail loudly
-          # if it has not appeared, and re-run this job once it has.
+          # The release must point at the tag the tag.yml workflow in
+          # phpstan/release creates in phpstan/turbo-ext after this
+          # repository is tagged, once subsplit-turbo-ext.yml has replayed
+          # the split commit. It usually exists long before this job runs;
+          # wait a while for it, then fail loudly.
+          for _ in $(seq 1 20); do
+            gh api "repos/phpstan/turbo-ext/git/ref/tags/$TAG" > /dev/null 2>&1 && break
+            sleep 30
+          done
           if ! gh api "repos/phpstan/turbo-ext/git/ref/tags/$TAG" > /dev/null; then
-            echo "::error::Tag $TAG does not exist in phpstan/turbo-ext yet. The subsplit-turbo-ext.yml workflow creates it; re-run this job once it has."
+            echo "::error::Tag $TAG does not exist in phpstan/turbo-ext. Check the tag.yml run in phpstan/release, then re-run this job."
             exit 1
           fi
 
@@ -3094,8 +3100,9 @@ jobs:
           commit_author: "phpstan-bot <ondrej+phpstanbot@mirtes.cz>"
           commit_options: "--gpg-sign"
           repository: phpstan-dist
+          # The tag is not pushed here: the tag.yml workflow in
+          # phpstan/release creates it once it has verified this commit.
           commit_message: "PHPStan ${{github.ref_name}}"
-          tagging_message: ${{github.ref_name}}
 
   verify-commit-attestations:
     name: "Verify Attestations of the Committed Binaries"

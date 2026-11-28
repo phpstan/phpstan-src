@@ -342,7 +342,7 @@ class MatchExpressionRuleTest extends RuleTestCase
 				23,
 			],
 			[
-				'Call to function is_array() with non-empty-array<string> will always evaluate to true.',
+				'Call to function is_array() with non-empty-array will always evaluate to true.',
 				24,
 			],
 		]);

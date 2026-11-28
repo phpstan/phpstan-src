@@ -3670,7 +3670,7 @@ private:
 				AH_OKB(isList >= 0);
 				if (isList == PT_TRI_YES) {
 					bool keepList;
-					AH_OKB(shouldKeepList(nsr, writtenDimFetch, scope, storage, offsetValueType.raw(), keepList));
+					AH_OKB(shouldKeepList(nsr, writtenDimFetch, scope, storage, offsetValueType.raw(), offsetType, keepList));
 					if (keepList) {
 						AH_VALB(listType, newAccessoryArrayListType());
 						zv::Args intersectArgs{valueToWrite.raw(), listType.raw()};
@@ -3717,7 +3717,7 @@ private:
 	}
 
 	/* (twin 2731) false = pending exception */
-	[[nodiscard]] static bool shouldKeepList(zval *nsr, zval *arrayDimFetch, zval *scope, zval *storage, zval *offsetValueType, bool &out)
+	[[nodiscard]] static bool shouldKeepList(zval *nsr, zval *arrayDimFetch, zval *scope, zval *storage, zval *offsetValueType, zval *offsetType, bool &out)
 	{
 		out = false;
 		bool failed = false;
@@ -3800,8 +3800,18 @@ private:
 			out = true;
 			return true;
 		}
+		if (failed) return false;
 
-		return !failed;
+		// keep list for a write to an offset known to be there, as
+		// $list[$k]['x'] = ... after is_array($list[$k])
+		if (Z_TYPE_P(offsetType) == IS_NULL) return true;
+		zend_long has = ahTypeOpTri(offsetValueType, PT_OP_HAS_OFFSET_VALUE_TYPE, 1, offsetType);
+		if (UNEXPECTED(has < 0)) return false;
+		if (has == PT_TRI_NO) return true;
+		zend_long tracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), arrayDimFetch);
+		if (UNEXPECTED(tracked < 0)) return false;
+		out = tracked == PT_TRI_YES;
+		return true;
 	}
 
 	/* $int->value === 1 of a Scalar\Int_ */

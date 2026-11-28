@@ -45,6 +45,8 @@ zend_class_entry *pt_ce_foreach_handler = nullptr;
 /* ForeachHandler::FOREACH_UNROLL_LIMIT / ::FOREACH_UNROLL_NESTED_LIMIT */
 #define PT_FEH_FOREACH_UNROLL_LIMIT 16
 #define PT_FEH_FOREACH_UNROLL_NESTED_LIMIT 8
+/* ForeachHandler::ITERATEE_MEMBERS_LIMIT */
+#define PT_FEH_ITERATEE_MEMBERS_LIMIT 8
 
 namespace {
 
@@ -1338,6 +1340,11 @@ private:
 			}
 		}
 
+		if (noDocComment && parts.valueVarName != NULL && parts.keyVarName != NULL && !parts.byRef) {
+			scope = addIterateeMemberConditionalHolders(scope.raw(), iteratee, iterateeType, parts.keyVarName, parts.valueVarName);
+			if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		}
+
 		{
 			bool error = false;
 			if (ptsh::isInstanceOf(iteratee, PT_CLASS_FUNC_CALL, error) && parts.valueVarIsVariable) {
@@ -1348,6 +1355,120 @@ private:
 		}
 
 		return pt_var_annotation_processor_process_var_annotation(OBJ_PROP_NUM(self, slots::varAnnotationProcessor), scope.raw(), vars.raw(), stmt, NULL);
+	}
+
+	/* $holders[$target][$holder->getKey()] = $holder; false = pending exception */
+	[[nodiscard]] static bool addGroupedHolder(zv::Arr &holders, zend_string *target, zv::Val holder)
+	{
+		zv::Str holderKey = zv::Str::adopt(conditionalHolderKey(holder.raw()));
+		if (UNEXPECTED(holderKey.isNull())) return false;
+		holders.separate();
+		zval *group = zend_symtable_find(holders.table(), target);
+		if (group == NULL) {
+			zval emptyGroup;
+			array_init(&emptyGroup);
+			group = zend_symtable_update(holders.table(), target, &emptyGroup);
+		}
+		SEPARATE_ARRAY(group);
+		zval holderZv = holder.take();
+		zend_symtable_update(Z_ARRVAL_P(group), holderKey.get(), &holderZv);
+		return true;
+	}
+
+	/* (twin addIterateeMemberConditionalHolders()) the key, the value and
+	 * the iteratee tied together by the member of an iteratee union whose
+	 * members' keys share no value; UNDEF = pending exception */
+	static zv::Val addIterateeMemberConditionalHolders(zval *scopeArg, zval *iteratee, zval *iterateeType, zend_string *keyVarName, zend_string *valueVarName)
+	{
+		zv::Val scope = zv::Val::copyOf(zv::Ref(scopeArg));
+		if (Z_TYPE_P(iterateeType) != IS_OBJECT || pt_ce_union_type == NULL || !instanceof_function(Z_OBJCE_P(iterateeType), pt_ce_union_type)
+			|| (pt_ce_benevolent_union_type != NULL && instanceof_function(Z_OBJCE_P(iterateeType), pt_ce_benevolent_union_type))) {
+			return scope;
+		}
+		bool error = false;
+		if (ptsh::isInstanceOf(iterateeType, PT_CLASS_TEMPLATE_TYPE, error)) return scope;
+		if (UNEXPECTED(error)) return zv::Val();
+		zv::Val members = pt_type_op(Z_OBJ_P(iterateeType), PT_OP_GET_TYPES, 0, NULL);
+		if (UNEXPECTED(members.isUndef())) return zv::Val();
+		if (ptlh::countOf(members.raw()) > PT_FEH_ITERATEE_MEMBERS_LIMIT) return scope;
+		zend_long tracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope.raw()), iteratee);
+		if (UNEXPECTED(tracked < 0)) return zv::Val();
+		if (tracked != PT_TRI_YES) return scope;
+
+		std::vector<zv::Val> keyTypes;
+		for (auto entry : zv::ArrRef(members.raw())) {
+			zval *member = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(member) != IS_OBJECT)) {
+				pt_throw_should_not_happen();
+				return zv::Val();
+			}
+			zend_long isArray = pt_type_op_trinary(Z_OBJ_P(member), PT_OP_IS_ARRAY, 0, NULL);
+			if (UNEXPECTED(isArray < 0)) return zv::Val();
+			if (isArray != PT_TRI_YES) return scope;
+			zend_long isConstantArray = pt_type_op_trinary(Z_OBJ_P(member), PT_OP_IS_CONSTANT_ARRAY, 0, NULL);
+			if (UNEXPECTED(isConstantArray < 0)) return zv::Val();
+			if (isConstantArray == PT_TRI_YES) return scope;
+			zv::Val keyType = typeOp(member, PT_OP_GET_ITERABLE_KEY_TYPE, "getIterableKeyType");
+			if (UNEXPECTED(keyType.isUndef())) return zv::Val();
+			for (zv::Val &otherKeyType : keyTypes) {
+				zend_long overlaps = isSuperTypeOf(otherKeyType.raw(), keyType.raw());
+				if (UNEXPECTED(overlaps < 0)) return zv::Val();
+				if (overlaps != PT_TRI_NO) return scope;
+			}
+			keyTypes.push_back(std::move(keyType));
+		}
+
+		zv::Val iterateeExprString = pt_type_call(Z_OBJ_P(scope.raw()), PT_LC("getnodekey"), 1, iteratee);
+		if (UNEXPECTED(iterateeExprString.isUndef())) return zv::Val();
+		if (UNEXPECTED(Z_TYPE_P(iterateeExprString.raw()) != IS_STRING)) {
+			zend_type_error("MutatingScope::getNodeKey(): Return value must be of type string, %s returned", zend_zval_value_name(iterateeExprString.raw()));
+			return zv::Val();
+		}
+		zend_string *iterateeKey = Z_STR_P(iterateeExprString.raw());
+		zv::Str keyExprString = zv::Str::adopt(zend_string_concat2(PT_LC("$"), ZSTR_VAL(keyVarName), ZSTR_LEN(keyVarName)));
+		zv::Str valueExprString = zv::Str::adopt(zend_string_concat2(PT_LC("$"), ZSTR_VAL(valueVarName), ZSTR_LEN(valueVarName)));
+		zv::Val keyVar = newVariable(keyVarName);
+		if (UNEXPECTED(keyVar.isUndef())) return zv::Val();
+		zv::Val valueVar = newVariable(valueVarName);
+		if (UNEXPECTED(valueVar.isUndef())) return zv::Val();
+
+		zv::Arr holders = zv::Arr::empty();
+		size_t i = 0;
+		for (auto entry : zv::ArrRef(members.raw())) {
+			zval *member = entry.value().deref().raw();
+			zval *keyType = keyTypes[i++].raw();
+			zv::Val memberHolder = expressionTypeHolderYes(iteratee, member);
+			zv::Val keyHolder = expressionTypeHolderYes(keyVar.raw(), keyType);
+			zv::Val memberValueType = typeOp(member, PT_OP_GET_ITERABLE_VALUE_TYPE, "getIterableValueType");
+			if (UNEXPECTED(memberValueType.isUndef())) return zv::Val();
+			zv::Val valueHolder = expressionTypeHolderYes(valueVar.raw(), memberValueType.raw());
+			zv::Arr byMember = zv::Arr::create(1);
+			byMember.set(iterateeKey, zv::Val::copyOf(memberHolder.ref()));
+			zv::Arr byKey = zv::Arr::create(1);
+			byKey.set(keyExprString.get(), zv::Val::copyOf(keyHolder.ref()));
+
+			struct HolderEntry { zend_string *target; zval *conditions; zval *typeHolder; };
+			HolderEntry entries[] = {
+				{keyExprString.get(), byMember.raw(), keyHolder.raw()},
+				{valueExprString.get(), byMember.raw(), valueHolder.raw()},
+				{iterateeKey, byKey.raw(), memberHolder.raw()},
+				{valueExprString.get(), byKey.raw(), valueHolder.raw()},
+			};
+			for (HolderEntry &e : entries) {
+				zv::Val holder = newConditionalExpressionHolder(e.conditions, e.typeHolder);
+				if (UNEXPECTED(holder.isUndef())) return zv::Val();
+				if (UNEXPECTED(!addGroupedHolder(holders, e.target, std::move(holder)))) return zv::Val();
+			}
+		}
+		for (auto entry : holders.arrRef()) {
+			if (UNEXPECTED(!entry.hasStringKey())) {
+				pt_throw_should_not_happen();
+				return zv::Val();
+			}
+			scope = pt_mutating_scope_add_conditional_expressions(Z_OBJ_P(scope.raw()), entry.stringKey(), entry.value().deref().asArrayTable());
+			if (UNEXPECTED(scope.isUndef())) return zv::Val();
+		}
+		return scope;
 	}
 
 	/* enterForeach()'s `foreach ($constantArray as $key => $value)` holders;
@@ -2046,6 +2167,7 @@ PT_MINIT_REGISTRATION(pt_register_foreach_handler)
 	ptdecl::ForeachHandler::declareProperties(cls);
 	cls.privateClassConstantLong("FOREACH_UNROLL_LIMIT", PT_FEH_FOREACH_UNROLL_LIMIT);
 	cls.privateClassConstantLong("FOREACH_UNROLL_NESTED_LIMIT", PT_FEH_FOREACH_UNROLL_NESTED_LIMIT);
+	cls.privateClassConstantLong("ITERATEE_MEMBERS_LIMIT", PT_FEH_ITERATEE_MEMBERS_LIMIT);
 
 	/* the real parameter class names and #[AutowiredParameter] names: the DI
 	 * container autowires the service by reflecting the constructor */

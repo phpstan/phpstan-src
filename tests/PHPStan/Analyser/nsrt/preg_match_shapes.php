@@ -124,7 +124,7 @@ function doUnknownFlags(string $s, int $flags): void {
 	if (preg_match('/(foo)(bar)(baz)/xyz', $s, $matches, $flags)) {
 		assertType('array<array{\'\'|null, -1}|array{string, int<0, max>}>|array<string|null>', $matches);
 	}
-	assertType('array<array{\'\'|null, -1}|array{string, int<0, max>}|string|null>', $matches);
+	assertType('array<array{\'\'|null, -1}|array{string, int<0, max>}>|array<string|null>', $matches);
 }
 
 function doMultipleAlternativeCaptureGroupsWithSameNameWithModifier(string $s): void {

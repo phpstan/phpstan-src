@@ -41,12 +41,15 @@ final class ArrayAlgebra
 
 	/**
 	 * The shapes of a shape, one per value of its first key whose value is a
-	 * union of finitely many values: `array{type: 'a'|'b', x: int}` is
-	 * `array{type: 'a', x: int}` and `array{type: 'b', x: int}`.
+	 * union, or one per member of the union when it is not of finitely many
+	 * values: `array{type: 'a'|'b', x: int}` is `array{type: 'a', x: int}` and
+	 * `array{type: 'b', x: int}`, and `array{int|string}` is `array{int}` and
+	 * `array{string}`.
 	 *
 	 * tryUnionConstantArray() merges shapes that differ at one key into one
 	 * shape, which a union of the shapes it merged no longer accepts member by
-	 * member - UnionType::accepts() splits it back with this. Null when no key
+	 * member - UnionType::accepts() splits it back with this, as it accepts
+	 * `array{int|string}` by `list<int>|list<string>`. Null when no key
 	 * has such a value, or when the shape splits into more than
 	 * SPLIT_SHAPES_LIMIT shapes over all of its keys.
 	 *
@@ -59,11 +62,21 @@ final class ArrayAlgebra
 		$splitValues = [];
 		$shapesCount = 1;
 		foreach ($valueTypes as $i => $valueType) {
-			// unions of constant scalars, the values tryUnionConstantArray() unions at one key
-			if (!$valueType instanceof UnionType || $valueType instanceof TemplateType || !$valueType->isConstantScalarValue()->yes()) {
+			if (!$valueType instanceof UnionType || $valueType instanceof TemplateType) {
 				continue;
 			}
-			$finiteTypes = $valueType->getFiniteTypes();
+			// unions of constant scalars, the values tryUnionConstantArray() unions at one key,
+			// split into each value, and other unions into their members
+			if ($valueType->isConstantScalarValue()->yes()) {
+				$finiteTypes = $valueType->getFiniteTypes();
+			} elseif ($valueType->isArray()->no()) {
+				// a split shape is accepted member by member, which splits the
+				// arrays among its values again: arrays nested in each other
+				// would split into exponentially many shapes
+				$finiteTypes = $valueType->getTypes();
+			} else {
+				continue;
+			}
 			if (count($finiteTypes) < 2) {
 				continue;
 			}

@@ -676,7 +676,9 @@ public:
 		}
 		zend_long resultValue = pt_type_result_trinary(result.raw());
 		if (UNEXPECTED(resultValue < 0)) return zv::Val();
-		if (resultValue == PT_TRI_YES) return result;
+		/* the reasons are those of the members that do not accept the type,
+		 * which do not matter once one does */
+		if (resultValue == PT_TRI_YES) return acceptsResult(PT_TRI_YES);
 
 		/* a shape union() merged from shapes differing at one key is accepted
 		 * when each of the shapes it holds is:

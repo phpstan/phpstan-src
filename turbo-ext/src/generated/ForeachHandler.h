@@ -66,17 +66,20 @@ inline constexpr char strings[] =
 	"PHPStan\\Type\\Type\0" /* 571 */
 	"nativeIterateeType\0" /* 589 */
 	"enterForeach\0" /* 608 */
-	"originalStorage\0" /* 621 */
-	"tryProcessUnrolledConstantArrayForeach\0" /* 637 */
-	"iteratee\0" /* 676 */
-	"PhpParser\\Node\\Expr\0" /* 685 */
-	"exprType\0" /* 705 */
-	"PHPStan\\Analyser\\InternalThrowPoint\0" /* 714 */
-	"getTraversableForeachThrowPoint\0" /* 750 */
-	"iterableValueType\0" /* 782 */
-	"list\0" /* 800 */
-	"PhpParser\\Node\\Expr\\List_\0" /* 805 */
-	"addDestructureTaggedUnionConditionalHolders"; /* 831 */
+	"iteratee\0" /* 621 */
+	"PhpParser\\Node\\Expr\0" /* 630 */
+	"keyVarName\0" /* 650 */
+	"valueVarName\0" /* 661 */
+	"addIterateeMemberConditionalHolders\0" /* 674 */
+	"originalStorage\0" /* 710 */
+	"tryProcessUnrolledConstantArrayForeach\0" /* 726 */
+	"exprType\0" /* 765 */
+	"PHPStan\\Analyser\\InternalThrowPoint\0" /* 774 */
+	"getTraversableForeachThrowPoint\0" /* 810 */
+	"iterableValueType\0" /* 842 */
+	"list\0" /* 860 */
+	"PhpParser\\Node\\Expr\\List_\0" /* 865 */
+	"addDestructureTaggedUnionConditionalHolders"; /* 891 */
 inline constexpr reg::PackedArg args[] = {
 	reg::packed(0, 0, 10), /* __construct $container */
 	reg::packed(48, MAY_BE_BOOL), /* __construct $implicitThrows */
@@ -101,21 +104,27 @@ inline constexpr reg::PackedArg args[] = {
 	reg::packed(589, 0, 571), /* enterForeach $nativeIterateeType */
 	reg::packed(407, MAY_BE_CALLABLE), /* enterForeach $nodeCallback */
 	reg::packed(258, 0, 327), /* enterForeach return */
+	reg::packed(321, 0, 327), /* addIterateeMemberConditionalHolders $scope */
+	reg::packed(621, 0, 630), /* addIterateeMemberConditionalHolders $iteratee */
+	reg::packed(558, 0, 571), /* addIterateeMemberConditionalHolders $iterateeType */
+	reg::packed(650, MAY_BE_STRING), /* addIterateeMemberConditionalHolders $keyVarName */
+	reg::packed(661, MAY_BE_STRING), /* addIterateeMemberConditionalHolders $valueVarName */
+	reg::packed(258, 0, 327), /* addIterateeMemberConditionalHolders return */
 	reg::packed(268, 0, 286), /* tryProcessUnrolledConstantArrayForeach $nodeScopeResolver */
 	reg::packed(233, 0, 529), /* tryProcessUnrolledConstantArrayForeach $stmt */
 	reg::packed(515, 0, 327), /* tryProcessUnrolledConstantArrayForeach $originalScope */
-	reg::packed(621, 0, 366), /* tryProcessUnrolledConstantArrayForeach $originalStorage */
+	reg::packed(710, 0, 366), /* tryProcessUnrolledConstantArrayForeach $originalStorage */
 	reg::packed(420, 0, 428), /* tryProcessUnrolledConstantArrayForeach $context */
 	reg::packed(558, 0, 571), /* tryProcessUnrolledConstantArrayForeach $iterateeType */
 	reg::packed(589, 0, 571), /* tryProcessUnrolledConstantArrayForeach $nativeIterateeType */
 	reg::packed(258, MAY_BE_NULL | MAY_BE_ARRAY), /* tryProcessUnrolledConstantArrayForeach return */
 	reg::packed(321, 0, 327), /* getTraversableForeachThrowPoint $scope */
-	reg::packed(676, 0, 685), /* getTraversableForeachThrowPoint $iteratee */
-	reg::packed(705, 0, 571), /* getTraversableForeachThrowPoint $exprType */
-	reg::packed(258, MAY_BE_NULL, 714), /* getTraversableForeachThrowPoint return */
+	reg::packed(621, 0, 630), /* getTraversableForeachThrowPoint $iteratee */
+	reg::packed(765, 0, 571), /* getTraversableForeachThrowPoint $exprType */
+	reg::packed(258, MAY_BE_NULL, 774), /* getTraversableForeachThrowPoint return */
 	reg::packed(321, 0, 327), /* addDestructureTaggedUnionConditionalHolders $scope */
-	reg::packed(782, 0, 571), /* addDestructureTaggedUnionConditionalHolders $iterableValueType */
-	reg::packed(800, 0, 805), /* addDestructureTaggedUnionConditionalHolders $list */
+	reg::packed(842, 0, 571), /* addDestructureTaggedUnionConditionalHolders $iterableValueType */
+	reg::packed(860, 0, 865), /* addDestructureTaggedUnionConditionalHolders $list */
 	reg::packed(258, 0, 327), /* addDestructureTaggedUnionConditionalHolders return */
 };
 using Sig = reg::Sig<strings, args>;
@@ -127,9 +136,10 @@ inline constexpr sigtab::Sig __construct = { { 221 /* __construct */, 5, 0, 5, r
 inline constexpr sigtab::Sig supports = { { 259 /* supports */, 1, 5, 1, 6, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig processStmt = { { 503 /* processStmt */, 6, 7, 6, 13, ZEND_ACC_PUBLIC } };
 inline constexpr sigtab::Sig enterForeach = { { 608 /* enterForeach */, 8, 14, 8, 22, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig tryProcessUnrolledConstantArrayForeach = { { 637 /* tryProcessUnrolledConstantArrayForeach */, 7, 23, 7, 30, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig getTraversableForeachThrowPoint = { { 750 /* getTraversableForeachThrowPoint */, 3, 31, 3, 34, ZEND_ACC_PRIVATE } };
-inline constexpr sigtab::Sig addDestructureTaggedUnionConditionalHolders = { { 831 /* addDestructureTaggedUnionConditionalHolders */, 3, 35, 3, 38, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig addIterateeMemberConditionalHolders = { { 674 /* addIterateeMemberConditionalHolders */, 5, 23, 5, 28, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig tryProcessUnrolledConstantArrayForeach = { { 726 /* tryProcessUnrolledConstantArrayForeach */, 7, 29, 7, 36, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig getTraversableForeachThrowPoint = { { 810 /* getTraversableForeachThrowPoint */, 3, 37, 3, 40, ZEND_ACC_PRIVATE } };
+inline constexpr sigtab::Sig addDestructureTaggedUnionConditionalHolders = { { 891 /* addDestructureTaggedUnionConditionalHolders */, 3, 41, 3, 44, ZEND_ACC_PRIVATE } };
 } // namespace sig
 
 } // namespace ptdecl::ForeachHandler

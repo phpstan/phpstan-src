@@ -85,6 +85,7 @@ use PHPStan\Type\ErrorType;
 use PHPStan\Type\FloatRangeType;
 use PHPStan\Type\FloatType;
 use PHPStan\Type\GeneralizePrecision;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\Generic\TemplateTypeHelper;
 use PHPStan\Type\Generic\TemplateTypeMap;
 use PHPStan\Type\IntegerRangeType;
@@ -3640,8 +3641,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 								new HasOffsetValueType($dimType, $type),
 							);
 						}
+					} elseif ($certainty->yes() && $type->isNull()->no()) {
+						$varType = self::removeArraysWithoutOffsetValueType($varType, $dimType, $type);
 					}
 
+					$this->specifyExpressionTypeInPlace(
+						$expr->var,
+						$varType,
+						$this->getScopeStateNativeType($expr->var),
+						$certainty,
+					);
+				}
+			} elseif ($certainty->yes() && $type->isNull()->no()) {
+				$exprVarType = $this->getScopeStateType($expr->var);
+				$varType = self::removeArraysWithoutOffsetValueType($exprVarType, $dimType, $type);
+				if ($varType !== $exprVarType) {
 					$this->specifyExpressionTypeInPlace(
 						$expr->var,
 						$varType,
@@ -3830,6 +3844,33 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$nativeType,
 			$certainty,
 		);
+	}
+
+	/**
+	 * A union narrowed by a value at an offset that is not null, so the offset
+	 * is there, without the arrays whose values cannot be that value:
+	 * `list<array{key: string}>|array<stdClass>` after `is_array($a[$k])` is
+	 * `list<array{key: string}>`.
+	 */
+	private static function removeArraysWithoutOffsetValueType(Type $varType, Type $dimType, Type $offsetValueType): Type
+	{
+		if (!$varType instanceof UnionType || $varType instanceof BenevolentUnionType || $varType instanceof TemplateType) {
+			return $varType;
+		}
+
+		$types = $varType->getTypes();
+		$kept = [];
+		foreach ($types as $member) {
+			if ($member->isArray()->yes() && $offsetValueType->isSuperTypeOf($member->getOffsetValueType($dimType))->no()) {
+				continue;
+			}
+			$kept[] = $member;
+		}
+		if ($kept === [] || count($kept) === count($types)) {
+			return $varType;
+		}
+
+		return TypeCombinator::union(...$kept);
 	}
 
 	/**

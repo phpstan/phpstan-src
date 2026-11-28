@@ -541,6 +541,8 @@ enum {
 	PT_CLASS_INTERSECTION_ALGEBRA,
 	/* tryIntersect() of GenericClassStringType */
 	PT_CLASS_CLASS_STRING_ALGEBRA,
+	/* the types of the values an unpacked arg passes */
+	PT_CLASS_UNPACKED_ARGUMENT_TYPES,
 	PT_CLASS_COUNT
 };
 

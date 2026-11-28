@@ -71,6 +71,7 @@ final class FileAnalyserCallback
 	 * @param callable(Node $node, Scope $scope): void|null $outerNodeCallback
 	 * @param Node\Stmt[] $parserNodes
 	 * @param IgnoreErrorExtension[] $ignoreErrorExtensions
+	 * @param ErrorTipExtension[] $errorTipExtensions
 	 * @param list<string> $processedFiles
 	 */
 	public function __construct(
@@ -80,6 +81,7 @@ final class FileAnalyserCallback
 		private $outerNodeCallback,
 		private array $parserNodes,
 		private array $ignoreErrorExtensions,
+		private array $errorTipExtensions,
 		private Parser $parser,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private array $processedFiles,
@@ -189,6 +191,15 @@ final class FileAnalyserCallback
 						if ($ignoreErrorExtension->shouldIgnore($error, $node, $scope)) {
 							continue 2;
 						}
+					}
+
+					foreach ($this->errorTipExtensions as $errorTipExtension) {
+						$tip = $errorTipExtension->getTip($error, $node, $scope);
+						if ($tip === null) {
+							continue;
+						}
+
+						$error = $error->withAdditionalTip($tip);
 					}
 				}
 

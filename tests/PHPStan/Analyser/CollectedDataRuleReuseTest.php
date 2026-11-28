@@ -341,6 +341,7 @@ class CollectedDataRuleReuseTest extends PHPStanTestCase
 		$finalizer = new AnalyserResultFinalizer(
 			new DirectRegistry($rules),
 			self::getContainer()->getExtensionsCollection(IgnoreErrorExtension::class),
+			self::getContainer()->getExtensionsCollection(ErrorTipExtension::class),
 			self::getContainer()->getByType(RuleErrorTransformer::class),
 			self::createScopeFactory(self::createReflectionProvider(), self::getContainer()->getService('typeSpecifier')),
 			new LocalIgnoresProcessor(),

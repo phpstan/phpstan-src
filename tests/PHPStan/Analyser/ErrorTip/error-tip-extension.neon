@@ -1,0 +1,9 @@
+services:
+	-
+		class: PHPStan\Analyser\ErrorTip\EchoErrorTipExtension
+		tags:
+			- phpstan.errorTipExtension
+	-
+		class: PHPStan\Analyser\ErrorTip\PlainEchoErrorTipExtension
+		tags:
+			- phpstan.errorTipExtension

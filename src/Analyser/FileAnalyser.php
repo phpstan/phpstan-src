@@ -60,6 +60,7 @@ final class FileAnalyser
 
 	/**
 	 * @param ExtensionsCollection<IgnoreErrorExtension> $ignoreErrorExtensions
+	 * @param ExtensionsCollection<ErrorTipExtension> $errorTipExtensions
 	 */
 	public function __construct(
 		private ScopeFactory $scopeFactory,
@@ -69,6 +70,8 @@ final class FileAnalyser
 		private Parser $parser,
 		#[AutowiredExtensions(of: IgnoreErrorExtension::class)]
 		private ExtensionsCollection $ignoreErrorExtensions,
+		#[AutowiredExtensions(of: ErrorTipExtension::class)]
+		private ExtensionsCollection $errorTipExtensions,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
 		#[AutowiredParameter]
@@ -210,6 +213,7 @@ final class FileAnalyser
 					$outerNodeCallback,
 					$parserNodes,
 					$this->ignoreErrorExtensions->getAll(),
+					$this->errorTipExtensions->getAll(),
 					$this->parser,
 					$this->ruleErrorTransformer,
 					$processedFiles,

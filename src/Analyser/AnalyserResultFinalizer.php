@@ -40,11 +40,14 @@ final class AnalyserResultFinalizer
 
 	/**
 	 * @param ExtensionsCollection<IgnoreErrorExtension> $ignoreErrorExtensions
+	 * @param ExtensionsCollection<ErrorTipExtension> $errorTipExtensions
 	 */
 	public function __construct(
 		private RuleRegistry $ruleRegistry,
 		#[AutowiredExtensions(of: IgnoreErrorExtension::class)]
 		private ExtensionsCollection $ignoreErrorExtensions,
+		#[AutowiredExtensions(of: ErrorTipExtension::class)]
+		private ExtensionsCollection $errorTipExtensions,
 		private RuleErrorTransformer $ruleErrorTransformer,
 		private ScopeFactory $scopeFactory,
 		private LocalIgnoresProcessor $localIgnoresProcessor,
@@ -350,6 +353,15 @@ final class AnalyserResultFinalizer
 					if ($ignoreErrorExtension->shouldIgnore($error, $node, $scope)) {
 						continue 2;
 					}
+				}
+
+				foreach ($this->errorTipExtensions->getAll() as $errorTipExtension) {
+					$tip = $errorTipExtension->getTip($error, $node, $scope);
+					if ($tip === null) {
+						continue;
+					}
+
+					$error = $error->withAdditionalTip($tip);
 				}
 			}
 

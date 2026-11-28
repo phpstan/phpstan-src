@@ -453,4 +453,31 @@ class UnreachableStatementRuleTest extends RuleTestCase
 		]);
 	}
 
+	public function testUnreachableAfterUnusedLabel(): void
+	{
+		$this->treatPhpDocTypesAsCertain = true;
+		$this->analyse([__DIR__ . '/data/unreachable-after-unused-label.php'], [
+			[
+				'Unreachable statement - code above always terminates.',
+				10,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				20,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				68,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				73,
+			],
+			[
+				'Unreachable statement - code above always terminates.',
+				78,
+			],
+		]);
+	}
+
 }

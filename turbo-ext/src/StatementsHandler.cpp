@@ -595,7 +595,20 @@ public:
 				zv::Val labelName = nameToString(nameNode);
 				if (UNEXPECTED(labelName.isUndef())) return zv::Val();
 				if (UNEXPECTED(!mergeForwardGotoExitPoints(labelName.raw(), scope, alreadyTerminated, exitPoints))) return zv::Val();
-				if (alreadyTerminated) continue;
+				if (alreadyTerminated) {
+					zv::Val labelIsUsed = pt_engine_node_get_attribute(Z_OBJ_P(node), PT_LC("labelIsUsed"));
+					if (UNEXPECTED(labelIsUsed.isUndef())) return zv::Val();
+					if (!labelIsUsed.ref().isTrue()) {
+						zval *labelNodeIndex = zend_hash_index_find(stmtToNodeIndex.table(), si);
+						zend_long labelNodeOffset;
+						if (UNEXPECTED(!offsetAfter(labelNodeIndex, labelNodeOffset))) return zv::Val();
+						zv::Val labelRest = arraySlice(nodesHeld.raw(), labelNodeOffset);
+						zv::Val labelNextStmts = getNextUnreachableStatements(labelRest.raw(), true);
+						if (UNEXPECTED(labelNextStmts.isUndef())) return zv::Val();
+						if (UNEXPECTED(!processUnreachableStatement(nodeScopeResolver, labelNextStmts.raw(), scope.raw(), storage, nodeCallback))) return zv::Val();
+					}
+					continue;
+				}
 
 				zv::Val hasBackwardGoto = pt_engine_node_get_attribute(Z_OBJ_P(node), PT_LC("hasBackwardGoto"));
 				if (UNEXPECTED(hasBackwardGoto.isUndef())) return zv::Val();
@@ -1558,7 +1571,17 @@ private:
 			ZVAL_BOOL(OBJ_PROP_NUM(stateObject, stateSlots::alreadyTerminated), alreadyTerminated);
 			zv::Ref(OBJ_PROP_NUM(stateObject, stateSlots::exitPoints)).assign(std::move(exitPoints));
 
-			if (alreadyTerminated) return true;
+			if (alreadyTerminated) {
+				zv::Val labelIsUsed = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("labelIsUsed"));
+				if (UNEXPECTED(labelIsUsed.isUndef())) return false;
+				if (labelIsUsed.ref().isTrue()) return true;
+				zv::Val labelRest = arraySlice(stmts, i + 1);
+				bool labelEarlyBinding;
+				if (UNEXPECTED(!isInstance(parentNode, PT_CLASS_NAMESPACE_STMT, labelEarlyBinding))) return false;
+				zv::Val labelNextStmts = getNextUnreachableStatements(labelRest.raw(), labelEarlyBinding);
+				if (UNEXPECTED(labelNextStmts.isUndef())) return false;
+				return processUnreachableStatement(nodeScopeResolver, labelNextStmts.raw(), OBJ_PROP_NUM(stateObject, stateSlots::scope), storage, nodeCallback);
+			}
 
 			zv::Val hasBackwardGoto = pt_engine_node_get_attribute(Z_OBJ_P(stmt), PT_LC("hasBackwardGoto"));
 			if (UNEXPECTED(hasBackwardGoto.isUndef())) return false;

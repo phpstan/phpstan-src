@@ -59,7 +59,7 @@ final class ArrayIsListFunctionTypeSpecifyingExtension implements FunctionTypeSp
 		}
 
 		return $specifiedTypes->unionWith(
-			$this->typeSpecifier->create($args[0]->value, TypeCombinator::intersect($valueType, new NonEmptyArrayType()), TypeSpecifierContext::createTrue(), $scope),
+			$this->typeSpecifier->create($args[0]->value, new NonEmptyArrayType(), TypeSpecifierContext::createTrue(), $scope),
 		);
 	}
 

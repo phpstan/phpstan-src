@@ -67,3 +67,21 @@ function foreachTiesKeyValueAndIteratee(array $types): void
 		}
 	}
 }
+
+/** @param array<string, string> $values */
+function writeToTrackedOffsetOfEmptyArrayUnderStringKey(array $values): void
+{
+	$data = [];
+	foreach ($values as $name => $value) {
+		$key = (string) $name;
+		if (strlen($value) > 1) {
+			if (!is_array($data[$key])) {
+				$data[$key] = [];
+			}
+			$data[$key][] = $value;
+		} else {
+			$data[$key] = $value === '' ? null : $value;
+		}
+	}
+	assertType('array<string, non-empty-array<mixed>|non-empty-string|null>', $data);
+}

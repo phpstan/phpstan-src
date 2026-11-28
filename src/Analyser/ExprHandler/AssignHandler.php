@@ -2941,7 +2941,7 @@ final class AssignHandler implements ExprHandler
 				$valueToWrite = $offsetValueType->setOffsetValueType($offsetType, $valueToWrite, $unionValues);
 			}
 
-			if ($offsetValueType->isList()->yes() && $this->shouldKeepList($nodeScopeResolver, $writtenDimFetch, $scope, $storage, $offsetValueType)) {
+			if ($offsetValueType->isList()->yes() && $this->shouldKeepList($nodeScopeResolver, $writtenDimFetch, $scope, $storage, $offsetValueType, $offsetType)) {
 				$valueToWrite = TypeCombinator::intersect($valueToWrite, new AccessoryArrayListType());
 			}
 
@@ -2978,7 +2978,7 @@ final class AssignHandler implements ExprHandler
 		return [$valueToWrite, $additionalExpressions];
 	}
 
-	private function shouldKeepList(NodeScopeResolver $nodeScopeResolver, ArrayDimFetch $arrayDimFetch, MutatingScope $scope, ExpressionResultStorage $storage, Type $offsetValueType): bool
+	private function shouldKeepList(NodeScopeResolver $nodeScopeResolver, ArrayDimFetch $arrayDimFetch, MutatingScope $scope, ExpressionResultStorage $storage, Type $offsetValueType, ?Type $offsetType): bool
 	{
 		if ($arrayDimFetch->dim instanceof Expr\BinaryOp\Plus) {
 			if ( // keep list for $list[$index + 1] assignments
@@ -3029,7 +3029,9 @@ final class AssignHandler implements ExprHandler
 
 		// keep list for a write to an offset known to be there, as
 		// $list[$k]['x'] = ... after is_array($list[$k])
-		return $scope->hasExpressionType($arrayDimFetch)->yes();
+		return $offsetType !== null
+			&& !$offsetValueType->hasOffsetValueType($offsetType)->no()
+			&& $scope->hasExpressionType($arrayDimFetch)->yes();
 	}
 
 	/**

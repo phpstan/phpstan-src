@@ -4,6 +4,7 @@ namespace PHPStan\Analyser\ExprHandler;
 
 use Countable;
 use DivisionByZeroError;
+use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
@@ -733,7 +734,9 @@ final class BinaryOpHandler implements ExprHandler
 				$specifiedTypes = $specifyTypesCallback($context, $nativeTypesPromoted);
 				$scope = $nativeTypesPromoted ? $beforeScope->doNotTreatPhpDocTypesAsCertain() : $beforeScope;
 
-				return $this->specifyRememberedComparisonForms($specifiedTypes, $scope, $expr, $leftResult, $rightResult, $context);
+				$specifiedTypes = $this->specifyRememberedComparisonForms($specifiedTypes, $scope, $expr, $leftResult, $rightResult, $context);
+
+				return $this->rememberRelationalFact($specifiedTypes, $expr, $leftResult, $rightResult, $context, $nativeTypesPromoted);
 			},
 			dependencies: Dependencies::merge($leftResult->getDependencies(), $rightResult->getDependencies()),
 		);
@@ -806,6 +809,128 @@ final class BinaryOpHandler implements ExprHandler
 		}
 
 		return $specifiedTypes->unionWith(new SpecifiedTypes($sureTypes, []));
+	}
+
+	/**
+	 * Narrowing a comparison of two relatable operands also keeps its verdict
+	 * in the scope. When an operand narrows later, MutatingScope::applySpecifiedTypes()
+	 * specifies the comparison again on the narrowed scope, so the other
+	 * operand narrows with the same rules as when the comparison is written
+	 * after the narrowing. An operand with a constant value relates to nothing -
+	 * its own narrowing is all there is.
+	 */
+	private function rememberRelationalFact(SpecifiedTypes $specifiedTypes, BinaryOp $expr, ExpressionResult $leftResult, ExpressionResult $rightResult, TypeSpecifierContext $context, bool $nativeTypesPromoted): SpecifiedTypes
+	{
+		if ($context->true() === $context->false()) {
+			return $specifiedTypes;
+		}
+		if (!self::isRelationalComparison($expr)) {
+			return $specifiedTypes;
+		}
+		if ($leftResult->getImpurePoints() !== [] || $rightResult->getImpurePoints() !== []) {
+			return $specifiedTypes;
+		}
+		$leftReads = self::getRelatableReads($expr->left);
+		$rightReads = self::getRelatableReads($expr->right);
+		if ($leftReads === null || $leftReads === [] || $rightReads === null || $rightReads === []) {
+			return $specifiedTypes;
+		}
+		$leftType = $nativeTypesPromoted ? $leftResult->getNativeType() : $leftResult->getType();
+		$rightType = $nativeTypesPromoted ? $rightResult->getNativeType() : $rightResult->getType();
+		if (count($leftType->getFiniteTypes()) === 1 || count($rightType->getFiniteTypes()) === 1) {
+			return $specifiedTypes;
+		}
+
+		return $specifiedTypes->unionWith(new SpecifiedTypes([
+			$this->exprPrinter->printExpr($expr) => [$expr, new ConstantBooleanType($context->true())],
+		], []));
+	}
+
+	/** @phpstan-assert-if-true BinaryOp\Identical|BinaryOp\NotIdentical|BinaryOp\Equal|BinaryOp\NotEqual|BinaryOp\Smaller|BinaryOp\SmallerOrEqual|BinaryOp\Greater|BinaryOp\GreaterOrEqual $expr */
+	public static function isRelationalComparison(Expr $expr): bool
+	{
+		return $expr instanceof BinaryOp\Identical
+			|| $expr instanceof BinaryOp\NotIdentical
+			|| $expr instanceof BinaryOp\Equal
+			|| $expr instanceof BinaryOp\NotEqual
+			|| $expr instanceof BinaryOp\Smaller
+			|| $expr instanceof BinaryOp\SmallerOrEqual
+			|| $expr instanceof BinaryOp\Greater
+			|| $expr instanceof BinaryOp\GreaterOrEqual;
+	}
+
+	/**
+	 * The variables, property and offset fetches and function calls an operand
+	 * built from those, arithmetic and scalars reads, or null for any other
+	 * operand. Assigning a read forgets a verdict containing it; the caller
+	 * checks that evaluating the operand is pure. A method call is left out: a
+	 * write to its object forgets the call's own entry, not a comparison
+	 * containing it (ScopeOps::invalidateMethodsOnExpression()).
+	 *
+	 * @return list<Expr>|null
+	 */
+	public static function getRelatableReads(Expr $expr): ?array
+	{
+		if ($expr instanceof Node\Scalar) {
+			return [];
+		}
+		if ($expr instanceof Expr\UnaryMinus || $expr instanceof Expr\UnaryPlus) {
+			return self::getRelatableReads($expr->expr);
+		}
+		if (
+			$expr instanceof BinaryOp\Plus
+			|| $expr instanceof BinaryOp\Minus
+			|| $expr instanceof BinaryOp\Mul
+			|| $expr instanceof BinaryOp\Concat
+		) {
+			$leftReads = self::getRelatableReads($expr->left);
+			if ($leftReads === null) {
+				return null;
+			}
+			$rightReads = self::getRelatableReads($expr->right);
+
+			return $rightReads === null ? null : array_merge($leftReads, $rightReads);
+		}
+		if ($expr instanceof Variable) {
+			return is_string($expr->name) ? [$expr] : null;
+		}
+		if ($expr instanceof Expr\PropertyFetch) {
+			if (!$expr->name instanceof Node\Identifier) {
+				return null;
+			}
+			$varReads = self::getRelatableReads($expr->var);
+
+			return $varReads === null ? null : array_merge([$expr], $varReads);
+		}
+		if ($expr instanceof Expr\ArrayDimFetch) {
+			if ($expr->dim === null) {
+				return null;
+			}
+			$varReads = self::getRelatableReads($expr->var);
+			if ($varReads === null) {
+				return null;
+			}
+			$dimReads = self::getRelatableReads($expr->dim);
+
+			return $dimReads === null ? null : array_merge([$expr], $varReads, $dimReads);
+		}
+		if (!$expr instanceof Expr\FuncCall || !$expr->name instanceof Name || $expr->isPartialFunctionApplication()) {
+			return null;
+		}
+		$argReads = [];
+		foreach ($expr->getArgs() as $arg) {
+			if ($arg->unpack || $arg->byRef || $arg->name !== null) {
+				return null;
+			}
+			$valueReads = self::getRelatableReads($arg->value);
+			if ($valueReads === null) {
+				return null;
+			}
+			$argReads = array_merge($argReads, $valueReads);
+		}
+
+		// a call of constants only is a constant
+		return $argReads === [] ? null : array_merge([$expr], $argReads);
 	}
 
 	/**

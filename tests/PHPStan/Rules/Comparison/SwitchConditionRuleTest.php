@@ -88,6 +88,10 @@ class SwitchConditionRuleTest extends RuleTestCase
 				112,
 			],
 			[
+				'Switch condition comparison between string and string is always false.',
+				134,
+			],
+			[
 				'Case \'1\' in switch is a duplicate of case 1 on line 149.',
 				151,
 			],

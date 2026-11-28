@@ -3507,6 +3507,10 @@ zv::Val pt_expression_result_get_specified_types(zval *result, zval *context, bo
 /* {{{ BinaryOpHandler.cpp (OperatorHandlers.h) */
 
 extern zend_class_entry *pt_ce_binary_op_handler;
+/* BinaryOpHandler::isRelationalComparison($expr): -1 = pending exception;
+ * ::getRelatableReads($expr): a list or null, UNDEF = pending exception */
+int pt_binary_op_handler_is_relational_comparison(zval *expr);
+zv::Val pt_binary_op_handler_get_relatable_reads(zval *expr);
 
 /* }}} */
 

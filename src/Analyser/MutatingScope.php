@@ -24,6 +24,7 @@ use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\NodeFinder;
+use PHPStan\Analyser\ExprHandler\BinaryOpHandler;
 use PHPStan\Analyser\ExprHandler\Helper\ClosureTypeResolver;
 use PHPStan\Analyser\Generics\ClosureSignatureInference;
 use PHPStan\Analyser\Generics\TemplateArgumentConstraints;
@@ -136,6 +137,7 @@ use function preg_match;
 use function preg_match_all;
 use function spl_object_id;
 use function sprintf;
+use function str_contains;
 use function str_starts_with;
 use function strlen;
 use function strtolower;
@@ -158,6 +160,9 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 
 	/** Past this array nesting, widening between loop passes turns an array value whose nesting grew into mixed. */
 	private const GENERALIZED_ARRAY_DEPTH_LIMIT = 2;
+
+	/** Rounds of carrying a narrowing through tracked comparison verdicts per application, a chain `$a < $b < $c` takes one per link. */
+	private const RELATIONAL_FACT_ROUNDS_LIMIT = 4;
 
 	/** Magic methods that let the author decide which properties survive a serialize()/unserialize() round trip. */
 	private const CUSTOM_SERIALIZATION_METHODS = ['__sleep', '__serialize', '__unserialize'];
@@ -3938,9 +3943,110 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 	 * Scope::getType() - it only combines the given types with already-tracked
 	 * expression type holders.
 	 *
+	 * Tracked comparison verdicts whose operands this narrowing changed are
+	 * then specified again on the narrowed scope (respecifyRelationalFacts()),
+	 * so `if ($b > 0) { if ($a === $b) … }` and the reverse order narrow `$a`
+	 * the same way.
+	 *
 	 * @return static
 	 */
 	public function applySpecifiedTypes(SpecifiedTypes $specifiedTypes): self
+	{
+		[$scope, $changedExpressions] = $this->applySpecifiedTypesBatch($specifiedTypes);
+		for ($round = 0; $changedExpressions !== [] && $round < self::RELATIONAL_FACT_ROUNDS_LIMIT; $round++) {
+			$factTypes = $scope->respecifyRelationalFacts($changedExpressions);
+			if ($factTypes === null) {
+				break;
+			}
+			[$scope, $changedExpressions] = $scope->applySpecifiedTypesBatch($factTypes);
+		}
+
+		return $scope;
+	}
+
+	/**
+	 * The narrowing of the tracked comparison verdicts that read a changed
+	 * expression, specified again on this scope - the comparison's handler
+	 * decides what the verdict implies for the other operand now.
+	 *
+	 * @param array<string, ExpressionTypeHolder> $changedExpressions
+	 */
+	private function respecifyRelationalFacts(array $changedExpressions): ?SpecifiedTypes
+	{
+		$factTypes = null;
+		foreach ($this->expressionTypes as $factString => $factHolder) {
+			$fact = $factHolder->getExpr();
+			if (!BinaryOpHandler::isRelationalComparison($fact) || !$factHolder->getCertainty()->yes()) {
+				continue;
+			}
+			$factString = (string) $factString; // @phpstan-ignore cast.useless
+			if (array_key_exists($factString, $changedExpressions)) {
+				continue;
+			}
+			$verdict = $factHolder->getType();
+			if ($verdict->isTrue()->yes()) {
+				$context = TypeSpecifierContext::createTruthy();
+			} elseif ($verdict->isFalse()->yes()) {
+				$context = TypeSpecifierContext::createFalsey();
+			} else {
+				continue;
+			}
+
+			// a read's key is part of the verdict's key
+			$mayReadChanged = false;
+			foreach (array_keys($changedExpressions) as $changedString) {
+				if (str_contains($factString, (string) $changedString)) { // @phpstan-ignore cast.useless
+					$mayReadChanged = true;
+					break;
+				}
+			}
+			if (!$mayReadChanged) {
+				continue;
+			}
+
+			$sideChanged = [];
+			foreach ([$fact->left, $fact->right] as $side) {
+				$reads = BinaryOpHandler::getRelatableReads($side);
+				if ($reads === null) {
+					continue 2;
+				}
+				$changed = false;
+				foreach ($reads as $read) {
+					if (array_key_exists($this->getNodeKey($read), $changedExpressions)) {
+						$changed = true;
+						break;
+					}
+				}
+				$sideChanged[] = $changed;
+			}
+			if (!$sideChanged[0] && !$sideChanged[1]) {
+				continue;
+			}
+
+			// the verdict itself would decide the comparison, and a decided
+			// comparison narrows nothing
+			$evaluationScope = $this->openSpecificationScope();
+			unset($evaluationScope->expressionTypes[$factString], $evaluationScope->nativeExpressionTypes[$factString]);
+			$specified = $this->services->container->getByType(NodeScopeResolver::class)
+				->processExprOnDemand($fact, $evaluationScope, new ExpressionResultStorage())
+				->getSpecifiedTypes($context, $this->nativeTypesPromoted)
+				->removeExpr($factString);
+			// an operand learns nothing new from an unchanged other side
+			if ($sideChanged[0] !== $sideChanged[1]) {
+				$specified = $specified->removeExpr($this->getNodeKey($sideChanged[0] ? $fact->left : $fact->right));
+			}
+			$factTypes = $factTypes === null ? $specified : $factTypes->unionWith($specified);
+		}
+
+		return $factTypes;
+	}
+
+	/**
+	 * Applies one batch; also returns the expressions whose tracked type it changed.
+	 *
+	 * @return array{static, array<string, ExpressionTypeHolder>}
+	 */
+	private function applySpecifiedTypesBatch(SpecifiedTypes $specifiedTypes): array
 	{
 		// deferred augments see this scope's pre-application state - the
 		// application point of the narrowing; their entries join this batch
@@ -4171,8 +4277,7 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			}
 		}
 
-		/** @var static */
-		return $scope->scopeFactory->create(
+		$result = $scope->scopeFactory->create(
 			$scope->context,
 			$scope->isDeclareStrictTypes(),
 			$scope->getFunction(),
@@ -4192,6 +4297,21 @@ class MutatingScope implements Scope, NodeCallbackInvoker, CollectedDataEmitter,
 			$scope->templateArgumentFrame,
 			$scope->templateArgumentConstraints,
 		);
+
+		$changedExpressions = [];
+		foreach ($specifiedExpressions as $exprString => $holder) {
+			if (
+				array_key_exists($exprString, $this->expressionTypes)
+				&& $this->expressionTypes[$exprString]->getCertainty()->yes()
+				&& $this->expressionTypes[$exprString]->getType()->equals($holder->getType())
+			) {
+				continue;
+			}
+			$changedExpressions[$exprString] = $holder;
+		}
+
+		/** @var static $result */
+		return [$result, $changedExpressions];
 	}
 
 	/**

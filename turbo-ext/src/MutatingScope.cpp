@@ -6851,6 +6851,67 @@ public:
 		return specifyExpressionTypeInPlace(inner.deref().asObject(), type, nativeType, certainty);
 	}
 
+	/* `$certainty->yes() && $type->isNull()->no()`: the narrowed offset is
+	 * there. false = pending exception */
+	[[nodiscard]] static bool narrowsToExistingOffset(zval *type, zval *certainty, bool &out)
+	{
+		out = false;
+		zend_long certaintyValue = pt_type_trinary_value(certainty);
+		if (UNEXPECTED(certaintyValue < 0)) return false;
+		if (certaintyValue != PT_TRI_YES) return true;
+		if (UNEXPECTED(Z_TYPE_P(type) != IS_OBJECT)) {
+			zend_throw_error(NULL, "Call to a member function isNull() on %s", zend_zval_value_name(type));
+			return false;
+		}
+		zend_long isNull = pt_type_op_trinary(Z_OBJ_P(type), PT_OP_IS_NULL, 0, NULL);
+		if (UNEXPECTED(isNull < 0)) return false;
+		out = isNull == PT_TRI_NO;
+		return true;
+	}
+
+	/* (twin removeArraysWithoutOffsetValueType()) the union without the
+	 * arrays whose values at $dimType cannot be $offsetValueType; $varType
+	 * itself when none or all of them go. UNDEF = pending exception */
+	[[nodiscard]] static zv::Val removeArraysWithoutOffsetValueType(zval *varType, zval *dimType, zval *offsetValueType)
+	{
+		if (Z_TYPE_P(varType) != IS_OBJECT || pt_ce_union_type == NULL || !instanceof_function(Z_OBJCE_P(varType), pt_ce_union_type)
+			|| (pt_ce_benevolent_union_type != NULL && instanceof_function(Z_OBJCE_P(varType), pt_ce_benevolent_union_type))) {
+			return zv::Val::copyOf(zv::Ref(varType));
+		}
+		bool isTemplate;
+		if (UNEXPECTED(!isInstance(zv::Ref(varType), PT_CLASS_TEMPLATE_TYPE, isTemplate))) return zv::Val();
+		if (isTemplate) return zv::Val::copyOf(zv::Ref(varType));
+
+		zv::Val types = pt_type_op(Z_OBJ_P(varType), PT_OP_GET_TYPES, 0, NULL);
+		if (UNEXPECTED(types.isUndef())) return zv::Val();
+		// borrowed from types, which outlives the union() call
+		std::vector<zval> kept;
+		uint32_t count = 0;
+		for (zv::ArrayEntry entry : zv::ArrRef(types.raw())) {
+			count++;
+			zval *member = entry.value().deref().raw();
+			if (UNEXPECTED(Z_TYPE_P(member) != IS_OBJECT)) {
+				pt_throw_should_not_happen();
+				return zv::Val();
+			}
+			zend_long isArray = pt_type_op_trinary(Z_OBJ_P(member), PT_OP_IS_ARRAY, 0, NULL);
+			if (UNEXPECTED(isArray < 0)) return zv::Val();
+			if (isArray == PT_TRI_YES) {
+				zv::Val memberValueType = pt_type_op(Z_OBJ_P(member), PT_OP_GET_OFFSET_VALUE_TYPE, 1, dimType);
+				if (UNEXPECTED(memberValueType.isUndef())) return zv::Val();
+				zv::Val isSuperType = pt_type_op(Z_OBJ_P(offsetValueType), PT_OP_IS_SUPER_TYPE_OF, 1, memberValueType.raw());
+				if (UNEXPECTED(isSuperType.isUndef())) return zv::Val();
+				zend_long isSuperTypeValue = pt_type_result_trinary(isSuperType.raw());
+				if (UNEXPECTED(isSuperTypeValue < 0)) return zv::Val();
+				if (isSuperTypeValue == PT_TRI_NO) continue;
+			}
+			kept.push_back(*member);
+		}
+		if (kept.empty() || kept.size() == count) return zv::Val::copyOf(zv::Ref(varType));
+
+		return pt_type_combinator_union((uint32_t) kept.size(), kept.data());
+	}
+
 	/* the ArrayDimFetch arm of specifyExpressionTypeInPlace(): the var's
 	 * offset-accessible narrowing, applied in place */
 	bool specifyArrayDimVarInPlace(zend_object *dim, zend_object *var, zval *type, zval *certainty)
@@ -6872,7 +6933,19 @@ public:
 		if (dimIsInteger != PT_TRI_YES) {
 			zend_long dimIsString = pt_type_op_trinary(dimType.ref().asObject(), PT_OP_IS_STRING, 0, NULL);
 			if (UNEXPECTED(dimIsString < 0)) return false;
-			if (dimIsString != PT_TRI_YES) return true;
+			if (dimIsString != PT_TRI_YES) {
+				bool narrows;
+				if (UNEXPECTED(!narrowsToExistingOffset(type, certainty, narrows))) return false;
+				if (!narrows) return true;
+				zv::Val otherKeyVarType = getScopeStateType(var);
+				if (UNEXPECTED(otherKeyVarType.isUndef())) return false;
+				zv::Val narrowedVarType = removeArraysWithoutOffsetValueType(otherKeyVarType.raw(), dimType.raw(), type);
+				if (UNEXPECTED(narrowedVarType.isUndef())) return false;
+				if (Z_TYPE_P(narrowedVarType.raw()) == IS_OBJECT && Z_TYPE_P(otherKeyVarType.raw()) == IS_OBJECT && Z_OBJ_P(narrowedVarType.raw()) == Z_OBJ_P(otherKeyVarType.raw())) return true;
+				zv::Val otherKeyVarNativeType = getScopeStateNativeType(var);
+				if (UNEXPECTED(otherKeyVarNativeType.isUndef())) return false;
+				return specifyExpressionTypeInPlace(var, narrowedVarType.raw(), otherKeyVarNativeType.raw(), certainty);
+			}
 		}
 
 		zv::Val exprVarType = getScopeStateType(var);
@@ -6908,6 +6981,14 @@ public:
 				zv::Val hasOffset = zv::Val::adopt(hasOffsetZv);
 				zv::Args args{varType.raw(), hasOffset.raw()};
 				zv::Val narrowed = pt_type_combinator_intersect(2, args);
+				if (UNEXPECTED(narrowed.isUndef())) return false;
+				varType = std::move(narrowed);
+			}
+		} else {
+			bool narrows;
+			if (UNEXPECTED(!narrowsToExistingOffset(type, certainty, narrows))) return false;
+			if (narrows) {
+				zv::Val narrowed = removeArraysWithoutOffsetValueType(varType.raw(), dimType.raw(), type);
 				if (UNEXPECTED(narrowed.isUndef())) return false;
 				varType = std::move(narrowed);
 			}

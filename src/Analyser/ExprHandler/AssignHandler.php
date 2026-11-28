@@ -3027,7 +3027,9 @@ final class AssignHandler implements ExprHandler
 			return true;
 		}
 
-		return false;
+		// keep list for a write to an offset known to be there, as
+		// $list[$k]['x'] = ... after is_array($list[$k])
+		return $scope->hasExpressionType($arrayDimFetch)->yes();
 	}
 
 	/**

@@ -322,7 +322,9 @@ class UnionType implements CompoundType
 			$result = $result->or($innerResult->decorateReasons(static fn (string $reason) => sprintf('Type #%d from the union: %s', $i + 1, $reason)));
 		}
 		if ($result->yes()) {
-			return $result;
+			// the reasons are those of the members that do not accept the type,
+			// which do not matter once one does
+			return AcceptsResult::createYes();
 		}
 
 		// A shape that union() merged from shapes differing at one key is accepted when

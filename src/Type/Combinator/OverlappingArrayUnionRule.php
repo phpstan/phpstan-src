@@ -44,15 +44,17 @@ final class OverlappingArrayUnionRule implements UnionRule
 		}
 
 		$generalArrays = [];
+		$shapes = [];
 		foreach ($arrays as $i => $array) {
 			if (self::isItselfTemplateOrLateResolvable($array)) {
 				unset($arrays[$i]);
 				continue;
 			}
 			if ($array->getConstantArrays() !== []) {
+				$shapes[$i] = $array;
 				continue;
 			}
-			$generalArrays[] = $i;
+			$generalArrays[$i] = $array;
 		}
 		if ($generalArrays === [] || count($arrays) < 2) {
 			return $types;
@@ -64,18 +66,15 @@ final class OverlappingArrayUnionRule implements UnionRule
 			$masks[$i] = self::getKindMasks($array);
 		}
 
-		// the arrays connected to a general array by not being told apart,
-		// found from the general arrays, so the shapes none of them reach
-		// are not compared among themselves
-		$replaced = [];
-		$merged = [];
-		$unvisited = $arrays;
-		foreach ($generalArrays as $root) {
+		// the general arrays connected by not being told apart
+		$groups = [];
+		$unvisited = $generalArrays;
+		foreach (array_keys($generalArrays) as $root) {
 			if (!isset($unvisited[$root])) {
 				continue;
 			}
 			unset($unvisited[$root]);
-			$members = [$root => $arrays[$root]];
+			$group = [$root => $arrays[$root]];
 			$queue = [$root];
 			while ($queue !== []) {
 				$i = array_pop($queue);
@@ -84,10 +83,47 @@ final class OverlappingArrayUnionRule implements UnionRule
 						continue;
 					}
 					unset($unvisited[$j]);
-					$members[$j] = $arrays[$j];
+					$group[$j] = $arrays[$j];
 					$queue[] = $j;
 				}
 			}
+			$groups[] = $group;
+		}
+
+		// the shapes connected to each group, found from its general arrays,
+		// so the shapes no group reaches are not compared among themselves
+		$reachingGroups = [];
+		foreach ($groups as $g => $group) {
+			$reached = [];
+			$queue = array_keys($group);
+			while ($queue !== []) {
+				$i = array_pop($queue);
+				foreach ($shapes as $j => $shape) {
+					if (isset($reached[$j]) || self::areToldApart($arrays[$i], $masks[$i], $shape, $masks[$j])) {
+						continue;
+					}
+					$reached[$j] = true;
+					$queue[] = $j;
+				}
+			}
+			foreach (array_keys($reached) as $j) {
+				$reachingGroups[$j][] = $g;
+			}
+		}
+
+		// a shape reached from two groups stays a member of its own: merged
+		// with both, it would merge general arrays told apart, as
+		// list<int>|list<string>|array{int|string} would become list<int|string>
+		foreach ($reachingGroups as $j => $reachingGroupIndices) {
+			if (count($reachingGroupIndices) !== 1) {
+				continue;
+			}
+			$groups[$reachingGroupIndices[0]][$j] = $shapes[$j];
+		}
+
+		$replaced = [];
+		$merged = [];
+		foreach ($groups as $members) {
 			if (count($members) < 2) {
 				continue;
 			}

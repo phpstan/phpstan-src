@@ -3800,8 +3800,14 @@ private:
 			out = true;
 			return true;
 		}
+		if (failed) return false;
 
-		return !failed;
+		// keep list for a write to an offset known to be there, as
+		// $list[$k]['x'] = ... after is_array($list[$k])
+		zend_long tracked = pt_mutating_scope_has_expression_type(Z_OBJ_P(scope), arrayDimFetch);
+		if (UNEXPECTED(tracked < 0)) return false;
+		out = tracked == PT_TRI_YES;
+		return true;
 	}
 
 	/* $int->value === 1 of a Scalar\Int_ */

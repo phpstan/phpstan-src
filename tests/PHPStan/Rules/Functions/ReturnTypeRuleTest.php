@@ -628,4 +628,18 @@ class ReturnTypeRuleTest extends RuleTestCase
 		$this->analyse([__DIR__ . '/data/bug-13394.php'], []);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15873(): void
+	{
+		$this->checkExplicitMixed = false;
+		$this->checkNullables = true;
+		$this->analyse([__DIR__ . '/data/bug-15873.php'], [
+			[
+				'Function Bug15873\\tipOnlyForOffsetNotAccepted() should return array{array<string, mixed>|list<mixed>, list<int>} but returns array{array<string, mixed>|list<mixed>, array<int, int>}.',
+				90,
+				'Offset 1 (list<int>) does not accept type array<int, int>: array<int, int> might not be a list.',
+			],
+		]);
+	}
+
 }

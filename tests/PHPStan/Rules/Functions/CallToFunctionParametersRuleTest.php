@@ -3766,4 +3766,10 @@ class CallToFunctionParametersRuleTest extends RuleTestCase
 		]);
 	}
 
+	#[RequiresPhp('>= 8.1.0')]
+	public function testBug15873(): void
+	{
+		$this->analyse([__DIR__ . '/data/bug-15873.php'], []);
+	}
+
 }

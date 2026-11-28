@@ -53,15 +53,18 @@ use PHPStan\Node\Variable\VariableWrite;
 use PHPStan\Node\VariableAssignNode;
 use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
+use PHPStan\Type\BenevolentUnionType;
 use PHPStan\Type\BooleanType;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\Constant\ConstantStringType;
+use PHPStan\Type\Generic\TemplateType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\UnionType;
 use Traversable;
 use function array_fill_keys;
 use function array_keys;
@@ -82,6 +85,9 @@ final class ForeachHandler implements StmtHandler
 
 	private const FOREACH_UNROLL_LIMIT = 16;
 	private const FOREACH_UNROLL_NESTED_LIMIT = 8;
+
+	/** The most members of an iteratee union the key, the value and the iteratee are tied by. */
+	private const ITERATEE_MEMBERS_LIMIT = 8;
 
 	public function __construct(
 		private Container $container,
@@ -682,6 +688,15 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		if (
+			$stmt->getDocComment() === null
+			&& $stmt->valueVar instanceof Variable && is_string($stmt->valueVar->name)
+			&& $stmt->keyVar instanceof Variable && is_string($stmt->keyVar->name)
+			&& !$stmt->byRef
+		) {
+			$scope = $this->addIterateeMemberConditionalHolders($scope, $stmt->expr, $iterateeType, $stmt->keyVar->name, $stmt->valueVar->name);
+		}
+
+		if (
 			$stmt->expr instanceof FuncCall
 			&& $stmt->expr->name instanceof Name
 			&& !$stmt->expr->isPartialFunctionApplication()
@@ -700,6 +715,63 @@ final class ForeachHandler implements StmtHandler
 		}
 
 		return $this->varAnnotationProcessor->processVarAnnotation($scope, $vars, $stmt);
+	}
+
+	/**
+	 * One loop walks one array, so all of its keys come from the same member of
+	 * a union like `array<int, A>|array<string, B>`. Ties the key, the value
+	 * and the iteratee together by the member: `is_int($key)` narrows `$value`
+	 * to `A` and the iteratee to `array<int, A>`, and narrowing the iteratee to
+	 * a member narrows the key and the value. Only when the members' keys share
+	 * no value, so that the key tells the member.
+	 */
+	private function addIterateeMemberConditionalHolders(MutatingScope $scope, Expr $iteratee, Type $iterateeType, string $keyVarName, string $valueVarName): MutatingScope
+	{
+		if (!$iterateeType instanceof UnionType || $iterateeType instanceof BenevolentUnionType || $iterateeType instanceof TemplateType) {
+			return $scope;
+		}
+		$members = $iterateeType->getTypes();
+		if (count($members) > self::ITERATEE_MEMBERS_LIMIT || !$scope->hasExpressionType($iteratee)->yes()) {
+			return $scope;
+		}
+		$keyTypes = [];
+		foreach ($members as $member) {
+			if (!$member->isArray()->yes() || $member->isConstantArray()->yes()) {
+				return $scope;
+			}
+			$keyType = $member->getIterableKeyType();
+			foreach ($keyTypes as $otherKeyType) {
+				if (!$otherKeyType->isSuperTypeOf($keyType)->no()) {
+					return $scope;
+				}
+			}
+			$keyTypes[] = $keyType;
+		}
+
+		$iterateeExprString = $scope->getNodeKey($iteratee);
+		$keyExprString = '$' . $keyVarName;
+		$valueExprString = '$' . $valueVarName;
+		$keyVar = new Variable($keyVarName);
+		$valueVar = new Variable($valueVarName);
+		$holders = [];
+		foreach ($members as $i => $member) {
+			$byMember = [$iterateeExprString => ExpressionTypeHolder::createYes($iteratee, $member)];
+			$byKey = [$keyExprString => ExpressionTypeHolder::createYes($keyVar, $keyTypes[$i])];
+			$valueHolder = ExpressionTypeHolder::createYes($valueVar, $member->getIterableValueType());
+			foreach ([
+				[$keyExprString, new ConditionalExpressionHolder($byMember, ExpressionTypeHolder::createYes($keyVar, $keyTypes[$i]))],
+				[$valueExprString, new ConditionalExpressionHolder($byMember, $valueHolder)],
+				[$iterateeExprString, new ConditionalExpressionHolder($byKey, ExpressionTypeHolder::createYes($iteratee, $member))],
+				[$valueExprString, new ConditionalExpressionHolder($byKey, $valueHolder)],
+			] as [$target, $holder]) {
+				$holders[$target][$holder->getKey()] = $holder;
+			}
+		}
+		foreach ($holders as $target => $targetHolders) {
+			$scope = $scope->addConditionalExpressions($target, $targetHolders);
+		}
+
+		return $scope;
 	}
 
 	/**

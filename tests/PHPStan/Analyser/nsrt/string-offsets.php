@@ -27,7 +27,7 @@ function doFoo($oneToThree, $threeToTen, $tenOrMore, $negative, int $smallerMinu
 	assertType("'e'|'l'|'o'|'r'", $s[$oneToThree]);
 	assertType('*ERROR*', $s[$tenOrMore]);
 	assertType("''|'d'|'l'|'o'", $s[$threeToTen]);
-	assertType("non-empty-string", $s[$negative]);
+	assertType("''|'h'|'w'", $s[$negative]);
 	assertType("*ERROR*", $s[$smallerMinusSix]);
 
 	$longString = "myF5HnJv799kWf8VRI7g97vwnABTwN9y2CzAVELCBfRqyqkdTzXg7BkGXcwuIOscAiT6tSuJGzVZOJnYXvkiKQzYBNjjkCPOzSKXR5YHRlVxV1BetqZz4XOmaH9mtacJ9azNYL6bNXezSBjX13BSZy02SK2udzQLbTPNQwlKadKaNkUxjtWegkb8QDFaXbzH1JENVSLVH0FYd6POBU82X1xu7FDDKYLzwsWJHBGVhG8iugjEGwLj22x5ViosUyKR";

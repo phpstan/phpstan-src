@@ -1051,10 +1051,13 @@ $floatOthers = static fn (string $float, string $constFloat, string $null, strin
 	];
 	foreach ($numberSetOperands as $name => $operand) {
 		$numberSet = $operand->toNumberSet();
-		$r["$name toNumberSet"] = $numberSet === null ? null : [$numberSet->getIntegerIntervals(), $numberSet->getFloatIntervals(), $numberSet->hasNan()];
+		$r["$name toNumberSet"] = $numberSet === null ? null : [$numberSet->getIntegerIntervals(), $numberSet->getFloatIntervals(), $numberSet->hasNan(), $numberSet->getIntegerBounds()];
 	}
 	$numberSet = new \PHPStan\Type\NumberSet([[null, -1], [3, 3]], [[-INF, -0.0], [1.5, 1.5]], true);
-	$r['new NumberSet'] = [$numberSet->getIntegerIntervals(), $numberSet->getFloatIntervals(), $numberSet->hasNan()];
+	$r['new NumberSet'] = [$numberSet->getIntegerIntervals(), $numberSet->getFloatIntervals(), $numberSet->hasNan(), $numberSet->getIntegerBounds()];
+	foreach ([[], [[5, 7], [0, 2]], [[4, null], [-3, 1]], [[PHP_INT_MIN, 0], [3, PHP_INT_MAX]]] as $i => $integerIntervals) {
+		$r["integer bounds $i"] = (new \PHPStan\Type\NumberSet($integerIntervals, [[0.5, 0.5]], false))->getIntegerBounds();
+	}
 
 	foreach ($arithmeticOperands as $leftName => $left) {
 		foreach ($arithmeticOperands as $rightName => $right) {

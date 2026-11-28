@@ -1738,33 +1738,24 @@ private:
 				zv::Val argType = specifyOperandType(captures, scope, nativeTypesPromoted, argValue);
 				if (UNEXPECTED(argType.isUndef())) return zv::Val();
 
+				/* the count is past the smallest left value when the comparison
+				 * holds, and not past the largest one when it does not */
 				zv::Val sizeType;
 				bool leftIsConstant;
 				zend_long leftValue = 0;
 				if (UNEXPECTED(!constantIntegerValue(leftType.raw(), leftIsConstant, leftValue))) return zv::Val();
-				if (leftIsConstant) {
-					sizeType = greaterThan(leftValue, orEqual);
-					if (UNEXPECTED(sizeType.isUndef())) return zv::Val();
-				} else if (instanceof_function(Z_OBJCE_P(leftType.raw()), pt_ce_integer_range_type)) {
-					phpstanturbo::NullableLong min = phpstanturbo::NullableLong::null();
-					phpstanturbo::NullableLong max = phpstanturbo::NullableLong::null();
+				phpstanturbo::NullableLong leftMin = phpstanturbo::NullableLong::null();
+				phpstanturbo::NullableLong leftMax = phpstanturbo::NullableLong::null();
+				bool hasLeftBounds;
+				if (UNEXPECTED(!pt_type_integer_bounds(leftType.raw(), leftMin, leftMax, hasLeftBounds))) return zv::Val();
+				if (hasLeftBounds) {
 					bool falsey;
 					if (UNEXPECTED(!pt_type_specifier_context_falsey(Z_OBJ_P(context), falsey))) return zv::Val();
-					if (falsey && UNEXPECTED(!pt_integer_range_bounds(Z_OBJ_P(leftType.raw()), min, max))) return zv::Val();
-					if (falsey && !max.isNull) {
-						sizeType = greaterThan(max.value, orEqual);
+					phpstanturbo::NullableLong leftBound = falsey ? leftMax : leftMin;
+					if (!leftBound.isNull) {
+						sizeType = greaterThan(leftBound.value, orEqual);
 						if (UNEXPECTED(sizeType.isUndef())) return zv::Val();
-					} else {
-						bool truthy;
-						if (UNEXPECTED(!pt_type_specifier_context_truthy(Z_OBJ_P(context), truthy))) return zv::Val();
-						if (truthy && UNEXPECTED(!pt_integer_range_bounds(Z_OBJ_P(leftType.raw()), min, max))) return zv::Val();
-						if (truthy && !min.isNull) {
-							sizeType = greaterThan(min.value, orEqual);
-							if (UNEXPECTED(sizeType.isUndef())) return zv::Val();
-						}
 					}
-				} else {
-					sizeType = zv::Val::copyOf(leftType.ref());
 				}
 
 				if (!sizeType.isUndef()) {

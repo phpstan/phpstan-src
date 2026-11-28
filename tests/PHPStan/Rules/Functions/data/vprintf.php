@@ -65,3 +65,13 @@ function doFoo($message, array $arr) {
 	}
 
 }
+
+/**
+ * @param array{1}|array{1, 2} $consecutiveSizes
+ * @param array{1}|array{1, 2, 3} $sparseSizes
+ */
+function unionOfArraySizes(array $consecutiveSizes, array $sparseSizes): void
+{
+	vsprintf('%s %s', $consecutiveSizes);
+	vsprintf('%s %s', $sparseSizes);
+}

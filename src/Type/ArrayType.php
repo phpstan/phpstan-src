@@ -387,24 +387,6 @@ class ArrayType implements Type
 			$isKeyTypeInteger = $this->keyType->isInteger();
 			if ($isKeyTypeInteger->no()) {
 				$offsetType = new IntegerType();
-			} elseif ($isKeyTypeInteger->yes()) {
-				/** @var list<ConstantIntegerType> $constantScalars */
-				$constantScalars = $this->keyType->getConstantScalarTypes();
-				if (count($constantScalars) > 0) {
-					$offsetTypes = $constantScalars;
-					foreach ($constantScalars as $constantScalar) {
-						// an offset past PHP_INT_MAX cannot be assigned, so it's not a possible key
-						if ($constantScalar->getValue() === PHP_INT_MAX) {
-							continue;
-						}
-
-						$offsetTypes[] = new ConstantIntegerType($constantScalar->getValue() + 1);
-					}
-
-					$offsetType = TypeCombinator::union(...$offsetTypes);
-				} else {
-					$offsetType = $this->keyType;
-				}
 			} else {
 				$integerTypes = [];
 				TypeTraverser::map($this->keyType, static function (Type $type, callable $traverse) use (&$integerTypes): Type {
@@ -422,7 +404,20 @@ class ArrayType implements Type
 				if (count($integerTypes) === 0) {
 					$offsetType = $this->keyType;
 				} else {
-					$offsetType = TypeCombinator::union(...$integerTypes);
+					$integerKeyType = TypeCombinator::union(...$integerTypes);
+					$offsetTypes = [$integerKeyType];
+					// the appended key is one past an integer key: past the max of each interval, the rest of the interval is already a key
+					$integerKeyNumbers = $integerKeyType->toNumberSet();
+					foreach ($integerKeyNumbers !== null ? $integerKeyNumbers->getIntegerIntervals() : [] as [, $max]) {
+						// an offset past PHP_INT_MAX cannot be assigned, so it's not a possible key
+						if (in_array($max, [null, PHP_INT_MAX], true)) {
+							continue;
+						}
+
+						$offsetTypes[] = new ConstantIntegerType($max + 1);
+					}
+
+					$offsetType = TypeCombinator::union(...$offsetTypes);
 				}
 			}
 		} else {

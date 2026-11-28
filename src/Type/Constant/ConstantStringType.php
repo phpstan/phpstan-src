@@ -464,31 +464,26 @@ class ConstantStringType extends StringType implements ConstantScalarType
 			$strlen = strlen($this->value);
 			$strLenType = IntegerRangeType::fromInterval(-$strlen, $strlen - 1);
 
-			if ($offsetType instanceof ConstantIntegerType) {
-				if ($strLenType->isSuperTypeOf($offsetType)->yes()) {
-					return new self($this->value[$offsetType->getValue()]);
-				}
-
+			$isInString = $strLenType->isSuperTypeOf($offsetType);
+			if ($isInString->no()) {
 				return new ErrorType();
 			}
 
-			$intersected = TypeCombinator::intersect($strLenType, $offsetType);
-			if ($intersected instanceof IntegerRangeType) {
-				$finiteTypes = $intersected->getFiniteTypes();
-				if ($finiteTypes === []) {
-					return parent::getOffsetValueType($offsetType);
-				}
-
-				$chars = [];
-				foreach ($finiteTypes as $constantInteger) {
-					$chars[] = new self($this->value[$constantInteger->getValue()]);
-				}
-				if (!$strLenType->isSuperTypeOf($offsetType)->yes()) {
-					$chars[] = new self('');
-				}
-
-				return TypeCombinator::union(...$chars);
+			/** @var list<ConstantIntegerType> $finiteTypes */
+			$finiteTypes = TypeCombinator::intersect($strLenType, $offsetType)->getFiniteTypes();
+			if ($finiteTypes === []) {
+				return parent::getOffsetValueType($offsetType);
 			}
+
+			$chars = [];
+			foreach ($finiteTypes as $constantInteger) {
+				$chars[] = new self($this->value[$constantInteger->getValue()]);
+			}
+			if (!$isInString->yes()) {
+				$chars[] = new self('');
+			}
+
+			return TypeCombinator::union(...$chars);
 		}
 
 		return parent::getOffsetValueType($offsetType);

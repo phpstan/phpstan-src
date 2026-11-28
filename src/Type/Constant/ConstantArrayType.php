@@ -2221,24 +2221,20 @@ class ConstantArrayType implements Type
 	}
 
 	/**
-	 * Extracts (min, max) bounds from a size type for `truncateListToSize`.
-	 * `ConstantIntegerType(N)` → `[N, N]`. `IntegerRangeType` →
-	 * `[$min, $max]`. Anything else returns `[null, null]` and the caller
-	 * falls back to the non-precise path.
+	 * Extracts (min, max) bounds from a size type for `truncateListToSize`:
+	 * the smallest and the largest size. A size type without integers returns
+	 * `[null, null]` and the caller falls back to the non-precise path.
 	 *
 	 * @return array{?int, ?int}
 	 */
 	public static function extractTruncateListBounds(Type $sizeType): array
 	{
-		if ($sizeType instanceof ConstantIntegerType) {
-			return [$sizeType->getValue(), $sizeType->getValue()];
+		$numbers = $sizeType->toNumberSet();
+		if ($numbers === null) {
+			return [null, null];
 		}
 
-		if ($sizeType instanceof IntegerRangeType) {
-			return [$sizeType->getMin(), $sizeType->getMax()];
-		}
-
-		return [null, null];
+		return $numbers->getIntegerBounds() ?? [null, null];
 	}
 
 	public function isIterableAtLeastOnce(): TrinaryLogic

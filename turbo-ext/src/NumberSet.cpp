@@ -309,6 +309,7 @@ private:
 		return false;
 	}
 
+public:
 	/* Mirrors toHull(); min() / max() keep the first of equal values. */
 	static NumberSetData toHull(const NumberSetData &set)
 	{
@@ -335,6 +336,7 @@ private:
 		return hull;
 	}
 
+private:
 	/* Mirrors integerToFloatInterval(). */
 	static FloatBounds integerToFloatInterval(const NumberSetData::IntegerInterval &interval)
 	{
@@ -1180,6 +1182,23 @@ bool pt_type_to_number_set(zval *type, NumberSetData &out, bool &has)
 	return true;
 }
 
+bool pt_number_set_integer_bounds(const NumberSetData &set, phpstanturbo::NullableLong &min, phpstanturbo::NullableLong &max)
+{
+	if (set.integerIntervals.empty()) return false;
+	NumberSetData hull = phpstanturbo::NumberSetMath::toHull(set);
+	min = hull.integerIntervals[0].min;
+	max = hull.integerIntervals[0].max;
+	return true;
+}
+
+bool pt_type_integer_bounds(zval *type, phpstanturbo::NullableLong &min, phpstanturbo::NullableLong &max, bool &has)
+{
+	NumberSetData set;
+	if (UNEXPECTED(!pt_type_to_number_set(type, set, has))) return false;
+	has = has && pt_number_set_integer_bounds(set, min, max);
+	return true;
+}
+
 /* {{{ engine ABI glue: parameter parsing + registration */
 
 #define PT_THIS NumberSet(Z_OBJ_P(ZEND_THIS))
@@ -1289,6 +1308,17 @@ PT_MINIT_REGISTRATION(pt_register_number_set)
 	cls.method(sigs::hasNan, [](INTERNAL_FUNCTION_PARAMETERS) {
 		ZEND_PARSE_PARAMETERS_NONE();
 		PT_RETURN_VAL(PT_THIS.get(slots::nan, "nan"));
+	});
+	cls.method(sigs::getIntegerBounds, [](INTERNAL_FUNCTION_PARAMETERS) {
+		ZEND_PARSE_PARAMETERS_NONE();
+		NumberSetData set;
+		if (UNEXPECTED(!PT_THIS.read(set))) RETURN_THROWS();
+		phpstanturbo::NullableLong min, max;
+		if (!pt_number_set_integer_bounds(set, min, max)) RETURN_NULL();
+		zv::Arr bounds = zv::Arr::create(2);
+		bounds.push(min.toVal());
+		bounds.push(max.toVal());
+		PT_RETURN_VAL(zv::Val(std::move(bounds)));
 	});
 	cls.method(sigs::union_, pt_ns_combine<false>);
 	cls.method(sigs::intersect, pt_ns_combine<true>);

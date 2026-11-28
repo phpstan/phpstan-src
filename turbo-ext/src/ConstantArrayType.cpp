@@ -6972,17 +6972,11 @@ private:
 	 * exception */
 	[[nodiscard]] static bool extractTruncateListBoundsValues(zval *sizeType, NullableLong &min, NullableLong &max)
 	{
-		if (instanceof_function(Z_OBJCE_P(sizeType), pt_ce_constant_integer_type)) {
-			zend_long value;
-			if (UNEXPECTED(!pt_constant_integer_get_value(Z_OBJ_P(sizeType), value))) return false;
-			min = NullableLong::of(value);
-			max = NullableLong::of(value);
-			return true;
-		}
-		if (instanceof_function(Z_OBJCE_P(sizeType), pt_ce_integer_range_type)) return pt_integer_range_bounds(Z_OBJ_P(sizeType), min, max);
+		/* $sizeType->toNumberSet()?->getIntegerBounds() ?? [null, null] */
 		min = NullableLong::null();
 		max = NullableLong::null();
-		return true;
+		bool has;
+		return pt_type_integer_bounds(sizeType, min, max, has);
 	}
 
 	/* $builderData[] = [new ConstantIntegerType($i), $this->getOffsetValueType(...), $optional] */

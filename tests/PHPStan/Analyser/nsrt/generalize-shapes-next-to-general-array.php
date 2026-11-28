@@ -29,5 +29,5 @@ function doFoo(array $errors): void
 		];
 	}
 
-	assertType('array<0|string, array{message?: string|null, path?: string, count?: int}|string>', $unique);
+	assertType('array<int<0, max>|string, array{message?: string|null, path?: string, count?: int}|string>', $unique);
 }

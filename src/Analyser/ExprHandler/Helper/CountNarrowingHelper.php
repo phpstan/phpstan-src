@@ -14,6 +14,7 @@ use PHPStan\TrinaryLogic;
 use PHPStan\Turbo\ShadowedByTurboExtension;
 use PHPStan\Type\Accessory\HasOffsetValueType;
 use PHPStan\Type\Accessory\NonEmptyArrayType;
+use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantIntegerType;
 use PHPStan\Type\IntegerRangeType;
 use PHPStan\Type\MixedType;
@@ -158,15 +159,7 @@ final class CountNarrowingHelper
 				$argExpr = $countFuncCall->getArgs()[0]->value;
 				$argExprString = $this->exprPrinter->printExpr($argExpr);
 
-				$sizeMin = null;
-				$sizeMax = null;
-				if ($sizeType instanceof ConstantIntegerType) {
-					$sizeMin = $sizeType->getValue();
-					$sizeMax = $sizeType->getValue();
-				} elseif ($sizeType instanceof IntegerRangeType) {
-					$sizeMin = $sizeType->getMin();
-					$sizeMax = $sizeType->getMax();
-				}
+				[$sizeMin, $sizeMax] = ConstantArrayType::extractTruncateListBounds($sizeType);
 
 				$sureTypes = [];
 				$sureNotTypes = [];

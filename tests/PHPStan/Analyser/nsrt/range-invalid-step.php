@@ -30,7 +30,7 @@ function doBar(bool $flag, string $s): void
 		// PHP 7 returns false, PHP 8.0 throws a ValueError
 		assertType('false', range(2, 5, 0));
 		// PHP 7 might return false for arguments that PHP 8.0 might accept
-		assertType('non-empty-list<int>|false', range(0, 0, 0));
+		assertType('non-empty-list<0>|false', range(0, 0, 0));
 	}
 
 	if (PHP_VERSION_ID >= 80000) {

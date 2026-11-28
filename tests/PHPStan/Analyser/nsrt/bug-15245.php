@@ -14,7 +14,8 @@ use function PHPStan\Testing\assertType;
 function appendToLastGroup(array $groups, int $value): array
 {
 	$groups[array_key_last($groups)][] = $value;
-	assertType('non-empty-list<non-empty-list<int>>', $groups);
+	// only the last group is written
+	assertType('non-empty-list<list<int>|null>', $groups);
 
 	return $groups;
 }
@@ -39,7 +40,8 @@ function setInExistingRow(array $matrix, int $row, int $column, int $value): arr
 {
 	if (isset($matrix[$row])) {
 		$matrix[$row][$column] = $value;
-		assertType('non-empty-list<non-empty-array<int, int>>', $matrix);
+		// only the row at $row is written
+		assertType('non-empty-list<array<int, int>>', $matrix);
 	}
 
 	return $matrix;
@@ -84,7 +86,8 @@ function setInLastCell(array $cube, int $column): void
 function appendToLastCell(array $cube): void
 {
 	$cube[array_key_last($cube)][0][] = 1;
-	assertType('non-empty-list<non-empty-list<list<int>>&hasOffsetValue(0, non-empty-list<int>)>', $cube);
+	// only the last cube is written
+	assertType('non-empty-list<non-empty-list<list<int>>>', $cube);
 }
 
 /** @param list<list<int>> $matrix */

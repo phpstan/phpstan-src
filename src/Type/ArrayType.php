@@ -449,7 +449,7 @@ class ArrayType implements Type
 		return new IntersectionType([
 			$this->withTypes(
 				TypeCombinator::union($this->keyType, $offsetType),
-				$unionValues ? TypeCombinator::union($this->itemType, $valueType) : $valueType,
+				TypeCombinator::union($this->itemType, $valueType),
 			),
 			new NonEmptyArrayType(),
 		]);

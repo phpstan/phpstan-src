@@ -18,7 +18,8 @@ class Foo
 						assertType('non-empty-array<array{itemsCount: mixed, interval: mixed}>', $intervalResults);
 						assertType('array{itemsCount: mixed, interval: mixed}', $intervalResults[$key]);
 						$intervalResults[$key]['itemsCount'] += $itemsCount;
-						assertType('non-empty-array<array{itemsCount: (array|float|int), interval: mixed}>', $intervalResults);
+						// only the element at $key is written
+						assertType('non-empty-array<array{itemsCount: mixed, interval: mixed}>', $intervalResults);
 						assertType('array{itemsCount: (array|float|int), interval: mixed}', $intervalResults[$key]);
 					} else {
 						assertType('array<array{itemsCount: mixed, interval: mixed}>', $intervalResults);

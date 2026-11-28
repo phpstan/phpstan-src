@@ -59,7 +59,7 @@ final class ScopeOps
 	// parameter original-value markers (__phpstanOriginalForeachKey etc.) hide a
 	// synthesized Variable child on purpose - reassigning the variable must
 	// invalidate them through containment - so they can never be listed here.
-	private const COMPOSITIONAL_VIRTUAL_KEY_PREFIXES = ['__phpstanForeachValueByRef(', '__phpstanIntertwinedVariableByReference(', '__phpstanObjectAlias(', '__phpstanPropertyInitialization(', '__phpstanRemembered('];
+	private const COMPOSITIONAL_VIRTUAL_KEY_PREFIXES = ['__phpstanForeachValueByRef(', '__phpstanIntertwinedVariableByReference(', '__phpstanObjectAlias(', '__phpstanOffsetWriteBase(', '__phpstanPropertyInitialization(', '__phpstanRemembered('];
 
 	/**
 	 * Mirrors MutatingScope::getNodeKey().

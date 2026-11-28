@@ -233,6 +233,8 @@ interface Type
 	 * May add a new key. When $offsetType is null, appends (like $a[] = $value).
 	 *
 	 * @see Type::setExistingOffsetValueType() for modifying an existing key without widening
+	 *
+	 * @param bool $unionValues Ignored, the written value is always unioned with the existing values. Will be removed in 3.0.
 	 */
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type;
 

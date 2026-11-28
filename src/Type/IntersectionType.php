@@ -1165,18 +1165,18 @@ class IntersectionType implements CompoundType
 	public function setOffsetValueType(?Type $offsetType, Type $valueType, bool $unionValues = true): Type
 	{
 		if ($this->isOversizedArray()->yes()) {
-			return $this->intersectTypes(static function (Type $type) use ($offsetType, $valueType, $unionValues): Type {
+			return $this->intersectTypes(static function (Type $type) use ($offsetType, $valueType): Type {
 				// avoid new HasOffsetValueType being intersected with oversized array
 				if (!$type instanceof ArrayType) {
-					return $type->setOffsetValueType($offsetType, $valueType, $unionValues);
+					return $type->setOffsetValueType($offsetType, $valueType);
 				}
 
 				if (!$offsetType instanceof ConstantStringType && !$offsetType instanceof ConstantIntegerType) {
-					return $type->setOffsetValueType($offsetType, $valueType, $unionValues);
+					return $type->setOffsetValueType($offsetType, $valueType);
 				}
 
 				if (!$offsetType->isSuperTypeOf($type->getKeyType())->yes()) {
-					return $type->setOffsetValueType($offsetType, $valueType, $unionValues);
+					return $type->setOffsetValueType($offsetType, $valueType);
 				}
 
 				return new IntersectionType([
@@ -1189,7 +1189,7 @@ class IntersectionType implements CompoundType
 			});
 		}
 
-		$result = $this->intersectTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType, $unionValues));
+		$result = $this->intersectTypes(static fn (Type $type): Type => $type->setOffsetValueType($offsetType, $valueType));
 
 		if (
 			$offsetType !== null

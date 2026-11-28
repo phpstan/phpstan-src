@@ -4,6 +4,7 @@ namespace PHPStan\File;
 
 use PHPStan\Testing\PHPStanTestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use function dirname;
 
 class FileExcluderTest extends PHPStanTestCase
 {
@@ -282,6 +283,42 @@ class FileExcluderTest extends PHPStanTestCase
 				false,
 			],
 		];
+	}
+
+	/**
+	 * @param string[] $analyseExcludes
+	 */
+	#[DataProvider('dataDirectoryExcludedOnUnix')]
+	public function testDirectoryIsExcludedOnlyWhenEveryFileUnderItIs(
+		string $directory,
+		array $analyseExcludes,
+		bool $isExcluded,
+	): void
+	{
+		$this->skipIfNotOnUnix();
+
+		$fileExcluder = new FileExcluder($this->getFileHelper(), $analyseExcludes);
+
+		$this->assertSame($isExcluded, $fileExcluder->isDirectoryExcludedFromAnalysing($directory));
+	}
+
+	public static function dataDirectoryExcludedOnUnix(): iterable
+	{
+		yield 'the excluded directory' => [__DIR__, [__DIR__], true];
+		yield 'a directory under it' => [__DIR__ . '/sub', [__DIR__], true];
+		yield 'its parent' => [dirname(__DIR__), [__DIR__], false];
+		yield 'a sibling with the same prefix' => [__DIR__ . 'Suffix', [__DIR__], false];
+		yield 'a pattern for everything under it' => ['/project/src/Foo/node_modules', ['/project/src/*/node_modules/*'], true];
+		yield 'a directory under one a pattern excludes' => ['/project/src/Foo/node_modules/a/b', ['/project/src/*/node_modules/*'], true];
+		yield 'a pattern with a bracket expression' => ['/project/src/Foo/node_modules', ['/project/src/[F]oo/node_modules/*'], true];
+		yield 'a pattern whose star absorbs the separator' => ['/project/src/Foo/node_modules', ['*/node_modules*'], true];
+		yield 'a pattern for everything in a directory' => ['/project/src', ['/project/src/*'], true];
+		yield 'a pattern for the directory' => ['/project/src/Foo/node_modules', ['/project/src/*/node_modules'], true];
+		yield 'a pattern for the directory with a trailing separator' => ['/project/src/Foo/node_modules', ['/project/src/*/node_modules/'], true];
+		yield 'a pattern for a directory with a longer name' => ['/project/src/Foo/node_modules2', ['/project/src/*/node_modules'], false];
+		yield 'a pattern for a directory elsewhere' => ['/project/src/Foo/other', ['/project/src/*/node_modules/*'], false];
+		yield 'a pattern for some files only' => ['/project/src/Foo', ['/project/src/*/*.php'], false];
+		yield 'a literal file' => [__DIR__, [__FILE__], false];
 	}
 
 	public static function dataNoImplicitWildcard(): iterable

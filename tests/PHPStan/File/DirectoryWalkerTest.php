@@ -4,8 +4,11 @@ namespace PHPStan\File;
 
 use PHPStan\Testing\PHPStanTestCase;
 use Symfony\Component\Finder\Finder;
+use function array_filter;
+use function array_values;
 use function clearstatcache;
 use function fclose;
+use function file_get_contents;
 use function file_put_contents;
 use function fstat;
 use function implode;
@@ -19,6 +22,7 @@ use function sys_get_temp_dir;
 use function tmpfile;
 use function uniqid;
 use function unlink;
+use function unserialize;
 use function usleep;
 use const DIRECTORY_SEPARATOR;
 
@@ -125,6 +129,42 @@ final class DirectoryWalkerTest extends PHPStanTestCase
 			$this->directory . '/src/Nested/Other.php',
 			(new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php']),
 		);
+	}
+
+	public function testCircularSymlinkIsNotWalkedAgain(): void
+	{
+		$tmpDir = $this->createTree();
+		$withoutLoop = (new DirectoryWalker(new FileStatSignatures()))->walk($this->directory, ['php']);
+
+		symlink($this->directory . '/src', $this->directory . '/src/Nested/loop');
+		$fresh = (new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php']);
+		$this->waitUntilTheTreeIsInThePast();
+		(new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php']);
+		$fromListings = (new DirectoryWalker(new FileStatSignatures(), $tmpDir))->walk($this->directory, ['php']);
+
+		$this->assertSame($withoutLoop, $fresh);
+		$this->assertSame($withoutLoop, $fromListings);
+	}
+
+	public function testExcludedDirectoriesAreNotRead(): void
+	{
+		$tmpDir = $this->createTree();
+		$fileExcluder = new FileExcluder(new FileHelper($this->directory), [$this->directory . '/bin', '*/Nested/*']);
+		$expected = array_values(array_filter(
+			(new DirectoryWalker(new FileStatSignatures()))->walk($this->directory, ['php', 'sh']),
+			static fn (string $file): bool => !$fileExcluder->isExcludedFromAnalysing($file),
+		));
+
+		$this->waitUntilTheTreeIsInThePast();
+		$walker = new DirectoryWalker(new FileStatSignatures(), $tmpDir, $fileExcluder);
+		$pruned = $walker->walk($this->directory, ['php', 'sh']);
+		$listings = unserialize((string) file_get_contents($tmpDir . '/cache/directory-listings.bin'));
+
+		$this->assertSame($expected, $pruned);
+		$this->assertIsArray($listings);
+		$this->assertArrayHasKey($this->directory . '/src', $listings['listings']);
+		$this->assertArrayNotHasKey($this->directory . '/bin', $listings['listings']);
+		$this->assertArrayNotHasKey($this->directory . '/src/Nested', $listings['listings']);
 	}
 
 	private function createTree(): string

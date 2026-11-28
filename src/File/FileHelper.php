@@ -11,6 +11,7 @@ use function implode;
 use function ltrim;
 use function preg_match;
 use function rtrim;
+use function str_contains;
 use function str_ends_with;
 use function str_replace;
 use function str_starts_with;
@@ -72,6 +73,18 @@ final class FileHelper
 		$cached = self::$normalizedPathsCache[$directorySeparator][$originalPath] ?? null;
 		if ($cached !== null) {
 			return $cached;
+		}
+
+		// nothing to collapse or convert - the common case for paths PHPStan builds itself
+		if (
+			$directorySeparator === '/'
+			&& str_starts_with($originalPath, '/')
+			&& !str_ends_with($originalPath, '/')
+			&& !str_contains($originalPath, '//')
+			&& !str_contains($originalPath, '/.')
+			&& !str_contains($originalPath, '\\')
+		) {
+			return self::$normalizedPathsCache[$directorySeparator][$originalPath] = $originalPath;
 		}
 
 		$isLocalPath = false;

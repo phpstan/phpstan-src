@@ -3,11 +3,15 @@
 namespace PHPStan\File;
 
 use PHPStan\DependencyInjection\GenerateFactory;
+use function array_pop;
+use function array_shift;
+use function count;
 use function fnmatch;
 use function in_array;
 use function is_dir;
 use function is_file;
 use function preg_match;
+use function preg_split;
 use function str_contains;
 use function str_ends_with;
 use function str_starts_with;
@@ -36,10 +40,12 @@ final class FileExcluder
 	private array $literalAnalyseFilesExcludes = [];
 
 	/**
-	 * fnmatch() patterns to use for excluding files and directories from analysing, each with text
-	 * a matching path has to contain. Checking that text is cheaper than fnmatch().
+	 * fnmatch() patterns to use for excluding files and directories from analysing, each with
+	 * text a matching path has to contain: the text before the first wildcard, which it starts
+	 * with, the text after the last one, which it ends with, and the longest text between two
+	 * wildcards. Checking those is much cheaper than fnmatch(), and rules out most paths.
 	 *
-	 * @var list<array{string, string}>
+	 * @var list<array{string, string, string, string}>
 	 */
 	private array $fnmatchAnalyseExcludes = [];
 
@@ -54,11 +60,7 @@ final class FileExcluder
 	)
 	{
 		$isWindows = DIRECTORY_SEPARATOR === '\\';
-		if ($isWindows) {
-			$this->fnmatchFlags = FNM_NOESCAPE | FNM_CASEFOLD;
-		} else {
-			$this->fnmatchFlags = 0;
-		}
+		$this->fnmatchFlags = $isWindows ? FNM_NOESCAPE | FNM_CASEFOLD : 0;
 
 		foreach ($analyseExcludes as $exclude) {
 			$len = strlen($exclude);
@@ -73,19 +75,13 @@ final class FileExcluder
 			if (self::isFnmatchPattern($normalized)) {
 				// a path that ends with a separator names a directory, and no file matches it
 				if (!$trailingDirSeparator) {
-					$this->fnmatchAnalyseExcludes[] = [$normalized, ''];
+					$this->fnmatchAnalyseExcludes[] = self::createFnmatchExclude($normalized, $isWindows);
 				}
 
 				// a directory the pattern matches excludes the files in it, as a literal directory does
 				if (!str_ends_with($normalized, '*')) {
 					$directory = $trailingDirSeparator ? $normalized : $normalized . DIRECTORY_SEPARATOR;
-
-					// the path of a file in such a directory contains the literal text the pattern ends
-					// with, and the separator after it - not provable on Windows, which matches case-insensitively
-					$this->fnmatchAnalyseExcludes[] = [
-						$directory . '*',
-						!$isWindows && preg_match('~[^*?[\]]*$~', $directory, $matches) === 1 ? $matches[0] : '',
-					];
+					$this->fnmatchAnalyseExcludes[] = self::createFnmatchExclude($directory . '*', $isWindows);
 				}
 			} else {
 				if (is_file($normalized)) {
@@ -113,13 +109,91 @@ final class FileExcluder
 				return true;
 			}
 		}
-		foreach ($this->fnmatchAnalyseExcludes as [$pattern, $mustContain]) {
-			if (str_contains($file, $mustContain) && fnmatch($pattern, $file, $this->fnmatchFlags)) {
+		foreach ($this->fnmatchAnalyseExcludes as $exclude) {
+			if ($this->matches($exclude, $file)) {
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * Whether every file under the directory is excluded, so a walk does not have to read it.
+	 * False when that cannot be told from the directory path alone.
+	 */
+	public function isDirectoryExcludedFromAnalysing(string $directory): bool
+	{
+		$directory = $this->fileHelper->normalizePath($directory) . DIRECTORY_SEPARATOR;
+
+		foreach ($this->literalAnalyseDirectoryExcludes as $exclude) {
+			if (str_starts_with($directory, $exclude)) {
+				return true;
+			}
+		}
+
+		// fnmatch() runs without FNM_PATHNAME, so a trailing * matches directory separators too: a
+		// pattern that matches the directory with that * absorbing the end matches every path under it
+		foreach ($this->fnmatchAnalyseExcludes as $exclude) {
+			if (str_ends_with($exclude[0], '*') && $this->matches($exclude, $directory)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param array{string, string, string, string} $exclude
+	 */
+	private function matches(array $exclude, string $path): bool
+	{
+		[$pattern, $prefix, $infix, $suffix] = $exclude;
+
+		return str_starts_with($path, $prefix)
+			&& str_ends_with($path, $suffix)
+			&& str_contains($path, $infix)
+			&& fnmatch($pattern, $path, $this->fnmatchFlags);
+	}
+
+	/**
+	 * @return array{string, string, string, string}
+	 */
+	private static function createFnmatchExclude(string $pattern, bool $isWindows): array
+	{
+		// matched case-insensitively on Windows, where the literal text proves nothing
+		return [$pattern, ...($isWindows ? ['', '', ''] : self::getLiterals($pattern))];
+	}
+
+	/**
+	 * The text before the first wildcard, after the last one, and the longest between two.
+	 * Nothing for a pattern with a bracket expression, whose ends are not worth parsing here.
+	 *
+	 * @return array{string, string, string}
+	 */
+	private static function getLiterals(string $pattern): array
+	{
+		if (str_contains($pattern, '[')) {
+			return ['', '', ''];
+		}
+
+		$literals = preg_split('~[*?]~', $pattern);
+		if ($literals === false || count($literals) < 2) {
+			return ['', '', ''];
+		}
+
+		$prefix = array_shift($literals);
+		$suffix = array_pop($literals);
+		$infix = '';
+		foreach ($literals as $literal) {
+			if (strlen($literal) <= strlen($infix)) {
+				continue;
+			}
+
+			$infix = $literal;
+		}
+
+		return [$prefix, $infix, $suffix];
 	}
 
 	public static function isAbsolutePath(string $path): bool
